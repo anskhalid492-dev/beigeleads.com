@@ -38,3 +38,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 
 ## /verification
 - [ ] Lawyer review. Page states only: in-house SMTP checks, 60-day re-verification, no accuracy/delivery promise. Add replacement details only after the refund policy is final.
+
+## Legal dates
+- Dates come from `LEGAL_UPDATED` in `lib/legal/docs.ts` (16 Nov 2026). Update it whenever any legal text or /verification changes.
+- Page-level noindex was removed from /legal/* and /verification (owner decision). The site-wide noindex and robots.txt disallow still apply until launch. Banner and [TO CONFIRM] markers remain and still block launch.

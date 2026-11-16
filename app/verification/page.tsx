@@ -4,6 +4,7 @@ import { CalendarClock, MailCheck, ServerCog, Trash2 } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Faq } from "@/components/shared/faq";
 import { Button } from "@/components/ui/button";
+import { LEGAL_UPDATED, formatLegalDate } from "@/lib/legal/docs";
 import { VerifyRing } from "@/components/data-sources/verify-ring";
 
 // NEEDS LAWYER REVIEW. Every claim comes from the owner's description (CLAUDE.md section 21):
@@ -13,7 +14,6 @@ export const metadata: Metadata = {
   title: "Data verification: how we check every email",
   description: "How BeigeLeads checks email addresses with in-house SMTP tests, how often records are re-verified, and what verification cannot promise.",
   alternates: { canonical: "/verification" },
-  robots: { index: false, follow: true }, // remove with the site-wide noindex at launch
 };
 
 const wrap = "mx-auto w-full max-w-[1400px] px-5 sm:px-8 lg:px-12";
@@ -49,7 +49,10 @@ export default function VerificationPage() {
               <p className="mt-8 max-w-2xl text-xl leading-relaxed">
                 Every email address goes through an in-house SMTP check before it reaches a list, and all data is re-verified every 60 days. Here is what that means, and what it does not.
               </p>
-              <div className="mt-10 flex flex-wrap gap-3">
+              <p className="mt-6 text-sm font-semibold text-forest-300">
+                Last updated <time dateTime={LEGAL_UPDATED}>{formatLegalDate(LEGAL_UPDATED)}</time>
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild size="lg"><Link href="/sample">See a sample first</Link></Button>
                 <Button asChild size="lg" variant="secondary"><Link href="/data-sources">Where the data comes from</Link></Button>
               </div>

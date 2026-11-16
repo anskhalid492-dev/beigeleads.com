@@ -2,6 +2,11 @@
 // "[TO CONFIRM: ...]" marks a fact or legal choice the owner or a lawyer must decide. Launch is
 // blocked until every marker is resolved (see TODO-BEFORE-LAUNCH.md).
 
+/** Date the current wording was published. Update whenever any legal text or the verification page changes. */
+export const LEGAL_UPDATED = "2026-11-16";
+export const formatLegalDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
 export type LegalSection = { h: string; p: string[] };
 export type LegalDoc = { slug: string; title: string; summary: string; sections: LegalSection[] };
 
@@ -25,7 +30,7 @@ export const legalDocs: LegalDoc[] = [
       { h: "How long we keep it", p: ["[TO CONFIRM: retention period for orders, form messages, download logs and payment records]"] },
       { h: "The business contact data we sell", p: ["The lists we sell contain business contact details. They are covered on the data sources page, the opt-out page and our GDPR, CCPA, CAN-SPAM and CASL pages."] },
       { h: "Your rights", p: ["Depending on where you live you may ask to see, correct or delete your data, or object to how we use it. Use the contact page, or the opt-out page if you want to be removed from our lists."] },
-      { h: "Changes", p: ["We will post changes here and update the date. Last updated: [TO CONFIRM]."] },
+      { h: "Changes", p: ["We will post changes here and update the date at the top of the page."] },
     ],
   },
   {
