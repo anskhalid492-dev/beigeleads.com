@@ -6,5 +6,8 @@ interface CloudflareEnv {
   HASH_SALT?: string; // secret: salt for hashing emails in suppressions. Pipeline must use the same.
   TURNSTILE_VERIFY_URL?: string; // tests only: leave unset in production
   NOTIFY_EMAIL?: string; // var: where owner notifications go
+  ACCESS_TEAM_DOMAIN?: string; // var: e.g. myteam.cloudflareaccess.com
+  ACCESS_AUD?: string; // var: Access application AUD tag for /admin
+  ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
 }

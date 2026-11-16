@@ -56,3 +56,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 ## Legal pages status (updated Nov 2026)
 - All [TO CONFIRM] markers resolved by the assistant on the owner's instruction; pages are NOT lawyer-reviewed. Re-read terms (liability, Missouri law, Jackson County venue), privacy (retention periods) and refund policy before launch.
 - Before selling EU/UK/Canada data: revisit GDPR/CASL/DPA pages (they currently say US only).
+
+## Phase 4b
+- [ ] Create Cloudflare Access app for `beigeleads.com/admin*` (+ 2FA, short session on /admin/wallets); set vars `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` (and optionally `ADMIN_EMAILS`); then regenerate `npm run cf-typegen`
+- [ ] Test add/enable/disable on testnet vpub before any mainnet zpub

@@ -459,3 +459,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 - `app/solutions/[slug]/page.tsx` = `SolutionHero` + sand page with white `rounded-[2rem]` panels from `components/solutions/blocks.tsx`: preview table (primary product's masked sample, filtered to its fields), fields grid (+ "Need other fields?"), why-cards (`helps`), 4 connected steps, databases + city chips, applications, `PainTabs` (client, all panels in DOM), other solutions, resources, 7 FAQs, CTA panel. Headings are centered with a purple accent phrase.
 - Labels come from `lib/solution-focus.ts` (`audience`, `focus`). Everything shown comes from the catalog and solution copy; placeholder sample rows say so on the page. `/solutions` landing still uses the older sections.
+
+## 28. Phase 4b: admin wallets (Nov 2026)
+
+- `/admin/wallets` (noindex, `force-dynamic`) fails closed: every page and server action calls `requireAdmin()` (`lib/admin/require-admin.ts`), which verifies the Cloudflare Access JWT (`cf-access-jwt-assertion`, RS256 via Web Crypto, `lib/admin/access.ts`) against vars `ACCESS_TEAM_DOMAIN` + `ACCESS_AUD` (optional `ADMIN_EMAILS` allow-list). Missing config or bad token = 404.
+- `lib/wallets/*`: public-key validation (BTC zpub/vpub only, TRON base58check address; private keys rejected), 24h activation delay on add/enable (disable is instant), audit rows in `wallet_audit_log`, owner email via `notifyOwner`. "Re-authentication" is enforced with a short Access session duration on the `/admin/wallets` Access app (dashboard setting).
