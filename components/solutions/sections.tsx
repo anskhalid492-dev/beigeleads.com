@@ -390,7 +390,7 @@ export function SolutionFaq({ name, items }: { name: string; items: readonly (re
   );
 }
 
-export function SolutionCta({ heading, text }: { heading: string; text: string }) {
+export function SolutionCta({ heading, text, primaryLabel = "Request a free sample", secondaryLabel = "Explore databases", primaryHref = "/sample", secondaryHref = "/lists" }: { heading: string; text: string; primaryLabel?: string; secondaryLabel?: string; primaryHref?: string; secondaryHref?: string }) {
   return (
     <section className="relative overflow-hidden bg-forest-900 py-20 text-center lg:py-24">
       <div aria-hidden className="glow-breathe pointer-events-none absolute left-1/2 top-0 h-80 w-[48rem] -translate-x-1/2 rounded-full" style={{ background: "radial-gradient(closest-side, rgba(143,208,169,0.25), transparent)" }} />
@@ -399,10 +399,10 @@ export function SolutionCta({ heading, text }: { heading: string; text: string }
         <p className="mx-auto mt-5 max-w-xl text-lg text-sand-200">{text}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg">
-            <Link href="/sample">Request a free sample</Link>
+            <Link href={primaryHref}>{primaryLabel}</Link>
           </Button>
           <Button asChild size="lg" variant="secondary">
-            <Link href="/lists">Explore databases</Link>
+            <Link href={secondaryHref}>{secondaryLabel}</Link>
           </Button>
         </div>
       </div>

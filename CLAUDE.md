@@ -448,3 +448,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Owner decision: legal pages and /verification are published with dates (`LEGAL_UPDATED` in `lib/legal/docs.ts`); the "under legal review" banner and all `[TO CONFIRM]` markers were removed. Open details were filled by the assistant on the owner's instruction: company BeigeLeads LLC (215 W Pershing Rd, Kansas City, MO 64108), Missouri law, retention 7 years / 12 months, 30-day claim window, 3 working days response, 30-day rights response, US-only data (no EU/UK/Canada sales yet).
 - Policy "Refund & Returns" (`/legal/refund-replacement`): bounce rate above 5% -> replace bounced emails until the list is back at 95% verified / 95% accurate; otherwise proportional refund in crypto.
 - These texts are NOT lawyer-reviewed. Before selling to EU/UK/Canada, revisit GDPR/CASL pages. Site-wide noindex is still on.
+
+## 26. /verification redesign (Nov 2026)
+
+- `/verification` is a full methodology page (hero with animated source network, philosophy, sources, 8-stage timeline, quality checks, email verification flow, freshness, fields, compliance links, guarantees, database cards, exactly 10 FAQs, CTA). Components in `components/verification/*`; content only from the owner's sourcing statement, site policies and the 5%/95% refund promise. The "200+ sources" figure is intentionally NOT repeated here (only on /data-sources).
+- Motion is CSS only: scroll-driven `.reveal` / `.parallax-*` (progressive, visible without `animation-timeline` support) and looping visuals; all disabled under reduced motion. Full-page screenshots show reveal sections blank because nothing has scrolled; check by scrolling.
+- Footer CTA band is also hidden on /verification (`footer-cta.tsx`).
