@@ -379,13 +379,14 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 ## 16. Open decisions (fill in as decided)
 
-- [ ] Data sourcing method and lawful basis per region
+- [x] Data sourcing method (owner described it, see section 21)
+- [ ] Lawful basis per region
 - [ ] First launch categories (suggest 3-5)
 - [ ] Pricing per tier
 - [ ] Final brand fonts and logo
 - [ ] Which regions are blocked or restricted at launch
 - [ ] Lawyer for legal review
-- [ ] Email verification provider or in-house method
+- [x] Email verification: in-house SMTP checks by our team, all data re-verified every 60 days
 
 ---
 
@@ -395,7 +396,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Emails are sent with `waitUntil` + Resend (`lib/forms/email.ts`), not a Queue yet. Queue (retries) is deferred; add a consumer when retries matter.
 - Opt-outs store only `sha256(HASH_SALT:email)`. The data pipeline MUST hash the same way to apply suppressions.
 - Config lives in the Cloudflare dashboard (Settings > Variables and Secrets): secrets `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `HASH_SALT`; vars `NOTIFY_EMAIL`, `EMAIL_FROM`; build variable `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. `TURNSTILE_VERIFY_URL` is for local tests only; never set it in production.
-- `/data-sources`, `/verification` and all `/legal/*` pages stay stubs until the data-sourcing decision (section 16) and lawyer review. Do not invent their content.
+- `/verification` stays a stub. `/data-sources` is now a real page (see section 21); `/legal/*` are DRAFTS (section 21). Do not invent facts beyond what the owner stated.
 
 ---
 
@@ -414,3 +415,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - BTC receiving addresses derive from a native SegWit **zpub** (BIP84; vpub for testnet) only. Private keys (xprv/zprv...) are rejected in code. Legacy `xpub` is rejected so the address type is never ambiguous.
 - TRC20 matching is by exact unique amount, so the 1% underpay tolerance applies to BTC only; a TRC20 amount that matches no open attempt goes to admin review.
 - Tests: `npm test` (Vitest, `tests/`). `tsconfig` target is ES2020 (BigInt).
+
+## 21. Data sources and legal drafts
+
+- Owner's sourcing statement (Nov 2026): team collects raw data from Google Maps/business listings, company websites, public government registries, directories, licensed providers, public professional profiles/social handles, surveys, own research ("200+ sources"); then appends/enriches, finds missing owners/tech stack/emails (published emails, pattern inference, waterfall enrichment), verifies with in-house SMTP checks, organizes, sells. All data re-verified every 60 days.
+- `/data-sources` (`app/data-sources`, `components/data-sources/*`) states exactly that. Do not add numbers or claims beyond it. Illustrations use a fictional record and say so.
+- `/legal/*` render from `lib/legal/docs.ts`. They are drafts with a visible "under legal review" banner and highlighted `[TO CONFIRM: ...]` markers; noindex until a lawyer signs off. Do not remove markers without a real decision.

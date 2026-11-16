@@ -22,3 +22,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Opt-out: pipeline must apply `suppressions` using the same hash (see CLAUDE.md section 17); add domain-level opt-out handling
 - [ ] Add a Cloudflare WAF rate-limit rule for `/api/*` (KV limiter is only a speed bump)
 - [ ] Email queue/retries (currently `waitUntil`, no retry)
+- [ ] `/data-sources`: back "200+ sources" with an internal source register; confirm "re-verified every 60 days" is actually done; confirm the SMTP-check description; lawyer must approve the wording about public professional profiles/social handles and automated collection (platform terms and GDPR/CCPA risk)
+- [ ] `/legal/*` (`lib/legal/docs.ts`): resolve every `[TO CONFIRM: ...]` (entity and address, retention, licence limits, replacement window and remedy, refund coin, regions served, data broker registration, DPA, sub-processors), then lawyer review; remove noindex
+- [ ] `/verification` still a stub; write it from the same facts as the data-sources page once the replacement policy is decided
+- [ ] Audit live cookies/local storage (Turnstile) before finalising the cookie policy
