@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SampleTable } from "@/components/shared/sample-table";
 import { Faq } from "@/components/shared/faq";
-import { CtaBand } from "@/components/shared/cta-band";
 import { getCategories, getCategory, getCountries, getProducts } from "@/lib/catalog";
 import { sampleSheets } from "@/lib/sample-data";
 
@@ -114,7 +113,6 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
           ["What if my country is not listed?", "Request it. New countries and cities are added over time."],
         ]}
       />
-      <CtaBand />
     </>
   );
 }

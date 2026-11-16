@@ -396,3 +396,10 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Opt-outs store only `sha256(HASH_SALT:email)`. The data pipeline MUST hash the same way to apply suppressions.
 - Config lives in the Cloudflare dashboard (Settings > Variables and Secrets): secrets `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `HASH_SALT`; vars `NOTIFY_EMAIL`, `EMAIL_FROM`; build variable `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. `TURNSTILE_VERIFY_URL` is for local tests only; never set it in production.
 - `/data-sources`, `/verification` and all `/legal/*` pages stay stubs until the data-sourcing decision (section 16) and lawyer review. Do not invent their content.
+
+---
+
+## 18. Footer / CTA decisions
+
+- The global CTA "See a sample before you spend a cent." lives in `components/layout/footer.tsx` (no per-page CtaBand anymore). Footer is a 6-column link footer with all 10 comparison links (`lib/compare.ts`). New token `--forest-300` for footer headings.
+- `/compare/beigeleads-vs-<slug>` are noindex stubs until Phase 5 content.

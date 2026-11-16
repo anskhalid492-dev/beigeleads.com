@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { CategoryIndex } from "@/components/lists/category-index";
-import { CtaBand } from "@/components/shared/cta-band";
 import { getCategories } from "@/lib/catalog";
 
 export const metadata: Metadata = {
@@ -27,7 +26,6 @@ export default function ListsPage() {
           <CategoryIndex categories={getCategories()} />
         </div>
       </section>
-      <CtaBand title="Missing a niche? Tell us." href="/request-category" label="Request a category" />
     </>
   );
 }

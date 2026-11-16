@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { CtaBand } from "@/components/shared/cta-band";
 import { getCategories, getCategory, getCities, getCity, getCountries, getCountry, getProductFor } from "@/lib/catalog";
 
 export const dynamicParams = false;
@@ -67,7 +66,6 @@ export default async function CityPage(props: PageProps<"/lists/[category]/[coun
           </div>
         )}
       </section>
-      <CtaBand />
     </>
   );
 }

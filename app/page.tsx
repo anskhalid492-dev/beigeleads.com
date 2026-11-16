@@ -3,7 +3,6 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SampleLedger } from "@/components/home/sample-ledger";
 import { Faq } from "@/components/shared/faq";
-import { CtaBand } from "@/components/shared/cta-band";
 import { FieldColumns } from "@/components/shared/field-columns";
 import { FIELDS } from "@/lib/catalog";
 
@@ -161,7 +160,6 @@ export default function Home() {
 
       <Faq items={faq} />
 
-      <CtaBand />
     </>
   );
 }

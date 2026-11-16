@@ -6,7 +6,6 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SampleTable } from "@/components/shared/sample-table";
 import { FieldColumns } from "@/components/shared/field-columns";
 import { Faq } from "@/components/shared/faq";
-import { CtaBand } from "@/components/shared/cta-band";
 import { getCategories, getCategory, getCities, getCountry, getProduct, getProducts } from "@/lib/catalog";
 import { sampleSheets } from "@/lib/sample-data";
 
@@ -178,8 +177,6 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         </ul>
       </section>
 
-      {/* 9. CTA */}
-      <CtaBand href={`/sample?product=${p.slug}`} />
     </>
   );
 }

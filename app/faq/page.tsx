@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Faq } from "@/components/shared/faq";
-import { CtaBand } from "@/components/shared/cta-band";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -25,7 +24,6 @@ export default function FaqPage() {
     <>
       <Breadcrumbs items={[{ name: "FAQ", href: "/faq" }]} />
       <Faq heading="Frequently asked questions" items={items} />
-      <CtaBand />
     </>
   );
 }
