@@ -52,3 +52,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - Claim window (30 days) and response time (3 working days) were set by the assistant on the owner's instruction. Confirm them.
 - Still open in that policy: what happens if we cannot reach 95% (credit or refund).
 - We must be able to measure verified/accurate rates before we promise 95% in practice.
+
+## Legal pages status (updated Nov 2026)
+- All [TO CONFIRM] markers resolved by the assistant on the owner's instruction; pages are NOT lawyer-reviewed. Re-read terms (liability, Missouri law, Jackson County venue), privacy (retention periods) and refund policy before launch.
+- Before selling EU/UK/Canada data: revisit GDPR/CASL/DPA pages (they currently say US only).

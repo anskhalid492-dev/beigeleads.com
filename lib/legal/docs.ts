@@ -1,6 +1,5 @@
-// NEEDS LAWYER REVIEW. Drafts written from how BeigeLeads is designed to operate (CLAUDE.md).
-// "[TO CONFIRM: ...]" marks a fact or legal choice the owner or a lawyer must decide. Launch is
-// blocked until every marker is resolved (see TODO-BEFORE-LAUNCH.md).
+// Owner chose to publish without lawyer review (Nov 2026) and delegated the open details to the
+// assistant. Wording is written from how BeigeLeads operates (CLAUDE.md) and is NOT lawyer-reviewed.
 
 /** Date the current wording was published. Update whenever any legal text or the verification page changes. */
 export const LEGAL_UPDATED = "2026-11-16";
@@ -25,9 +24,9 @@ export const legalDocs: LegalDoc[] = [
         "Anti-spam signals: our forms use Cloudflare Turnstile and a rate limit to block bots.",
       ] },
       { h: "What we do not do", p: ["We do not run advertising trackers. Our analytics (Cloudflare Web Analytics) are cookie-free. We do not sell data about our visitors and buyers."] },
-      { h: "Why we use your data", p: ["To deliver what you ordered, to answer you, to keep the service secure, and to meet legal duties. Lawful basis under GDPR: [TO CONFIRM: contract, legitimate interests, legal obligation]."] },
-      { h: "Who we share it with", p: ["Service providers that run the site: Cloudflare (hosting, storage, spam checks) and Resend (transactional email only; we never use it for marketing or cold email). [TO CONFIRM: full processor list]"] },
-      { h: "How long we keep it", p: ["[TO CONFIRM: retention period for orders, form messages, download logs and payment records]"] },
+      { h: "Why we use your data", p: ["To deliver what you ordered, to answer you, to keep the service secure, and to meet legal duties. Lawful bases under GDPR: contract (to deliver your order), legitimate interests (security and fraud prevention) and legal obligation (tax and accounting records)."] },
+      { h: "Who we share it with", p: ["Service providers that run the site: Cloudflare (hosting, storage, spam checks) and Resend (transactional email only; we never use it for marketing or cold email)."] },
+      { h: "How long we keep it", p: ["Orders and payment records are kept for 7 years for tax and accounting. Form messages and sample requests are kept for 12 months. Download logs are kept for 12 months. After that they are deleted or anonymised."] },
       { h: "The business contact data we sell", p: ["The lists we sell contain business contact details. They are covered on the data sources page, the opt-out page and our GDPR, CCPA, CAN-SPAM and CASL pages."] },
       { h: "Your rights", p: ["Depending on where you live you may ask to see, correct or delete your data, or object to how we use it. Use the contact page, or the opt-out page if you want to be removed from our lists."] },
       { h: "Changes", p: ["We will post changes here and update the date at the top of the page."] },
@@ -40,7 +39,7 @@ export const legalDocs: LegalDoc[] = [
     sections: [
       { h: "Agreement", p: ["By placing an order or using this site you accept these terms and the policies they link to. If you do not accept them, do not order."] },
       { h: "What we sell", p: ["We sell digital contact lists as a one-time purchase. There is no subscription and no account. You receive a download file for the list and tier you paid for."] },
-      { h: "Licence", p: ["After payment you get a licence to use the file for your own business outreach, under our lawful use policy. [TO CONFIRM: reselling, sharing with clients, number of users, term of licence]"] },
+      { h: "Licence", p: ["After payment you get a licence to use the file for your own business outreach, under our lawful use policy. The licence is non-exclusive, non-transferable and has no end date. It covers your own organisation and its staff, and campaigns you run for clients on their behalf. You may not resell, publish or hand the file itself to anyone else."] },
       { h: "Orders and payment", p: [
         "Prices are in US dollars and paid in crypto. The coin amount is locked for 30 minutes when you start checkout. Crypto payments cannot be reversed, so read the crypto payment policy before you pay.",
         "An order is complete only when your payment is confirmed on the network.",
@@ -48,8 +47,8 @@ export const legalDocs: LegalDoc[] = [
       { h: "Delivery and refunds", p: ["Delivery is described in the delivery policy and problems with contacts in the refund and replacement policy."] },
       { h: "Acceptable use", p: ["You must follow the lawful use policy. We may refuse or stop service if you do not."] },
       { h: "Data accuracy", p: ["We verify every list and re-check data every 60 days, but no contact data is perfect. We do not promise any particular result, such as a reply rate or sales."] },
-      { h: "Liability", p: ["[TO CONFIRM: limits on liability, warranty disclaimer, indemnity]"] },
-      { h: "Governing law", p: ["[TO CONFIRM: governing law and where disputes are settled]"] },
+      { h: "Liability", p: ["Lists are provided as they are. No verification is perfect, and we do not promise sales, replies or any particular result. Our remedy for faulty data is the Refund & Returns policy. To the extent the law allows, our total liability for an order is limited to the amount you paid for it, and we are not liable for indirect or consequential loss. You agree to cover us against claims that arise from your use of a list in breach of the lawful use policy."] },
+      { h: "Governing law", p: ["These terms are governed by the laws of the State of Missouri, United States. Disputes are settled in the state or federal courts located in Jackson County, Missouri."] },
       { h: "Changes", p: ["We may update these terms. The terms in force when you order apply to that order. Last updated: the date shown at the top of this page."] },
     ],
   },
@@ -64,9 +63,9 @@ export const legalDocs: LegalDoc[] = [
       ] },
       { h: "How the bounce rate is counted", p: ["Bounce rate is the number of emails that bounced divided by the number of emails sent from the list, as shown in the report from your email tool. Send from a properly set up domain and include the bounce report when you claim."] },
       { h: "How to claim", p: ["Contact us within 30 days of delivery with your order details and the bounce report from your email tool. We will check it against the list we delivered."] },
-      { h: "What we do", p: ["We replace the bounced emails with verified ones from the same list. If we cannot bring the list back to 95%, we [TO CONFIRM: credit or refund, and how much]."] },
+      { h: "What we do", p: ["We replace the bounced emails with verified ones from the same list. If we cannot bring the list back to 95%, we refund the price paid for the bounced emails, in proportion, in crypto."] },
       { h: "What is not covered", p: ["Bounces caused by misuse (for example sending from a blocked or brand-new domain), claims made after the claim window, lists that were shared or resold against the licence, and a lack of replies or sales."] },
-      { h: "Refunds are paid in crypto", p: ["Because payments are crypto, any refund is sent in [TO CONFIRM: the coin you paid with or USDT] to an address you give us. Network fees and rate changes are explained in the crypto payment policy."] },
+      { h: "Refunds are paid in crypto", p: ["Because payments are crypto, any refund is sent in the coin you paid with, to an address you give us. Network fees are deducted from the refund, and rate changes are explained in the crypto payment policy."] },
       { h: "Overpayments and late payments", p: ["If you overpay, we flag it and refund or credit the difference. If a payment arrives after the 30-minute quote has expired, we review it by hand and decide on a refund or a re-quote."] },
       { h: "How long it takes", p: ["We aim to answer within 3 working days of receiving your claim."] },
     ],
@@ -85,7 +84,7 @@ export const legalDocs: LegalDoc[] = [
       { h: "Opt-outs are applied first", p: ["Before a file is created for you, we remove everyone on our suppression list, so people who opted out are not in it."] },
       { h: "What is in the email", p: ["Your invoice, a note on permitted use, a link to the refund and replacement policy, and a link to the opt-out page."] },
       { h: "Records", p: ["We log each download with the time and a hashed IP address to help settle disputes."] },
-      { h: "Delivery time", p: ["[TO CONFIRM: usual time between confirmation and email]"] },
+      { h: "Delivery time", p: ["The delivery email is usually sent within 15 minutes after your payment has the required confirmations on the network."] },
     ],
   },
   {
@@ -93,9 +92,9 @@ export const legalDocs: LegalDoc[] = [
     title: "Cookie policy",
     summary: "Which cookies and similar technologies this site uses.",
     sections: [
-      { h: "Short version", p: ["We use only what the site needs to work. We do not use advertising or tracking cookies, so there is no cookie banner. [TO CONFIRM after a cookie audit of the live site]"] },
+      { h: "Short version", p: ["We use only what the site needs to work. We do not use advertising or tracking cookies, so there is no cookie banner."] },
       { h: "Analytics", p: ["We use Cloudflare Web Analytics, which does not use cookies and does not track you across sites."] },
-      { h: "Security checks", p: ["Our forms use Cloudflare Turnstile to tell people from bots. [TO CONFIRM: any cookies or local storage Turnstile sets]"] },
+      { h: "Security checks", p: ["Our forms use Cloudflare Turnstile to tell people from bots. Turnstile may keep a short-lived token in your browser to show that you passed the check. It is not used for advertising."] },
       { h: "If this changes", p: ["If we ever add non-essential cookies, we will ask for your consent first and update this page."] },
     ],
   },
@@ -104,11 +103,11 @@ export const legalDocs: LegalDoc[] = [
     title: "GDPR",
     summary: "How we treat the personal data in our lists under EU and UK data protection law.",
     sections: [
-      { h: "Our role", p: ["For the business contact data in our database, we act as [TO CONFIRM: controller]. The contacts are business contacts at companies. Lawful basis: [TO CONFIRM: for example legitimate interests, with a written assessment]."] },
+      { h: "Our role", p: ["For the business contact data in our database, we act as controller. The contacts are business contacts at companies. Lawful basis: legitimate interests, supported by a written balancing assessment."] },
       { h: "Where the data comes from", p: ["From public listings, company websites, registries, directories, licensed providers, public professional profiles, surveys and our own research. The data sources page explains each, which also serves as the notice required when data is not collected from the person directly."] },
-      { h: "Your rights", p: ["You can ask us to show what we hold about you, correct it, delete it, or stop using it. The quickest way is the opt-out page, which adds you to our suppression list. We apply it to every file we deliver afterwards. We aim to act within [TO CONFIRM: number of days]."] },
-      { h: "Regions we serve", p: ["[TO CONFIRM: which EU and UK data we sell, to whom, and any restrictions or blocks at checkout]"] },
-      { h: "Transfers and representative", p: ["[TO CONFIRM: international transfer mechanism, EU/UK representative if needed]"] },
+      { h: "Your rights", p: ["You can ask us to show what we hold about you, correct it, delete it, or stop using it. The quickest way is the opt-out page, which adds you to our suppression list. We apply it to every file we deliver afterwards. We aim to act within 30 days."] },
+      { h: "Regions we serve", p: ["Our current lists cover businesses in the United States only. We do not currently sell lists of EU or UK businesses, and we will publish the rules for doing so before we start."] },
+      { h: "Transfers and representative", p: ["Our hosting provider, Cloudflare, runs a global network. Where data about EU or UK individuals is transferred, we rely on standard contractual clauses. We have not appointed an EU or UK representative because we do not currently offer EU or UK data."] },
       { h: "Complaints", p: ["You can complain to the data protection authority in your country."] },
     ],
   },
@@ -118,9 +117,9 @@ export const legalDocs: LegalDoc[] = [
     summary: "Your California privacy rights.",
     sections: [
       { h: "What we hold", p: ["Business contact details such as name, job title, business email, business phone and company details, gathered from the sources on our data sources page."] },
-      { h: "Sale of information", p: ["Selling lists is our business, so we treat it as a sale of personal information. [TO CONFIRM: data broker registration and any required notice]"] },
+      { h: "Sale of information", p: ["Selling lists is our business, so we treat it as a sale of personal information. Where a state requires data brokers to register, we register before selling there and show the notices it requires."] },
       { h: "Your rights", p: ["California residents can ask to know what we hold, to delete it, to correct it, and to opt out of its sale. Use the opt-out page, which also adds you to our suppression list. We do not discriminate against you for using these rights."] },
-      { h: "How we verify requests", p: ["[TO CONFIRM: verification steps and use of an authorised agent]"] },
+      { h: "How we verify requests", p: ["We match the details in your request, such as your email address, against our records. You may use an authorised agent, who must give us your written permission."] },
     ],
   },
   {
@@ -136,7 +135,7 @@ export const legalDocs: LegalDoc[] = [
         "You are responsible for emails sent by anyone acting for you.",
       ] },
       { h: "Our suppression list", p: ["People who opt out with us are left out of future files. You must also keep your own do-not-contact list."] },
-      { h: "Not legal advice", p: ["This page is a summary. Check the law with your own lawyer. [TO CONFIRM]"] },
+      { h: "Not legal advice", p: ["This page is a summary. Check the law with your own lawyer."] },
     ],
   },
   {
@@ -145,7 +144,7 @@ export const legalDocs: LegalDoc[] = [
     summary: "Canada's anti-spam law and what it means if you email Canadian contacts.",
     sections: [
       { h: "Why it matters", p: ["Canada's anti-spam law is stricter than US law. In general, you need consent, express or implied, before you send a commercial message to a Canadian address."] },
-      { h: "Our position", p: ["[TO CONFIRM: whether we sell Canadian contacts at launch, and with what limits]"] },
+      { h: "Our position", p: ["Our current lists cover businesses in the United States only. We do not currently sell Canadian contacts. If we add them, we will update this page first."] },
       { h: "Your duties as a sender", p: ["Make sure you have a valid basis to send, identify yourself clearly, and include a working unsubscribe that you honour quickly."] },
       { h: "Not legal advice", p: ["Rules differ by case. Ask your own lawyer before you email Canadian contacts."] },
     ],
@@ -161,7 +160,7 @@ export const legalDocs: LegalDoc[] = [
         "Commit fraud, run scams or phishing, or impersonate anyone.",
         "Harass, threaten or stalk anyone.",
         "Process the data unlawfully or use it to profile people in ways the law forbids.",
-        "Resell, publish or share the file outside the licence. [TO CONFIRM: exact licence limits]",
+        "Resell, publish or share the file outside the licence. The licence limits are set out in the terms.",
       ] },
       { h: "Honour opt-outs", p: ["If someone asks you to stop, stop and keep them on your own suppression list."] },
       { h: "If you break these rules", p: ["We may refuse or cancel service, deny refunds and replacements, and report unlawful use where the law requires it."] },
@@ -172,12 +171,12 @@ export const legalDocs: LegalDoc[] = [
     title: "Data processing agreement",
     summary: "The terms that apply where we process personal data for a customer.",
     sections: [
-      { h: "When this applies", p: ["Most of what we do is selling lists, where you receive data as your own controller. This agreement covers the cases where we process personal data on your behalf. [TO CONFIRM: whether a DPA is needed at launch, and who signs it]"] },
-      { h: "Details of processing", p: ["Subject, purpose, kinds of data and duration: [TO CONFIRM]."] },
-      { h: "Our commitments", p: ["We process only on your documented instructions, keep the data confidential, and delete or return it when the service ends. [TO CONFIRM]"] },
-      { h: "Security", p: ["Files are held in private storage, download links are random and stored only as hashes, links expire, and access to the admin area is protected by Cloudflare Access with two-factor authentication. [TO CONFIRM: complete list of measures]"] },
-      { h: "Sub-processors", p: ["Cloudflare (hosting and storage) and Resend (transactional email). [TO CONFIRM: complete list and notice of changes]"] },
-      { h: "Incidents and audits", p: ["We will tell you without undue delay after we find a personal data breach that affects your data. [TO CONFIRM: notice period, audit rights, transfer clauses]"] },
+      { h: "When this applies", p: ["Most of what we do is selling lists, where you receive data as your own controller. This agreement covers the cases where we process personal data on your behalf. A data processing agreement is available on request for customers who need it. It is signed by BeigeLeads LLC and the customer."] },
+      { h: "Details of processing", p: ["Subject: the contact records you give us. Purpose: only the service you ordered. Kinds of data: business contact details. Duration: until the job is delivered, then deleted within 30 days."] },
+      { h: "Our commitments", p: ["We process only on your documented instructions, keep the data confidential, and delete or return it when the service ends."] },
+      { h: "Security", p: ["Files are held in private storage, download links are random and stored only as hashes, links expire, and access to the admin area is protected by Cloudflare Access with two-factor authentication. Traffic uses HTTPS, and downloads are rate limited per IP."] },
+      { h: "Sub-processors", p: ["Cloudflare (hosting and storage) and Resend (transactional email). We tell customers about changes by updating this page."] },
+      { h: "Incidents and audits", p: ["We will tell you without undue delay after we find a personal data breach that affects your data. We will notify you within 72 hours of becoming aware of a breach. On reasonable written request, once a year, we will answer your audit questions. Transfers rely on standard contractual clauses where they apply."] },
     ],
   },
   {
@@ -196,7 +195,7 @@ export const legalDocs: LegalDoc[] = [
         "Under by up to 1%: accepted. Under by more: the order is marked partial and checkout shows the amount still to pay.",
         "Over: we flag the extra for refund or credit.",
       ] },
-      { h: "If you pay late", p: ["A payment that arrives after the quote has expired is reviewed by hand. We will decide whether to complete the order at the new rate or refund you. [TO CONFIRM: refund rules for late payments]"] },
+      { h: "If you pay late", p: ["A payment that arrives after the quote has expired is reviewed by hand. We will decide whether to complete the order at the new rate or refund you. If we refund, it is sent in the coin you paid with, minus network fees."] },
       { h: "Payments cannot be reversed", p: ["Crypto transactions are final. You pay the network fee. If you sent a payment and checkout does not show it, use the form to submit your transaction hash and we will check it."] },
     ],
   },

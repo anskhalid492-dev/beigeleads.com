@@ -442,3 +442,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Solutions pages use a 1400px container (`wrap` in `components/solutions/sections.tsx`). Exactly 7 FAQs per solution live in `lib/solution-faqs.ts` (84 total, none repeated); `lib/solutions.ts` merges them in.
 - Database visual identity: `components/shared/db-icon.tsx` (`DbBadge`, `Flag`, `IndustryIcon`). Flags are inline SVG (US, GB, DE, FR, CA, AU, CH); industry icons are chosen by category slug (tooth is custom-drawn). Add a category/country by adding one map entry. Brand logos (Instagram, YouTube, ...) are NOT bundled yet because no creator/platform lists exist.
 - Footer Legal column is one flat list of 13 links; the Cryptocurrency Payments link was removed from the footer (page `/legal/crypto-payments` still exists).
+
+## 25. Legal pages published without lawyer review (Nov 2026)
+
+- Owner decision: legal pages and /verification are published with dates (`LEGAL_UPDATED` in `lib/legal/docs.ts`); the "under legal review" banner and all `[TO CONFIRM]` markers were removed. Open details were filled by the assistant on the owner's instruction: company BeigeLeads LLC (215 W Pershing Rd, Kansas City, MO 64108), Missouri law, retention 7 years / 12 months, 30-day claim window, 3 working days response, 30-day rights response, US-only data (no EU/UK/Canada sales yet).
+- Policy "Refund & Returns" (`/legal/refund-replacement`): bounce rate above 5% -> replace bounced emails until the list is back at 95% verified / 95% accurate; otherwise proportional refund in crypto.
+- These texts are NOT lawyer-reviewed. Before selling to EU/UK/Canada, revisit GDPR/CASL pages. Site-wide noindex is still on.

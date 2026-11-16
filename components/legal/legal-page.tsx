@@ -31,12 +31,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
         <h1 className="display text-5xl text-forest-900 sm:text-6xl">{doc.title}</h1>
         <p className="mt-3 max-w-2xl text-lg">{doc.summary}</p>
         <p className="mt-4 text-sm font-semibold text-forest-500">
-          Last updated <time dateTime={LEGAL_UPDATED}>{formatLegalDate(LEGAL_UPDATED)}</time>
-        </p>
-
-        <p className="mt-6 rounded-2xl border border-sand-300 bg-sand-100 p-4 text-sm" role="note">
-          <strong className="text-forest-900">Draft, under legal review.</strong> This page is not final and not yet in force. Highlighted
-          notes mark details we still have to confirm.
+          Effective and last updated <time dateTime={LEGAL_UPDATED}>{formatLegalDate(LEGAL_UPDATED)}</time>
         </p>
 
         <div className="mt-12 grid gap-12 lg:grid-cols-[14rem_1fr]">
