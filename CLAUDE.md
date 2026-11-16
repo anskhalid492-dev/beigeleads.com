@@ -396,7 +396,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Emails are sent with `waitUntil` + Resend (`lib/forms/email.ts`), not a Queue yet. Queue (retries) is deferred; add a consumer when retries matter.
 - Opt-outs store only `sha256(HASH_SALT:email)`. The data pipeline MUST hash the same way to apply suppressions.
 - Config lives in the Cloudflare dashboard (Settings > Variables and Secrets): secrets `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `HASH_SALT`; vars `NOTIFY_EMAIL`, `EMAIL_FROM`; build variable `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. `TURNSTILE_VERIFY_URL` is for local tests only; never set it in production.
-- `/verification` stays a stub. `/data-sources` is now a real page (see section 21); `/legal/*` are DRAFTS (section 21). Do not invent facts beyond what the owner stated.
+- `/verification` is a real page (Nov 2026, owner facts only: SMTP checks, 60-day re-verification, no accuracy claims). `/data-sources` is now a real page (see section 21); `/legal/*` are DRAFTS (section 21). Do not invent facts beyond what the owner stated.
 
 ---
 

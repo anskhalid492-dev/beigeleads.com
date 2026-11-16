@@ -3,13 +3,12 @@ import { notFound } from "next/navigation";
 import { ComingSoon } from "@/components/shared/coming-soon";
 
 // Placeholder pages so navigation never 404s. Each is replaced by a real page in a later phase
-// (pricing/compare/use-cases/blog/etc.: phase 5; verification waits for its own decision).
+// (pricing/compare/use-cases/blog/etc.: phase 5).
 const pages: Record<string, { title: string; note: string }> = {
   pricing: { title: "Pricing", note: "Pricing is published when the first lists go on sale." },
   "how-it-works": { title: "How it works", note: "A full walkthrough is on the way." },
   compare: { title: "Compare", note: "Honest comparisons with other list providers are being written." },
   "custom-list": { title: "Custom list", note: "The custom list builder is on the way." },
-  verification: { title: "Verification", note: "Our verification process will be published here before launch." },
   about: { title: "About", note: "This page is being written." },
   bundles: { title: "Bundles", note: "Bundles are on the way." },
   creators: { title: "Creators", note: "Creator and influencer lists are on the way." },

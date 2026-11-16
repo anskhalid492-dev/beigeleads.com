@@ -35,3 +35,6 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Remove site-wide noindex at launch so /solutions/* become indexable (they are in sitemap.xml already).
 - [ ] Lawyer review of compliance wording in solutions copy (cold email, recruitment, healthcare, influencer).
 - [ ] Update recommended databases when real estate, creator and recruitment lists exist.
+
+## /verification
+- [ ] Lawyer review. Page states only: in-house SMTP checks, 60-day re-verification, no accuracy/delivery promise. Add replacement details only after the refund policy is final.
