@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SolutionHero } from "@/components/solutions/sections";
 import {
-  Applications, AvailableData, Beneficiaries, Challenge, PainPoints, RecommendedDatabases, RelatedSolutions, SolutionCta, SolutionFaq, SolutionHero, SolutionSteps,
-} from "@/components/solutions/sections";
+  ChallengesPanel, CtaPanel, FaqPanel, FieldsPanel, ListsPanel, OthersPanel, PreviewPanel, ResourcesPanel, StepsPanel, UsePanel, WhyPanel,
+} from "@/components/solutions/blocks";
 import { getSolution, solutions } from "@/lib/solutions";
 
 // One reusable template for every solution. All copy lives in lib/solutions.ts.
@@ -32,16 +33,19 @@ export default async function SolutionPage(props: PageProps<"/solutions/[slug]">
   return (
     <>
       <SolutionHero s={s} />
-      <Challenge s={s} />
-      <PainPoints s={s} />
-      <RecommendedDatabases s={s} heading={`Recommended databases for ${s.name}`} />
-      <Applications s={s} />
-      <Beneficiaries s={s} />
-      <AvailableData s={s} />
-      <SolutionSteps s={s} />
-      <RelatedSolutions s={s} />
-      <SolutionFaq name={s.name} items={s.faqs} />
-      <SolutionCta heading={s.finalHeading} text={s.finalText} />
+      <div className="space-y-6 bg-sand-100 py-6 sm:py-8">
+        <PreviewPanel s={s} />
+        <FieldsPanel s={s} />
+        <WhyPanel s={s} />
+        <StepsPanel s={s} />
+        <ListsPanel s={s} />
+        <UsePanel s={s} />
+        <ChallengesPanel s={s} />
+        <OthersPanel s={s} />
+        <ResourcesPanel />
+        <FaqPanel name={s.name} items={s.faqs} />
+        <CtaPanel heading={s.finalHeading} text={s.finalText} />
+      </div>
     </>
   );
 }

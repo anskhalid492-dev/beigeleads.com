@@ -454,3 +454,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - `/verification` is a full methodology page (hero with animated source network, philosophy, sources, 8-stage timeline, quality checks, email verification flow, freshness, fields, compliance links, guarantees, database cards, exactly 10 FAQs, CTA). Components in `components/verification/*`; content only from the owner's sourcing statement, site policies and the 5%/95% refund promise. The "200+ sources" figure is intentionally NOT repeated here (only on /data-sources).
 - Motion is CSS only: scroll-driven `.reveal` / `.parallax-*` (progressive, visible without `animation-timeline` support) and looping visuals; all disabled under reduced motion. Full-page screenshots show reveal sections blank because nothing has scrolled; check by scrolling.
 - Footer CTA band is also hidden on /verification (`footer-cta.tsx`).
+
+## 27. Solutions pages follow the Openmart-style section structure (Nov 2026)
+
+- `app/solutions/[slug]/page.tsx` = `SolutionHero` + sand page with white `rounded-[2rem]` panels from `components/solutions/blocks.tsx`: preview table (primary product's masked sample, filtered to its fields), fields grid (+ "Need other fields?"), why-cards (`helps`), 4 connected steps, databases + city chips, applications, `PainTabs` (client, all panels in DOM), other solutions, resources, 7 FAQs, CTA panel. Headings are centered with a purple accent phrase.
+- Labels come from `lib/solution-focus.ts` (`audience`, `focus`). Everything shown comes from the catalog and solution copy; placeholder sample rows say so on the page. `/solutions` landing still uses the older sections.
