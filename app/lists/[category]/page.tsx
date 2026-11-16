@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DbBadge, Flag } from "@/components/shared/db-icon";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SampleTable } from "@/components/shared/sample-table";
 import { Faq } from "@/components/shared/faq";
-import { getCategories, getCategory, getCountries, getProducts } from "@/lib/catalog";
+import { getCategories, getCategory, getCountries, getCountry, getProducts } from "@/lib/catalog";
 import { sampleSheets } from "@/lib/sample-data";
 
 export const dynamicParams = false;
@@ -68,7 +69,10 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
                 href={`/product/${p.slug}`}
                 className="group flex h-full flex-col justify-between rounded-2xl border border-sand-300 bg-sand-100 p-6 transition-colors hover:border-forest-900 hover:bg-forest-900"
               >
-                <span className="display text-3xl text-forest-900 group-hover:text-sand-50">{p.title}</span>
+                <span className="flex items-center gap-4">
+                  <DbBadge category={p.categorySlug} country={getCountry(p.countrySlug)?.code} />
+                  <span className="display text-3xl text-forest-900 group-hover:text-sand-50">{p.title}</span>
+                </span>
                 <span className="mt-6 text-sm text-forest-700 group-hover:text-sand-200">
                   {p.status === "draft" ? "Placeholder list. Not for sale yet." : "Open list page"}
                 </span>
@@ -83,9 +87,9 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
             <li key={k.slug}>
               <Link
                 href={`/lists/${c.slug}/${k.slug}`}
-                className="rounded-full border border-forest-900 px-4 py-1.5 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50"
+                className="inline-flex items-center gap-2 rounded-full border border-forest-900 px-4 py-1.5 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50"
               >
-                {k.name}
+                <Flag code={k.code} /> {k.name}
               </Link>
             </li>
           ))}

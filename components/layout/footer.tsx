@@ -54,36 +54,20 @@ const columns: Column[] = [
   },
   {
     title: "Legal",
-    groups: [
-      {
-        heading: "Trust & Data Practices",
-        links: [
-          ["Data Sources", "/data-sources"],
-          ["Data Verification", "/verification"],
-          ["Lawful Use", "/legal/lawful-use"],
-          ["Cryptocurrency Payments", "/legal/crypto-payments"],
-        ],
-      },
-      {
-        heading: "Compliance",
-        links: [
-          ["GDPR", "/legal/gdpr"],
-          ["CCPA", "/legal/ccpa"],
-          ["CAN-SPAM", "/legal/can-spam"],
-          ["CASL", "/legal/casl"],
-        ],
-      },
-      {
-        heading: "Legal Policies",
-        links: [
-          ["Privacy Policy", "/legal/privacy"],
-          ["Terms & Conditions", "/legal/terms"],
-          ["Refund & Replacement Policy", "/legal/refund-replacement"],
-          ["Delivery Policy", "/legal/delivery"],
-          ["Cookie Policy", "/legal/cookies"],
-          ["Data Processing Policy", "/legal/dpa"],
-        ],
-      },
+    links: [
+      ["Data Sources", "/data-sources"],
+      ["Data Verification", "/verification"],
+      ["Lawful Use", "/legal/lawful-use"],
+      ["GDPR", "/legal/gdpr"],
+      ["CCPA", "/legal/ccpa"],
+      ["CAN-SPAM", "/legal/can-spam"],
+      ["CASL", "/legal/casl"],
+      ["Privacy Policy", "/legal/privacy"],
+      ["Terms & Conditions", "/legal/terms"],
+      ["Refund & Replacement Policy", "/legal/refund-replacement"],
+      ["Delivery Policy", "/legal/delivery"],
+      ["Cookie Policy", "/legal/cookies"],
+      ["Data Processing Policy", "/legal/dpa"],
     ],
   },
 ];

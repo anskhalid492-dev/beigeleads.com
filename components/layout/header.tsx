@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { IndustryIcon } from "@/components/shared/db-icon";
 import { mainNav, megaMenu } from "./nav-data";
 
 export function Header() {
@@ -48,7 +49,7 @@ export function Header() {
               Lists <ChevronDown className="size-4" aria-hidden />
             </button>
             {open && (
-              <div className="absolute left-0 top-12 w-[28rem] rounded-2xl border border-sand-200 bg-white p-5 shadow-lg">
+              <div className="absolute left-0 top-12 w-[34rem] rounded-2xl border border-sand-200 bg-white p-5 shadow-lg">
                 <div className="grid grid-cols-3 gap-4">
                   {megaMenu.map((group) => (
                     <div key={group.heading}>
@@ -61,8 +62,11 @@ export function Header() {
                             <Link
                               href={item.href}
                               onClick={() => setOpen(false)}
-                              className="text-sm text-forest-900 hover:underline"
+                              className="flex items-center gap-2 text-sm text-forest-900 hover:underline"
                             >
+                              <span className="grid size-6 place-items-center rounded-md bg-forest-900 text-forest-300">
+                                <IndustryIcon slug={item.href.split("/").pop() ?? ""} className="size-3.5" />
+                              </span>
                               {item.label}
                             </Link>
                           </li>

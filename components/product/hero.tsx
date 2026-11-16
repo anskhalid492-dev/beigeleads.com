@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarClock, FileSpreadsheet, Globe2, Layers, Mail, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DbBadge, Flag } from "@/components/shared/db-icon";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import type { Category, Country, Product } from "@/lib/catalog";
 import type { ProductSampleRow } from "@/lib/sample-data";
@@ -78,6 +79,12 @@ export function ProductHero({
       />
       <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-10 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16 lg:px-8 lg:pb-28 lg:pt-14">
         <div>
+          <div className="mb-6 flex items-center gap-4">
+            <DbBadge category={category.slug} country={country.code} size="lg" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-sand-300 bg-sand-50 px-4 py-1.5 text-sm font-semibold text-forest-900">
+              <Flag code={country.code} /> {country.name}
+            </span>
+          </div>
           <h1 className="display text-6xl text-forest-900 sm:text-7xl xl:text-[5.75rem]">{product.name}</h1>
           <p className="mt-6 max-w-xl text-xl leading-relaxed">{product.description}</p>
 

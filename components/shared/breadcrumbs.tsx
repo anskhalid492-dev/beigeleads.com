@@ -4,11 +4,11 @@ import { JsonLd } from "./json-ld";
 
 export type Crumb = { name: string; href: string };
 
-export function Breadcrumbs({ items, wide = false }: { items: Crumb[]; wide?: boolean }) {
+export function Breadcrumbs({ items, wide = false }: { items: Crumb[]; wide?: boolean | "xl" }) {
   const all: Crumb[] = [{ name: "Home", href: "/" }, ...items];
   return (
     <>
-      <nav aria-label="Breadcrumb" className={`mx-auto px-4 pt-6 text-sm ${wide ? "max-w-7xl sm:px-6 lg:px-8" : "max-w-6xl"}`}>
+      <nav aria-label="Breadcrumb" className={`mx-auto px-4 pt-6 text-sm ${wide === "xl" ? "max-w-[1400px] sm:px-8 lg:px-12" : wide ? "max-w-7xl sm:px-6 lg:px-8" : "max-w-6xl"}`}>
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {all.map((c, i) => (
             <li key={c.href} className="flex items-center gap-2">

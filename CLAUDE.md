@@ -436,3 +436,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Solution copy only claims what exists: 3 real products (dentists/restaurants/ski shops, US) and the 7 real fields. Real estate, creators and recruitment pages say plainly that no such lists exist yet.
 - Footer = exactly six columns: Company, Lists, Solutions, Compare, Resources, Legal (Trust merged into Legal with three groups). Header nav has a Solutions link.
 - Pages inherit the site-wide noindex until launch (see TODO-BEFORE-LAUNCH.md).
+
+## 24. Solutions redesign, FAQs, database icons (Nov 2026)
+
+- Solutions pages use a 1400px container (`wrap` in `components/solutions/sections.tsx`). Exactly 7 FAQs per solution live in `lib/solution-faqs.ts` (84 total, none repeated); `lib/solutions.ts` merges them in.
+- Database visual identity: `components/shared/db-icon.tsx` (`DbBadge`, `Flag`, `IndustryIcon`). Flags are inline SVG (US, GB, DE, FR, CA, AU, CH); industry icons are chosen by category slug (tooth is custom-drawn). Add a category/country by adding one map entry. Brand logos (Instagram, YouTube, ...) are NOT bundled yet because no creator/platform lists exist.
+- Footer Legal column is one flat list of 13 links; the Cryptocurrency Payments link was removed from the footer (page `/legal/crypto-payments` still exists).

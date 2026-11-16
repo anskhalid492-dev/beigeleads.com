@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatUsd, getCategory, startingPriceCents, type Product } from "@/lib/catalog";
+import { DbBadge } from "@/components/shared/db-icon";
+import { formatUsd, getCategory, getCountry, startingPriceCents, type Product } from "@/lib/catalog";
 import { fmtNum } from "./meta";
 
 export function RelatedProducts({ items }: { items: readonly Product[] }) {
@@ -16,7 +17,10 @@ export function RelatedProducts({ items }: { items: readonly Product[] }) {
             const cat = getCategory(r.categorySlug);
             return (
               <li key={r.slug} className="flex flex-col rounded-3xl border border-sand-300 bg-sand-50 p-7 transition-shadow hover:shadow-[0_20px_45px_-25px_rgba(15,42,29,0.5)]">
-                <p className="text-sm text-forest-500">{cat?.name}</p>
+                <div className="flex items-center gap-3">
+                  <DbBadge category={r.categorySlug} country={getCountry(r.countrySlug)?.code} />
+                  <p className="text-sm text-forest-500">{cat?.name}</p>
+                </div>
                 <h3 className="display mt-2 text-4xl text-forest-900">{r.name}</h3>
                 <p className="mt-3 flex-1">{r.description}</p>
                 <dl className="mt-6 flex gap-8 border-t border-sand-300 pt-5 text-sm">

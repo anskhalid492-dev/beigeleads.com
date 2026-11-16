@@ -1,6 +1,7 @@
 // Solutions content. Written to be honest: no statistics, no guaranteed results, and only the
 // fields that exist in the catalog (FIELDS). Products are real catalog slugs. NEEDS LEGAL REVIEW
 // for the compliance wording (see TODO-BEFORE-LAUNCH.md).
+import { solutionFaqs } from "./solution-faqs";
 import { FIELDS } from "./catalog";
 
 export type Field = (typeof FIELDS)[number];
@@ -33,7 +34,7 @@ export type Solution = {
   finalText: string;
 };
 
-export const solutions: readonly Solution[] = [
+const base: readonly Omit<Solution, "faqs">[] = [
   {
     slug: "b2b-lead-generation",
     name: "B2B Lead Generation",
@@ -87,12 +88,6 @@ export const solutions: readonly Solution[] = [
       { t: "Download and use", d: "A secure link arrives by email. Load the CSV into your tools." },
     ],
     related: ["cold-email-marketing", "sales-prospecting", "business-expansion"],
-    faqs: [
-      ["Is a bought list better than building my own?", "It saves the research time, and you can check a sample before paying. If your target market is very narrow, ask for a custom list instead of forcing a broad one."],
-      ["Do I need a subscription to keep the data?", "No. You pay once and keep the file. Data does age, so check the last-verified date on each list."],
-      ["How many leads will I get from a list?", "A list is a set of businesses to contact, not a promise of replies or sales. Results depend on your offer, your message and how you follow up."],
-      ["Can I use the list in my CRM?", "Yes. It is a CSV, which most CRMs import. Your use must follow the lawful use policy and the laws that apply to you."],
-    ],
     finalHeading: "Start with a list you can see before you pay",
     finalText: "Pick an industry, inspect the masked sample and download a list built for B2B outreach.",
   },
@@ -148,12 +143,6 @@ export const solutions: readonly Solution[] = [
       { t: "Send, then clean", d: "Remove bounces and opt-outs from your own list after every send." },
     ],
     related: ["b2b-lead-generation", "marketing-agencies", "sales-prospecting"],
-    faqs: [
-      ["Will every email in the list reach an inbox?", "No. We check addresses, but no check is perfect and delivery also depends on your domain and content. Start small and watch your bounce rate."],
-      ["Is cold email legal?", "It depends on the country of the sender and of the recipient. Read our lawful use policy and the pages on CAN-SPAM, GDPR and CASL. We are not a law firm and this is not legal advice."],
-      ["How do you handle opt-outs?", "Anyone can use the opt-out page. Opted-out addresses are removed from the files we deliver afterwards. You must also honour unsubscribes in your own campaigns."],
-      ["What if some emails bounce?", "A few bounces are normal. The refund and replacement policy explains how to claim replacements."],
-    ],
     finalHeading: "Send your next campaign to a list you trust",
     finalText: "Request a free masked sample and see exactly what a BeigeLeads email list looks like before you send a single message.",
   },
@@ -210,12 +199,6 @@ export const solutions: readonly Solution[] = [
       { t: "Work and track", d: "Log calls and outcomes against each account." },
     ],
     related: ["b2b-lead-generation", "cold-email-marketing", "local-business-marketing"],
-    faqs: [
-      ["Do the lists include decision-maker names?", "The fields in each list are shown on its product page. Today those are business name, address, city, country, phone, email and website."],
-      ["Can I give the list to several reps?", "Within your own team, usually yes. The exact licence terms are in the terms of service, which are still being finalised."],
-      ["How current are phone numbers?", "All data is re-verified every 60 days, and each list shows its last-verified date. Businesses can change numbers between checks."],
-      ["Can I ask for a specific region?", "Yes. Use the custom list page to describe the region and size you need."],
-    ],
     finalHeading: "Give your reps something to dial today",
     finalText: "Request a free sample and let your team judge the accounts before you buy.",
   },
@@ -271,12 +254,6 @@ export const solutions: readonly Solution[] = [
       { t: "Pitch and record", d: "Track replies and learn which messages land." },
     ],
     related: ["cold-email-marketing", "local-business-marketing", "healthcare-marketing"],
-    faqs: [
-      ["Can I resell the list to my clients?", "The licence limits are being finalised in the terms of service. Until then, assume the file is for your own outreach and ask us if you need something different."],
-      ["Which niches are available?", "The lists on the Lists page. If your niche is not there, request a category."],
-      ["How many businesses should I buy?", "Start with the smallest package, test your message, then buy more if the niche responds."],
-      ["Do you provide the pitch?", "No. We provide the data. The pitch is your craft."],
-    ],
     finalHeading: "Find your agency's next ten clients",
     finalText: "Request a sample list for your niche and look at the businesses before you buy.",
   },
@@ -332,12 +309,6 @@ export const solutions: readonly Solution[] = [
       { t: "Record the snapshot date", d: "Note the last-verified date next to your findings." },
     ],
     related: ["business-expansion", "ecommerce-market-research", "b2b-lead-generation"],
-    faqs: [
-      ["Is this a complete census of an industry?", "No. A list is a verified collection, not a promise that every business in a place is included. Coverage figures are shown on each list page as they are measured."],
-      ["Can I publish findings based on the data?", "Your use must follow the terms and the lawful use policy. Aggregate findings, such as counts by city, are very different from republishing the contacts themselves."],
-      ["Does it include revenue or employee counts?", "No. The fields in a list are shown on its product page, and size or revenue are not among them today."],
-      ["How do I cite the data?", "Note the list name and its last-verified date from the product page."],
-    ],
     finalHeading: "See the market before you size it",
     finalText: "Request a sample and check whether the coverage matches your research question.",
   },
@@ -394,12 +365,6 @@ export const solutions: readonly Solution[] = [
       { t: "Reach out in person and online", d: "Mix visits, calls and email." },
     ],
     related: ["sales-prospecting", "marketing-agencies", "business-expansion"],
-    faqs: [
-      ["Is there a list for my city?", "City pages are added as lists are verified. If yours is missing, request a custom list for it."],
-      ["Does it include opening hours?", "No. The fields in a list are shown on its product page, and opening hours are not among them today."],
-      ["Can I use it for printed mailers?", "The list includes a business address, but check the lawful use policy and the rules in your country for postal marketing."],
-      ["How big a list should I buy?", "For one city, start with the smallest package."],
-    ],
     finalHeading: "Start with the businesses in your own city",
     finalText: "Request a sample and see who is nearby before you buy.",
   },
@@ -456,12 +421,6 @@ export const solutions: readonly Solution[] = [
       { t: "Reach out responsibly", d: "Follow the lawful use policy and honour opt-outs." },
     ],
     related: ["b2b-lead-generation", "recruitment-staffing", "marketing-agencies"],
-    faqs: [
-      ["Does the list contain patient information?", "No. It contains business contact details for practices. Do not combine it with patient data, and ask a lawyer about any use that involves health information."],
-      ["Which healthcare lists exist today?", "Dentists in the United States. Other categories can be requested on the request a category page."],
-      ["Can I email dental practices?", "Within the law that applies to you and to the recipient. Read our CAN-SPAM, GDPR and CASL pages. This is not legal advice."],
-      ["Are decision-maker names included?", "The fields are listed on each product page. Today they are business name, address, city, country, phone, email and website."],
-    ],
     finalHeading: "Reach the practices you serve",
     finalText: "Request the dentist list sample and see the business details before you buy.",
   },
@@ -518,12 +477,6 @@ export const solutions: readonly Solution[] = [
       { t: "Approach and record", d: "Mix visits, calls and email, and note interest." },
     ],
     related: ["local-business-marketing", "business-expansion", "sales-prospecting"],
-    faqs: [
-      ["Do you sell lists of real estate agents?", "Not yet. You can request that category and we will say whether it is on the way."],
-      ["Does the data show who owns a building?", "No. Lists show operating businesses and their contact details, not property ownership."],
-      ["Do the records include lease dates?", "No. The fields are business name, address, city, country, phone, email and website."],
-      ["Can I buy one district only?", "Ask for a custom list and describe the area."],
-    ],
     finalHeading: "Turn a district into a call sheet",
     finalText: "Request a sample and look at the businesses in the area you cover.",
   },
@@ -579,12 +532,6 @@ export const solutions: readonly Solution[] = [
       { t: "Call and follow up", d: "Introduce yourself and offer one concrete service." },
     ],
     related: ["healthcare-marketing", "sales-prospecting", "b2b-lead-generation"],
-    faqs: [
-      ["Do you sell candidate lists?", "No. Our lists contain businesses only. We do not sell job seeker or candidate data."],
-      ["Can I see which businesses are hiring?", "The lists do not include job postings. The website field lets you check a business's careers page yourself."],
-      ["Can I contact HR managers by name?", "The fields available are shown on each product page. Today they are business name, address, city, country, phone, email and website."],
-      ["Which industries can I buy?", "The lists on the Lists page. You can request other categories."],
-    ],
     finalHeading: "Find your next client employers",
     finalText: "Request a free sample and look at the businesses before you spend anything.",
   },
@@ -640,12 +587,6 @@ export const solutions: readonly Solution[] = [
       { t: "Research, then approach", d: "Study the sites, then contact the most promising shops." },
     ],
     related: ["market-research", "business-expansion", "b2b-lead-generation"],
-    faqs: [
-      ["Does the data include online store traffic or revenue?", "No. The fields are business name, address, city, country, phone, email and website."],
-      ["Are the businesses online sellers?", "They are businesses with listed contact details, many of which have websites. A list does not say whether a business sells online."],
-      ["Can I use it for wholesale outreach?", "Yes, within the lawful use policy and the laws that apply to you."],
-      ["Is my niche available?", "Check the Lists page, or request a category."],
-    ],
     finalHeading: "Map your niche before you commit to it",
     finalText: "Request a sample and see which retailers you could study and approach.",
   },
@@ -701,12 +642,6 @@ export const solutions: readonly Solution[] = [
       { t: "Pitch a specific idea", d: "Send a short, concrete proposal and follow up." },
     ],
     related: ["marketing-agencies", "local-business-marketing", "cold-email-marketing"],
-    faqs: [
-      ["Do you sell lists of influencers?", "Not yet. A creators vertical is planned. You can follow its progress on the creators page."],
-      ["Who are the contacts in the lists?", "Businesses, such as restaurants, practices and shops. These are the brands creators pitch."],
-      ["Can I contact businesses for sponsorships?", "Yes, within the lawful use policy and the law that applies to you."],
-      ["What should a pitch include?", "A specific idea, what you offer, and what you ask for. Short and personal tends to work better than long and generic."],
-    ],
     finalHeading: "Pitch the businesses that need your audience",
     finalText: "Request a free sample and look at the local businesses you could approach.",
   },
@@ -763,15 +698,11 @@ export const solutions: readonly Solution[] = [
       { t: "Start local conversations", d: "Reach partners and early customers in the best-fit city first." },
     ],
     related: ["market-research", "ecommerce-market-research", "real-estate-prospecting"],
-    faqs: [
-      ["Which countries are available?", "Lists are added country by country. The Lists page shows what is available today, and you can request a country."],
-      ["Can I buy data for several cities at once?", "Yes, as a custom list. Describe the cities and size you need."],
-      ["Do lists show market size or revenue?", "No. They show businesses and their contact details."],
-      ["Are there restrictions on contacting businesses abroad?", "Yes, rules differ by country. See the GDPR, CAN-SPAM and CASL pages and ask a local lawyer before you send."],
-    ],
     finalHeading: "Meet the market before you enter it",
     finalText: "Request a sample and see which local businesses you could work with.",
   },
 ];
+
+export const solutions: readonly Solution[] = base.map((s) => ({ ...s, faqs: solutionFaqs[s.slug] ?? [] }));
 
 export const getSolution = (slug: string) => solutions.find((s) => s.slug === slug);

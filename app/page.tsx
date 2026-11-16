@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DbBadge } from "@/components/shared/db-icon";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SampleLedger } from "@/components/home/sample-ledger";
@@ -50,7 +51,7 @@ export default function Home() {
     <>
       {/* Hero: the list itself is the first thing you see. */}
       <section className="ruled border-b border-sand-200">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.05fr_1fr]">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
           <div>
             <h1 className="display text-6xl text-forest-900 sm:text-7xl lg:text-[5.5rem]">
               Pay once.
@@ -110,8 +111,9 @@ export default function Home() {
                 href={`/lists/${l.slug}`}
                 className="group flex h-full min-h-44 flex-col justify-between rounded-2xl border border-sand-300 bg-sand-100 p-6 transition-colors hover:border-forest-900 hover:bg-forest-900"
               >
-                <span className="display text-4xl text-forest-900 group-hover:text-sand-50">
-                  {l.name}
+                <span className="flex items-center gap-4">
+                  <DbBadge category={l.slug} country="US" size="lg" />
+                  <span className="display text-4xl text-forest-900 group-hover:text-sand-50">{l.name}</span>
                 </span>
                 <span className="flex items-center justify-between text-sm text-forest-700 group-hover:text-sand-200">
                   {l.note}

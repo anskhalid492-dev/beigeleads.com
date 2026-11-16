@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Faq } from "@/components/shared/faq";
 import {
-  Applications, AvailableData, Beneficiaries, Challenge, HowHelps, RecommendedDatabases, RelatedSolutions, SolutionCta, SolutionHero, SolutionSteps,
+  Applications, AvailableData, Beneficiaries, Challenge, HowHelps, RecommendedDatabases, RelatedSolutions, SolutionCta, SolutionFaq, SolutionHero, SolutionSteps,
 } from "@/components/solutions/sections";
 import { getSolution, solutions } from "@/lib/solutions";
 
@@ -41,7 +40,7 @@ export default async function SolutionPage(props: PageProps<"/solutions/[slug]">
       <AvailableData s={s} />
       <SolutionSteps s={s} />
       <RelatedSolutions s={s} />
-      <Faq split heading={`FAQs About ${s.name}`} items={s.faqs} />
+      <SolutionFaq name={s.name} items={s.faqs} />
       <SolutionCta heading={s.finalHeading} text={s.finalText} />
     </>
   );

@@ -3,9 +3,8 @@ import Link from "next/link";
 import { ArrowRight, CalendarCheck2, EyeOff, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { Faq } from "@/components/shared/faq";
 import { SolutionIcon } from "@/components/solutions/icons";
-import { SolutionCta, RecommendedDatabases } from "@/components/solutions/sections";
+import { SolutionCta, RecommendedDatabases, SolutionFaq, wrap } from "@/components/solutions/sections";
 import { solutions } from "@/lib/solutions";
 
 export const metadata: Metadata = {
@@ -37,10 +36,10 @@ export default function SolutionsPage() {
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(55% 60% at 85% 0%, rgba(143,208,169,0.22), transparent 70%)" }} />
         <div className="relative">
           <div className="[&_a]:text-sand-200 [&_li>span]:text-forest-300 [&_span[aria-current]]:text-sand-50">
-            <Breadcrumbs wide items={[{ name: "Solutions", href: "/solutions" }]} />
+            <Breadcrumbs wide="xl" items={[{ name: "Solutions", href: "/solutions" }]} />
           </div>
-          <div className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8 lg:pb-28 lg:pt-16">
-            <h1 className="display max-w-5xl text-6xl text-sand-50 sm:text-7xl xl:text-8xl">Start with the goal. We will point you to the list.</h1>
+          <div className={`${wrap} pb-24 pt-12 lg:pb-32 lg:pt-20`}>
+            <h1 className="display max-w-6xl text-6xl text-sand-50 sm:text-7xl xl:text-[7.5rem] xl:leading-[0.92]">Start with the goal. We will point you to the list.</h1>
             <p className="mt-6 max-w-2xl text-xl leading-relaxed">
               Twelve ways businesses use BeigeLeads databases, from filling a sales pipeline to entering a new market. Pick the one that sounds like your job and see which lists fit.
             </p>
@@ -56,12 +55,12 @@ export default function SolutionsPage() {
         </div>
       </section>
 
-      <section id="all-solutions" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <section id="all-solutions" className={`${wrap} scroll-mt-20 py-24 lg:py-32`}>
         <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">All solutions</h2>
-        <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {solutions.map((s) => (
             <li key={s.slug}>
-              <Link href={`/solutions/${s.slug}`} className="group flex h-full flex-col rounded-3xl border border-sand-300 bg-sand-50 p-7 transition-all hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_24px_50px_-28px_rgba(15,42,29,0.6)]">
+              <Link href={`/solutions/${s.slug}`} className="group flex h-full flex-col rounded-[1.75rem] border border-sand-300 bg-sand-50 p-8 transition-all hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_24px_50px_-28px_rgba(15,42,29,0.6)]">
                 <span className="grid size-12 place-items-center rounded-2xl bg-forest-900">
                   <SolutionIcon name={s.icon} className="size-6 text-forest-300" />
                 </span>
@@ -77,7 +76,7 @@ export default function SolutionsPage() {
       </section>
 
       <section className="border-y border-sand-200 bg-sand-100">
-        <ul className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+        <ul className={`${wrap} grid gap-8 py-14 sm:grid-cols-2 lg:grid-cols-4`}>
           {trust.map((t) => (
             <li key={t.t} className="flex gap-4">
               <t.icon className="mt-1 size-6 shrink-0 text-forest-500" aria-hidden />
@@ -94,7 +93,7 @@ export default function SolutionsPage() {
         s={{ ...solutions[0], productNote: "These lists are available now and work for most of the solutions above." }}
       />
 
-      <Faq split heading="FAQs About BeigeLeads Solutions" items={faq} />
+      <SolutionFaq name="BeigeLeads Solutions" items={faq} />
       <SolutionCta heading="Not sure which solution fits?" text="Request a free sample and tell us what you are trying to achieve. We will point you to the right list." />
     </>
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { DbBadge } from "@/components/shared/db-icon";
 import type { Category } from "@/lib/catalog";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -70,7 +71,10 @@ export function CategoryIndex({ categories }: { categories: readonly Category[] 
                     href={`/lists/${c.slug}`}
                     className="group flex h-full flex-col justify-between rounded-2xl border border-sand-300 bg-sand-100 p-5 transition-colors hover:border-forest-900 hover:bg-forest-900"
                   >
-                    <span className="display text-3xl text-forest-900 group-hover:text-sand-50">{c.name}</span>
+                    <span className="flex items-center gap-4">
+                      <DbBadge category={c.slug} country="US" tone="light" />
+                      <span className="display text-3xl text-forest-900 group-hover:text-sand-50">{c.name}</span>
+                    </span>
                     <span className="mt-6 text-sm text-forest-700 group-hover:text-sand-200">{c.blurb}</span>
                   </Link>
                 </li>
