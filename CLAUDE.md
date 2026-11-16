@@ -77,6 +77,7 @@ Reasons: illegal in many jurisdictions (FTC, UK CMA, EU consumer law), and crypt
 - Use plain static images or Cloudflare Images. Do not rely on the default Next image optimizer.
 - Before using any Next.js or OpenNext feature, check the current OpenNext Cloudflare docs for support. If a feature is unsupported, tell me instead of working around it silently.
 - Fallback if OpenNext becomes a blocker: migrate to Astro (ask first).
+- **Decisions made in Phase 1:** Next.js 16 `cacheComponents` and `partialPrefetching` are OFF (OpenNext support unverified). Fonts are self-hosted via `@fontsource-variable` (Inter + Fraunces) instead of `next/font/google`, so builds need no Google access and no visitor data goes to Google. `images.unoptimized` is true. `cloudflare-env.d.ts` is committed (regenerate with `npm run cf-typegen`). Placeholder seed data lives in `drizzle/seed.sql`; see `TODO-BEFORE-LAUNCH.md`.
 
 ---
 

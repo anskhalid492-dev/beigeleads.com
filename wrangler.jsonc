@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "beigeleads",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true },
+
+  // IMPORTANT: replace the placeholder IDs below with the real ones from the
+  // Cloudflare dashboard (D1 database_id, KV namespace id). Names match the dashboard.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "beigeleads-db",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "LISTS", "bucket_name": "beigeleads-lists" }
+  ],
+  "kv_namespaces": [
+    { "binding": "CACHE", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ],
+  "queues": {
+    "producers": [{ "binding": "EMAIL_QUEUE", "queue": "beigeleads-emails" }]
+  }
+  // Secrets (never commit): RESEND_API_KEY, TURNSTILE_SECRET_KEY, TRONGRID_API_KEY
+  // Added later with: npx wrangler secret put <NAME>
+}
