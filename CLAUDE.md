@@ -439,7 +439,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 ## 24. Solutions redesign, FAQs, database icons (Nov 2026)
 
-- Solutions pages use a 1400px container (`wrap` in `components/solutions/sections.tsx`). Exactly 7 FAQs per solution live in `lib/solution-faqs.ts` (84 total, none repeated); `lib/solutions.ts` merges them in.
+- Solutions pages (recreated Nov 2026): centered animated hero (`HeroShell` in `components/solutions/sections.tsx`: rising words, pipeline nodes light in turn, travelling dot, floating chips; all CSS, disabled under reduced motion), 1200px container, compact sections. Exactly 7 FAQs per solution live in `lib/solution-faqs.ts`.
 - Database visual identity: `components/shared/db-icon.tsx` (`DbBadge`, `Flag`, `IndustryIcon`). Flags are inline SVG (US, GB, DE, FR, CA, AU, CH); industry icons are chosen by category slug (tooth is custom-drawn). Add a category/country by adding one map entry. Brand logos (Instagram, YouTube, ...) are NOT bundled yet because no creator/platform lists exist.
 - Footer Legal column is one flat list of 13 links; the Cryptocurrency Payments link was removed from the footer (page `/legal/crypto-payments` still exists).
 

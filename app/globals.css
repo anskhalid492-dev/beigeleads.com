@@ -164,3 +164,106 @@ summary::-webkit-details-marker {
     animation: none;
   }
 }
+
+/* Solutions hero motion. One orchestrated sequence: words rise, the pipeline lights node by node,
+   a dot travels the line, chips float. Everything stops under prefers-reduced-motion. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes grid-drift {
+  to {
+    background-position: 56px 56px;
+  }
+}
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+@keyframes travel {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes node-on {
+  0%,
+  28%,
+  100% {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: var(--color-forest-100);
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(143, 208, 169, 0);
+  }
+  4%,
+  22% {
+    background-color: var(--color-forest-300);
+    color: var(--color-forest-900);
+    transform: scale(1.14);
+    box-shadow: 0 0 0 10px rgba(143, 208, 169, 0.18);
+  }
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.rise {
+  animation: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.grid-drift {
+  animation: grid-drift 14s linear infinite;
+}
+.glow-breathe {
+  animation: glow-breathe 6s ease-in-out infinite;
+}
+.travel-dot {
+  animation: travel 6.4s linear infinite;
+}
+.node-on {
+  animation: node-on 6.4s ease-in-out infinite;
+}
+.floaty {
+  animation: floaty 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .grid-drift,
+  .glow-breathe,
+  .travel-dot,
+  .node-on,
+  .floaty {
+    animation: none;
+  }
+  .travel-dot {
+    display: none;
+  }
+}

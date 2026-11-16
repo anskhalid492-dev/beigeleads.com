@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CalendarCheck2, EyeOff, ShieldCheck, Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { Layers } from "lucide-react";
 import { SolutionIcon } from "@/components/solutions/icons";
-import { SolutionCta, RecommendedDatabases, SolutionFaq, wrap } from "@/components/solutions/sections";
+import { HeroShell, SolutionCta, RecommendedDatabases, SolutionFaq, wrap } from "@/components/solutions/sections";
 import { solutions } from "@/lib/solutions";
 
 export const metadata: Metadata = {
@@ -32,58 +31,52 @@ const trust = [
 export default function SolutionsPage() {
   return (
     <>
-      <section className="relative overflow-hidden bg-forest-900 text-sand-100">
-        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(55% 60% at 85% 0%, rgba(143,208,169,0.22), transparent 70%)" }} />
-        <div className="relative">
-          <div className="[&_a]:text-sand-200 [&_li>span]:text-forest-300 [&_span[aria-current]]:text-sand-50">
-            <Breadcrumbs wide="xl" items={[{ name: "Solutions", href: "/solutions" }]} />
-          </div>
-          <div className={`${wrap} pb-24 pt-12 lg:pb-32 lg:pt-20`}>
-            <h1 className="display max-w-6xl text-6xl text-sand-50 sm:text-7xl xl:text-[7.5rem] xl:leading-[0.92]">Start with the goal. We will point you to the list.</h1>
-            <p className="mt-6 max-w-2xl text-xl leading-relaxed">
-              Twelve ways businesses use BeigeLeads databases, from filling a sales pipeline to entering a new market. Pick the one that sounds like your job and see which lists fit.
-            </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <a href="#all-solutions">Find your solution</a>
-              </Button>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/sample">Get a free sample</Link>
-              </Button>
-            </div>
-          </div>
+      <HeroShell
+        crumbs={[{ name: "Solutions", href: "/solutions" }]}
+        h1="Start with the goal. We will point you to the list."
+        lede="Twelve ways businesses use BeigeLeads databases, from filling a sales pipeline to entering a new city. Pick the one that sounds like your job and see which lists fit."
+        primary={{ label: "Find your solution", href: "#all-solutions" }}
+        secondary={{ label: "Get a free sample", href: "/sample" }}
+        flow={["Pick your goal", "See the lists", "Check the sample", "Download the CSV"]}
+        chips={[
+          { label: "Dentists", category: "dentists", country: "US" },
+          { label: "Restaurants", category: "restaurants", country: "US" },
+          { label: "Ski shops", category: "ski-shops", country: "US" },
+          { label: "Pay once" },
+          { label: "Masked sample first" },
+        ]}
+        icon={<Layers className="size-8" aria-hidden />}
+      />
+
+      <section id="all-solutions" className="scroll-mt-20 bg-sand-50 py-20 lg:py-24">
+        <div className={wrap}>
+          <h2 className="display mx-auto max-w-3xl text-center text-4xl text-forest-900 sm:text-5xl">All solutions</h2>
+          <ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {solutions.map((s) => (
+              <li key={s.slug}>
+                <Link href={`/solutions/${s.slug}`} className="group flex h-full flex-col rounded-3xl border border-sand-300 bg-sand-100 p-7 transition-all hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_24px_50px_-28px_rgba(15,42,29,0.6)]">
+                  <span className="grid size-12 place-items-center rounded-2xl bg-forest-900">
+                    <SolutionIcon name={s.icon} className="size-6 text-forest-300" />
+                  </span>
+                  <h3 className="display mt-5 text-3xl text-forest-900">{s.name}</h3>
+                  <p className="mt-2 flex-1">{s.tagline}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 font-semibold text-forest-900">
+                    Explore solution <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section id="all-solutions" className={`${wrap} scroll-mt-20 py-24 lg:py-32`}>
-        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">All solutions</h2>
-        <ul className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {solutions.map((s) => (
-            <li key={s.slug}>
-              <Link href={`/solutions/${s.slug}`} className="group flex h-full flex-col rounded-[1.75rem] border border-sand-300 bg-sand-50 p-8 transition-all hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_24px_50px_-28px_rgba(15,42,29,0.6)]">
-                <span className="grid size-12 place-items-center rounded-2xl bg-forest-900">
-                  <SolutionIcon name={s.icon} className="size-6 text-forest-300" />
-                </span>
-                <h3 className="display mt-5 text-3xl text-forest-900">{s.name}</h3>
-                <p className="mt-2 flex-1">{s.tagline}</p>
-                <span className="mt-5 inline-flex items-center gap-2 font-semibold text-forest-900">
-                  Explore solution <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section className="border-y border-sand-200 bg-sand-100">
-        <ul className={`${wrap} grid gap-8 py-14 sm:grid-cols-2 lg:grid-cols-4`}>
+        <ul className={`${wrap} grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4`}>
           {trust.map((t) => (
-            <li key={t.t} className="flex gap-4">
-              <t.icon className="mt-1 size-6 shrink-0 text-forest-500" aria-hidden />
-              <div>
-                <p className="font-bold text-forest-900">{t.t}</p>
-                <p className="mt-1 text-sm">{t.d}</p>
-              </div>
+            <li key={t.t} className="flex flex-col items-center text-center">
+              <t.icon className="size-7 text-forest-500" aria-hidden />
+              <p className="mt-3 font-bold text-forest-900">{t.t}</p>
+              <p className="mt-1 text-sm">{t.d}</p>
             </li>
           ))}
         </ul>
@@ -91,6 +84,7 @@ export default function SolutionsPage() {
 
       <RecommendedDatabases
         s={{ ...solutions[0], productNote: "These lists are available now and work for most of the solutions above." }}
+        heading="Featured databases"
       />
 
       <SolutionFaq name="BeigeLeads Solutions" items={faq} />
