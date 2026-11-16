@@ -407,3 +407,10 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 19. Deploy config
 
 - `wrangler.jsonc` sets `keep_vars: true` so plain-text vars (`NOTIFY_EMAIL`, `EMAIL_FROM`) set in the Cloudflare dashboard are not wiped by each Workers Builds deploy (the repo config has no `vars`). Secrets are never wiped.
+
+## 20. Phase 4a decisions (payment core)
+
+- `lib/payments/*`: BigInt atomic-unit math (no floats), quote lock 30 min, rates from >=2 agreeing sources (median, 1.5% max spread, 2% stablecoin depeg block), unique TRC20 amount (0.0001-0.0999 offset), payment classification (1% tolerance), order state machine, confirmations.
+- BTC receiving addresses derive from a native SegWit **zpub** (BIP84; vpub for testnet) only. Private keys (xprv/zprv...) are rejected in code. Legacy `xpub` is rejected so the address type is never ambiguous.
+- TRC20 matching is by exact unique amount, so the 1% underpay tolerance applies to BTC only; a TRC20 amount that matches no open attempt goes to admin review.
+- Tests: `npm test` (Vitest, `tests/`). `tsconfig` target is ES2020 (BigInt).

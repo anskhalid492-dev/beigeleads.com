@@ -14,12 +14,16 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply beigeleads --local",
     "db:migrate:remote": "wrangler d1 migrations apply beigeleads --remote",
-    "db:seed:local": "wrangler d1 execute beigeleads --local --file=drizzle/seed.sql"
+    "db:seed:local": "wrangler d1 execute beigeleads --local --file=drizzle/seed.sql",
+    "test": "vitest run"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@noble/hashes": "2.4.0",
     "@opennextjs/cloudflare": "^1.20.17",
     "@radix-ui/react-slot": "^1.5.0",
+    "@scure/base": "2.4.0",
+    "@scure/bip32": "2.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.4",
@@ -32,7 +36,7 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
-    "@types/node": "^20",
+    "@types/node": "24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.11",
@@ -40,6 +44,7 @@
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
+    "vitest": "5.1.0",
     "wrangler": "^4.163.0"
   }
 }
