@@ -93,7 +93,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="secondary" size="sm" className="hidden sm:inline-flex">
+          <Button asChild variant="secondary" size="sm" className="hidden lg:inline-flex">
             <Link href="/sample">Free sample</Link>
           </Button>
           <Button asChild size="sm">

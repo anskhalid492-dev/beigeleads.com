@@ -421,3 +421,11 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Owner's sourcing statement (Nov 2026): team collects raw data from Google Maps/business listings, company websites, public government registries, directories, licensed providers, public professional profiles/social handles, surveys, own research ("200+ sources"); then appends/enriches, finds missing owners/tech stack/emails (published emails, pattern inference, waterfall enrichment), verifies with in-house SMTP checks, organizes, sells. All data re-verified every 60 days.
 - `/data-sources` (`app/data-sources`, `components/data-sources/*`) states exactly that. Do not add numbers or claims beyond it. Illustrations use a fictional record and say so.
 - `/legal/*` render from `lib/legal/docs.ts`. They are drafts with a visible "under legal review" banner and highlighted `[TO CONFIRM: ...]` markers; noindex until a lawyer signs off. Do not remove markers without a real decision.
+
+## 22. Product page template (redesign, Nov 2026)
+
+- `app/product/[slug]/page.tsx` + `components/product/*` is ONE reusable template; nothing is hardcoded per product. Section order: hero (facts + masked database window), stats, sample table, fields, pricing packages, who uses it, how it works, data quality, FAQs, related, final CTA. This replaces the order listed in section 4.
+- Palette stays on the section 4 tokens (owner chose to keep them, not the #1F3D2B/#E8DCC4/#885CF6 values from the redesign brief).
+- Heading for FAQs is generated: `FAQs About the {product.name}`. FAQ text comes from `getProductFaqs` (templates); table `product_faqs` exists (migration 0001) for the future admin panel.
+- Catalog fields added: product `name`, `description`, `accuracyPct`, `packages`, `placeholderData`; category `singular`, `reachLabel`, `useCases`. Stats and sections render only what exists in the data.
+- PLACEHOLDER values (owner-approved for dev): 100,000 records, accuracy 95%, last verified 2026-09-18, Starter $99. Pro $249 / Complete $399 and the 10k/50k/100k sizes are my extrapolations. The page says "placeholders" while `placeholderData` is true.

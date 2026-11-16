@@ -26,3 +26,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] `/legal/*` (`lib/legal/docs.ts`): resolve every `[TO CONFIRM: ...]` (entity and address, retention, licence limits, replacement window and remedy, refund coin, regions served, data broker registration, DPA, sub-processors), then lawyer review; remove noindex
 - [ ] `/verification` still a stub; write it from the same facts as the data-sources page once the replacement policy is decided
 - [ ] Audit live cookies/local storage (Turnstile) before finalising the cookie policy
+- [ ] **Product pages (lib/catalog.ts)**: replace placeholder record counts (100,000), accuracy (95%), last verified (2026-09-18), package sizes and prices ($99/$249/$399) with real data; set `placeholderData: false`. Do NOT publish an accuracy figure until a measurement method exists
+- [ ] Product-page "Buy" buttons are disabled until Phase 4 checkout; wire them to checkout
+- [ ] Apply `drizzle/0001_*.sql` (product_faqs) to the remote D1 and build the admin editor; page currently uses templated FAQs
+- [ ] Add Product JSON-LD with real offers once a product is live (omitted while draft)

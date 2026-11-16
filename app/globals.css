@@ -55,6 +55,7 @@ body {
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 0.95;
+  text-wrap: balance;
 }
 
 /* Faint ruled-paper texture, like a printed list. */

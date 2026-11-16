@@ -218,3 +218,18 @@ export const categoryRequests = sqliteTable("category_requests", {
   details: text("details"),
   createdAt: createdAt(),
 });
+
+// Product-specific FAQs, editable from the future admin panel. Until then the page falls back to
+// templates in lib/catalog.ts (getProductFaqs).
+export const productFaqs = sqliteTable(
+  "product_faqs",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    productId: integer("product_id").notNull().references(() => products.id),
+    question: text("question").notNull(),
+    answer: text("answer").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  },
+  (t) => [index("product_faqs_product_idx").on(t.productId, t.sortOrder)],
+);
