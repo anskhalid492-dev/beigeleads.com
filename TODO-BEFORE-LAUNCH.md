@@ -10,3 +10,4 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Real data sourcing method and lawful basis (CLAUDE.md section 16)
 - [ ] Real pricing, brand logo, final palette confirmation
 - [ ] Secrets via `wrangler secret put`: RESEND_API_KEY, TURNSTILE_SECRET_KEY, TRONGRID_API_KEY
+- [ ] **Remove noindex**: delete `robots: { index: false, follow: false }` in `app/layout.tsx` and switch `app/robots.ts` to the launch rules (site is live on beigeleads.com with placeholder content)

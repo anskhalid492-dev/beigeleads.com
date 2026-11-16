@@ -6,6 +6,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://beigeleads.com"),
+  // TEMPORARY: keep placeholder content out of search engines until real data ships.
+  // Remove this line (and app/robots.ts disallow) at launch. See TODO-BEFORE-LAUNCH.md.
+  robots: { index: false, follow: false },
   title: { default: "BeigeLeads: pay once, own the list", template: "%s | BeigeLeads" },
   description:
     "Verified business contact lists by category, country and city. One-time purchase, no subscription.",
