@@ -11,7 +11,10 @@ export const dynamic = "force-dynamic";
 
 export default async function WalletsPage() {
   let admin;
-  try { admin = await requireAdmin(); } catch { redirect("/admin/login?reason=session"); }
+  try { admin = await requireAdmin(); } catch (e) {
+    const m = e instanceof Error ? e.message : "";
+    redirect(`/admin/login?reason=${["no-cookie", "bad-session", "email-mismatch"].includes(m) ? m : "forbidden"}`);
+  }
   const [wallets, audit] = await Promise.all([listWallets(), listAudit()]);
   return (
     <>

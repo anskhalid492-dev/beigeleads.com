@@ -18,7 +18,10 @@ export async function requireAccess(): Promise<AdminIdentity> {
 export async function requireAdmin(): Promise<AdminIdentity> {
   const who = await requireAccess();
   const { env } = getCloudflareContext();
-  const email = await readSessionValue(env.ADMIN_SESSION_SECRET, (await cookies()).get(SESSION_COOKIE)?.value);
-  if (!email || email !== who.email) throw new Error("login required");
+  const raw = (await cookies()).get(SESSION_COOKIE)?.value;
+  if (!raw) throw new Error("no-cookie");
+  const email = await readSessionValue(env.ADMIN_SESSION_SECRET, raw);
+  if (!email) throw new Error("bad-session");
+  if (email !== who.email) throw new Error("email-mismatch");
   return who;
 }

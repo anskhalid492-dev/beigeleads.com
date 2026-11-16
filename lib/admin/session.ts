@@ -1,10 +1,11 @@
-import { hmac, safeEqual } from "./crypto";
+import { fromHex, hmac, safeEqual, toHex } from "./crypto";
 
 export const SESSION_COOKIE = "__Host-bl_admin";
 export const SESSION_SECONDS = 15 * 60; // short on purpose: wallet changes need a fresh login
 
 export async function createSessionValue(secret: string, email: string, now = Date.now()): Promise<string> {
-  const body = `${Math.floor(now / 1000) + SESSION_SECONDS}.${encodeURIComponent(email)}`;
+  // Email is hex-encoded so the cookie value only contains [0-9a-f.] and survives any cookie encoding.
+  const body = `${Math.floor(now / 1000) + SESSION_SECONDS}.${toHex(new TextEncoder().encode(email))}`;
   return `${body}.${await hmac(secret, body)}`;
 }
 
@@ -17,5 +18,9 @@ export async function readSessionValue(secret: string | undefined, value: string
   const dot = body.indexOf(".");
   const exp = body.slice(0, dot), email = body.slice(dot + 1);
   if (dot < 0 || !exp || !email || Number(exp) < Math.floor(now / 1000)) return null;
-  return decodeURIComponent(email);
+  try {
+    return new TextDecoder().decode(fromHex(email));
+  } catch {
+    return null;
+  }
 }

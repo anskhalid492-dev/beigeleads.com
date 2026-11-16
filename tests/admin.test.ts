@@ -44,6 +44,6 @@ describe("admin login primitives", () => {
     expect(await readSessionValue("s".repeat(32), v, 1_000_000)).toBe("a@b.co");
     expect(await readSessionValue("s".repeat(32), v, 1_000_000 + 16 * 60_000)).toBeNull();
     expect(await readSessionValue("t".repeat(32), v, 1_000_000)).toBeNull();
-    expect(await readSessionValue("s".repeat(32), v.replace("a%40", "x%40"), 1_000_000)).toBeNull();
+    expect(await readSessionValue("s".repeat(32), v.replace(".6", ".7"), 1_000_000)).toBeNull();
   });
 });

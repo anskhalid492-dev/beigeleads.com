@@ -12,7 +12,7 @@ export default async function AdminLogin(props: PageProps<"/admin/login">) {
     <div className="mx-auto max-w-md">
       <h1 className="display text-4xl text-forest-900">Admin sign in</h1>
       <p className="mt-2 mb-6">Cloudflare Access verified {who.email}. Enter your password and authenticator code to continue. Sessions last 15 minutes.</p>
-      {reason === "session" && <p role="status" className="mb-4 rounded-xl bg-purple-100 p-3 text-sm font-semibold text-forest-900">No valid admin session found. Sign in again. (E-SESSION)</p>}
+      {reason && <p role="status" className="mb-4 rounded-xl bg-purple-100 p-3 text-sm font-semibold text-forest-900">Please sign in again. (E-SESSION: {reason})</p>}
       <LoginForm />
     </div>
   );
