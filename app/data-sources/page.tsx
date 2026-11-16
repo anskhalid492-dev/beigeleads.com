@@ -169,9 +169,9 @@ export default function DataSourcesPage() {
               We run the SMTP checks ourselves, in-house, rather than passing the work to a third party. Be aware that no check is
               perfect: some mail servers accept every address, so a few contacts can still bounce. Our{" "}
               <Link href="/legal/refund-replacement" className="font-semibold text-sand-50 underline underline-offset-4">
-                refund and replacement policy
+                Refund &amp; Returns policy
               </Link>{" "}
-              explains what happens then.
+              explains what happens then: above a 5% bounce rate, we replace the bounced emails.
             </p>
           </div>
         </div>

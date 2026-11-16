@@ -119,7 +119,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Emails checked in-house", d: "Our team runs SMTP checks on every address before it joins a list, rather than passing the work to a third party." },
       { t: "Re-checked every 60 days", d: "Addresses go stale as people move on, so all data is re-verified every 60 days." },
       { t: "Opt-outs applied first", d: "People who asked to be removed are taken out before your file is created, and you keep your own suppression list too." },
-      { t: "Be realistic about limits", d: "No check is perfect. Some servers accept every address, so a small share can still bounce. The replacement policy covers what happens then." },
+      { t: "Be realistic about limits", d: "No check is perfect. Some servers accept every address, so a small share can still bounce. Above a 5% bounce rate, our Refund & Returns policy replaces the bounced emails." },
     ],
     productSlugs: ["dentists-us", "restaurants-us", "ski-shops-us"],
     productNote: "Each list shows its last-verified date so you can judge how fresh it is before you send.",

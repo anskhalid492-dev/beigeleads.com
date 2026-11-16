@@ -64,7 +64,7 @@ const columns: Column[] = [
       ["CASL", "/legal/casl"],
       ["Privacy Policy", "/legal/privacy"],
       ["Terms & Conditions", "/legal/terms"],
-      ["Refund & Replacement Policy", "/legal/refund-replacement"],
+      ["Refund & Returns", "/legal/refund-replacement"],
       ["Delivery Policy", "/legal/delivery"],
       ["Cookie Policy", "/legal/cookies"],
       ["Data Processing Policy", "/legal/dpa"],

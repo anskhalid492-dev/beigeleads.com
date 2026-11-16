@@ -45,3 +45,10 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 
 ## Solutions copy
 - Solution pages now use audience-specific copy from `lib/solution-copy.ts` (pain points, applications, closing line). Lawyer review the compliance wording (cold email, healthcare, recruitment, expansion).
+
+## Refund & Returns (owner decision, Nov 2026)
+- Policy: bounce rate above 5% -> we replace bounced emails until the list is back to 95% verified / 95% accurate. URL stays /legal/refund-replacement; title is "Refund & Returns".
+- Company on legal pages: BeigeLeads LLC, 215 W Pershing Rd, Kansas City, MO 64108. Governing law, liability and the other [TO CONFIRM] markers still need the owner/lawyer.
+- Claim window (30 days) and response time (3 working days) were set by the assistant on the owner's instruction. Confirm them.
+- Still open in that policy: what happens if we cannot reach 95% (credit or refund).
+- We must be able to measure verified/accurate rates before we promise 95% in practice.

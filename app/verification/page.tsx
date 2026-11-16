@@ -28,9 +28,9 @@ const checks = [
 const faq = [
   ["What does verification mean here?", "Our in-house team runs SMTP checks on email addresses, then re-checks all data every 60 days. It means a mail server accepted the address when we checked. It does not mean the person reads or answers email."],
   ["Does a verified email always reach an inbox?", "No. Some mail servers accept every address, so a small share can still bounce. Delivery also depends on your sending domain, your message and how recipients react. We do not promise a delivery rate."],
-  ["What is your accuracy percentage?", "We do not publish one yet. Accuracy figures on product pages are marked as placeholders until we have a measurement method we can stand behind. We will not show a number we cannot back."],
+  ["What is your accuracy percentage?", "Our commitment is a 95% verified and 95% accurate list, backed by replacement: if more than 5% of your emails bounce, we replace them until we are back there. Accuracy figures on product pages stay marked as placeholders until the numbers are measured."],
   ["How do I check quality before I buy?", "Request a free sample. It is masked, but it shows the real columns, and each list page shows its record count and the date it was last verified."],
-  ["What happens if addresses bounce?", "Our refund and replacement policy covers bounced contacts. It is still being finalised under legal review, so read the current wording on that page rather than relying on a summary here."],
+  ["What happens if addresses bounce?", "If more than 5% of the emails you send from a list bounce, we replace the bounced emails until the list is back to at least 95% verified and 95% accurate. Claim within 30 days with your bounce report. The full terms are in the Refund & Returns policy."],
   ["How often do you re-check?", "Every 60 days, for all data."],
 ] as const;
 
@@ -84,8 +84,8 @@ export default function VerificationPage() {
             <p>No check is perfect. Some mail servers accept every address, so a small share of addresses can still bounce after verification.</p>
             <p>Verification shows that an address was accepted when we checked. It does not show that someone reads it, and it does not predict replies.</p>
             <p>
-              We do not publish an accuracy percentage or a delivery rate, because we would rather show nothing than a number we cannot back. For how bounced contacts are handled, read the{" "}
-              <Link href="/legal/refund-replacement" className="font-semibold text-forest-900 underline underline-offset-4">refund and replacement policy</Link>.
+              We do not promise a delivery rate or a reply rate. What we do promise is this: if more than 5% of your emails bounce, we replace them until the list is back to 95% verified and 95% accurate. Read the{" "}
+              <Link href="/legal/refund-replacement" className="font-semibold text-forest-900 underline underline-offset-4">Refund &amp; Returns policy</Link> for how to claim.
             </p>
           </div>
         </div>

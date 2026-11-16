@@ -16,7 +16,7 @@ export const legalDocs: LegalDoc[] = [
     title: "Privacy policy",
     summary: "What personal data BeigeLeads collects from visitors and buyers, why, and what you can do about it.",
     sections: [
-      { h: "Who we are", p: ["BeigeLeads is operated by [TO CONFIRM: legal entity name, registered address, country]. You can reach us through the contact page."] },
+      { h: "Who we are", p: ["BeigeLeads is operated by BeigeLeads LLC, 215 W Pershing Rd, Kansas City, MO 64108, United States. You can reach us through the contact page."] },
       { h: "What we collect from visitors and buyers", p: [
         "Order email: you give us an email address so we can send your download link. There are no accounts and no passwords.",
         "Payment data: the coin and network you pick, the amount, the receiving address and the transaction hash. We never receive bank card details.",
@@ -50,21 +50,25 @@ export const legalDocs: LegalDoc[] = [
       { h: "Data accuracy", p: ["We verify every list and re-check data every 60 days, but no contact data is perfect. We do not promise any particular result, such as a reply rate or sales."] },
       { h: "Liability", p: ["[TO CONFIRM: limits on liability, warranty disclaimer, indemnity]"] },
       { h: "Governing law", p: ["[TO CONFIRM: governing law and where disputes are settled]"] },
-      { h: "Changes", p: ["We may update these terms. The terms in force when you order apply to that order. Last updated: [TO CONFIRM]."] },
+      { h: "Changes", p: ["We may update these terms. The terms in force when you order apply to that order. Last updated: the date shown at the top of this page."] },
     ],
   },
   {
     slug: "refund-replacement",
-    title: "Refund and replacement policy",
-    summary: "What happens if contacts in your list do not work.",
+    title: "Refund & Returns",
+    summary: "What happens if too many emails in your list bounce: we replace them until the list is back at 95%.",
     sections: [
-      { h: "What this covers", p: ["Contacts that bounce or are clearly wrong when you use the list as intended. Our checks cut bounces, but no verification is perfect, so we stand behind the list. [TO CONFIRM: exact promise and any bounce-rate threshold]"] },
-      { h: "How to claim", p: ["Contact us within [TO CONFIRM: number of days] of delivery with your order details and evidence of the bounces, such as the bounce report from your email tool."] },
-      { h: "What we do", p: ["We replace the failed contacts with verified ones from the same list where we can. If we cannot, we [TO CONFIRM: credit or refund, and how much]."] },
-      { h: "What is not covered", p: ["Bounces caused by misuse (for example sending from a blocked or new domain), claims made after the claim window, lists that were shared or resold against the licence, and a lack of replies or sales."] },
+      { h: "Our promise", p: [
+        "If more than 5% of the emails you send from a BeigeLeads list bounce, we replace the bounced emails with fresh, verified ones. We keep replacing them until the list is back to at least 95% verified and 95% accurate, which means a bounce rate of 5% or less.",
+        "No verification is perfect, because some mail servers accept every address. That is why we stand behind the list with this replacement promise instead of claiming a perfect result.",
+      ] },
+      { h: "How the bounce rate is counted", p: ["Bounce rate is the number of emails that bounced divided by the number of emails sent from the list, as shown in the report from your email tool. Send from a properly set up domain and include the bounce report when you claim."] },
+      { h: "How to claim", p: ["Contact us within 30 days of delivery with your order details and the bounce report from your email tool. We will check it against the list we delivered."] },
+      { h: "What we do", p: ["We replace the bounced emails with verified ones from the same list. If we cannot bring the list back to 95%, we [TO CONFIRM: credit or refund, and how much]."] },
+      { h: "What is not covered", p: ["Bounces caused by misuse (for example sending from a blocked or brand-new domain), claims made after the claim window, lists that were shared or resold against the licence, and a lack of replies or sales."] },
       { h: "Refunds are paid in crypto", p: ["Because payments are crypto, any refund is sent in [TO CONFIRM: the coin you paid with or USDT] to an address you give us. Network fees and rate changes are explained in the crypto payment policy."] },
       { h: "Overpayments and late payments", p: ["If you overpay, we flag it and refund or credit the difference. If a payment arrives after the 30-minute quote has expired, we review it by hand and decide on a refund or a re-quote."] },
-      { h: "How long it takes", p: ["We aim to answer within [TO CONFIRM: working days]."] },
+      { h: "How long it takes", p: ["We aim to answer within 3 working days of receiving your claim."] },
     ],
   },
   {

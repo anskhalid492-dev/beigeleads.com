@@ -38,7 +38,7 @@ export function ProductQuality({ product }: { product: Product }) {
             <li>No verification is perfect. Some mail servers accept every address, so a small share of contacts can still bounce.</li>
             <li>Businesses change. Data can go stale between our 60-day re-checks.</li>
             <li>You are responsible for how you use the data. Follow the <Link href="/legal/lawful-use" className="font-semibold text-forest-900 underline underline-offset-4">lawful use policy</Link> and the laws that apply to you.</li>
-            <li>If contacts bounce, the <Link href="/legal/refund-replacement" className="font-semibold text-forest-900 underline underline-offset-4">refund and replacement policy</Link> explains what we do.</li>
+            <li>If contacts bounce, the <Link href="/legal/refund-replacement" className="font-semibold text-forest-900 underline underline-offset-4">Refund &amp; Returns policy</Link> explains it: above a 5% bounce rate, we replace bounced emails until the list is back to 95%.</li>
           </ul>
         </div>
       </div>
