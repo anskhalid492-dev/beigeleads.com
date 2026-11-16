@@ -60,3 +60,4 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 ## Phase 4b
 - [ ] Create Cloudflare Access app for `beigeleads.com/admin*` (+ 2FA, short session on /admin/wallets); set vars `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` (and optionally `ADMIN_EMAILS`); then regenerate `npm run cf-typegen`
 - [ ] Test add/enable/disable on testnet vpub before any mainnet zpub
+- [ ] Run `node scripts/admin-setup.mjs` locally, set secrets ADMIN_PASSWORD_HASH, ADMIN_TOTP_SECRET, ADMIN_SESSION_SECRET in the dashboard, add the TOTP secret to an authenticator app

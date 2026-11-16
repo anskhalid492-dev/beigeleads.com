@@ -1,21 +1,23 @@
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { isActive, listAudit, listWallets } from "@/lib/wallets/service";
 import { mask } from "@/lib/wallets/validate";
 import { AddWalletForm } from "./add-form";
 import { toggleWalletAction } from "./actions";
+import { logoutAction } from "../login/actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function WalletsPage() {
   let admin;
-  try { admin = await requireAdmin(); } catch { notFound(); }
+  try { admin = await requireAdmin(); } catch { redirect("/admin/login"); }
   const [wallets, audit] = await Promise.all([listWallets(), listAudit()]);
   return (
     <>
       <h1 className="display text-4xl text-forest-900">Payment wallets</h1>
       <p className="mt-2">Signed in as {admin.email}. New or re-enabled wallets go live 24 hours later. Every change is logged and emailed to the owner.</p>
+      <form action={logoutAction} className="mt-3"><Button type="submit" variant="secondary" size="sm">Sign out</Button></form>
       <h2 className="mt-10 text-xl font-bold text-forest-900">Wallets</h2>
       <ul className="mt-3 space-y-3">
         {wallets.length === 0 && <li className="rounded-2xl border border-sand-200 bg-white p-5">No wallets yet.</li>}

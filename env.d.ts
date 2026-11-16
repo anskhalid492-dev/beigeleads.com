@@ -8,6 +8,9 @@ interface CloudflareEnv {
   NOTIFY_EMAIL?: string; // var: where owner notifications go
   ACCESS_TEAM_DOMAIN?: string; // var: e.g. myteam.cloudflareaccess.com
   ACCESS_AUD?: string; // var: Access application AUD tag for /admin
+  ADMIN_PASSWORD_HASH?: string; // secret: output of scripts/admin-setup.mjs
+  ADMIN_TOTP_SECRET?: string; // secret: base32, output of scripts/admin-setup.mjs
+  ADMIN_SESSION_SECRET?: string; // secret: random 32+ chars, output of scripts/admin-setup.mjs
   ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
 }
