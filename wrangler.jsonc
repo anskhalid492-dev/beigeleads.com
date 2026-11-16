@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "beigeleads-com",
   "workers_dev": true,
+  "keep_vars": true,
   "preview_urls": false,
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-01",

@@ -403,3 +403,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 - The global CTA "See a sample before you spend a cent." lives in `components/layout/footer.tsx` (no per-page CtaBand anymore). Footer is a 6-column link footer with all 10 comparison links (`lib/compare.ts`). New token `--forest-300` for footer headings.
 - `/compare/beigeleads-vs-<slug>` are noindex stubs until Phase 5 content.
+
+## 19. Deploy config
+
+- `wrangler.jsonc` sets `keep_vars: true` so plain-text vars (`NOTIFY_EMAIL`, `EMAIL_FROM`) set in the Cloudflare dashboard are not wiped by each Workers Builds deploy (the repo config has no `vars`). Secrets are never wiped.
