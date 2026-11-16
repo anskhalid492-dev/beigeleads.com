@@ -77,7 +77,7 @@ Reasons: illegal in many jurisdictions (FTC, UK CMA, EU consumer law), and crypt
 - Use plain static images or Cloudflare Images. Do not rely on the default Next image optimizer.
 - Before using any Next.js or OpenNext feature, check the current OpenNext Cloudflare docs for support. If a feature is unsupported, tell me instead of working around it silently.
 - Fallback if OpenNext becomes a blocker: migrate to Astro (ask first).
-- **Decisions made in Phase 1:** Next.js 16 `cacheComponents` and `partialPrefetching` are OFF (OpenNext support unverified). Fonts are self-hosted via `@fontsource-variable` (Inter + Fraunces) instead of `next/font/google`, so builds need no Google access and no visitor data goes to Google. `images.unoptimized` is true. `cloudflare-env.d.ts` is committed (regenerate with `npm run cf-typegen`). Placeholder seed data lives in `drizzle/seed.sql`; see `TODO-BEFORE-LAUNCH.md`.
+- **Decisions made in Phase 1:** Next.js 16 `cacheComponents` and `partialPrefetching` are OFF (OpenNext support unverified). Fonts are self-hosted via `@fontsource-variable` (Bricolage Grotesque only: condensed heavy for headlines, normal width for body) instead of `next/font/google`, so builds need no Google access and no visitor data goes to Google. `images.unoptimized` is true. `cloudflare-env.d.ts` is committed (regenerate with `npm run cf-typegen`). Placeholder seed data lives in `drizzle/seed.sql`; see `TODO-BEFORE-LAUNCH.md`.
 
 ---
 
@@ -107,7 +107,7 @@ Rules:
 - Contrast must meet WCAG AA. Verify text/background pairs.
 - Support light mode first. Dark mode is optional later.
 - Rounded cards (`rounded-2xl`), generous whitespace, soft shadows, 1px sand borders.
-- Typography: one display font (distinctive serif or geometric sans via `next/font`) + Inter for body.
+- Typography: Bricolage Grotesque (variable, self-hosted) for everything. Headlines use the condensed heavy voice (`.display`), body uses normal width.
 - Mobile-first. Every template must work at 375px.
 
 ### Page templates (reuse, do not reinvent)

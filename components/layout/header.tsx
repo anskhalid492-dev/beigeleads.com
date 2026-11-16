@@ -26,8 +26,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-sand-200 bg-sand-50/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="font-display text-xl font-semibold text-forest-900">
-          Beige<span className="text-forest-500">Leads</span>
+        <Link href="/" aria-label="BeigeLeads home" className="flex items-center gap-2">
+          <svg viewBox="0 0 24 24" className="size-7" aria-hidden>
+            <rect width="24" height="24" rx="5" fill="#0f2a1d" />
+            <rect x="5" y="6" width="14" height="2.5" rx="1.25" fill="#fbf8f1" />
+            <rect x="5" y="10.75" width="14" height="2.5" rx="1.25" fill="#fbf8f1" />
+            <rect x="5" y="15.5" width="8" height="2.5" rx="1.25" fill="#d8c9a3" />
+          </svg>
+          <span className="display text-2xl text-forest-900">BeigeLeads</span>
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">

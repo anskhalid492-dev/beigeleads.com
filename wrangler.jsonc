@@ -15,8 +15,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "beigeleads-db",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_name": "beigeleads",
+      "database_id": "c8ab65de-e352-4714-b9df-615bf002f4e3",
       "migrations_dir": "drizzle"
     }
   ],
@@ -24,7 +24,7 @@
     { "binding": "LISTS", "bucket_name": "beigeleads-lists" }
   ],
   "kv_namespaces": [
-    { "binding": "CACHE", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+    { "binding": "CACHE", "id": "afa03fa4d8714ae5b85b23281bfc2764" }
   ],
   "queues": {
     "producers": [{ "binding": "EMAIL_QUEUE", "queue": "beigeleads-emails" }]

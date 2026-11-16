@@ -1,91 +1,216 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SampleLedger } from "@/components/home/sample-ledger";
 
-// Phase 1 home: structure only. No invented stats, reviews or counts (CLAUDE.md section 2).
-// Every block marked PLACEHOLDER must be replaced with real data before launch.
+// Phase 1 home. No invented stats, reviews, customers or counts (CLAUDE.md section 2).
+// Anything marked PLACEHOLDER must be replaced with real data before launch.
+
+const lists = [
+  { slug: "dentists", name: "Dentists", note: "Practices and clinics" },
+  { slug: "restaurants", name: "Restaurants", note: "Restaurants, cafés and bars" },
+  { slug: "ski-shops", name: "Ski shops", note: "Retail, rental and repair" },
+] as const;
+
+const fields = [
+  "Business name",
+  "Address",
+  "City",
+  "Country",
+  "Phone",
+  "Email",
+  "Website",
+] as const;
+
 const steps = [
-  ["Find your list", "Browse by category, country and city."],
-  ["Check the sample", "Preview masked rows before you pay."],
-  ["Pay once in crypto", "No account, no subscription."],
-  ["Download", "Get a secure link by email."],
+  ["Pick a list", "Choose a category, then narrow by country or city."],
+  ["Check the sample", "Open a masked preview before you pay anything."],
+  ["Pay in crypto", "One payment. No account and no subscription."],
+  ["Download the file", "A secure link arrives by email once the payment confirms."],
+] as const;
+
+const faq = [
+  [
+    "Is this a subscription?",
+    "No. You pay once for a list and download the file. There is no monthly fee and no login to keep.",
+  ],
+  [
+    "Can I see data before I pay?",
+    "Yes. Every list page has a masked sample, and you can request a free sample file by email.",
+  ],
+  [
+    "How do I pay?",
+    "In crypto. Bitcoin and USDT (TRC20) are supported at launch, with more coins to follow.",
+  ],
+  [
+    "What do I get?",
+    "A downloadable file with the fields shown on the list page. The download link expires, so save the file when it arrives.",
+  ],
+  [
+    "Can people ask to be removed?",
+    "Yes. Anyone can use the opt-out page, and removed contacts are left out of future files.",
+  ],
 ] as const;
 
 export default function Home() {
   return (
     <>
-      <section className="mx-auto max-w-6xl px-4 py-20 text-center">
-        <p className="mx-auto w-fit rounded-full bg-forest-100 px-4 py-1 text-xs font-semibold text-forest-700">
-          One-time purchase. No subscription.
-        </p>
-        <h1 className="mx-auto mt-6 max-w-3xl text-5xl font-semibold leading-tight md:text-6xl">
-          Pay once. Own the list.
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg">
-          Business contact lists by category, country and city. See a sample first, pay once, download
-          your file.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button asChild size="lg">
-            <Link href="/lists">Browse lists</Link>
-          </Button>
-          <Button asChild variant="secondary" size="lg">
-            <Link href="/sample">Request a free sample</Link>
-          </Button>
+      {/* Hero: the list itself is the first thing you see. */}
+      <section className="ruled border-b border-sand-200">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.05fr_1fr]">
+          <div>
+            <h1 className="display text-6xl text-forest-900 sm:text-7xl lg:text-[5.5rem]">
+              Pay once.
+              <br />
+              Own the list.
+            </h1>
+            <p className="mt-6 max-w-md text-lg">
+              Business contact lists by category, country and city. Look at a masked sample first.
+              Pay one time. Download your file.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg">
+                <Link href="/lists">
+                  Browse lists <ArrowRight className="size-4" aria-hidden />
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/sample">Get a free sample</Link>
+              </Button>
+            </div>
+          </div>
+          <SampleLedger />
         </div>
       </section>
 
-      <section className="bg-sand-100 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-3xl font-semibold">What a sample looks like</h2>
-          <p className="mx-auto mt-2 max-w-xl text-center text-sm">
-            PLACEHOLDER: layout preview only. Real masked samples arrive with real data.
-          </p>
-          <div className="mt-8 overflow-x-auto rounded-2xl border border-sand-200 bg-white shadow-sm">
-            <table className="w-full min-w-[32rem] text-left text-sm">
-              <thead className="bg-sand-100 text-xs uppercase tracking-wide text-forest-500">
-                <tr>
-                  <th className="px-4 py-3">Business</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Phone</th>
-                  <th className="px-4 py-3">Website</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3].map((n) => (
-                  <tr key={n} className="border-t border-sand-200">
-                    <td className="px-4 py-3">Placeholder Business {n}</td>
-                    <td className="px-4 py-3">j***@example.com</td>
-                    <td className="px-4 py-3">+1 ***-***-010{n}</td>
-                    <td className="px-4 py-3">example.com</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* One-time vs subscription: the whole business model in one glance. */}
+      <section className="bg-forest-900 text-sand-100">
+        <div className="mx-auto grid max-w-6xl gap-px px-4 py-0 md:grid-cols-2">
+          <div className="py-12 md:pr-12">
+            <h2 className="display text-4xl text-sand-300 sm:text-5xl">Subscription tools</h2>
+            <p className="mt-4 max-w-sm text-sand-200">
+              Pay every month. Stop paying and the access ends, along with the contacts you
+              exported.
+            </p>
+          </div>
+          <div className="border-t border-forest-700 py-12 md:border-l md:border-t-0 md:pl-12">
+            <h2 className="display text-4xl text-sand-50 sm:text-5xl">BeigeLeads</h2>
+            <p className="mt-4 max-w-sm text-sand-100">
+              Pay once and download the file. No renewal, no seat limit, nothing to cancel.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-center text-3xl font-semibold">How it works</h2>
-        <ol className="mt-10 grid gap-6 md:grid-cols-4">
+      {/* Launch categories */}
+      <section className="mx-auto max-w-6xl px-4 py-20">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="display text-5xl text-forest-900 sm:text-6xl">Start with a list</h2>
+          <Link href="/lists" className="font-semibold text-forest-700 underline underline-offset-4">
+            All categories
+          </Link>
+        </div>
+        <ul className="mt-10 grid gap-4 md:grid-cols-3">
+          {lists.map((l) => (
+            <li key={l.slug}>
+              <Link
+                href={`/lists/${l.slug}`}
+                className="group flex h-full min-h-44 flex-col justify-between rounded-2xl border border-sand-300 bg-sand-100 p-6 transition-colors hover:border-forest-900 hover:bg-forest-900"
+              >
+                <span className="display text-4xl text-forest-900 group-hover:text-sand-50">
+                  {l.name}
+                </span>
+                <span className="flex items-center justify-between text-sm text-forest-700 group-hover:text-sand-200">
+                  {l.note}
+                  <ArrowRight className="size-4" aria-hidden />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6 text-sm">
+          Need another niche?{" "}
+          <Link href="/request-category" className="font-semibold underline underline-offset-4">
+            Ask for a category
+          </Link>
+          .
+        </p>
+      </section>
+
+      {/* What is inside a file: drawn as spreadsheet columns. */}
+      <section className="border-y border-sand-200 bg-sand-100 py-20">
+        <div className="mx-auto max-w-6xl px-4">
+          <h2 className="display text-5xl text-forest-900 sm:text-6xl">What is in the file</h2>
+          <p className="mt-4 max-w-lg">
+            Each list opens in Excel, Google Sheets or any email tool. Fields vary by list, and the
+            list page shows exactly which ones you get.
+          </p>
+          <div className="mt-10 overflow-x-auto">
+            <div className="grid min-w-[44rem] grid-cols-7 overflow-hidden rounded-lg border border-forest-900 bg-white text-center">
+              {fields.map((f, i) => (
+                <div key={f} className="border-r border-forest-900 last:border-r-0">
+                  <div className="border-b border-forest-900 bg-sand-200 py-1 text-xs font-semibold text-forest-700">
+                    {String.fromCharCode(65 + i)}
+                  </div>
+                  <div className="px-2 py-4 text-sm font-semibold text-forest-900">{f}</div>
+                  <div className="space-y-2 pb-4">
+                    <div className="mx-auto h-2 w-3/4 rounded bg-sand-200" />
+                    <div className="mx-auto h-2 w-2/3 rounded bg-sand-200" />
+                    <div className="mx-auto h-2 w-4/5 rounded bg-sand-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works: a real sequence, so numbers are earned. */}
+      <section className="mx-auto max-w-6xl px-4 py-20">
+        <h2 className="display text-5xl text-forest-900 sm:text-6xl">From search to download</h2>
+        <ol className="mt-12 grid gap-10 md:grid-cols-4">
           {steps.map(([title, text], i) => (
-            <li key={title} className="rounded-2xl border border-sand-200 bg-white p-6">
-              <span className="flex size-9 items-center justify-center rounded-full bg-forest-700 text-sm font-semibold text-sand-50">
-                {i + 1}
-              </span>
-              <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-              <p className="mt-1 text-sm">{text}</p>
+            <li key={title} className="border-t-2 border-forest-900 pt-4">
+              <span className="display text-5xl text-forest-500">{i + 1}</span>
+              <h3 className="mt-3 text-xl font-bold">{title}</h3>
+              <p className="mt-2 text-sm">{text}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="bg-forest-900 py-16 text-center">
-        <h2 className="text-3xl font-semibold text-sand-50">Start with a free sample</h2>
-        <p className="mt-2 text-sand-200">No payment details needed.</p>
-        <Button asChild size="lg" className="mt-6">
-          <Link href="/sample">Request a sample</Link>
-        </Button>
+      {/* FAQ */}
+      <section className="border-t border-sand-200 bg-sand-100 py-20">
+        <div className="mx-auto max-w-3xl px-4">
+          <h2 className="display text-5xl text-forest-900 sm:text-6xl">Questions</h2>
+          <div className="mt-8 divide-y divide-sand-300 border-y border-sand-300">
+            {faq.map(([q, a]) => (
+              <details key={q} className="group py-4">
+                <summary className="flex cursor-pointer items-center justify-between gap-4 text-lg font-semibold text-forest-900">
+                  {q}
+                  <span
+                    aria-hidden
+                    className="text-2xl leading-none text-forest-500 transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 max-w-xl">{a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-forest-900 py-20">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-8 px-4">
+          <h2 className="display max-w-xl text-5xl text-sand-50 sm:text-6xl">
+            See a sample before you spend a cent.
+          </h2>
+          <Button asChild size="lg">
+            <Link href="/sample">Request a free sample</Link>
+          </Button>
+        </div>
       </section>
     </>
   );

@@ -16,8 +16,9 @@
   --color-purple-600: #7c3aed;
   --color-purple-700: #6d28d9;
 
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  /* One family, two voices: wide-and-light for reading, narrow-and-heavy for headlines. */
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -32,10 +33,59 @@ body {
   background: var(--color-sand-50);
   color: var(--color-forest-700);
   font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-stretch: 100%;
 }
 
-h1, h2, h3 {
-  color: var(--color-forest-900);
-  font-family: var(--font-display);
-  letter-spacing: -0.01em;
+/* In the base layer so utilities like text-sand-50 can override heading colour. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    color: var(--color-forest-900);
+    font-family: var(--font-display);
+  }
+}
+
+/* Headline voice: condensed, heavy, tight. */
+.display {
+  font-stretch: 75%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+/* Faint ruled-paper texture, like a printed list. */
+.ruled {
+  background-image: linear-gradient(to bottom, transparent calc(100% - 1px), var(--color-sand-200) 0);
+  background-size: 100% 2.25rem;
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.row-in {
+  animation: row-in 280ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .row-in {
+    animation: none;
+  }
+}
+
+summary::-webkit-details-marker {
+  display: none;
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/inter";
-import "@fontsource-variable/fraunces";
+import "@fontsource-variable/bricolage-grotesque/wdth.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import "./globals.css";
