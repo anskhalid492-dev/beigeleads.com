@@ -42,3 +42,6 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 ## Legal dates
 - Dates come from `LEGAL_UPDATED` in `lib/legal/docs.ts` (16 Nov 2026). Update it whenever any legal text or /verification changes.
 - Page-level noindex was removed from /legal/* and /verification (owner decision). The site-wide noindex and robots.txt disallow still apply until launch. Banner and [TO CONFIRM] markers remain and still block launch.
+
+## Solutions copy
+- Solution pages now use audience-specific copy from `lib/solution-copy.ts` (pain points, applications, closing line). Lawyer review the compliance wording (cold email, healthcare, recruitment, expansion).

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Layers, Plus, Search, ShieldCheck, FileSpreadsheet, type LucideIcon } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -107,27 +107,26 @@ export function Challenge({ s }: { s: Solution }) {
   );
 }
 
-const helpIcons: LucideIcon[] = [Layers, Search, FileSpreadsheet, ShieldCheck];
-
-export function HowHelps({ s }: { s: Solution }) {
+export function PainPoints({ s }: { s: Solution }) {
   return (
     <section className="border-y border-sand-200 bg-sand-100 py-24 lg:py-32">
       <div className={wrap}>
-        <h2 className={`${h2} max-w-4xl`}>How BeigeLeads helps</h2>
-        <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {s.helps.map((h, i) => {
-            const I = helpIcons[i % helpIcons.length];
-            return (
-              <article key={h.t} className="group flex flex-col rounded-[1.75rem] border border-sand-300 bg-sand-50 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_30px_60px_-35px_rgba(15,42,29,0.55)]">
-                <span className="grid size-14 place-items-center rounded-2xl bg-forest-900 text-forest-300 transition-colors group-hover:bg-forest-500 group-hover:text-sand-50">
-                  <I className="size-7" aria-hidden />
-                </span>
-                <h3 className="display mt-7 text-3xl text-forest-900">{h.t}</h3>
-                <p className="mt-3 text-lg">{h.d}</p>
-              </article>
-            );
-          })}
+        <h2 className={`${h2} max-w-5xl`}>{s.name}: the problems we solve</h2>
+        <div className="mt-14 hidden grid-cols-2 gap-x-16 border-b-2 border-forest-900 pb-3 text-sm font-semibold text-forest-500 md:grid">
+          <p>What you run into</p>
+          <p>What the list gives you</p>
         </div>
+        <ul>
+          {s.pains.map((p) => (
+            <li key={p.pain} className="group grid gap-4 border-b border-sand-300 py-9 md:grid-cols-2 md:gap-x-16">
+              <h3 className="display text-3xl text-forest-900 lg:text-4xl">{p.pain}</h3>
+              <p className="flex gap-4 text-lg">
+                <ArrowRight className="mt-1.5 size-5 shrink-0 text-forest-500 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
+                <span>{p.fix}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
@@ -193,7 +192,7 @@ export function Applications({ s }: { s: Solution }) {
   return (
     <section className="border-y border-sand-200 bg-sand-100 py-24 lg:py-32">
       <div className={wrap}>
-        <h2 className={`${h2} max-w-4xl`}>Practical applications</h2>
+        <h2 className={`${h2} max-w-5xl`}>How {s.name} teams use the list</h2>
         <ul className="mt-14 grid border-t-2 border-forest-900 md:grid-cols-2 md:gap-x-16">
           {s.applications.map((a) => (
             <li key={a.t} className="group border-b border-sand-300 py-9">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { FooterCta } from "./footer-cta";
 import { competitors, compareHref } from "@/lib/compare";
 
 import { solutions } from "@/lib/solutions";
@@ -84,15 +84,7 @@ export function Footer() {
           "radial-gradient(60rem 28rem at 0% 100%, rgba(45,106,79,0.45), transparent 70%), radial-gradient(40rem 20rem at 100% 0%, rgba(45,106,79,0.18), transparent 70%)",
       }}
     >
-      {/* Call to action */}
-      <div className="border-b border-forest-700">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-4 py-20 sm:px-6 lg:px-8">
-          <h2 className="display max-w-xl text-5xl text-sand-50 sm:text-6xl">See a sample before you spend a cent.</h2>
-          <Button asChild size="lg">
-            <Link href="/sample">Request a free sample</Link>
-          </Button>
-        </div>
-      </div>
+      <FooterCta />
 
       {/* Link columns */}
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-12 px-4 py-16 sm:px-6 md:grid-cols-3 lg:grid-cols-6 lg:px-8">

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  Applications, AvailableData, Beneficiaries, Challenge, HowHelps, RecommendedDatabases, RelatedSolutions, SolutionCta, SolutionFaq, SolutionHero, SolutionSteps,
+  Applications, AvailableData, Beneficiaries, Challenge, PainPoints, RecommendedDatabases, RelatedSolutions, SolutionCta, SolutionFaq, SolutionHero, SolutionSteps,
 } from "@/components/solutions/sections";
 import { getSolution, solutions } from "@/lib/solutions";
 
@@ -33,8 +33,8 @@ export default async function SolutionPage(props: PageProps<"/solutions/[slug]">
     <>
       <SolutionHero s={s} />
       <Challenge s={s} />
-      <HowHelps s={s} />
-      <RecommendedDatabases s={s} />
+      <PainPoints s={s} />
+      <RecommendedDatabases s={s} heading={`Recommended databases for ${s.name}`} />
       <Applications s={s} />
       <Beneficiaries s={s} />
       <AvailableData s={s} />

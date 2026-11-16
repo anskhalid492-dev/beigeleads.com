@@ -435,7 +435,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - `/solutions` (landing) + `/solutions/[slug]` (12 pages) replace the planned `/use-cases` hub; `/use-cases` 308-redirects to `/solutions`. All copy lives in `lib/solutions.ts`; one template in `components/solutions/*`. Add a solution by adding one entry there (footer, landing, sitemap follow automatically).
 - Solution copy only claims what exists: 3 real products (dentists/restaurants/ski shops, US) and the 7 real fields. Real estate, creators and recruitment pages say plainly that no such lists exist yet.
 - Footer = exactly six columns: Company, Lists, Solutions, Compare, Resources, Legal (Trust merged into Legal with three groups). Header nav has a Solutions link.
-- Pages inherit the site-wide noindex until launch (see TODO-BEFORE-LAUNCH.md).
+- Pages inherit the site-wide noindex until launch (see TODO-BEFORE-LAUNCH.md). Copy lives in `lib/solution-copy.ts` (pain points per audience) and `lib/solution-faqs.ts`. The global footer CTA band is hidden on /solutions (`components/layout/footer-cta.tsx`).
 
 ## 24. Solutions redesign, FAQs, database icons (Nov 2026)
 

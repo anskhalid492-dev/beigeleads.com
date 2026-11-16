@@ -2,6 +2,7 @@
 // fields that exist in the catalog (FIELDS). Products are real catalog slugs. NEEDS LEGAL REVIEW
 // for the compliance wording (see TODO-BEFORE-LAUNCH.md).
 import { solutionFaqs } from "./solution-faqs";
+import { solutionCopy, type Pain } from "./solution-copy";
 import { FIELDS } from "./catalog";
 
 export type Field = (typeof FIELDS)[number];
@@ -29,12 +30,13 @@ export type Solution = {
   fieldUse: Partial<Record<Field, string>>;
   steps: readonly { t: string; d: string }[];
   related: readonly string[];
+  pains: readonly Pain[];
   faqs: readonly (readonly [string, string])[];
   finalHeading: string;
   finalText: string;
 };
 
-const base: readonly Omit<Solution, "faqs">[] = [
+const base: readonly Omit<Solution, "faqs" | "pains">[] = [
   {
     slug: "b2b-lead-generation",
     name: "B2B Lead Generation",
@@ -703,6 +705,10 @@ const base: readonly Omit<Solution, "faqs">[] = [
   },
 ];
 
-export const solutions: readonly Solution[] = base.map((s) => ({ ...s, faqs: solutionFaqs[s.slug] ?? [] }));
+export const solutions: readonly Solution[] = base.map((s) => {
+  const copy = solutionCopy[s.slug];
+  if (!copy) throw new Error(`Missing solution copy for ${s.slug}`);
+  return { ...s, ...copy, faqs: solutionFaqs[s.slug] ?? [] };
+});
 
 export const getSolution = (slug: string) => solutions.find((s) => s.slug === slug);
