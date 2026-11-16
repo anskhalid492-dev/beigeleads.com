@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "@fontsource-variable/bricolage-grotesque/wdth.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { JsonLd } from "@/components/shared/json-ld";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL }} />
       </body>
     </html>
   );

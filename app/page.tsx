@@ -2,6 +2,10 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SampleLedger } from "@/components/home/sample-ledger";
+import { Faq } from "@/components/shared/faq";
+import { CtaBand } from "@/components/shared/cta-band";
+import { FieldColumns } from "@/components/shared/field-columns";
+import { FIELDS } from "@/lib/catalog";
 
 // Phase 1 home. No invented stats, reviews, customers or counts (CLAUDE.md section 2).
 // Anything marked PLACEHOLDER must be replaced with real data before launch.
@@ -10,16 +14,6 @@ const lists = [
   { slug: "dentists", name: "Dentists", note: "Practices and clinics" },
   { slug: "restaurants", name: "Restaurants", note: "Restaurants, cafés and bars" },
   { slug: "ski-shops", name: "Ski shops", note: "Retail, rental and repair" },
-] as const;
-
-const fields = [
-  "Business name",
-  "Address",
-  "City",
-  "Country",
-  "Phone",
-  "Email",
-  "Website",
 ] as const;
 
 const steps = [
@@ -145,22 +139,8 @@ export default function Home() {
             Each list opens in Excel, Google Sheets or any email tool. Fields vary by list, and the
             list page shows exactly which ones you get.
           </p>
-          <div className="mt-10 overflow-x-auto">
-            <div className="grid min-w-[44rem] grid-cols-7 overflow-hidden rounded-lg border border-forest-900 bg-white text-center">
-              {fields.map((f, i) => (
-                <div key={f} className="border-r border-forest-900 last:border-r-0">
-                  <div className="border-b border-forest-900 bg-sand-200 py-1 text-xs font-semibold text-forest-700">
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                  <div className="px-2 py-4 text-sm font-semibold text-forest-900">{f}</div>
-                  <div className="space-y-2 pb-4">
-                    <div className="mx-auto h-2 w-3/4 rounded bg-sand-200" />
-                    <div className="mx-auto h-2 w-2/3 rounded bg-sand-200" />
-                    <div className="mx-auto h-2 w-4/5 rounded bg-sand-200" />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mt-10">
+            <FieldColumns fields={FIELDS} />
           </div>
         </div>
       </section>
@@ -179,39 +159,9 @@ export default function Home() {
         </ol>
       </section>
 
-      {/* FAQ */}
-      <section className="border-t border-sand-200 bg-sand-100 py-20">
-        <div className="mx-auto max-w-3xl px-4">
-          <h2 className="display text-5xl text-forest-900 sm:text-6xl">Questions</h2>
-          <div className="mt-8 divide-y divide-sand-300 border-y border-sand-300">
-            {faq.map(([q, a]) => (
-              <details key={q} className="group py-4">
-                <summary className="flex cursor-pointer items-center justify-between gap-4 text-lg font-semibold text-forest-900">
-                  {q}
-                  <span
-                    aria-hidden
-                    className="text-2xl leading-none text-forest-500 transition-transform group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                <p className="mt-3 max-w-xl">{a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Faq items={faq} />
 
-      <section className="bg-forest-900 py-20">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-8 px-4">
-          <h2 className="display max-w-xl text-5xl text-sand-50 sm:text-6xl">
-            See a sample before you spend a cent.
-          </h2>
-          <Button asChild size="lg">
-            <Link href="/sample">Request a free sample</Link>
-          </Button>
-        </div>
-      </section>
+      <CtaBand />
     </>
   );
 }

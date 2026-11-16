@@ -3,51 +3,20 @@
 import { useState } from "react";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sampleColumns, sampleSheets } from "@/lib/sample-data";
 
-// PLACEHOLDER rows to show the layout only. Not real businesses, not real data.
-// Replace with real masked samples from the pipeline (see TODO-BEFORE-LAUNCH.md).
-const sheets = {
-  dentists: {
-    label: "Dentists",
-    rows: [
-      ["Sample Dental Studio", "Denver, US", "o***@example.com", "+1 303 ••• ••01"],
-      ["Placeholder Family Dentistry", "Chicago, US", "i***@example.com", "+1 312 ••• ••02"],
-      ["Example Smile Clinic", "London, GB", "h***@example.com", "+44 20 •••• ••03"],
-      ["Demo Orthodontics", "Toronto, CA", "c***@example.com", "+1 416 ••• ••04"],
-    ],
-  },
-  restaurants: {
-    label: "Restaurants",
-    rows: [
-      ["Sample Noodle House", "Chicago, US", "m***@example.com", "+1 312 ••• ••11"],
-      ["Placeholder Bistro", "London, GB", "r***@example.com", "+44 20 •••• ••12"],
-      ["Example Grill & Bar", "Denver, US", "g***@example.com", "+1 303 ••• ••13"],
-      ["Demo Bakery Café", "Toronto, CA", "b***@example.com", "+1 416 ••• ••14"],
-    ],
-  },
-  "ski-shops": {
-    label: "Ski shops",
-    rows: [
-      ["Sample Alpine Outfitters", "Denver, US", "s***@example.com", "+1 303 ••• ••21"],
-      ["Placeholder Snow & Board", "Vancouver, CA", "w***@example.com", "+1 604 ••• ••22"],
-      ["Example Ski Rental", "Chamonix, FR", "l***@example.com", "+33 4 •• •• ••23"],
-      ["Demo Powder Supply", "Salt Lake City, US", "p***@example.com", "+1 801 ••• ••24"],
-    ],
-  },
-} as const;
-
-type SheetKey = keyof typeof sheets;
-const cols = ["Business", "Location", "Email", "Phone"];
+const keys = ["dentists", "restaurants", "ski-shops"] as const;
+type SheetKey = (typeof keys)[number];
 
 export function SampleLedger() {
   const [key, setKey] = useState<SheetKey>("dentists");
-  const sheet = sheets[key];
+  const sheet = sampleSheets[key];
 
   return (
     <div className="rounded-xl border-2 border-forest-900 bg-white shadow-[6px_6px_0_0_var(--color-forest-900)]">
       <div className="flex flex-wrap items-center gap-2 border-b-2 border-forest-900 bg-sand-100 p-3">
         <span className="mr-1 text-sm font-semibold text-forest-900">Pick a list</span>
-        {(Object.keys(sheets) as SheetKey[]).map((k) => (
+        {keys.map((k) => (
           <button
             key={k}
             type="button"
@@ -60,7 +29,7 @@ export function SampleLedger() {
                 : "border-sand-300 bg-sand-50 text-forest-900 hover:bg-sand-200",
             )}
           >
-            {sheets[k].label}
+            {sampleSheets[k].label}
           </button>
         ))}
       </div>
@@ -69,7 +38,7 @@ export function SampleLedger() {
         <table className="w-full min-w-[34rem] text-left text-sm">
           <thead>
             <tr className="border-b border-sand-200 text-forest-500">
-              {cols.map((c) => (
+              {sampleColumns.map((c) => (
                 <th key={c} scope="col" className="px-4 py-2.5 font-semibold">
                   {c}
                 </th>
