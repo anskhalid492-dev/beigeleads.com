@@ -13,7 +13,6 @@ const pages: Record<string, { title: string; note: string }> = {
   about: { title: "About", note: "This page is being written." },
   bundles: { title: "Bundles", note: "Bundles are on the way." },
   creators: { title: "Creators", note: "Creator and influencer lists are on the way." },
-  "use-cases": { title: "Use cases", note: "Use-case guides are being written." },
   "case-studies": { title: "Case studies", note: "Case studies will appear here once we have real ones." },
   blog: { title: "Blog", note: "Guides are on the way." },
 };

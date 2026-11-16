@@ -30,3 +30,8 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Product-page "Buy" buttons are disabled until Phase 4 checkout; wire them to checkout
 - [ ] Apply `drizzle/0001_*.sql` (product_faqs) to the remote D1 and build the admin editor; page currently uses templated FAQs
 - [ ] Add Product JSON-LD with real offers once a product is live (omitted while draft)
+
+## Solutions pages
+- [ ] Remove site-wide noindex at launch so /solutions/* become indexable (they are in sitemap.xml already).
+- [ ] Lawyer review of compliance wording in solutions copy (cold email, recruitment, healthcare, influencer).
+- [ ] Update recommended databases when real estate, creator and recruitment lists exist.

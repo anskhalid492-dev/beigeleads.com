@@ -6,6 +6,7 @@ export const megaMenu = [
 ] as const;
 
 export const mainNav = [
+  { label: "Solutions", href: "/solutions" },
   { label: "Pricing", href: "/pricing" },
   { label: "How it works", href: "/how-it-works" },
   { label: "Compare", href: "/compare" },

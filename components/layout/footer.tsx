@@ -1,71 +1,94 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { competitors, compareHref, compareTitle } from "@/lib/compare";
+import { competitors, compareHref } from "@/lib/compare";
 
-// Legal and trust pages are placeholders until written and lawyer-reviewed (CLAUDE.md section 10).
-const columns: { title: string; links: readonly (readonly [label: string, href: string])[] }[] = [
+import { solutions } from "@/lib/solutions";
+
+type Link_ = readonly [label: string, href: string];
+type Column = { title: string; links?: readonly Link_[]; groups?: readonly { heading: string; links: readonly Link_[] }[] };
+
+// Exactly six columns, in this order. Legal merges the former Trust and Legal columns.
+// Legal pages are drafts until written and lawyer-reviewed (CLAUDE.md section 10).
+const compareLabel = (name: string) => (name === "subscription tools" ? "Subscription Tools" : name);
+
+const columns: Column[] = [
   {
     title: "Company",
     links: [
       ["About", "/about"],
       ["Contact", "/contact"],
-      ["Request a category", "/request-category"],
-      ["Opt out", "/opt-out"],
+      ["Request a Category", "/request-category"],
+      ["Opt Out", "/opt-out"],
     ],
   },
   {
     title: "Lists",
     links: [
-      ["All lists", "/lists"],
+      ["All Lists", "/lists"],
       ["Dentists", "/lists/dentists"],
       ["Restaurants", "/lists/restaurants"],
-      ["Ski shops", "/lists/ski-shops"],
-      ["Custom list", "/custom-list"],
+      ["Ski Shops", "/lists/ski-shops"],
+      ["Custom Lists", "/custom-list"],
       ["Bundles", "/bundles"],
       ["Creators", "/creators"],
     ],
   },
   {
+    title: "Solutions",
+    links: [["All Solutions", "/solutions"], ...solutions.map((x) => [x.navName, `/solutions/${x.slug}`] as const)],
+  },
+  {
+    title: "Compare",
+    links: competitors.map((c) => [`BeigeLeads vs ${compareLabel(c.name)}`, compareHref(c.slug)] as const),
+  },
+  {
     title: "Resources",
     links: [
       ["Pricing", "/pricing"],
-      ["How it works", "/how-it-works"],
-      ["Request a sample", "/sample"],
-      ["Use cases", "/use-cases"],
-      ["Case studies", "/case-studies"],
+      ["How It Works", "/how-it-works"],
+      ["Request a Sample", "/sample"],
+      ["Case Studies", "/case-studies"],
       ["Blog", "/blog"],
       ["FAQ", "/faq"],
     ],
   },
   {
-    title: "Compare",
-    links: competitors.map((c) => [compareTitle(c.name), compareHref(c.slug)] as const),
-  },
-  {
-    title: "Trust",
-    links: [
-      ["Data sources", "/data-sources"],
-      ["Verification", "/verification"],
-      ["Lawful use", "/legal/lawful-use"],
-      ["Crypto payments", "/legal/crypto-payments"],
-      ["GDPR", "/legal/gdpr"],
-      ["CCPA", "/legal/ccpa"],
-      ["CAN-SPAM", "/legal/can-spam"],
-      ["CASL", "/legal/casl"],
-    ],
-  },
-  {
     title: "Legal",
-    links: [
-      ["Privacy", "/legal/privacy"],
-      ["Terms", "/legal/terms"],
-      ["Refund & replacement", "/legal/refund-replacement"],
-      ["Delivery", "/legal/delivery"],
-      ["Cookies", "/legal/cookies"],
-      ["Data processing", "/legal/dpa"],
+    groups: [
+      {
+        heading: "Trust & Data Practices",
+        links: [
+          ["Data Sources", "/data-sources"],
+          ["Data Verification", "/verification"],
+          ["Lawful Use", "/legal/lawful-use"],
+          ["Cryptocurrency Payments", "/legal/crypto-payments"],
+        ],
+      },
+      {
+        heading: "Compliance",
+        links: [
+          ["GDPR", "/legal/gdpr"],
+          ["CCPA", "/legal/ccpa"],
+          ["CAN-SPAM", "/legal/can-spam"],
+          ["CASL", "/legal/casl"],
+        ],
+      },
+      {
+        heading: "Legal Policies",
+        links: [
+          ["Privacy Policy", "/legal/privacy"],
+          ["Terms & Conditions", "/legal/terms"],
+          ["Refund & Replacement Policy", "/legal/refund-replacement"],
+          ["Delivery Policy", "/legal/delivery"],
+          ["Cookie Policy", "/legal/cookies"],
+          ["Data Processing Policy", "/legal/dpa"],
+        ],
+      },
     ],
   },
 ];
+
+const linkCls = "hover:text-sand-50 hover:underline underline-offset-4";
 
 export function Footer() {
   return (
@@ -79,7 +102,7 @@ export function Footer() {
     >
       {/* Call to action */}
       <div className="border-b border-forest-700">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-8 px-4 py-20">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-4 py-20 sm:px-6 lg:px-8">
           <h2 className="display max-w-xl text-5xl text-sand-50 sm:text-6xl">See a sample before you spend a cent.</h2>
           <Button asChild size="lg">
             <Link href="/sample">Request a free sample</Link>
@@ -88,26 +111,42 @@ export function Footer() {
       </div>
 
       {/* Link columns */}
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-12 px-4 py-16 md:grid-cols-3 lg:grid-cols-6">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-12 px-4 py-16 sm:px-6 md:grid-cols-3 lg:grid-cols-6 lg:px-8">
         {columns.map((col) => (
           <nav key={col.title} aria-label={col.title}>
             <p className="font-semibold text-forest-300">{col.title}</p>
-            <ul className="mt-5 space-y-3 text-[0.95rem]">
-              {col.links.map(([label, href]) => (
-                <li key={href}>
-                  <Link href={href} className="hover:text-sand-50 hover:underline underline-offset-4">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {col.links && (
+              <ul className="mt-5 space-y-3 text-[0.95rem]">
+                {col.links.map(([label, href]) => (
+                  <li key={href}>
+                    <Link href={href} className={linkCls}>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {col.groups?.map((g) => (
+              <div key={g.heading} className="mt-5 first:mt-5">
+                <p className="text-xs font-semibold text-sand-300">{g.heading}</p>
+                <ul className="mt-2.5 space-y-3 text-[0.95rem]">
+                  {g.links.map(([label, href]) => (
+                    <li key={href}>
+                      <Link href={href} className={linkCls}>
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </nav>
         ))}
       </div>
 
       {/* Brand row */}
       <div className="border-t border-forest-700">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-sand-300">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-sand-300 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
               <rect width="24" height="24" rx="5" fill="#fbf8f1" />
