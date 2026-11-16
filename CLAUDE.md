@@ -77,7 +77,7 @@ Reasons: illegal in many jurisdictions (FTC, UK CMA, EU consumer law), and crypt
 - Use plain static images or Cloudflare Images. Do not rely on the default Next image optimizer.
 - Before using any Next.js or OpenNext feature, check the current OpenNext Cloudflare docs for support. If a feature is unsupported, tell me instead of working around it silently.
 - Fallback if OpenNext becomes a blocker: migrate to Astro (ask first).
-- **Decisions made in Phase 1:** Next.js 16 `cacheComponents` and `partialPrefetching` are OFF (OpenNext support unverified). Fonts are self-hosted via `@fontsource-variable` (Bricolage Grotesque only: condensed heavy for headlines, normal width for body) instead of `next/font/google`, so builds need no Google access and no visitor data goes to Google. `images.unoptimized` is true. `cloudflare-env.d.ts` is committed (regenerate with `npm run cf-typegen`). Placeholder seed data lives in `drizzle/seed.sql`; see `TODO-BEFORE-LAUNCH.md`.
+- **Decisions made in Phase 1:** Next.js 16 `cacheComponents` and `partialPrefetching` are OFF (OpenNext support unverified). Fonts are self-hosted via `@fontsource-variable` (Bricolage Grotesque only: condensed heavy for headlines, normal width for body) instead of `next/font/google`, so builds need no Google access and no visitor data goes to Google. `images.unoptimized` is true. `cloudflare-env.d.ts` is committed, full runtime types, ESLint-ignored (regenerate with `npm run cf-typegen`). Secrets/vars are declared in `env.d.ts`. Placeholder seed data lives in `drizzle/seed.sql`; see `TODO-BEFORE-LAUNCH.md`.
 
 ---
 
@@ -386,3 +386,13 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - [ ] Which regions are blocked or restricted at launch
 - [ ] Lawyer for legal review
 - [ ] Email verification provider or in-house method
+
+---
+
+## 17. Phase 3 decisions
+
+- Public forms (sample, category request, contact, opt-out) go through `lib/forms/handle.ts`: honeypot, Zod validation, Turnstile, KV rate limit (5/hour/IP per route), then the handler. Responses never reveal whether an email already exists.
+- Emails are sent with `waitUntil` + Resend (`lib/forms/email.ts`), not a Queue yet. Queue (retries) is deferred; add a consumer when retries matter.
+- Opt-outs store only `sha256(HASH_SALT:email)`. The data pipeline MUST hash the same way to apply suppressions.
+- Config lives in the Cloudflare dashboard (Settings > Variables and Secrets): secrets `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `HASH_SALT`; vars `NOTIFY_EMAIL`, `EMAIL_FROM`; build variable `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. `TURNSTILE_VERIFY_URL` is for local tests only; never set it in production.
+- `/data-sources`, `/verification` and all `/legal/*` pages stay stubs until the data-sourcing decision (section 16) and lawyer review. Do not invent their content.

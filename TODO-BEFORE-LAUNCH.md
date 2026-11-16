@@ -16,3 +16,9 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Country and city pages are `noindex` (thin). Remove `robots` override once they have real counts and sample rows
 - [ ] `app/[page]/page.tsx` and `app/legal/[doc]/page.tsx` are coming-soon stubs. Replace each with the real page (phases 3 and 5); legal text needs lawyer review
 - [ ] sitemap.ts lists only indexable pages; add new indexable routes as they ship
+- [ ] Production setup for forms (Cloudflare dashboard): apply `drizzle/0000_*.sql` to the remote D1 (D1 > beigeleads > Console, or `npm run db:migrate:remote`); set secrets `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `HASH_SALT`; set vars `NOTIFY_EMAIL`, `EMAIL_FROM`; set build variable `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Workers Builds > Settings > Build > Variables)
+- [ ] Add the Turnstile hostname `beigeleads.com` (done at widget creation) and test the real widget on the live site
+- [ ] Sample requests only send a confirmation. Real masked sample delivery needs real data
+- [ ] Opt-out: pipeline must apply `suppressions` using the same hash (see CLAUDE.md section 17); add domain-level opt-out handling
+- [ ] Add a Cloudflare WAF rate-limit rule for `/api/*` (KV limiter is only a speed bump)
+- [ ] Email queue/retries (currently `waitUntil`, no retry)
