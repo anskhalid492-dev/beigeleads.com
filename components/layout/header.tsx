@@ -124,10 +124,10 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <Button asChild variant="secondary" size="sm" className="hidden rounded-full xl:inline-flex">
-              <Link href="/sample">Free sample</Link>
+              <Link href="/sample">Request a Sample</Link>
             </Button>
             <Button asChild size="sm" className="rounded-full">
-              <Link href="/#find-leads">Find leads</Link>
+              <Link href="/custom-list">Custom List Builder</Link>
             </Button>
             <button
               type="button"
@@ -245,8 +245,8 @@ export function Header() {
               ))}
             </ul>
             <div className="mt-3 grid gap-2 border-t border-sand-200 pt-3">
-              <Button asChild size="lg" className="rounded-full"><Link href="/#find-leads">Find leads</Link></Button>
-              <Button asChild variant="secondary" size="lg" className="rounded-full"><Link href="/sample">Free sample</Link></Button>
+              <Button asChild size="lg" className="rounded-full"><Link href="/custom-list">Custom List Builder</Link></Button>
+              <Button asChild variant="secondary" size="lg" className="rounded-full"><Link href="/sample">Request a Sample</Link></Button>
             </div>
           </div>
         )}
