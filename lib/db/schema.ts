@@ -319,3 +319,106 @@ export const customRequestStatus = sqliteTable("custom_request_status", {
   updatedBy: text("updated_by").notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });
+
+// ---- Blog CMS (migration 0007). Bodies/revisions/images are in R2; see lib/blog/*. ----
+export const blogCategories = sqliteTable(
+  "blog_categories",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    seoTitle: text("seo_title").notNull().default(""),
+    metaDescription: text("meta_description").notNull().default(""),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("blog_categories_slug_uq").on(t.slug)],
+);
+
+export const blogTags = sqliteTable(
+  "blog_tags",
+  { id: integer("id").primaryKey({ autoIncrement: true }), slug: text("slug").notNull(), name: text("name").notNull() },
+  (t) => [uniqueIndex("blog_tags_slug_uq").on(t.slug)],
+);
+
+export const blogPosts = sqliteTable(
+  "blog_posts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    excerpt: text("excerpt").notNull().default(""),
+    status: text("status", { enum: ["draft", "scheduled", "published", "archived"] }).notNull().default("draft"),
+    categoryId: integer("category_id"),
+    author: text("author").notNull().default(""),
+    featuredImage: text("featured_image"),
+    featuredAlt: text("featured_alt").notNull().default(""),
+    readingMinutes: integer("reading_minutes").notNull().default(1),
+    searchText: text("search_text").notNull().default(""),
+    seoTitle: text("seo_title").notNull().default(""),
+    metaDescription: text("meta_description").notNull().default(""),
+    canonicalUrl: text("canonical_url").notNull().default(""),
+    noindex: integer("noindex", { mode: "boolean" }).notNull().default(false),
+    ogTitle: text("og_title").notNull().default(""),
+    ogDescription: text("og_description").notNull().default(""),
+    ogImage: text("og_image"),
+    focusKeyword: text("focus_keyword").notNull().default(""),
+    relatedJson: text("related_json").notNull().default("[]"),
+    publishedAt: integer("published_at", { mode: "timestamp" }),
+    scheduledAt: integer("scheduled_at", { mode: "timestamp" }),
+    version: integer("version").notNull().default(1),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+    updatedBy: text("updated_by").notNull().default(""),
+  },
+  (t) => [uniqueIndex("blog_posts_slug_uq").on(t.slug), index("blog_posts_status_idx").on(t.status, t.publishedAt)],
+);
+
+export const blogPostTags = sqliteTable("blog_post_tags", { postId: integer("post_id").notNull(), tagId: integer("tag_id").notNull() }, (t) => [
+  uniqueIndex("blog_post_tags_pk").on(t.postId, t.tagId),
+]);
+
+export const blogRevisions = sqliteTable(
+  "blog_revisions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    postId: integer("post_id").notNull(),
+    version: integer("version").notNull(),
+    title: text("title").notNull(),
+    r2Key: text("r2_key").notNull(),
+    editor: text("editor").notNull(),
+    kind: text("kind").notNull().default("manual"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("blog_revisions_post_idx").on(t.postId, t.id)],
+);
+
+export const blogMedia = sqliteTable(
+  "blog_media",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    key: text("key").notNull(),
+    filename: text("filename").notNull(),
+    mime: text("mime").notNull(),
+    size: integer("size").notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    alt: text("alt").notNull().default(""),
+    uploadedBy: text("uploaded_by").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("blog_media_key_uq").on(t.key)],
+);
+
+export const blogPostMedia = sqliteTable("blog_post_media", { postId: integer("post_id").notNull(), mediaId: integer("media_id").notNull() }, (t) => [
+  uniqueIndex("blog_post_media_pk").on(t.postId, t.mediaId),
+]);
+
+export const blogAudit = sqliteTable("blog_audit", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  postId: integer("post_id"),
+  actor: text("actor").notNull(),
+  action: text("action").notNull(),
+  detail: text("detail").notNull().default(""),
+  createdAt: createdAt(),
+});

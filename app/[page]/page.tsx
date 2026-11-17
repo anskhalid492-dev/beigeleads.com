@@ -12,7 +12,6 @@ const pages: Record<string, { title: string; note: string }> = {
   bundles: { title: "Bundles", note: "Bundles are on the way." },
   creators: { title: "Creators", note: "Creator and influencer lists are on the way." },
   "case-studies": { title: "Case studies", note: "Case studies will appear here once we have real ones." },
-  blog: { title: "Blog", note: "Guides are on the way." },
 };
 
 export const dynamicParams = false;

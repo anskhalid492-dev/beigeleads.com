@@ -95,3 +95,10 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Apply migration `drizzle/0006_custom_request_status.sql` to remote D1 (admin custom-request status tracking is off until then).
 - [ ] Decide how custom list requests are answered/priced (owner process); add an admin view if volume grows.
 
+
+## Blog CMS
+- [ ] Run `drizzle/0007_blog_cms.sql` in D1 (one statement at a time in D1 Studio).
+- [ ] Click through the editor on the live admin: create, autosave, image upload, table, embed, schedule, publish, restore revision.
+- [ ] Confirm a scheduled article goes live (cron every minute).
+- [ ] Decide the Workers Paid plan (dynamic blog pages vs the free 10 ms CPU limit).
+- [ ] Write real articles; the blog stays noindex site-wide until launch.

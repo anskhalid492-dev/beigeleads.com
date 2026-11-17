@@ -1,0 +1,137 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { z } from "zod";
+import { requireAdmin } from "@/lib/admin/require-admin";
+import { createPost, deletePost, duplicatePost, restoreRevision, savePost, transition, type Action } from "@/lib/blog/posts";
+import { deleteCategory, deleteTag, saveCategory, saveTag, BlogError } from "@/lib/blog/taxonomy";
+import { deleteMedia, listMedia, mediaUsage, setAlt } from "@/lib/blog/media";
+
+export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string; conflict?: boolean };
+
+const fail = (e: unknown): { ok: false; error: string; conflict?: boolean } => {
+  if (e instanceof BlogError) return e.message === "conflict" ? { ok: false, error: "A newer version of this article was saved elsewhere. Reload to see it before you save again.", conflict: true } : { ok: false, error: e.message };
+  if (e instanceof z.ZodError) return { ok: false, error: "Some fields are not valid." };
+  return { ok: false, error: e instanceof Error && e.message === "forbidden" ? "Not allowed." : "Something went wrong. Try again." };
+};
+
+const inputSchema = z.object({
+  title: z.string().max(300), slug: z.string().max(200), excerpt: z.string().max(1000), categoryId: z.number().int().nullable(), author: z.string().max(200),
+  featuredImage: z.string().max(600).nullable(), featuredAlt: z.string().max(400), seoTitle: z.string().max(300), metaDescription: z.string().max(600), canonicalUrl: z.string().max(2100), noindex: z.boolean(),
+  ogTitle: z.string().max(300), ogDescription: z.string().max(600), ogImage: z.string().max(600).nullable(), focusKeyword: z.string().max(200),
+  related: z.array(z.number().int()).max(10), tagIds: z.array(z.number().int()).max(30), scheduledAt: z.number().nullable(), doc: z.unknown(),
+});
+
+export async function saveAction(id: number, input: unknown, expectedVersion: number, kind: "autosave" | "manual"): Promise<Result<{ version: number; updatedAt: number }>> {
+  try {
+    const admin = await requireAdmin();
+    const r = await savePost(getCloudflareContext().env, admin.email, id, inputSchema.parse(input), expectedVersion, kind);
+    return { ok: true, version: r.version, updatedAt: r.updatedAt };
+  } catch (e) { return fail(e); }
+}
+
+export async function transitionAction(id: number, action: Action, at?: number | null): Promise<Result> {
+  try {
+    const admin = await requireAdmin();
+    z.enum(["publish", "schedule", "unpublish", "archive", "restore"]).parse(action);
+    await transition(getCloudflareContext().env, admin.email, id, action, at);
+    revalidatePath("/admin/blog"); revalidatePath("/blog");
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}
+
+export async function createAction(): Promise<void> {
+  const admin = await requireAdmin();
+  const id = await createPost(getCloudflareContext().env, admin.email);
+  redirect(`/admin/blog/${id}/edit`);
+}
+
+export async function duplicateAction(id: number): Promise<Result<{ id: number }>> {
+  try {
+    const admin = await requireAdmin();
+    const nid = await duplicatePost(getCloudflareContext().env, admin.email, id);
+    revalidatePath("/admin/blog");
+    return { ok: true, id: nid };
+  } catch (e) { return fail(e); }
+}
+
+export async function bulkAction(ids: number[], action: "publish" | "archive" | "delete"): Promise<Result<{ done: number; failed: string[] }>> {
+  try {
+    const admin = await requireAdmin();
+    const list = z.array(z.number().int()).max(100).parse(ids);
+    const env = getCloudflareContext().env;
+    let done = 0; const failed: string[] = [];
+    for (const id of list) {
+      try {
+        if (action === "delete") await deletePost(env, admin.email, id); else await transition(env, admin.email, id, action);
+        done++;
+      } catch (e) { failed.push(`#${id}: ${e instanceof BlogError ? e.message : "failed"}`); }
+    }
+    revalidatePath("/admin/blog"); revalidatePath("/blog");
+    return { ok: true, done, failed };
+  } catch (e) { return fail(e); }
+}
+
+export async function deleteAction(id: number): Promise<Result> {
+  try {
+    const admin = await requireAdmin();
+    await deletePost(getCloudflareContext().env, admin.email, id);
+    revalidatePath("/admin/blog"); revalidatePath("/blog");
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}
+
+export async function restoreRevisionAction(postId: number, revisionId: number, expectedVersion: number): Promise<Result<{ version: number }>> {
+  try {
+    const admin = await requireAdmin();
+    const r = await restoreRevision(getCloudflareContext().env, admin.email, postId, revisionId, expectedVersion);
+    revalidatePath(`/admin/blog/${postId}/edit`); revalidatePath("/blog");
+    return { ok: true, version: r.version };
+  } catch (e) { return fail(e); }
+}
+
+// ----- categories, tags, media -----
+export async function categoryAction(form: FormData): Promise<Result> {
+  try {
+    await requireAdmin();
+    const env = getCloudflareContext().env;
+    const id = Number(form.get("id")) || undefined;
+    if (String(form.get("intent")) === "delete" && id) await deleteCategory(env, id);
+    else await saveCategory(env, { id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? ""), description: String(form.get("description") ?? ""), seoTitle: String(form.get("seoTitle") ?? ""), metaDescription: String(form.get("metaDescription") ?? "") });
+    revalidatePath("/admin/blog/taxonomy"); revalidatePath("/blog");
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}
+
+export async function tagAction(form: FormData): Promise<Result> {
+  try {
+    await requireAdmin();
+    const env = getCloudflareContext().env;
+    const id = Number(form.get("id")) || undefined;
+    if (String(form.get("intent")) === "delete" && id) await deleteTag(env, id);
+    else await saveTag(env, { id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? "") });
+    revalidatePath("/admin/blog/taxonomy");
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}
+
+export async function mediaAltAction(id: number, alt: string): Promise<Result> {
+  try { await requireAdmin(); await setAlt(getCloudflareContext().env, id, alt); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
+}
+
+export async function mediaDeleteAction(id: number, force: boolean): Promise<Result> {
+  try { await requireAdmin(); await deleteMedia(getCloudflareContext().env, id, force); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
+}
+
+export async function listMediaAction(q: string, page: number): Promise<Result<{ items: { id: number; url: string; alt: string; filename: string; width: number | null; height: number | null }[]; total: number }>> {
+  try {
+    await requireAdmin();
+    const r = await listMedia(getCloudflareContext().env, { q: q.slice(0, 60), page: Math.max(1, Math.floor(page) || 1), per: 18 });
+    return { ok: true, total: r.total, items: r.rows.map((m) => ({ id: m.id, url: m.url, alt: m.alt, filename: m.filename, width: m.width, height: m.height })) };
+  } catch (e) { return fail(e); }
+}
+
+export async function mediaUsageAction(id: number): Promise<Result<{ posts: { id: number; title: string }[] }>> {
+  try { await requireAdmin(); return { ok: true, posts: await mediaUsage(getCloudflareContext().env, id) }; } catch (e) { return fail(e); }
+}

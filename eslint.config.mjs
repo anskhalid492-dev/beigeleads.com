@@ -5,6 +5,8 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Blog and media images come from our own /media route; the Next image optimizer is off (OpenNext decision).
+  { files: ["app/admin/**", "app/blog/**", "components/blog/**"], rules: { "@next/next/no-img-element": "off" } },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
