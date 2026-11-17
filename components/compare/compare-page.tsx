@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- static logo files; the image optimizer is off (CLAUDE.md section 3) */
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Faq } from "@/components/shared/faq";
@@ -12,9 +13,15 @@ const cell = "block px-4 py-3 align-top md:table-cell before:mb-1 before:block b
 const card = "rounded-2xl border border-sand-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md";
 
 /** Official logo when the owner has supplied the file; otherwise the name set as a wordmark badge. */
-function Mark({ name, logo, dark = false }: { name: string; logo?: string; dark?: boolean }) {
-  // eslint-disable-next-line @next/next/no-img-element -- static files, image optimizer is off
-  if (logo) return <img src={logo} alt={`${name} logo`} className="h-10 w-auto max-w-[180px] object-contain" />;
+function Mark({ name, logo, iconOnly = false, dark = false }: { name: string; logo?: string; iconOnly?: boolean; dark?: boolean }) {
+  if (logo && iconOnly)
+    return (
+      <span className="flex items-center gap-2">
+        <img src={logo} alt="" className="size-10 object-contain" />
+        <span className="display text-3xl text-forest-700">{name}</span>
+      </span>
+    );
+  if (logo) return <img src={logo} alt={`${name} logo`} className="h-10 w-auto max-w-[180px] object-contain sm:h-12 sm:max-w-[220px]" />;
   return <span className={`display text-3xl ${dark ? "text-forest-900" : "text-forest-700"}`}>{name}</span>;
 }
 
@@ -42,7 +49,7 @@ export function ComparePage({ c }: { c: Comparison }) {
             <div className="mx-auto flex max-w-xl items-center justify-center gap-4 sm:gap-6" aria-hidden={false}>
               <div className="flex flex-1 justify-end"><Mark name="BeigeLeads" dark /></div>
               <span className="grid size-12 shrink-0 place-items-center rounded-full bg-forest-900 text-sm font-bold text-sand-50">VS</span>
-              <div className="flex flex-1 justify-start"><Mark name={c.name} logo={c.logo} /></div>
+              <div className="flex flex-1 justify-start"><Mark name={c.name} logo={c.logo} iconOnly={c.logoIconOnly} /></div>
             </div>
             <h1 className="display mt-8 text-5xl text-forest-900 sm:text-7xl">{title}: which is better for buying B2B contact lists?</h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg">
@@ -85,7 +92,7 @@ export function ComparePage({ c }: { c: Comparison }) {
               <thead className="sr-only md:not-sr-only md:table-header-group">
                 <tr className="bg-sand-100 text-forest-900">
                   <th scope="col" className="px-4 py-4 font-semibold md:w-1/5">Topic</th>
-                  <th scope="col" className="px-4 py-4 md:w-2/5"><Mark name={c.name} logo={c.logo} /></th>
+                  <th scope="col" className="px-4 py-4 md:w-2/5"><Mark name={c.name} logo={c.logo} iconOnly={c.logoIconOnly} /></th>
                   <th scope="col" className="border-x-2 border-t-2 border-forest-900 bg-forest-100 px-4 py-4 md:w-2/5"><Mark name="BeigeLeads" dark /></th>
                 </tr>
               </thead>

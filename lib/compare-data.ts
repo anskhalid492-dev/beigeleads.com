@@ -15,6 +15,8 @@ export type Comparison = {
   name: string;
   /** Official logo file under /public/logos/compare (owner-supplied). Text badge is shown until set. */
   logo?: string;
+  /** true when the logo file is an icon without the name (the name is shown beside it). */
+  logoIconOnly?: boolean;
   /** One line used on the hub and in the meta description. */
   tagline: string;
   /** What they are, from their own description. */
@@ -47,6 +49,7 @@ const common = (): [string, string][] => [
 export const comparisons: Comparison[] = [
   {
     slug: "leadsmunch",
+    logo: "/logos/compare/leadsmunch.png",
     name: "LeadsMunch",
     tagline: "Another store where you buy ready-made contact lists once.",
     about: "LeadsMunch sells ready-made business contact lists. Its home page says \"Buy now from $49, no sign-up required\" and promises instant access after purchase.",
@@ -68,6 +71,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "cognism",
+    logo: "/logos/compare/cognism.svg",
     name: "Cognism",
     tagline: "A sales-intelligence platform sold on custom pricing.",
     about: "Cognism is a prospecting platform. Its pricing page says pricing \"is tailored based on the product you need, your team setup and how you plan to use the platform.\"",
@@ -87,6 +91,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "zoominfo",
+    logo: "/logos/compare/zoominfo.png",
     name: "ZoomInfo",
     tagline: "A large go-to-market platform with usage-based credits.",
     about: "ZoomInfo describes itself as a go-to-market platform. Its own information page says it is \"free to start with consumption credits based on usage\" and does not use fixed seat tiers.",
@@ -109,6 +114,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "apollo",
+    logo: "/logos/compare/apollo.png",
     name: "Apollo",
     tagline: "A sales platform with credit-based plans and a free tier.",
     about: "Apollo is a sales engagement and data platform. Its pricing page lists Free, Basic, Professional and Custom plans.",
@@ -129,6 +135,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "lusha",
+    logo: "/logos/compare/lusha.png",
     name: "Lusha",
     tagline: "Contact lookup sold as monthly or annual credit plans.",
     about: "Lusha offers Free, Starter, Pro and Premium self-serve plans, plus Scale for larger teams. Starter, Pro and Premium use a credit slider.",
@@ -148,6 +155,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "seamless-ai",
+    logo: "/logos/compare/seamless-ai.png",
     name: "Seamless.AI",
     tagline: "A prospecting tool with a free plan and sales-led pricing.",
     about: "Seamless.AI names a Free plan and a Pro plan and mentions more advanced tiers. Its own article says it is free to use with 50 credits and no credit card.",
@@ -166,6 +174,8 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "rocketreach",
+    logo: "/logos/compare/rocketreach.png",
+    logoIconOnly: true,
     name: "RocketReach",
     tagline: "Contact search with a free plan and paid monthly tiers.",
     about: "RocketReach offers a free plan \"that lets you test data quality before upgrading,\" and team plans through a demo.",
@@ -184,6 +194,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "uplead",
+    logo: "/logos/compare/uplead.png",
     name: "UpLead",
     tagline: "Credit plans with published prices and a short free trial.",
     about: "UpLead publishes Essentials and Plus prices and a custom Professional plan. Its page says \"We verify email addresses with a data accuracy rate of 95%.\"",
@@ -204,6 +215,7 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "hunter",
+    logo: "/logos/compare/hunter.png",
     name: "Hunter",
     tagline: "Email finder and verifier sold as monthly credits.",
     about: "Hunter finds and verifies email addresses. Its pricing page defines \"1 credit = 1 email found via Domain Search, Email Finder, or Bulk Email Finder.\"",
