@@ -24,5 +24,7 @@ interface CloudflareEnv {
   BLOCKSCOUT_API_KEY?: string; // secret (optional)
   TRONGRID_API_KEY?: string; // secret (optional): raises TronGrid rate limits
   ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
+  BLOG_EDITOR_EMAILS?: string; // var (optional): comma-separated emails that may write blog drafts (Access only, no publish/delete)
+  NEWSLETTER_ENABLED?: string; // var: "true" shows the blog newsletter signup. Anything else = hidden.
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
 }

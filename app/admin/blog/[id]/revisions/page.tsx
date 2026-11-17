@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Badge, Empty, PageHeader, Panel, fmtDate } from "@/components/admin/ui";
 import { ArticleBody } from "@/components/blog/render";
-import { guardAdmin } from "@/lib/admin/guard";
+import { guardBlog } from "@/lib/admin/guard";
 import { getPost, getRevision, listRevisions } from "@/lib/blog/posts";
 import { RestoreButton } from "./restore-button";
 
 export const dynamic = "force-dynamic";
 
 export default async function Revisions({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ rev?: string }> }) {
-  await guardAdmin();
+  await guardBlog();
   const id = Number((await params).id);
   const env = getCloudflareContext().env;
   const post = Number.isInteger(id) ? await getPost(env, id) : null;

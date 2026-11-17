@@ -10,6 +10,7 @@ import { useToast } from "@/components/admin/toast";
 import { Button } from "@/components/ui/button";
 import { ArticleBody } from "@/components/blog/render";
 import { editorExtensions } from "@/components/blog/extensions";
+import { uploadImage } from "@/lib/blog/upload-client";
 import { cleanDoc, embedUrl, readingMinutes, slugifyText, wordCount, type DocNode } from "@/lib/blog/doc";
 import { analyzeSeo, META_RANGE, SEO_TITLE_RANGE, suggestLinks, type InternalTarget } from "@/lib/blog/seo";
 import { saveAction, transitionAction } from "../../actions";
@@ -31,7 +32,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (ms: number | null) => { if (!ms) return ""; const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const tzLabel = () => { try { const o = -new Date().getTimezoneOffset(); const sign = o >= 0 ? "+" : "-"; return `${Intl.DateTimeFormat().resolvedOptions().timeZone} (UTC${sign}${pad(Math.floor(Math.abs(o) / 60))}:${pad(Math.abs(o) % 60)})`; } catch { return "your local time"; } };
 
-export function Editor({ post, cats, tags, options, targets }: { post: EditorPost; cats: { id: number; name: string }[]; tags: { id: number; name: string }[]; options: { id: number; title: string }[]; targets: InternalTarget[] }) {
+export function Editor({ role, post, cats, tags, options, targets }: { role: "admin" | "editor"; post: EditorPost; cats: { id: number; name: string }[]; tags: { id: number; name: string }[]; options: { id: number; title: string }[]; targets: InternalTarget[] }) {
   const router = useRouter();
   const toast = useToast();
   const [f, setF] = useState<Fields>(post.fields);
@@ -58,13 +59,54 @@ export function Editor({ post, cats, tags, options, targets }: { post: EditorPos
   const conflictRef = useRef(false);
   const key = `blog-draft-${post.id}`;
 
+  const editorRef = useRef<TipTap | null>(null);
+  const importing = useRef(new Set<string>());
   const editor = useEditor({
     extensions: editorExtensions,
     content: post.doc,
     immediatelyRender: false,
-    editorProps: { attributes: { "aria-label": "Article body", role: "textbox", "aria-multiline": "true" } },
-    onUpdate: () => touch(),
+    editorProps: {
+      attributes: { "aria-label": "Article body", role: "textbox", "aria-multiline": "true" },
+      // Pasted or dropped image files are uploaded to the media library instead of being embedded.
+      handlePaste: (_v, e) => { const fs = Array.from(e.clipboardData?.files ?? []).filter((x) => x.type.startsWith("image/")); if (!fs.length) return false; e.preventDefault(); void importFiles(fs); return true; },
+      handleDrop: (_v, e) => { const fs = Array.from((e as DragEvent).dataTransfer?.files ?? []).filter((x) => x.type.startsWith("image/")); if (!fs.length) return false; e.preventDefault(); void importFiles(fs); return true; },
+    },
+    onUpdate: () => { touch(); void importDataImages(); },
   });
+
+  // Images pasted from Word/Docs can arrive as data: URLs. Upload them to the library and swap the address.
+  const importDataImages = async () => {
+    const ed = editorRef.current;
+    if (!ed) return;
+    const found: string[] = [];
+    ed.state.doc.descendants((n) => { const src = n.attrs?.src; if (n.type.name === "image" && typeof src === "string" && src.startsWith("data:") && !importing.current.has(src)) found.push(src); });
+    for (const src of found) {
+      importing.current.add(src);
+      try {
+        const blob = await (await fetch(src)).blob();
+        const r = await uploadImage(new File([blob], "pasted-image", { type: blob.type }));
+        if (!r.ok) { toast(false, `A pasted image could not be imported: ${r.error}`); continue; }
+        const e2 = editorRef.current;
+        if (!e2) return;
+        let done = false;
+        e2.state.doc.descendants((n, pos) => {
+          if (done) return false;
+          if (n.type.name === "image" && n.attrs.src === src) { e2.view.dispatch(e2.state.tr.setNodeMarkup(pos, undefined, { ...n.attrs, src: r.media.url, alt: n.attrs.alt || r.media.alt })); done = true; return false; }
+        });
+      } catch { toast(false, "A pasted image could not be imported. Upload it instead."); }
+    }
+  };
+
+  const importFiles = async (files: File[]) => {
+    for (const f of files) {
+      const r = await uploadImage(f);
+      if (!r.ok) { toast(false, `${f.name}: ${r.error}`); continue; }
+      editorRef.current?.chain().focus().setImage({ src: r.media.url, alt: r.media.alt }).run();
+      toast(true, "Image uploaded. Add alt text by selecting it and pressing the image button.");
+    }
+  };
+
+  useEffect(() => { editorRef.current = editor; }, [editor]);
 
   const backup = useCallback(() => {
     try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), fields: fRef.current, doc: editor?.getJSON() ?? null, base: version.current })); } catch { /* storage may be unavailable */ }
@@ -176,7 +218,7 @@ export function Editor({ post, cats, tags, options, targets }: { post: EditorPos
         <div className="ml-auto flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => setDialog("preview")}><Eye className="mr-1.5 size-4" aria-hidden />Preview</Button>
           <Button variant="secondary" disabled={busy || save === "saving" || conflict} onClick={() => void doSave("manual").then((ok) => ok && toast(true, "Saved."))}>Save</Button>
-          {(status === "draft" || status === "archived") && <Button disabled={busy || conflict} onClick={() => ask("Publish this article now? It becomes visible on the public blog.", () => void act("publish"))}>Publish</Button>}
+          {role === "admin" && (status === "draft" || status === "archived") && <Button disabled={busy || conflict} onClick={() => ask("Publish this article now? It becomes visible on the public blog.", () => void act("publish"))}>Publish</Button>}
         </div>
       </div>
 
@@ -212,6 +254,7 @@ export function Editor({ post, cats, tags, options, targets }: { post: EditorPos
           {tab === "publish" && (
             <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
               <p className="text-sm">Status: <strong>{status}</strong>{post.publishedAt ? ` · first published ${new Date(post.publishedAt).toLocaleDateString()}` : ""}</p>
+              {role === "editor" ? <p className="text-sm">You can write and save this draft. An admin reviews and publishes it.</p> : <>
               <div>
                 <label htmlFor="when" className={label}>Schedule for</label>
                 <input id="when" type="datetime-local" value={toLocalInput(f.scheduledAt)} onChange={(e) => update("scheduledAt", e.target.value ? new Date(e.target.value).getTime() : null)} className={input} />
@@ -224,6 +267,7 @@ export function Editor({ post, cats, tags, options, targets }: { post: EditorPos
                 {status === "published" && <Button asChild variant="secondary"><Link href={`/blog/${f.slug}`} target="_blank">View live</Link></Button>}
               </div>
               <p className="text-xs">Scheduled articles are published by a job that runs every minute. They are shown from the scheduled time even if the job is late.</p>
+              </>}
               <Link href={`/admin/blog/${post.id}/revisions`} className="text-sm font-semibold underline">Revision history</Link>
             </section>
           )}

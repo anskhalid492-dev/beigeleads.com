@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { uploadImage } from "@/lib/blog/upload-client";
 import { listMediaAction } from "./actions";
 
 export type Picked = { url: string; alt: string };
@@ -25,13 +26,9 @@ export function MediaPicker({ onPick, onClose }: { onPick: (p: Picked) => void; 
 
   const upload = async (file: File) => {
     setBusy(true); setErr("");
-    try {
-      const body = new FormData(); body.set("file", file);
-      const res = await fetch("/api/admin/media", { method: "POST", body });
-      const j = (await res.json()) as { error?: string; media?: Item };
-      if (!res.ok || !j.media) { setErr(j.error ?? "Upload failed."); return; }
-      onPick({ url: j.media.url, alt: j.media.alt });
-    } catch { setErr("Upload failed. Check your connection and try again."); } finally { setBusy(false); }
+    const r = await uploadImage(file);
+    setBusy(false);
+    if (r.ok) onPick(r.media); else setErr(r.error);
   };
 
   return (
@@ -47,7 +44,7 @@ export function MediaPicker({ onPick, onClose }: { onPick: (p: Picked) => void; 
             onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) void upload(f); }}
             className={`rounded-2xl border-2 border-dashed p-6 text-center text-sm ${drag ? "border-purple-600 bg-purple-100" : "border-sand-300"}`}>
             <p className="font-semibold text-forest-900">{busy ? "Uploading…" : "Drop an image here"}</p>
-            <p className="mt-1">JPEG, PNG, WebP or GIF, up to 5 MB.</p>
+            <p className="mt-1">JPEG, PNG, WebP or GIF, up to 5 MB. Large photos are shrunk to 2000 px wide before upload.</p>
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" aria-label="Upload an image" onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); e.target.value = ""; }} />
             <Button className="mt-3" variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>Choose file</Button>
           </div>

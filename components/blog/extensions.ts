@@ -43,7 +43,8 @@ export const Video = Node.create({
 
 export const editorExtensions = [
   StarterKit.configure({ heading: { levels: [2, 3, 4] }, link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: "noopener noreferrer" } } }),
-  Image.configure({ allowBase64: false }),
+  // allowBase64: pasted data: images are uploaded by the editor; cleanDoc rejects any that are left
+  Image.configure({ allowBase64: true }),
   TextAlign.configure({ types: ["heading", "paragraph"] }),
   Table.configure({ resizable: false }),
   TableRow, TableHeader, TableCell,

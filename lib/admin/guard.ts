@@ -1,10 +1,21 @@
 import { redirect } from "next/navigation";
-import { requireAdmin } from "./require-admin";
+import { requireAdmin, requireBlogUser } from "./require-admin";
 
-/** Page guard: sends the visitor to the admin login instead of showing a 404 for session problems. */
+const loginReasons = ["no-cookie", "bad-session", "email-mismatch"];
+const toLogin = (e: unknown): never => {
+  const m = e instanceof Error ? e.message : "";
+  redirect(`/admin/login?reason=${loginReasons.includes(m) ? m : "forbidden"}`);
+};
+
+/** Full-admin pages. Blog editors are sent to the blog instead of the login page. */
 export async function guardAdmin() {
   try { return await requireAdmin(); } catch (e) {
-    const m = e instanceof Error ? e.message : "";
-    redirect(`/admin/login?reason=${["no-cookie", "bad-session", "email-mismatch"].includes(m) ? m : "forbidden"}`);
+    if (e instanceof Error && e.message === "editor") redirect("/admin/blog");
+    return toLogin(e);
   }
+}
+
+/** Blog pages: admins and editors. */
+export async function guardBlog() {
+  try { return await requireBlogUser(); } catch (e) { return toLogin(e); }
 }

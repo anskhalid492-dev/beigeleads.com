@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { PageHeader, StatCard, fmtDate } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
-import { guardAdmin } from "@/lib/admin/guard";
+import { guardBlog } from "@/lib/admin/guard";
 import { blogStats, listPosts, type PostStatus } from "@/lib/blog/posts";
 import { listCategories } from "@/lib/blog/taxonomy";
 import { createAction } from "./actions";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 type SP = Promise<{ q?: string; status?: string; category?: string; author?: string; sort?: string; page?: string }>;
 
 export default async function BlogAdmin({ searchParams }: { searchParams: SP }) {
-  await guardAdmin();
+  const user = await guardBlog();
   const sp = await searchParams;
   const env = getCloudflareContext().env;
   let data;
@@ -37,7 +37,7 @@ export default async function BlogAdmin({ searchParams }: { searchParams: SP }) 
   return (
     <>
       <PageHeader title="Blog" text="Write, schedule and publish articles. Bodies and images are stored in R2; settings and status in D1."
-        actions={<div className="flex gap-2"><Button asChild variant="secondary"><Link href="/admin/blog/taxonomy">Categories & tags</Link></Button><form action={createAction}><Button type="submit">New article</Button></form></div>} />
+        actions={<div className="flex gap-2">{user.role === "admin" && <Button asChild variant="secondary"><Link href="/admin/blog/taxonomy">Categories & tags</Link></Button>}<form action={createAction}><Button type="submit">New article</Button></form></div>} />
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatCard label="All articles" value={stats.total} />
         <StatCard label="Published" value={stats.published} />
@@ -45,7 +45,7 @@ export default async function BlogAdmin({ searchParams }: { searchParams: SP }) 
         <StatCard label="Scheduled" value={stats.scheduled} />
         <StatCard label="Archived" value={stats.archived} />
       </div>
-      <PostTable
+      <PostTable role={user.role}
         rows={list.rows.map((r) => ({ id: r.id, title: r.title, slug: r.slug, status: r.status as PostStatus, author: r.author, image: r.featuredImage, category: r.categoryName, published: r.publishedAt ? fmtDate(r.publishedAt) : "", scheduled: r.scheduledAt ? fmtDate(r.scheduledAt) : "", updated: fmtDate(r.updatedAt) }))}
         total={list.total} page={list.page} per={list.per}
         cats={cats.map((c) => ({ id: c.id, name: c.name }))} authors={stats.authors}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { headingsOf, type DocNode } from "@/lib/blog/doc";
 import type { PublicCard } from "@/lib/blog/posts";
+import { NewsletterCta } from "./newsletter";
 import { PostCard, fmtDate } from "./cards";
 import { CopyLink, ReadingProgress } from "./client";
 import { ArticleBody } from "./render";
@@ -16,7 +17,7 @@ export type ArticleData = {
 };
 
 /** The article page, shared by the public route and the admin preview so what you preview is what is published. */
-export function ArticleView({ a, related, preview = false }: { a: ArticleData; related: PublicCard[]; preview?: boolean }) {
+export function ArticleView({ a, related, preview = false, newsletter = false }: { a: ArticleData; related: PublicCard[]; preview?: boolean; newsletter?: boolean }) {
   const toc = headingsOf(a.doc).filter((h) => h.level <= 3);
   const url = `${SITE_URL}/blog/${a.slug}`;
   const enc = encodeURIComponent;
@@ -83,6 +84,8 @@ export function ArticleView({ a, related, preview = false }: { a: ArticleData; r
           <p className="mx-auto mt-3 max-w-xl text-sand-200">Browse ready-made business contact lists, or tell us what you need and we will review a custom list request.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3"><Button asChild><Link href="/lists">Browse lists</Link></Button><Button asChild variant="secondary"><Link href="/custom-list">Build a custom list</Link></Button></div>
         </section>
+
+        {newsletter && <NewsletterCta />}
 
         {related.length > 0 && (
           <section className="mx-auto mt-16 max-w-6xl" aria-labelledby="rel">

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, FileText, ImageIcon, LogOut, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
+import { BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, FileText, ImageIcon, Mail, LogOut, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
@@ -14,12 +14,13 @@ const NAV = [
   ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Blog", "/admin/blog", FileText],
   ["Media", "/admin/media", ImageIcon],
+  ["Newsletter", "/admin/newsletter", Mail],
   ["Settings", "/admin/settings", Settings],
 ] as const;
 
 const TITLES: Record<string, string> = Object.fromEntries(NAV.map(([l, h]) => [h, l]));
 
-export function AdminShell({ email, logout, children }: { email: string | null; logout: () => Promise<void>; children: React.ReactNode }) {
+export function AdminShell({ email, role = "admin", logout, children }: { email: string | null; role?: "admin" | "editor"; logout: () => Promise<void>; children: React.ReactNode }) {
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(() => {
     try { return typeof localStorage !== "undefined" && localStorage.getItem("admin-collapsed") === "1"; } catch { return false; }
@@ -36,7 +37,7 @@ export function AdminShell({ email, logout, children }: { email: string | null; 
 
   const links = (compact: boolean) => (
     <ul className="space-y-1">
-      {NAV.map(([label, href, Icon]) => (
+      {NAV.filter(([, href]) => role === "admin" || href === "/admin/blog" || href === "/admin/media").map(([label, href, Icon]) => (
         <li key={href}>
           <Link href={href} prefetch={false} title={label} aria-current={active(href) ? "page" : undefined}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-purple-600 ${active(href) ? "bg-forest-100 text-forest-900" : "text-sand-200 hover:bg-forest-700 hover:text-sand-50"} ${active(href) ? "!text-forest-900" : ""}`}>

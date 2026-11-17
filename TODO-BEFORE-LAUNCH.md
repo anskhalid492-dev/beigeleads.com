@@ -102,3 +102,6 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Confirm a scheduled article goes live (cron every minute).
 - [ ] Decide the Workers Paid plan (dynamic blog pages vs the free 10 ms CPU limit).
 - [ ] Write real articles; the blog stays noindex site-wide until launch.
+- [ ] Run `drizzle/0008_newsletter.sql` in D1. Set `NEWSLETTER_ENABLED=true` only when you will really send emails; add newsletter signups to the privacy policy.
+- [ ] Editors: set `BLOG_EDITOR_EMAILS` and add those emails to the Cloudflare Access policy for /admin.
+- [ ] After 60 s caching: check Workers CPU/errors in the Cloudflare dashboard; decide on the Paid plan.

@@ -4,6 +4,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { PostCard } from "@/components/blog/cards";
 import { Button } from "@/components/ui/button";
+import { NewsletterCta } from "@/components/blog/newsletter";
+import { newsletterOn } from "@/lib/newsletter";
 import { listPublished, publishedCategories } from "@/lib/blog/posts";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +85,7 @@ export default async function BlogIndex(props: PageProps<"/blog">) {
             )}
           </>
         )}
+        {newsletterOn(env) && <NewsletterCta />}
       </div>
     </>
   );

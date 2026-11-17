@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { ArticleView } from "@/components/blog/article-view";
 import { getPublishedBySlug, relatedPublished } from "@/lib/blog/posts";
+import { newsletterOn } from "@/lib/newsletter";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export default async function BlogArticle(props: PageProps<"/blog/[slug]">) {
   const { row } = p;
   const related = await relatedPublished(getCloudflareContext().env, row).catch(() => []);
   return (
-    <ArticleView related={related} a={{
+    <ArticleView newsletter={newsletterOn(getCloudflareContext().env)} related={related} a={{
       title: row.title, slug: row.slug, excerpt: row.excerpt, author: row.author, readingMinutes: row.readingMinutes, featuredImage: row.featuredImage, featuredAlt: row.featuredAlt,
       publishedAt: row.publishedAt ?? row.scheduledAt ?? row.createdAt, updatedAt: row.updatedAt, category: p.category ? { name: p.category.name, slug: p.category.slug } : null, tags: p.tags, doc: p.doc, ogImage: row.ogImage,
     }} />

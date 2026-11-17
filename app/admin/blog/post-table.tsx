@@ -12,12 +12,13 @@ export type PostRow = { id: number; title: string; slug: string; status: Status;
 const TONE = { draft: "mute", scheduled: "info", published: "good", archived: "warn" } as const;
 const field = "h-10 rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900";
 
-export function PostTable(p: { rows: PostRow[]; total: number; page: number; per: number; cats: { id: number; name: string }[]; authors: string[]; q: string; status: string; category: string; author: string; sort: string }) {
+export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total: number; page: number; per: number; cats: { id: number; name: string }[]; authors: string[]; q: string; status: string; category: string; author: string; sort: string }) {
   const router = useRouter();
   const toast = useToast();
   const [pending, start] = useTransition();
   const [sel, setSel] = useState<number[]>([]);
   const [confirm, setConfirm] = useState<null | { text: string; run: () => Promise<void> }>(null);
+  const admin = p.role === "admin";
   const pages = Math.max(1, Math.ceil(p.total / p.per));
   const qs = (n: number) => { const u = new URLSearchParams(); if (p.q) u.set("q", p.q); if (p.status) u.set("status", p.status); if (p.category) u.set("category", p.category); if (p.author) u.set("author", p.author); if (p.sort !== "updated") u.set("sort", p.sort); if (n > 1) u.set("page", String(n)); const s = u.toString(); return s ? `?${s}` : "?"; };
 
@@ -45,7 +46,7 @@ export function PostTable(p: { rows: PostRow[]; total: number; page: number; per
         <Button type="submit" variant="secondary">Apply</Button>
       </form>
 
-      {sel.length > 0 && (
+      {admin && sel.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 border-b border-sand-200 bg-sand-100 px-4 py-2 text-sm">
           <span className="font-semibold text-forest-900">{sel.length} selected</span>
           <Button size="sm" variant="secondary" disabled={pending} onClick={() => bulk("publish", "Publish")}>Publish</Button>
@@ -60,14 +61,14 @@ export function PostTable(p: { rows: PostRow[]; total: number; page: number; per
           <table className="w-full min-w-[820px] text-left text-sm">
             <thead className="border-b border-sand-200 text-xs text-forest-700">
               <tr>
-                <th className="w-10 px-4 py-3"><input type="checkbox" aria-label="Select all on this page" checked={allOn} onChange={() => setSel(allOn ? [] : p.rows.map((r) => r.id))} /></th>
+                <th className="w-10 px-4 py-3">{admin && <input type="checkbox" aria-label="Select all on this page" checked={allOn} onChange={() => setSel(allOn ? [] : p.rows.map((r) => r.id))} />}</th>
                 <th className="px-2 py-3">Article</th><th className="px-2 py-3">Status</th><th className="px-2 py-3">Category</th><th className="px-2 py-3">Author</th><th className="px-2 py-3">Dates (UTC)</th><th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-sand-200">
               {p.rows.map((r) => (
                 <tr key={r.id} className="align-top">
-                  <td className="px-4 py-3"><input type="checkbox" aria-label={`Select ${r.title}`} checked={sel.includes(r.id)} onChange={() => setSel((s) => (s.includes(r.id) ? s.filter((x) => x !== r.id) : [...s, r.id]))} /></td>
+                  <td className="px-4 py-3">{admin && <input type="checkbox" aria-label={`Select ${r.title}`} checked={sel.includes(r.id)} onChange={() => setSel((s) => (s.includes(r.id) ? s.filter((x) => x !== r.id) : [...s, r.id]))} />}</td>
                   <td className="px-2 py-3">
                     <div className="flex items-start gap-3">
                       {r.image ?   <img src={r.image} alt="" className="h-12 w-16 shrink-0 rounded-lg object-cover" /> : <div className="h-12 w-16 shrink-0 rounded-lg bg-sand-100" aria-hidden />}
@@ -90,12 +91,14 @@ export function PostTable(p: { rows: PostRow[]; total: number; page: number; per
                       <Button asChild size="sm" variant="secondary"><Link href={`/admin/blog/${r.id}/edit`}>Edit</Link></Button>
                       <Button asChild size="sm" variant="secondary"><Link href={r.status === "published" ? `/blog/${r.slug}` : `/admin/blog/${r.id}/preview`} target="_blank">{r.status === "published" ? "View" : "Preview"}</Link></Button>
                       <Button size="sm" variant="secondary" disabled={pending} onClick={() => start(async () => { const x = await duplicateAction(r.id); if (x.ok) { toast(true, "Duplicated as a draft."); router.push(`/admin/blog/${x.id}/edit`); } else toast(false, x.error); })}>Duplicate</Button>
+                      {admin && (<>
                       {r.status === "published" || r.status === "scheduled"
                         ? <Button size="sm" variant="secondary" disabled={pending} onClick={() => ask(`Unpublish “${r.title}”? It disappears from the public blog and returns to draft.`, () => transitionAction(r.id, "unpublish"), "Unpublished.")}>Unpublish</Button>
                         : r.status === "archived"
                           ? <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => transitionAction(r.id, "restore"), "Restored to draft.")}>Restore</Button>
                           : <Button size="sm" disabled={pending} onClick={() => ask(`Publish “${r.title}” now?`, () => transitionAction(r.id, "publish"), "Published.")}>Publish</Button>}
                       <Button size="sm" variant="secondary" disabled={pending} onClick={() => ask(`Delete “${r.title}”? Its body, revisions and tag links are removed. This cannot be undone.`, () => deleteAction(r.id), "Deleted.")}>Delete</Button>
+                      </>)}
                     </div>
                   </td>
                 </tr>

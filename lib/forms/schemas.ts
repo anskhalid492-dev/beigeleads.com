@@ -52,3 +52,5 @@ export type CategoryRequestInput = z.infer<typeof categoryRequestSchema>;
 export type CustomListInput = z.infer<typeof customListSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
 export type OptOutInput = z.infer<typeof optOutSchema>;
+
+export const newsletterSchema = z.object({ ...base, email });

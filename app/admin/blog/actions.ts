@@ -3,12 +3,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/admin/require-admin";
-import { createPost, deletePost, duplicatePost, restoreRevision, savePost, transition, type Action } from "@/lib/blog/posts";
+import { can, type BlogUser } from "@/lib/admin/roles";
+import { requireBlogUser } from "@/lib/admin/require-admin";
+import { createPost, deletePost, duplicatePost, getPost, restoreRevision, savePost, transition, type Action } from "@/lib/blog/posts";
 import { deleteCategory, deleteTag, saveCategory, saveTag, BlogError } from "@/lib/blog/taxonomy";
 import { deleteMedia, listMedia, mediaUsage, setAlt } from "@/lib/blog/media";
 
 export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string; conflict?: boolean };
+
+const need = (ok: boolean) => { if (!ok) throw new BlogError("Only an admin can do this."); };
+/** Editors may only change drafts. Admins may change anything. */
+async function mayEdit(u: BlogUser, id: number) {
+  const post = await getPost(getCloudflareContext().env, id);
+  if (!post) throw new BlogError("Article not found.");
+  need(can.editPost(u.role, post.status));
+}
 
 const fail = (e: unknown): { ok: false; error: string; conflict?: boolean } => {
   if (e instanceof BlogError) return e.message === "conflict" ? { ok: false, error: "A newer version of this article was saved elsewhere. Reload to see it before you save again.", conflict: true } : { ok: false, error: e.message };
@@ -25,7 +34,8 @@ const inputSchema = z.object({
 
 export async function saveAction(id: number, input: unknown, expectedVersion: number, kind: "autosave" | "manual"): Promise<Result<{ version: number; updatedAt: number }>> {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireBlogUser();
+    await mayEdit(admin, id);
     const r = await savePost(getCloudflareContext().env, admin.email, id, inputSchema.parse(input), expectedVersion, kind);
     return { ok: true, version: r.version, updatedAt: r.updatedAt };
   } catch (e) { return fail(e); }
@@ -33,7 +43,8 @@ export async function saveAction(id: number, input: unknown, expectedVersion: nu
 
 export async function transitionAction(id: number, action: Action, at?: number | null): Promise<Result> {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireBlogUser();
+    need(can.publish(admin.role));
     z.enum(["publish", "schedule", "unpublish", "archive", "restore"]).parse(action);
     await transition(getCloudflareContext().env, admin.email, id, action, at);
     revalidatePath("/admin/blog"); revalidatePath("/blog");
@@ -42,14 +53,14 @@ export async function transitionAction(id: number, action: Action, at?: number |
 }
 
 export async function createAction(): Promise<void> {
-  const admin = await requireAdmin();
+  const admin = await requireBlogUser();
   const id = await createPost(getCloudflareContext().env, admin.email);
   redirect(`/admin/blog/${id}/edit`);
 }
 
 export async function duplicateAction(id: number): Promise<Result<{ id: number }>> {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireBlogUser();
     const nid = await duplicatePost(getCloudflareContext().env, admin.email, id);
     revalidatePath("/admin/blog");
     return { ok: true, id: nid };
@@ -58,7 +69,8 @@ export async function duplicateAction(id: number): Promise<Result<{ id: number }
 
 export async function bulkAction(ids: number[], action: "publish" | "archive" | "delete"): Promise<Result<{ done: number; failed: string[] }>> {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireBlogUser();
+    need(can.publish(admin.role));
     const list = z.array(z.number().int()).max(100).parse(ids);
     const env = getCloudflareContext().env;
     let done = 0; const failed: string[] = [];
@@ -75,7 +87,8 @@ export async function bulkAction(ids: number[], action: "publish" | "archive" | 
 
 export async function deleteAction(id: number): Promise<Result> {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireBlogUser();
+    need(can.delete(admin.role));
     await deletePost(getCloudflareContext().env, admin.email, id);
     revalidatePath("/admin/blog"); revalidatePath("/blog");
     return { ok: true };
@@ -84,7 +97,8 @@ export async function deleteAction(id: number): Promise<Result> {
 
 export async function restoreRevisionAction(postId: number, revisionId: number, expectedVersion: number): Promise<Result<{ version: number }>> {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireBlogUser();
+    await mayEdit(admin, postId);
     const r = await restoreRevision(getCloudflareContext().env, admin.email, postId, revisionId, expectedVersion);
     revalidatePath(`/admin/blog/${postId}/edit`); revalidatePath("/blog");
     return { ok: true, version: r.version };
@@ -94,7 +108,7 @@ export async function restoreRevisionAction(postId: number, revisionId: number, 
 // ----- categories, tags, media -----
 export async function categoryAction(form: FormData): Promise<Result> {
   try {
-    await requireAdmin();
+    need(can.manageTaxonomy((await requireBlogUser()).role));
     const env = getCloudflareContext().env;
     const id = Number(form.get("id")) || undefined;
     if (String(form.get("intent")) === "delete" && id) await deleteCategory(env, id);
@@ -106,7 +120,7 @@ export async function categoryAction(form: FormData): Promise<Result> {
 
 export async function tagAction(form: FormData): Promise<Result> {
   try {
-    await requireAdmin();
+    need(can.manageTaxonomy((await requireBlogUser()).role));
     const env = getCloudflareContext().env;
     const id = Number(form.get("id")) || undefined;
     if (String(form.get("intent")) === "delete" && id) await deleteTag(env, id);
@@ -117,21 +131,21 @@ export async function tagAction(form: FormData): Promise<Result> {
 }
 
 export async function mediaAltAction(id: number, alt: string): Promise<Result> {
-  try { await requireAdmin(); await setAlt(getCloudflareContext().env, id, alt); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
+  try { await requireBlogUser(); await setAlt(getCloudflareContext().env, id, alt); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
 }
 
 export async function mediaDeleteAction(id: number, force: boolean): Promise<Result> {
-  try { await requireAdmin(); await deleteMedia(getCloudflareContext().env, id, force); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
+  try { need(can.deleteMedia((await requireBlogUser()).role)); await deleteMedia(getCloudflareContext().env, id, force); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
 }
 
 export async function listMediaAction(q: string, page: number): Promise<Result<{ items: { id: number; url: string; alt: string; filename: string; width: number | null; height: number | null }[]; total: number }>> {
   try {
-    await requireAdmin();
+    await requireBlogUser();
     const r = await listMedia(getCloudflareContext().env, { q: q.slice(0, 60), page: Math.max(1, Math.floor(page) || 1), per: 18 });
     return { ok: true, total: r.total, items: r.rows.map((m) => ({ id: m.id, url: m.url, alt: m.alt, filename: m.filename, width: m.width, height: m.height })) };
   } catch (e) { return fail(e); }
 }
 
 export async function mediaUsageAction(id: number): Promise<Result<{ posts: { id: number; title: string }[] }>> {
-  try { await requireAdmin(); return { ok: true, posts: await mediaUsage(getCloudflareContext().env, id) }; } catch (e) { return fail(e); }
+  try { await requireBlogUser(); return { ok: true, posts: await mediaUsage(getCloudflareContext().env, id) }; } catch (e) { return fail(e); }
 }

@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useToast } from "@/components/admin/toast";
 import { Button } from "@/components/ui/button";
+import { prepareImage } from "@/lib/blog/upload-client";
 import { mediaAltAction, mediaDeleteAction, mediaUsageAction } from "../blog/actions";
 
 type Item = { id: number; url: string; filename: string; alt: string; mime: string; size: number; width: number | null; height: number | null; used: number; at: string; by: string };
 const kb = (n: number) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-export function MediaLibrary({ items, total, page, per, q }: { items: Item[]; total: number; page: number; per: number; q: string }) {
+export function MediaLibrary({ role, items, total, page, per, q }: { role: "admin" | "editor"; items: Item[]; total: number; page: number; per: number; q: string }) {
   const router = useRouter();
   const toast = useToast();
   const [sel, setSel] = useState<Item | null>(null);
@@ -25,7 +26,7 @@ export function MediaLibrary({ items, total, page, per, q }: { items: Item[]; to
     setBusy(true);
     let ok = 0;
     for (const f of Array.from(files)) {
-      const body = new FormData(); body.set("file", f);
+      const body = new FormData(); body.set("file", await prepareImage(f));
       try {
         const res = await fetch("/api/admin/media", { method: "POST", body });
         const j = (await res.json()) as { error?: string };
@@ -39,7 +40,7 @@ export function MediaLibrary({ items, total, page, per, q }: { items: Item[]; to
   const replace = async (f: File) => {
     if (!sel) return;
     setBusy(true);
-    const body = new FormData(); body.set("file", f);
+    const body = new FormData(); body.set("file", await prepareImage(f, { keepType: true }));
     const res = await fetch(`/api/admin/media?replace=${sel.id}`, { method: "POST", body });
     const j = (await res.json()) as { error?: string };
     setBusy(false);
@@ -51,7 +52,7 @@ export function MediaLibrary({ items, total, page, per, q }: { items: Item[]; to
       <div onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)} onDrop={(e) => { e.preventDefault(); setDrag(false); void upload(e.dataTransfer.files); }}
         className={`mb-4 rounded-2xl border-2 border-dashed p-6 text-center text-sm ${drag ? "border-purple-600 bg-purple-100" : "border-sand-300 bg-white"}`}>
         <p className="font-semibold text-forest-900">{busy ? "Working…" : "Drop images here to upload"}</p>
-        <p className="mt-1">JPEG, PNG, WebP or GIF, up to 5 MB each. The file type is checked from its contents.</p>
+        <p className="mt-1">JPEG, PNG, WebP or GIF, up to 5 MB each. The file type is checked from its contents. Large photos are shrunk to 2000 px wide before upload.</p>
         <input ref={file} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" aria-label="Upload images" onChange={(e) => { if (e.target.files?.length) void upload(e.target.files); e.target.value = ""; }} />
         <Button className="mt-3" variant="secondary" disabled={busy} onClick={() => file.current?.click()}>Choose files</Button>
       </div>
@@ -96,13 +97,13 @@ export function MediaLibrary({ items, total, page, per, q }: { items: Item[]; to
             <input ref={repl} type="file" accept={sel.mime} className="sr-only" aria-label="Replace image file" onChange={(e) => { const f = e.target.files?.[0]; if (f) void replace(f); e.target.value = ""; }} />
             <div className="mt-5 flex flex-wrap justify-between gap-2">
               <div className="flex gap-2">
-                <Button variant="secondary" disabled={busy} onClick={() => repl.current?.click()}>Replace file</Button>
-                <Button variant="secondary" disabled={busy || uses === null} onClick={async () => {
+                {role === "admin" && <Button variant="secondary" disabled={busy} onClick={() => repl.current?.click()}>Replace file</Button>}
+                {role === "admin" && <Button variant="secondary" disabled={busy || uses === null} onClick={async () => {
                   const inUse = (uses?.length ?? 0) > 0;
                   if (!confirm(inUse ? `This image is used in ${uses!.length} article(s). Deleting it leaves broken images there. Delete anyway?` : "Delete this image permanently?")) return;
                   const r = await mediaDeleteAction(sel.id, inUse);
                   if (r.ok) { toast(true, "Image deleted."); setSel(null); router.refresh(); } else toast(false, r.error);
-                }}>Delete</Button>
+                }}>Delete</Button>}
               </div>
               <Button variant="secondary" onClick={() => setSel(null)}>Close</Button>
             </div>

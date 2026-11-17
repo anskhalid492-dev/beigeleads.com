@@ -422,3 +422,17 @@ export const blogAudit = sqliteTable("blog_audit", {
   detail: text("detail").notNull().default(""),
   createdAt: createdAt(),
 });
+
+export const newsletterSubscribers = sqliteTable(
+  "newsletter_subscribers",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    email: text("email").notNull(),
+    token: text("token").notNull(),
+    status: text("status", { enum: ["pending", "confirmed", "unsubscribed"] }).notNull().default("pending"),
+    createdAt: createdAt(),
+    confirmedAt: integer("confirmed_at", { mode: "timestamp" }),
+    unsubscribedAt: integer("unsubscribed_at", { mode: "timestamp" }),
+  },
+  (t) => [uniqueIndex("newsletter_email_uq").on(t.email), uniqueIndex("newsletter_token_uq").on(t.token)],
+);

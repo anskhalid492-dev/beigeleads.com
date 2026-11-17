@@ -111,7 +111,7 @@ async function addRevision(env: Env, id: number, actor: string, version: number,
   const db = getDbFromEnv(env);
   const key = await writeRevision(env, id, { title, excerpt, doc });
   await db.insert(schema.blogRevisions).values({ postId: id, version, title, r2Key: key, editor: actor, kind });
-  const old = await db.select({ id: schema.blogRevisions.id, key: schema.blogRevisions.r2Key }).from(schema.blogRevisions).where(eq(schema.blogRevisions.postId, id)).orderBy(desc(schema.blogRevisions.id)).offset(MAX_REVISIONS);
+  const old = await db.select({ id: schema.blogRevisions.id, key: schema.blogRevisions.r2Key }).from(schema.blogRevisions).where(eq(schema.blogRevisions.postId, id)).orderBy(desc(schema.blogRevisions.id)).limit(1000).offset(MAX_REVISIONS); // SQLite needs a LIMIT before OFFSET
   if (old.length) {
     await env.LISTS.delete(old.map((o) => o.key));
     await db.delete(schema.blogRevisions).where(inArray(schema.blogRevisions.id, old.map((o) => o.id)));

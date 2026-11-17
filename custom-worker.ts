@@ -6,8 +6,31 @@ import { default as handler } from "./.open-next/worker.js";
 import { publishDue } from "./lib/blog/posts";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
 
+const CACHE_SECONDS = 60;
+
+/**
+ * Public blog pages are rendered from D1 + R2, which costs CPU on every visit. Anonymous GET requests for them are
+ * kept in the Cloudflare edge cache for 60 s, so most visits never reach the Next.js renderer.
+ * Consequence: a publish / unpublish / edit can take up to 60 s to show on the public page.
+ * Not cached: search results (?q=), pages with cookies, Next.js RSC requests, non-200 responses.
+ */
+async function cachedBlog(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(request.url);
+  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
+  if (!cacheable) return handler.fetch(request, env, ctx);
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(request);
+  if (hit) return hit;
+  const res: Response = await handler.fetch(request, env, ctx);
+  if (res.status !== 200 || res.headers.has("set-cookie")) return res;
+  const out = new Response(res.body, res);
+  out.headers.set("cache-control", `public, max-age=0, s-maxage=${CACHE_SECONDS}`);
+  ctx.waitUntil(cache.put(request, out.clone()));
+  return out;
+}
+
 export default {
-  fetch: handler.fetch,
+  fetch: (request: Request, env: CloudflareEnv, ctx: ExecutionContext) => cachedBlog(request, env, ctx),
 
   async scheduled(event, env, ctx) {
     // Cron expressions are set in wrangler.jsonc: every minute = payment watcher, every 15 min = expiry sweep.
