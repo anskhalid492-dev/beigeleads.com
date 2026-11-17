@@ -49,6 +49,7 @@ const audiences = [
   ["b2b-lead-generation", "Lead generation agencies", "Fill a client pipeline with businesses that match."],
   ["market-research", "Market researchers", "Map who is in a market before you decide how to enter it."],
   ["business-expansion", "Business development", "Understand a new city before you open there."],
+  ["recruitment-staffing", "Recruiters", "Find employers to work with before they post the job."],
 ] as const;
 
 const trust = [
