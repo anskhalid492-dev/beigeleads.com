@@ -241,3 +241,19 @@ describe("EVM options", () => {
     expect(() => validateWalletValue({ coin: "USDC", network: "ERC20" }, "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")).toThrow();
   });
 });
+
+import { parseDeliveryUrl } from "@/lib/delivery/links";
+import { deliveryEmailText } from "@/lib/delivery/deliver";
+
+describe("delivery", () => {
+  it("accepts only https links", () => {
+    expect(parseDeliveryUrl(" https://drive.example.com/file/abc ")).toBe("https://drive.example.com/file/abc");
+    expect(() => parseDeliveryUrl("http://x.com/a")).toThrow();
+    expect(() => parseDeliveryUrl("javascript:alert(1)")).toThrow();
+    expect(() => parseDeliveryUrl("not a url")).toThrow();
+  });
+  it("email carries link, policies and opt-out", () => {
+    const t = deliveryEmailText({ orderId: "o1", packageName: "Starter", records: 10000, productName: "X List", url: "https://a.b/c" });
+    for (const s of ["https://a.b/c", "/legal/refund-replacement", "/opt-out", "/legal/lawful-use", "10,000"]) expect(t).toContain(s);
+  });
+});

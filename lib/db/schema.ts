@@ -237,3 +237,36 @@ export const productFaqs = sqliteTable(
   },
   (t) => [index("product_faqs_product_idx").on(t.productId, t.sortOrder)],
 );
+
+/**
+ * Owner decision (Nov 2026): lists are NOT delivered from R2 or by a download page. For every product (optionally per
+ * package) the owner pastes an external https link in /admin/delivery; the buyer is emailed that link once paid.
+ * package_name '' = default link for every package of that product.
+ */
+export const deliveryLinks = sqliteTable(
+  "delivery_links",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    productSlug: text("product_slug").notNull(),
+    packageName: text("package_name").notNull().default(""),
+    url: text("url").notNull(),
+    updatedBy: text("updated_by").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  },
+  (t) => [uniqueIndex("delivery_links_uq").on(t.productSlug, t.packageName)],
+);
+
+/** One row per order: the link that was emailed (snapshot) and whether the email went out. */
+export const deliveries = sqliteTable(
+  "deliveries",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    orderId: text("order_id").notNull().references(() => orders.id),
+    url: text("url").notNull(),
+    status: text("status", { enum: ["sending", "sent", "failed"] }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    sentAt: integer("sent_at", { mode: "timestamp" }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("deliveries_order_uq").on(t.orderId)],
+);

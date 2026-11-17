@@ -5,6 +5,7 @@ import { QUOTE_LOCK_MS, formatAtomic, parseAtomic } from "./amounts";
 import { EVM_MAINNET_API, EVM_SEPOLIA_API, fetchEvmPayments } from "./evm-chain";
 import { optionForWallet, type PayOption } from "./options";
 import { BTC_API, fetchBtcPayments, type ChainTx } from "./btc-chain";
+import { deliverPendingOrders } from "@/lib/delivery/deliver";
 import { decideAttempt } from "./decide";
 import { matchPayments } from "./match";
 import { confirmationsNeeded } from "./state";
@@ -99,7 +100,10 @@ export async function runPaymentWatcher(env: CloudflareEnv, deps: Deps = {}) {
       // One failing address (chain API hiccup) must not stop the others. It is retried next minute.
     }
   }
-  return { checked: attempts.length, changed };
+  // Delivery: email the owner-set external link for every paid order (also retries failures / missing links).
+  let delivered = 0;
+  try { delivered = await deliverPendingOrders(env); } catch { /* retried next minute */ }
+  return { checked: attempts.length, changed, delivered };
 }
 
 async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttempts.$inferSelect, now: number): Promise<boolean> {
@@ -135,7 +139,6 @@ async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttemp
   } else if (d.action === "paid") {
     if (await flip("paid", ["pending", "partial", "late_payment"], { paidAt: new Date(now) })) {
       await attemptTo("paid");
-      // Phase 4f hooks in here: create the download token and queue the delivery email.
       await notifyOwner(env, "Payment confirmed", `Order ${order.id} paid: received ${amt(d.receivedAtomic)}.${d.overpaidAtomic > 0n ? ` OVERPAID by ${amt(d.overpaidAtomic)}: refund or credit needed.` : ""}`);
       return true;
     }

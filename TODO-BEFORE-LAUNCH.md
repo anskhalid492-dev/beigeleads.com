@@ -80,3 +80,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 
 - [ ] Verify Blockscout parsing live on Sepolia (ETH, USDT, USDC) before enabling ERC20/ETH mainnet; confirm mainnet contract addresses on etherscan.
 - [ ] Set `EVM_TEST_USDT` / `EVM_TEST_USDC` vars for Sepolia testing.
+
+- [ ] Apply migration `drizzle/0003_delivery.sql` to remote D1; set a delivery link per product in /admin/delivery (no link = paid orders wait and the owner is emailed).
+- [ ] Make sure the Cloudflare Access app covers `/admin/*` (not only /admin/wallets) so /admin/delivery works.
+- [ ] Apply the suppression list to each hosted file yourself before upload (the site no longer generates files).
