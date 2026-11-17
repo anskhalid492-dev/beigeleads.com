@@ -131,14 +131,15 @@ async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttemp
     const r = await db.update(schema.orders).set({ status: to, ...extra }).where(and(eq(schema.orders.id, order.id), inArray(schema.orders.status, from))).returning({ id: schema.orders.id });
     return r.length > 0; // false = someone else already did it: do not notify twice
   };
-  const attemptTo = (s: "expired" | "paid" | "partial" | "late") => db.update(schema.paymentAttempts).set({ status: s }).where(eq(schema.paymentAttempts.id, a.id));
+  const attemptTo = (s: "expired" | "paid" | "partial" | "late", overpaid?: bigint) =>
+    db.update(schema.paymentAttempts).set({ status: s, ...(overpaid && overpaid > 0n ? { overpaidAmount: formatAtomic(overpaid, spec.decimals) } : {}) }).where(eq(schema.paymentAttempts.id, a.id));
   const amt = (n: bigint) => `${formatAtomic(n, spec.decimals)} ${a.coin}`;
 
   if (d.action === "expire") {
     if (await flip("expired", ["pending"])) { await attemptTo("expired"); return true; }
   } else if (d.action === "paid") {
     if (await flip("paid", ["pending", "partial", "late_payment"], { paidAt: new Date(now) })) {
-      await attemptTo("paid");
+      await attemptTo("paid", d.overpaidAtomic);
       await notifyOwner(env, "Payment confirmed", `Order ${order.id} paid: received ${amt(d.receivedAtomic)}.${d.overpaidAtomic > 0n ? ` OVERPAID by ${amt(d.overpaidAtomic)}: refund or credit needed.` : ""}`);
       return true;
     }

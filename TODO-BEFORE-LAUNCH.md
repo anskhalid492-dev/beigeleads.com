@@ -84,3 +84,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Apply migration `drizzle/0003_delivery.sql` to remote D1; set a delivery link per product in /admin/delivery (no link = paid orders wait and the owner is emailed).
 - [ ] Make sure the Cloudflare Access app covers `/admin/*` (not only /admin/wallets) so /admin/delivery works.
 - [ ] Apply the suppression list to each hosted file yourself before upload (the site no longer generates files).
+
+- [ ] Apply migration `drizzle/0004_claims_audit.sql` to remote D1.
+- [ ] Run the testnet gate: 20+ test orders (exact/under/over/late), then $1-$5 per coin on mainnet, before setting MAINNET_ENABLED.
+- [ ] Settle the Refund policy wording for overpayments (credit or refund) and for fee-deducted payments.

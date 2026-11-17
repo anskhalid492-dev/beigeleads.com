@@ -1,3 +1,4 @@
+import { ApiForm } from "@/components/forms/api-form";
 import { optionForWallet } from "@/lib/payments/options";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -61,6 +62,23 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
         <li><strong className="text-forest-900">Time:</strong> pay before the countdown ends. Payments after that need manual review.</li>
         <li><strong className="text-forest-900">Delivery:</strong> after the network confirms your payment we email a secure download link to the address you used at checkout.</li>
       </ul>
+      <section className="mt-6 rounded-2xl border border-sand-200 bg-white p-5">
+        <h2 className="text-lg font-bold text-forest-900">Already paid but nothing happened?</h2>
+        <p className="mt-1 text-sm">Send us the transaction ID from your wallet or exchange. We check it on the blockchain by hand and email you. Sending this does not change your order by itself.</p>
+        <div className="mt-4">
+          <ApiForm
+            endpoint="/api/checkout/claim"
+            hidden={{ orderId: order.id }}
+            fields={[
+              { name: "txHash", label: "Transaction ID (hash)", type: "text", required: true },
+              { name: "note", label: "Note (optional)", type: "textarea" },
+            ]}
+            submitLabel="Send transaction ID"
+            successTitle="Received"
+            successText="We will check it and email you at the address you used at checkout."
+          />
+        </div>
+      </section>
     </main>
   );
 }

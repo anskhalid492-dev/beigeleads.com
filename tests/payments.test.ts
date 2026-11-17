@@ -257,3 +257,14 @@ describe("delivery", () => {
     for (const s of ["https://a.b/c", "/legal/refund-replacement", "/opt-out", "/legal/lawful-use", "10,000"]) expect(t).toContain(s);
   });
 });
+
+import { explorerTxUrl } from "@/lib/payments/explorer";
+describe("explorer links", () => {
+  const h = "a".repeat(64);
+  it("builds links per network and rejects junk", () => {
+    expect(explorerTxUrl("BTC", "testnet", h)).toBe(`https://mempool.space/testnet/tx/${h}`);
+    expect(explorerTxUrl("USDT", "TRC20", h)).toBe(`https://tronscan.org/#/transaction/${h}`);
+    expect(explorerTxUrl("ETH", "sepolia", h)).toBe(`https://sepolia.etherscan.io/tx/0x${h}`);
+    expect(explorerTxUrl("ETH", "ethereum", "zz<script>")).toBeNull();
+  });
+});

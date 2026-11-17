@@ -122,6 +122,7 @@ export const paymentAttempts = sqliteTable(
     status: text("status", { enum: ["open", "paid", "expired", "partial", "late"] })
       .notNull()
       .default("open"),
+    overpaidAmount: text("overpaid_amount"), // decimal string, set when the buyer sent more than asked (refund/credit needed)
   },
   (t) => [index("payment_attempts_status_idx").on(t.status)],
 );
@@ -270,3 +271,27 @@ export const deliveries = sqliteTable(
   },
   (t) => [uniqueIndex("deliveries_order_uq").on(t.orderId)],
 );
+
+/** "I already paid" claims from buyers. Never trusted: the owner checks the chain, then approves or rejects. */
+export const paymentClaims = sqliteTable(
+  "payment_claims",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    orderId: text("order_id").notNull().references(() => orders.id),
+    txHash: text("tx_hash").notNull(),
+    note: text("note"),
+    status: text("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("payment_claims_uq").on(t.orderId, t.txHash)],
+);
+
+/** Every manual decision on an order (mark paid, mark refunded, claim approved/rejected). */
+export const orderAuditLog = sqliteTable("order_audit_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: text("order_id").notNull(),
+  actor: text("actor").notNull(),
+  action: text("action").notNull(),
+  detail: text("detail"),
+  createdAt: createdAt(),
+});
