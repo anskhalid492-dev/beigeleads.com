@@ -4,7 +4,7 @@ import { ArrowRight, Download, Eye, FileText, Mail, Search, ShieldCheck, Users, 
 import { Copilot } from "@/components/home/copilot";
 import { SampleLedger } from "@/components/home/sample-ledger";
 import { DbBadge } from "@/components/shared/db-icon";
-import { Faq } from "@/components/shared/faq";
+import { SolutionFaq } from "@/components/solutions/sections";
 import { Button } from "@/components/ui/button";
 import { formatUsd, getCategories, getCities, getCountries, getProducts, startingPriceCents } from "@/lib/catalog";
 import { solutions } from "@/lib/solutions";
@@ -293,7 +293,7 @@ export default function Home() {
       </section>
 
       {/* 12. FAQ */}
-      <Faq items={faq} heading="Frequently asked questions" />
+      <SolutionFaq name="BeigeLeads" items={faq} />
 
       {/* 13. Final CTA */}
       <section aria-labelledby="final" className="px-2 py-16 sm:px-4">
