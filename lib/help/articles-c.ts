@@ -179,7 +179,7 @@ export const articlesC: readonly HelpArticle[] = [
     description: "Check that the payment is confirmed, then spam folders and the email address you entered.",
     keywords: ["no email", "not received", "missing email", "delivery email", "spam"],
     body: [
-      ["ol", ["Check that your payment is confirmed. The email is sent only after confirmation.", "Look in spam, promotions and other folders.", "Check you are using the address typed at checkout.", "Wait a few minutes. Delivery runs automatically after confirmation."]],
+      ["ol", ["Check that your payment is confirmed. The email is sent only after confirmation.", "Look in spam, promotions and other folders.", "Check you are using the address typed at checkout.", "Delivery is mostly instant. In some cases it can take up to 12 hours at most."]],
       ["p", "Still nothing? [Contact us](/contact) with your order ID and we will check the order and send it again."],
     ],
     related: ["pricing/after-payment", "delivery/download-your-list", "troubleshooting/payment-not-confirmed"],

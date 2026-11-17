@@ -75,16 +75,12 @@ export const legalDocs: LegalDoc[] = [
     title: "Delivery policy",
     summary: "How and when you get your list.",
     sections: [
-      { h: "How delivery works", p: ["When your payment has enough confirmations, we email a secure download link to the address you gave at checkout. Nothing is sent before payment is confirmed."] },
-      { h: "The download link", p: [
-        "The link is valid for 72 hours and works up to 5 times. If it expires or you use up the downloads, contact us and we can issue a new one.",
-        "Files are kept in private storage and are never publicly linked.",
-      ] },
-      { h: "The file", p: ["A CSV file that opens in Excel, Google Sheets and most email tools. The list page shows the fields it includes."] },
+      { h: "How delivery works", p: ["When your payment has enough confirmations, we email a download link to the address you gave at checkout. Nothing is sent before payment is confirmed."] },
+      { h: "The download link", p: ["You can download the file as many times as you like. If you lose the email, contact us and we can send the link again."] },
+      { h: "The file", p: ["A file in CSV, Excel or TXT format that opens in Excel, Google Sheets and most email tools. The list page shows the fields it includes."] },
       { h: "Opt-outs are applied first", p: ["Before a file is created for you, we remove everyone on our suppression list, so people who opted out are not in it."] },
       { h: "What is in the email", p: ["Your invoice, a note on permitted use, a link to the refund and replacement policy, and a link to the opt-out page."] },
-      { h: "Records", p: ["We log each download with the time and a hashed IP address to help settle disputes."] },
-      { h: "Delivery time", p: ["The delivery email is usually sent within 15 minutes after your payment has the required confirmations on the network."] },
+      { h: "Delivery time", p: ["Delivery is mostly instant once your payment has the required confirmations. In some cases it can take up to 12 hours at most."] },
     ],
   },
   {
@@ -177,26 +173,6 @@ export const legalDocs: LegalDoc[] = [
       { h: "Security", p: ["Files are held in private storage, download links are random and stored only as hashes, links expire, and access to the admin area is protected by Cloudflare Access with two-factor authentication. Traffic uses HTTPS, and downloads are rate limited per IP."] },
       { h: "Sub-processors", p: ["Cloudflare (hosting and storage) and Resend (transactional email). We tell customers about changes by updating this page."] },
       { h: "Incidents and audits", p: ["We will tell you without undue delay after we find a personal data breach that affects your data. We will notify you within 72 hours of becoming aware of a breach. On reasonable written request, once a year, we will answer your audit questions. Transfers rely on standard contractual clauses where they apply."] },
-    ],
-  },
-  {
-    slug: "crypto-payments",
-    title: "Crypto payment policy",
-    summary: "How crypto checkout works, and what can go wrong.",
-    sections: [
-      { h: "Coins we accept", p: ["At launch: Bitcoin (BTC) and USDT on the TRON network (TRC20). We may add more later."] },
-      { h: "Use the right network", p: ["Send each coin on the network checkout shows. USDT on any other network, such as Ethereum or BSC, will not reach us and cannot be recovered. Always check the network before you send."] },
-      { h: "Exact amount and the 30-minute lock", p: [
-        "Checkout shows an exact coin amount, converted from US dollars and locked for 30 minutes. The rate comes from public market data from several sources. If the sources disagree, or a stablecoin moves more than 2% from one dollar, checkout is paused.",
-        "For USDT, each order has its own amount with small extra decimals (for example 49.0137). Send exactly that amount so we can match your payment.",
-      ] },
-      { h: "Confirmations", p: ["An order is paid once the payment has enough confirmations on the network: for BTC 2, or 3 for large orders, and for USDT TRC20 once the transaction is final. Your download link is sent after that."] },
-      { h: "If the amount is wrong", p: [
-        "Under by up to 1%: accepted. Under by more: the order is marked partial and checkout shows the amount still to pay.",
-        "Over: we flag the extra for refund or credit.",
-      ] },
-      { h: "If you pay late", p: ["A payment that arrives after the quote has expired is reviewed by hand. We will decide whether to complete the order at the new rate or refund you. If we refund, it is sent in the coin you paid with, minus network fees."] },
-      { h: "Payments cannot be reversed", p: ["Crypto transactions are final. You pay the network fee. If you sent a payment and checkout does not show it, use the form to submit your transaction hash and we will check it."] },
     ],
   },
 ];

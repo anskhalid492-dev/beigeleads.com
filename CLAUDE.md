@@ -182,7 +182,6 @@ Rules:
 /legal/casl
 /legal/lawful-use              Acceptable / lawful use policy
 /legal/dpa
-/legal/crypto-payments
 /opt-out                       Opt-out / suppression request (must actually work)
 /admin/*                       Protected by Cloudflare Access (noindex)
 ```
@@ -442,7 +441,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 - Solutions pages (recreated Nov 2026): centered animated hero (`HeroShell` in `components/solutions/sections.tsx`: rising words, pipeline nodes light in turn, travelling dot, floating chips; all CSS, disabled under reduced motion), 1200px container, compact sections. Exactly 7 FAQs per solution live in `lib/solution-faqs.ts`.
 - Database visual identity: `components/shared/db-icon.tsx` (`DbBadge`, `Flag`, `IndustryIcon`). Flags are inline SVG (US, GB, DE, FR, CA, AU, CH); industry icons are chosen by category slug (tooth is custom-drawn). Add a category/country by adding one map entry. Brand logos (Instagram, YouTube, ...) are NOT bundled yet because no creator/platform lists exist.
-- Footer Legal column is one flat list of 13 links; the Cryptocurrency Payments link was removed from the footer (page `/legal/crypto-payments` still exists).
+- Footer Legal column is one flat list of 13 links; the Cryptocurrency Payments link was removed from the footer .
 
 ## 25. Legal pages published without lawyer review (Nov 2026)
 
@@ -558,4 +557,11 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Search (`lib/help/search.ts`, `components/help/search.tsx`): client-side over title/keywords/description/body, typo tolerance (edit distance), category filter chips, highlighting, keyboard navigation, popular searches, "Couldn't find what you're looking for?" empty state. No fake loading state (it is instant). Tests in `tests/help-search.test.ts`.
 - Answers come ONLY from our published policies and implemented behaviour. NOT stated in articles on purpose: download-link expiry/count, 1% underpay tolerance, delivery timelines, prices, list counts, supported coins beyond "checkout shows what is open". Sitemap includes /faq and all help URLs. "Helpful starting points" is an editorial pick (no popularity data exists).
 - Not built: admin knowledge-base editor (articles are code, like the catalog; a D1-backed editor needs a migration and a rendering decision, ask first). Positioning in copy: "B2B data provider", never "marketplace".
-- KNOWN MISMATCH to resolve with the owner: `/legal/delivery` still describes a 72h / 5-download link and private storage, and `/legal/crypto-payments` describes a 1% underpay tolerance and BTC + USDT TRC20 only. Real behaviour is section 31-33 (emailed external link, exact-amount match). The help articles follow the real behaviour; the legal pages need updating (lawyer/owner decision).
+- The earlier legal/delivery mismatch was resolved in section 42.
+
+## 42. Owner decisions, 17 Nov 2026 (delivery facts, formats, crypto page)
+
+- Delivery facts (owner): delivery is mostly instant, in some cases up to 12 hours at most; downloads are unlimited. Stated in the help articles, `/legal/delivery` (72h/5-download text and "within 15 minutes" removed), product FAQ and solution FAQs. Section 8's 72h / 5-download defaults are not used.
+- File formats (owner): "CSV, Excel or TXT" everywhere on the site (product pages, solutions, help, legal delivery). Do not write "CSV file" alone. Competitor facts in `lib/compare-data.ts` are unchanged.
+- `/legal/crypto-payments` was REMOVED (the doc entry is gone, the page now 404s, help links to it removed). Crypto rules are now stated only on checkout and in the help articles. Its 1% underpay tolerance text no longer exists anywhere.
+- Still inconsistent (needs the owner): `/legal/dpa` Security section still says links expire and are stored as hashes and files are in private storage.

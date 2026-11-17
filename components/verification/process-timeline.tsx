@@ -7,8 +7,8 @@ const steps: { icon: LucideIcon; t: string; d: string; purpose: string; v: "bars
   { icon: Layers, t: "Data organization", d: "We fill in missing basics, standardise formats and remove duplicates so one business appears once. We also look for missing details such as owners, tech stack and email addresses.", purpose: "Turn raw records into one clean record.", v: "rows" },
   { icon: ListChecks, t: "Data quality checks", d: "Records are checked for consistency and gaps, then tagged by category, country, city and size so you can buy exactly the slice you need.", purpose: "Make the list usable and filterable.", v: "magnify" },
   { icon: BadgeCheck, t: "Email verification, where applicable", d: "Where a record has an email, our in-house team runs an SMTP check. Addresses that fail are corrected or dropped.", purpose: "Cut dead addresses before you send.", v: "check" },
-  { icon: Boxes, t: "Database preparation", d: "Opted-out contacts are removed, the CSV file is built, a masked sample is made, and the last-verified date is recorded on the list page.", purpose: "Package a file you can inspect first.", v: "stack" },
-  { icon: FileDown, t: "Delivery to customers", d: "You pay once, and a secure download link arrives by email. The file is yours to use under the lawful use policy.", purpose: "Get the list into your hands.", v: "slide" },
+  { icon: Boxes, t: "Database preparation", d: "Opted-out contacts are removed, the file is built, a masked sample is made, and the last-verified date is recorded on the list page.", purpose: "Package a file you can inspect first.", v: "stack" },
+  { icon: FileDown, t: "Delivery to customers", d: "You pay once, and a download link arrives by email. The file is yours to use under the lawful use policy.", purpose: "Get the list into your hands.", v: "slide" },
 ];
 
 function Visual({ v }: { v: (typeof steps)[number]["v"] }) {

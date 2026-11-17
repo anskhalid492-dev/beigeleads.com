@@ -8,7 +8,7 @@ import type { ProductSampleRow } from "@/lib/sample-data";
 import { fmtDate, fmtNum } from "./meta";
 
 function DbWindow({ product, rows }: { product: Product; rows: readonly ProductSampleRow[] }) {
-  const file = `${product.slug.replace(/-us$/, "")}-email-list.csv`;
+  const file = `${product.slug.replace(/-us$/, "")}-email-list`;
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-forest-700 bg-forest-900 shadow-[0_30px_70px_-25px_rgba(15,42,29,0.7)]">
       <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
@@ -44,7 +44,7 @@ function DbWindow({ product, rows }: { product: Product; rows: readonly ProductS
         <span>
           Showing {Math.min(rows.length, 6)} of {fmtNum(product.recordCount) ?? "an uncounted number of"} records
         </span>
-        <span>CSV</span>
+        <span>CSV · Excel · TXT</span>
       </div>
     </div>
   );
@@ -59,7 +59,7 @@ export function ProductHero({
     { icon: Layers, label: "Industry", value: category.name },
     { icon: Users, label: "Records", value: fmtNum(product.recordCount) ?? "Not counted yet" },
     { icon: Mail, label: "Email", value: hasEmail ? "Included" : "Not included" },
-    { icon: FileSpreadsheet, label: "Format", value: "CSV file" },
+    { icon: FileSpreadsheet, label: "Format", value: "CSV, Excel or TXT" },
     { icon: CalendarClock, label: "Last updated", value: fmtDate(product.lastVerified) ?? "Not verified yet" },
   ];
   return (

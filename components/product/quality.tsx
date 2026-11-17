@@ -11,7 +11,7 @@ export function ProductQuality({ product }: { product: Product }) {
     ["Completeness", "Not every business publishes every detail, so some cells can be empty. A per-list completeness figure is published once it is measured."],
     ["Last updated", fmtDate(product.lastVerified) ?? "Not verified yet"],
     ["Data sourcing", <>Public listings, websites, registries, directories, licensed data, surveys and our own research. <Link href="/data-sources" className="font-semibold text-forest-900 underline underline-offset-4">See every source type</Link>.</>],
-    ["File format", "CSV file"],
+    ["File format", "CSV, Excel or TXT"],
   ];
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">

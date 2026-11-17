@@ -20,10 +20,10 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "b2b-lead-generation": {
     seoTitle: "B2B Lead Generation for Small Sales Teams",
     seoDescription:
-      "A B2B lead generation list for founders and small sales teams who sell to local businesses. Check a masked sample, pay once, keep the CSV.",
+      "A B2B lead generation list for founders and small sales teams who sell to local businesses. Check a masked sample, pay once, keep the file.",
     h1: "B2B lead generation for small teams that sell to local businesses",
     lede:
-      "You do not need a platform with fifty filters. You need one clear list of the businesses you sell to, with a phone number, an email and a website for each. Pick the industry, check the sample, and download a CSV you keep.",
+      "You do not need a platform with fifty filters. You need one clear list of the businesses you sell to, with a phone number, an email and a website for each. Pick the industry, check the sample, and download a file you keep.",
     challenge: {
       heading: "Your pipeline is empty because the list never got built",
       paragraphs: [
@@ -32,7 +32,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       ],
     },
     pains: [
-      { pain: "Building the list by hand eats the weeks you meant to spend selling.", fix: "Each database arrives as one finished CSV, already collected, cleaned and tagged by industry and city." },
+      { pain: "Building the list by hand eats the weeks you meant to spend selling.", fix: "Each database arrives as one finished file, already collected, cleaned and tagged by industry and city." },
       { pain: "A monthly lead-platform fee for data you use in bursts.", fix: "You pay once and keep the file. There is no account to cancel and nothing to renew." },
       { pain: "You cannot tell if a list is any good until you have paid for it.", fix: "Every list page shows a masked sample, and you can request a free sample by email first." },
       { pain: "Old data sends messages to nobody and hurts your sending reputation.", fix: "Emails are checked by our team with SMTP tests and all data is re-verified every 60 days. The last-verified date is on each list page." },
@@ -42,7 +42,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { t: "Fill a first-quarter pipeline", d: "Load one industry and one city into your CRM and work it account by account." },
       { t: "Test a new niche cheaply", d: "Buy the smallest package for an unfamiliar industry and see whether the first fifty conversations go anywhere before buying more." },
       { t: "Run email and calls from one file", d: "Every row carries both email and phone, so one purchase feeds two channels." },
-      { t: "Find the accounts your CRM is missing", d: "Compare the CSV against your current accounts and keep only the businesses you have never contacted." },
+      { t: "Find the accounts your CRM is missing", d: "Compare the file against your current accounts and keep only the businesses you have never contacted." },
       { t: "Stop sending one national blast", d: "Split by the city column and write a message that fits each place." },
     ],
     finalHeading: "Turn a niche into a pipeline",
@@ -99,7 +99,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "Time lost looking up phone numbers and websites one by one.", fix: "Phone, email and website sit on the same row as the business name and address." },
       { pain: "Two reps call the same business.", fix: "Split the file by city or address range and give each rep a territory that does not overlap." },
       { pain: "Calls to businesses that have closed or moved.", fix: "All data is re-verified every 60 days, and the list page shows the last-verified date." },
-      { pain: "No idea which accounts were already worked.", fix: "Add a status and last-contact column to the CSV and your CRM keeps the history." },
+      { pain: "No idea which accounts were already worked.", fix: "Add a status and last-contact column to the file and your CRM keeps the history." },
       { pain: "Named decision makers are missing.", fix: "The seven fields do not include job titles. Use the website or a first call to the front desk to find the buyer." },
     ],
     applications: [
@@ -119,7 +119,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       "Business lists for marketing agencies that pitch local clients. Find local businesses by city, with a masked sample before you pay.",
     h1: "Prospect lists for agencies that win clients from local businesses",
     lede:
-      "Agencies grow by pitching businesses that need more customers. Pick the niche you serve, filter by city, and get a CSV with phone, email and website so you can spend the week on proposals, not on finding who to send them to.",
+      "Agencies grow by pitching businesses that need more customers. Pick the niche you serve, filter by city, and get a file with phone, email and website so you can spend the week on proposals, not on finding who to send them to.",
     challenge: {
       heading: "Agency growth stalls when finding prospects is nobody's job",
       paragraphs: [

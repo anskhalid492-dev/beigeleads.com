@@ -37,7 +37,7 @@ export default function SolutionsPage() {
         lede="Twelve ways businesses use BeigeLeads databases, from filling a sales pipeline to entering a new city. Pick the one that sounds like your job and see which lists fit."
         primary={{ label: "Find your solution", href: "#all-solutions" }}
         secondary={{ label: "Get a free sample", href: "/sample" }}
-        flow={["Pick your goal", "See the lists", "Check the sample", "Download the CSV"]}
+        flow={["Pick your goal", "See the lists", "Check the sample", "Download the file"]}
         chips={[
           { label: "Dentists", category: "dentists", country: "US" },
           { label: "Restaurants", category: "restaurants", country: "US" },

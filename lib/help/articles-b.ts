@@ -9,7 +9,7 @@ export const articlesB: readonly HelpArticle[] = [
     keywords: ["payment", "crypto", "bitcoin", "usdt", "card", "paypal", "bank", "methods"],
     body: [
       ["p", "We accept cryptocurrency only. We do not take bank cards, PayPal or bank transfers."],
-      ["p", "At checkout you pick from the coins and networks that are open, and you see the exact amount to send. Always send on the network checkout shows. A payment sent on the wrong network can not be recovered. Read the [crypto payment policy](/legal/crypto-payments)."],
+      ["p", "At checkout you pick from the coins and networks that are open, and you see the exact amount to send. Always send on the network checkout shows. A payment sent on the wrong network can not be recovered."],
     ],
     related: ["payments/how-payment-confirmation-works", "payments/pending-payment", "pricing/how-to-purchase"],
   },
@@ -50,7 +50,7 @@ export const articlesB: readonly HelpArticle[] = [
       ["h", "You sent less than the amount"],
       ["p", "The order is not completed automatically. Contact us with your order ID and transaction hash and we will tell you what to do."],
       ["h", "You used the wrong network"],
-      ["p", "Crypto can not be recovered from a wrong network. Always check the network shown at checkout. See the [crypto payment policy](/legal/crypto-payments)."],
+      ["p", "Crypto can not be recovered from a wrong network. Always check the network shown at checkout."],
     ],
     related: ["payments/pending-payment", "payments/refunds-and-replacements", "payments/billing-support"],
   },
@@ -86,10 +86,11 @@ export const articlesB: readonly HelpArticle[] = [
   {
     category: "delivery", slug: "how-you-receive-your-list",
     title: "How will I receive my purchased list?",
-    description: "We email a link to your list after the payment is confirmed.",
+    description: "We email a link to your list after the payment is confirmed. Delivery is mostly instant, up to 12 hours at most.",
     keywords: ["receive", "delivery", "email", "link", "how", "get my list"],
     body: [
-      ["p", "When your payment is confirmed, we email a link to your list to the address you entered at checkout. The email also contains your order details, a note on permitted use and links to the refund and opt-out pages."],
+      ["p", "When your payment is confirmed, we email a link to your list to the address you entered at checkout. Delivery is mostly instant. In some cases it can take up to 12 hours at most."],
+      ["p", "The email also contains your order details, a note on permitted use and links to the refund and opt-out pages. You can download the file as many times as you like."],
       ["p", "Nothing is sent before the payment is confirmed. See the [delivery policy](/legal/delivery)."],
     ],
     related: ["delivery/download-your-list", "troubleshooting/no-delivery-email", "pricing/after-payment"],
@@ -109,10 +110,10 @@ export const articlesB: readonly HelpArticle[] = [
   {
     category: "delivery", slug: "file-formats",
     title: "Supported file formats",
-    description: "Lists are delivered as CSV files that open in Excel, Google Sheets and most email tools.",
-    keywords: ["csv", "excel", "format", "file type", "spreadsheet", "google sheets"],
+    description: "Lists are delivered as CSV, Excel or TXT files that open in Excel, Google Sheets and most email and CRM tools.",
+    keywords: ["csv", "excel", "txt", "format", "file type", "spreadsheet", "google sheets"],
     body: [
-      ["p", "Lists are delivered as CSV files. They open in Excel, Google Sheets and most email and CRM import tools."],
+      ["p", "Lists are delivered in CSV, Excel or TXT format. They open in Excel, Google Sheets and most email and CRM import tools."],
       ["p", "The list page shows the fields each file contains. If you need a different format, [contact us](/contact) before you buy."],
     ],
     related: ["products/whats-in-a-list", "delivery/download-your-list", "delivery/wrong-file"],
@@ -143,10 +144,10 @@ export const articlesB: readonly HelpArticle[] = [
   {
     category: "delivery", slug: "access-your-file-again",
     title: "How to access a purchased file again",
-    description: "Open the original delivery email. If you lost it, contact us with your order ID.",
+    description: "Open the original delivery email and download again as often as you like. If you lost it, contact us.",
     keywords: ["lost", "again", "re-download", "resend", "access", "deleted email"],
     body: [
-      ["p", "Your link is in the original delivery email. Save the file once you download it, because there is no account to log in to later."],
+      ["p", "Your link is in the original delivery email. Downloads are unlimited, so you can use the link as many times as you like."],
       ["p", "If you can not find the email, [contact us](/contact) from the address you used at checkout and include your order ID. We can send it again."],
     ],
     related: ["delivery/download-your-list", "getting-started/do-i-need-an-account", "troubleshooting/no-delivery-email"],

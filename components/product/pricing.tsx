@@ -42,8 +42,8 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
                 <p className="mt-1 text-sm">${per1000} per 1,000 records. Paid once.</p>
                 <ul className="mt-6 flex-1 space-y-3 text-sm">
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fields.length} fields: {product.fields.join(", ")}</li>
-                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />CSV file for Excel, Sheets and CRMs</li>
-                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />Secure download link by email</li>
+                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />CSV, Excel or TXT file</li>
+                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />Download link by email, unlimited downloads</li>
                 </ul>
                 <Button
                   className="mt-8 w-full"

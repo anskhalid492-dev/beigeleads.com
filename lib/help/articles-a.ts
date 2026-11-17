@@ -230,11 +230,11 @@ export const articlesA: readonly HelpArticle[] = [
   {
     category: "pricing", slug: "after-payment",
     title: "What happens after completing payment?",
-    description: "When the payment is confirmed on the blockchain, we email your list link automatically.",
+    description: "When the payment is confirmed on the blockchain, we email your list link automatically, mostly instantly.",
     keywords: ["after payment", "next", "confirmation", "delivery email", "receive"],
     body: [
       ["ol", ["Your payment is seen on the blockchain.", "It gets enough confirmations, and the order is marked paid.", "We email the link to your list to the address you gave at checkout."]],
-      ["p", "Nothing is sent before the payment is confirmed. If the email has not arrived, see [I haven't received my delivery email](/help/troubleshooting/no-delivery-email)."],
+      ["p", "Delivery is mostly instant. In some cases it can take up to 12 hours at most. Nothing is sent before the payment is confirmed. If the email has not arrived, see [I haven't received my delivery email](/help/troubleshooting/no-delivery-email)."],
     ],
     related: ["payments/how-payment-confirmation-works", "delivery/how-you-receive-your-list", "troubleshooting/no-delivery-email"],
     cta: { label: "Explore available lists", href: "/lists" },

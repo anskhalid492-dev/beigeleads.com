@@ -45,12 +45,12 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     tagline: "Fill your pipeline with businesses that match who you sell to.",
     seoTitle: "B2B Lead Generation Databases",
     seoDescription:
-      "Build a B2B prospect list from verified business contact databases. Pay once, check a masked sample first, and download a CSV you own.",
+      "Build a B2B prospect list from verified business contact databases. Pay once, check a masked sample first, and download a file you own.",
     h1: "B2B lead generation that starts with a list you can inspect",
     lede:
       "Good lead generation begins with knowing which businesses to talk to. BeigeLeads gives you ready-made business contact databases, sorted by industry and place, that you can sample before you pay and keep after you do.",
     ctaLabel: "Get a free sample",
-    flow: ["Pick an industry", "Check the sample", "Download the CSV", "Start outreach"],
+    flow: ["Pick an industry", "Check the sample", "Download the file", "Start outreach"],
     challenge: {
       heading: "Most lead generation stalls before the first message",
       paragraphs: [
@@ -63,12 +63,12 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Lists ready to download", d: "Each database is already collected, cleaned and tagged by industry and place, so you skip the research stage." },
       { t: "Checked before you buy", d: "Our team runs SMTP checks on emails and re-verifies all data every 60 days. The list page shows when it was last done." },
       { t: "See it first", d: "Every list shows a masked sample, and you can request a free sample by email before spending anything." },
-      { t: "Pay once, keep the file", d: "No subscription and no account. The CSV is yours to use under the lawful use policy." },
+      { t: "Pay once, keep the file", d: "No subscription and no account. The file is yours to use under the lawful use policy." },
     ],
     productSlugs: ["dentists-us", "restaurants-us", "ski-shops-us"],
     productNote: "These lists are available to explore now. If your target market is not here yet, tell us and we will say whether it is on the way.",
     applications: [
-      { t: "Build a first target list", d: "Pick one industry and one country and load the CSV into your CRM as a ready pipeline of accounts." },
+      { t: "Build a first target list", d: "Pick one industry and one country and load the file into your CRM as a ready pipeline of accounts." },
       { t: "Test a market before committing", d: "Buy the smallest package for a new industry and learn whether the segment responds before you invest more." },
       { t: "Feed several channels from one file", d: "The same list can support email, phone calls and account research, because it carries email, phone and website." },
       { t: "Refresh a stale CRM", d: "Compare a new list against your existing accounts to find businesses you are missing and contacts that have changed." },
@@ -87,7 +87,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Choose a list", d: "Browse by industry and country, or request one we do not have yet." },
       { t: "Inspect a sample", d: "Look at the masked rows or ask for a free sample by email." },
       { t: "Pay once in crypto", d: "No account and no subscription." },
-      { t: "Download and use", d: "A secure link arrives by email. Load the CSV into your tools." },
+      { t: "Download and use", d: "A download link arrives by email. Load the file into your tools." },
     ],
     related: ["cold-email-marketing", "sales-prospecting", "business-expansion"],
     finalHeading: "Start with a list you can see before you pay",
@@ -159,7 +159,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       "Hand sales reps ready-made business lists with phone, email and website so they spend time selling, not searching. One-time purchase, sample first.",
     h1: "Sales prospecting without the Monday-morning list hunt",
     lede:
-      "Reps earn their pay in conversations, not in spreadsheets. BeigeLeads lists put phone, email and website for each business in one file, so prospecting starts the moment the CSV opens.",
+      "Reps earn their pay in conversations, not in spreadsheets. BeigeLeads lists put phone, email and website for each business in one file, so prospecting starts the moment the file opens.",
     ctaLabel: "See a sample list",
     flow: ["Territory chosen", "Accounts loaded", "Calls and emails", "Notes in CRM"],
     challenge: {
@@ -197,7 +197,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Define a territory", d: "Pick the industry, country and cities your team covers." },
       { t: "Review a sample", d: "Check the columns your reps will work with." },
-      { t: "Buy and import", d: "Pay once, download the CSV, import into your CRM." },
+      { t: "Buy and import", d: "Pay once, download the file, import into your CRM." },
       { t: "Work and track", d: "Log calls and outcomes against each account." },
     ],
     related: ["b2b-lead-generation", "cold-email-marketing", "local-business-marketing"],
@@ -267,12 +267,12 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     tagline: "Map who is in a market before you decide how to enter it.",
     seoTitle: "Business Databases for Market Research",
     seoDescription:
-      "Use structured business lists to map competitors, suppliers and customers by place and industry. Download a CSV once and analyse it your own way.",
+      "Use structured business lists to map competitors, suppliers and customers by place and industry. Download a file once and analyse it your own way.",
     h1: "Market research from a structured list of real businesses",
     lede:
       "Before you size a market, you need to see it. A BeigeLeads list is a structured snapshot of businesses in an industry and place that you can sort, count and map in the tools you already use.",
     ctaLabel: "See a sample",
-    flow: ["Choose a market", "Load the CSV", "Count and map", "Decide"],
+    flow: ["Choose a market", "Load the file", "Count and map", "Decide"],
     challenge: {
       heading: "Market size guesses are only as good as the list behind them",
       paragraphs: [
@@ -285,7 +285,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "A consistent table to analyse", d: "Every record uses the same fields, so you can count and group without cleaning first." },
       { t: "Place built in", d: "City and country fields let you see where businesses cluster and where gaps are." },
       { t: "Dated snapshot", d: "Each list shows its last-verified date, so your analysis can say when the data was taken." },
-      { t: "Your tools, your method", d: "A CSV opens in Excel, Sheets, BI tools and scripts. We do not lock you into a dashboard." },
+      { t: "Your tools, your method", d: "The file (CSV, Excel or TXT) opens in Excel, Sheets, BI tools and scripts. We do not lock you into a dashboard." },
     ],
     productSlugs: ["dentists-us", "restaurants-us", "ski-shops-us"],
     productNote: "More industries and countries are added list by list.",
@@ -307,7 +307,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Define the question", d: "For example: how many dental practices are in each of these cities?" },
       { t: "Choose the matching list", d: "Look at the fields and coverage on the product page." },
-      { t: "Download and load", d: "Open the CSV in your analysis tool." },
+      { t: "Download and load", d: "Open the file in your analysis tool." },
       { t: "Record the snapshot date", d: "Note the last-verified date next to your findings." },
     ],
     related: ["business-expansion", "ecommerce-market-research", "b2b-lead-generation"],
@@ -363,7 +363,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Choose a city and industry", d: "Start small and local." },
       { t: "Check the sample", d: "See the address and contact columns." },
-      { t: "Buy and sort", d: "Pay once and sort the CSV by area." },
+      { t: "Buy and sort", d: "Pay once and sort the file by area." },
       { t: "Reach out in person and online", d: "Mix visits, calls and email." },
     ],
     related: ["sales-prospecting", "marketing-agencies", "business-expansion"],
@@ -419,7 +419,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Pick the practice type", d: "Start with the dentist list or request another category." },
       { t: "Read the sample", d: "Check that the fields suit your outreach." },
-      { t: "Pay once", d: "Download a CSV after your crypto payment is confirmed." },
+      { t: "Pay once", d: "Download a file after your crypto payment is confirmed." },
       { t: "Reach out responsibly", d: "Follow the lawful use policy and honour opt-outs." },
     ],
     related: ["b2b-lead-generation", "recruitment-staffing", "marketing-agencies"],
@@ -475,7 +475,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Choose a city and industry", d: "Start with the sectors that fit the space you handle." },
       { t: "Review the sample", d: "Check the address and contact columns." },
-      { t: "Buy and sort", d: "Download the CSV and sort by area." },
+      { t: "Buy and sort", d: "Download the file and sort by area." },
       { t: "Approach and record", d: "Mix visits, calls and email, and note interest." },
     ],
     related: ["local-business-marketing", "business-expansion", "sales-prospecting"],
@@ -530,7 +530,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Pick your sector", d: "Choose the industry you specialise in." },
       { t: "Read the sample", d: "Check that the fields suit business development." },
-      { t: "Buy once", d: "Pay in crypto and download the CSV." },
+      { t: "Buy once", d: "Pay in crypto and download the file." },
       { t: "Call and follow up", d: "Introduce yourself and offer one concrete service." },
     ],
     related: ["healthcare-marketing", "sales-prospecting", "b2b-lead-generation"],
@@ -545,7 +545,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     tagline: "Understand the retailers, suppliers and competitors in your niche.",
     seoTitle: "Retailer and Supplier Lists for E-commerce Research",
     seoDescription:
-      "E-commerce teams can map retailers, stockists and suppliers in a niche with a structured business list. Download a CSV once and research it your way.",
+      "E-commerce teams can map retailers, stockists and suppliers in a niche with a structured business list. Download a file once and research it your way.",
     h1: "E-commerce research starts with the businesses already selling in your niche",
     lede:
       "Before you launch a product or open wholesale, it helps to know who already sells in your niche. A BeigeLeads list of retailers gives you names, places and websites to study, and contacts to approach.",
@@ -585,7 +585,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Choose the niche", d: "Pick the retail category that matches your product." },
       { t: "Review the sample", d: "Check the fields you will research." },
-      { t: "Download the CSV", d: "Pay once in crypto and open it in your analysis tool." },
+      { t: "Download the file", d: "Pay once in crypto and open it in your analysis tool." },
       { t: "Research, then approach", d: "Study the sites, then contact the most promising shops." },
     ],
     related: ["market-research", "business-expansion", "b2b-lead-generation"],
@@ -640,7 +640,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Choose a niche and a city", d: "Match your audience." },
       { t: "Check the sample", d: "Make sure the contact columns suit a personal pitch." },
-      { t: "Buy once", d: "Pay in crypto and download the CSV." },
+      { t: "Buy once", d: "Pay in crypto and download the file." },
       { t: "Pitch a specific idea", d: "Send a short, concrete proposal and follow up." },
     ],
     related: ["marketing-agencies", "local-business-marketing", "cold-email-marketing"],
@@ -696,7 +696,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Choose the market", d: "Pick the country and the industry you plan to serve." },
       { t: "Review the sample", d: "Check that coverage looks right for the cities you care about." },
-      { t: "Buy and analyse", d: "Download the CSV and count businesses by city." },
+      { t: "Buy and analyse", d: "Download the file and count businesses by city." },
       { t: "Start local conversations", d: "Reach partners and early customers in the best-fit city first." },
     ],
     related: ["market-research", "ecommerce-market-research", "real-estate-prospecting"],
