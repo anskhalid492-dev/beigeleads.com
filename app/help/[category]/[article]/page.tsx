@@ -29,7 +29,7 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
 
   return (
     <>
-      <Breadcrumbs items={[{ name: "Help Center", href: "/faq" }, { name: c.name, href: `/help/${c.slug}` }, { name: a.title, href: articleHref(a) }]} />
+      <Breadcrumbs items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }, { name: a.title, href: articleHref(a) }]} />
       <div className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-[1fr_16rem]">
           <article className="min-w-0 max-w-3xl">

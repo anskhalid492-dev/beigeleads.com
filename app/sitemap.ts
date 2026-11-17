@@ -24,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...solutions.map((s) => ({ url: `${SITE_URL}/solutions/${s.slug}` })),
     { url: `${SITE_URL}/compare` },
     ...comparisons.map((c) => ({ url: `${SITE_URL}/compare/beigeleads-vs-${c.slug}` })),
-    { url: `${SITE_URL}/faq` },
+    { url: `${SITE_URL}/help-center` },
     ...helpCategories.map((c) => ({ url: `${SITE_URL}/help/${c.slug}` })),
     ...helpArticles.map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
     ...getProducts().map((p) => ({ url: `${SITE_URL}/product/${p.slug}` })),

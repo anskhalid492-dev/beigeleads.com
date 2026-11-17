@@ -20,7 +20,7 @@ export default async function HelpCategoryPage(props: PageProps<"/help/[category
   const list = articlesIn(c.slug);
   return (
     <>
-      <Breadcrumbs items={[{ name: "Help Center", href: "/faq" }, { name: c.name, href: `/help/${c.slug}` }]} />
+      <Breadcrumbs items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }]} />
       <div className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[1fr_16rem]">
           <div>

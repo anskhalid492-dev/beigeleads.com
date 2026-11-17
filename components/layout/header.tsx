@@ -19,7 +19,7 @@ const GROUPS = [
 const LINKS = [
   { label: "How it works", href: "/how-it-works" },
   { label: "Compare", href: "/compare" },
-  { label: "FAQ", href: "/faq" },
+  { label: "FAQ", href: "/help-center" },
 ] as const;
 
 type Key = "lists" | "solutions" | null;

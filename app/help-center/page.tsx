@@ -10,7 +10,7 @@ import { toDoc } from "@/lib/help/search";
 export const metadata: Metadata = {
   title: "Help Center",
   description: "Answers about BeigeLeads business contact lists: buying, payments, delivery, data verification and custom list requests.",
-  alternates: { canonical: "/faq" },
+  alternates: { canonical: "/help-center" },
 };
 
 const first = (t: string) => (t.length > 150 ? t.slice(0, t.lastIndexOf(" ", 150)) + "…" : t);
@@ -22,10 +22,10 @@ export default function HelpCenterPage() {
 
   return (
     <>
-      <Breadcrumbs items={[{ name: "Help Center", href: "/faq" }]} wide />
+      <Breadcrumbs items={[{ name: "Help Center", href: "/help-center" }]} wide />
       <section className="px-2 sm:px-4">
         <div className="mx-auto max-w-[96rem] rounded-[2rem] bg-gradient-to-br from-forest-900 via-forest-700 to-forest-500 px-4 pb-24 pt-16 text-center sm:px-8">
-          <p className="text-sm font-bold tracking-widest text-forest-300">BEIGELEADS HELP CENTER</p>
+          <p className="text-sm font-bold tracking-widest text-forest-300">HELP CENTER</p>
           <h1 className="display mt-4 text-6xl !text-sand-50 sm:text-8xl">How can we help you?</h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-sand-200">Find answers about business contact lists, purchasing, payments, delivery, data verification, and custom list requests.</p>
           <div className="mt-9"><HelpSearch docs={docs} categories={helpCategories.map((c) => ({ slug: c.slug, name: c.name }))} /></div>
