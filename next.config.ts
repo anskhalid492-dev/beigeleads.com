@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/use-cases", destination: "/solutions", permanent: true },
       { source: "/custom-list-builder", destination: "/custom-list", permanent: true },
+      { source: "/help", destination: "/faq", permanent: false },
     ];
   },
   // Tailwind v4 loader (kept from the create-next-app scaffold).

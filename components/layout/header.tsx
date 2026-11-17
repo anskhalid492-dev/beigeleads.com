@@ -126,7 +126,7 @@ export function Header() {
             <Button asChild variant="secondary" size="sm" className="hidden rounded-full xl:inline-flex">
               <Link href="/sample">Request a Sample</Link>
             </Button>
-            <Button asChild size="sm" className="rounded-full">
+            <Button asChild size="sm" className="hidden rounded-full sm:inline-flex">
               <Link href="/custom-list">Custom List Builder</Link>
             </Button>
             <button

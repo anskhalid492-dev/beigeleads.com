@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { solutions } from "@/lib/solutions";
+import { articleHref, helpArticles, helpCategories } from "@/lib/help";
 import { comparisons } from "@/lib/compare-data";
 
 // Only indexable pages. Country/city pages and stubs stay out until they carry real data.
@@ -14,6 +15,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...solutions.map((s) => ({ url: `${SITE_URL}/solutions/${s.slug}` })),
     { url: `${SITE_URL}/compare` },
     ...comparisons.map((c) => ({ url: `${SITE_URL}/compare/beigeleads-vs-${c.slug}` })),
+    { url: `${SITE_URL}/faq` },
+    ...helpCategories.map((c) => ({ url: `${SITE_URL}/help/${c.slug}` })),
+    ...helpArticles.map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
     ...getProducts().map((p) => ({ url: `${SITE_URL}/product/${p.slug}` })),
   ];
 }

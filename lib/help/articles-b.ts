@@ -1,0 +1,229 @@
+import type { HelpArticle } from "./types";
+
+export const articlesB: readonly HelpArticle[] = [
+  // ---------- Payments ----------
+  {
+    category: "payments", slug: "accepted-payment-methods",
+    title: "Accepted payment methods",
+    description: "BeigeLeads accepts cryptocurrency only. Checkout shows the coins and networks available.",
+    keywords: ["payment", "crypto", "bitcoin", "usdt", "card", "paypal", "bank", "methods"],
+    body: [
+      ["p", "We accept cryptocurrency only. We do not take bank cards, PayPal or bank transfers."],
+      ["p", "At checkout you pick from the coins and networks that are open, and you see the exact amount to send. Always send on the network checkout shows. A payment sent on the wrong network can not be recovered. Read the [crypto payment policy](/legal/crypto-payments)."],
+    ],
+    related: ["payments/how-payment-confirmation-works", "payments/pending-payment", "pricing/how-to-purchase"],
+  },
+  {
+    category: "payments", slug: "how-payment-confirmation-works",
+    title: "How payment confirmation works",
+    description: "We watch the blockchain for your exact amount, then mark the order paid once it has enough confirmations.",
+    keywords: ["confirmation", "confirmations", "blockchain", "paid", "exact amount", "unique amount"],
+    body: [
+      ["p", "At checkout you get an exact amount to send. It includes a few extra decimals that are unique to your order, which is how we match your payment to it. Send exactly that amount."],
+      ["ol", ["You send the payment.", "We see it on the blockchain and wait for enough confirmations.", "The order is marked paid and the delivery email is sent."]],
+      ["note", "If your exchange takes a withdrawal fee out of the amount, the payment may not match. Add the fee on top so the full amount arrives."],
+    ],
+    related: ["payments/pending-payment", "payments/payment-fails", "pricing/after-payment"],
+  },
+  {
+    category: "payments", slug: "pending-payment",
+    title: "What to do when a payment is pending",
+    description: "Wait for confirmations. If the checkout page does not update, submit your transaction hash.",
+    keywords: ["pending", "not confirmed", "waiting", "tx hash", "transaction", "stuck"],
+    body: [
+      ["p", "A payment is pending while it waits for confirmations. This can take longer when the network is busy."],
+      ["ol", ["Keep the checkout page open. It checks for your payment by itself.", "Make sure you sent the exact amount, to the right address, on the right network.", "If you have sent it and checkout does not show it, use the \"I already paid\" form on the checkout page to send us your transaction hash."]],
+      ["p", "We check the transaction and reply by email. Still stuck? [Contact support](/contact) with your order ID."],
+    ],
+    related: ["payments/payment-fails", "troubleshooting/payment-not-confirmed", "payments/billing-support"],
+  },
+  {
+    category: "payments", slug: "payment-fails",
+    title: "What happens if payment fails?",
+    description: "Quotes expire after 30 minutes. Late, partial and wrong-network payments each have a path.",
+    keywords: ["failed", "expired", "late", "partial", "underpaid", "wrong network", "quote"],
+    body: [
+      ["h", "The quote expires"],
+      ["p", "The exchange rate is locked for 30 minutes. If it runs out, the order expires. Start a new checkout to get a fresh amount."],
+      ["h", "You paid after it expired"],
+      ["p", "We review late payments by hand and decide whether to complete the order or refund you."],
+      ["h", "You sent less than the amount"],
+      ["p", "The order is not completed automatically. Contact us with your order ID and transaction hash and we will tell you what to do."],
+      ["h", "You used the wrong network"],
+      ["p", "Crypto can not be recovered from a wrong network. Always check the network shown at checkout. See the [crypto payment policy](/legal/crypto-payments)."],
+    ],
+    related: ["payments/pending-payment", "payments/refunds-and-replacements", "payments/billing-support"],
+  },
+  {
+    category: "payments", slug: "billing-support",
+    title: "How to contact support about billing",
+    description: "Use the contact form and include your order ID and transaction hash.",
+    keywords: ["billing", "support", "invoice", "contact", "payment help"],
+    body: [
+      ["p", "Use the [contact page](/contact). To help us find your payment quickly, include:"],
+      ["ul", ["Your order ID (from the checkout page and the order email)", "The email address you used at checkout", "The coin and network you paid with", "The transaction hash"]],
+      ["p", "Never send a seed phrase or a private key. We will never ask for one."],
+    ],
+    related: ["payments/pending-payment", "payments/payment-fails", "troubleshooting/contact-support"],
+  },
+  {
+    category: "payments", slug: "refunds-and-replacements",
+    title: "Refund and replacement policies",
+    description: "If more than 5% of emails bounce, we replace them until the list is back at 95% verified.",
+    keywords: ["refund", "replacement", "bounce", "bounced", "95%", "money back", "guarantee"],
+    body: [
+      ["p", "If more than 5% of the emails you send from a list bounce, we replace the bounced emails with fresh, verified ones. We keep replacing until the list is back to at least 95% verified and accurate."],
+      ["h", "How to claim"],
+      ["ol", ["Contact us within 30 days of delivery.", "Send your order details and the bounce report from your email tool.", "We check it against the list we delivered."]],
+      ["h", "If we can not bring it back to 95%"],
+      ["p", "We refund the price of the bounced emails, in proportion, in crypto to an address you give us. Network fees are deducted."],
+      ["p", "We aim to answer within 3 working days. Read the full [Refund & Returns policy](/legal/refund-replacement)."],
+    ],
+    related: ["data-quality/email-verification", "data-quality/report-data-quality", "payments/billing-support"],
+  },
+
+  // ---------- Delivery ----------
+  {
+    category: "delivery", slug: "how-you-receive-your-list",
+    title: "How will I receive my purchased list?",
+    description: "We email a link to your list after the payment is confirmed.",
+    keywords: ["receive", "delivery", "email", "link", "how", "get my list"],
+    body: [
+      ["p", "When your payment is confirmed, we email a link to your list to the address you entered at checkout. The email also contains your order details, a note on permitted use and links to the refund and opt-out pages."],
+      ["p", "Nothing is sent before the payment is confirmed. See the [delivery policy](/legal/delivery)."],
+    ],
+    related: ["delivery/download-your-list", "troubleshooting/no-delivery-email", "pricing/after-payment"],
+  },
+  {
+    category: "delivery", slug: "download-your-list",
+    title: "Where can I find my download link?",
+    description: "It is in the delivery email sent to the address you used at checkout.",
+    keywords: ["download", "link", "where", "find", "email", "spam"],
+    body: [
+      ["p", "Your link is in the delivery email, sent from BeigeLeads to the address you gave at checkout."],
+      ["ul", ["Search your inbox for BeigeLeads or your order ID.", "Check spam, promotions and other folders.", "Make sure you are looking in the mailbox you typed at checkout."]],
+      ["p", "Not there? See [I haven't received my delivery email](/help/troubleshooting/no-delivery-email)."],
+    ],
+    related: ["delivery/how-you-receive-your-list", "delivery/access-your-file-again", "troubleshooting/no-delivery-email"],
+  },
+  {
+    category: "delivery", slug: "file-formats",
+    title: "Supported file formats",
+    description: "Lists are delivered as CSV files that open in Excel, Google Sheets and most email tools.",
+    keywords: ["csv", "excel", "format", "file type", "spreadsheet", "google sheets"],
+    body: [
+      ["p", "Lists are delivered as CSV files. They open in Excel, Google Sheets and most email and CRM import tools."],
+      ["p", "The list page shows the fields each file contains. If you need a different format, [contact us](/contact) before you buy."],
+    ],
+    related: ["products/whats-in-a-list", "delivery/download-your-list", "delivery/wrong-file"],
+  },
+  {
+    category: "delivery", slug: "download-issues",
+    title: "Troubleshooting download issues",
+    description: "Check the link, your browser and your network, then contact us with your order ID.",
+    keywords: ["download", "not working", "error", "link broken", "cannot open"],
+    body: [
+      ["ol", ["Open the link in a new tab, in a current browser.", "Copy the whole link from the email. A cut-off link will fail.", "Turn off any VPN or blocker that may stop the download, then try again.", "Try another device or network."]],
+      ["p", "Still failing? [Contact us](/contact) with your order ID and the exact message you see."],
+    ],
+    related: ["troubleshooting/download-link-not-working", "delivery/access-your-file-again", "troubleshooting/contact-support"],
+  },
+  {
+    category: "delivery", slug: "wrong-file",
+    title: "What if the delivered file is incorrect?",
+    description: "Contact us with your order ID and what is wrong. We check it against what we delivered.",
+    keywords: ["wrong file", "incorrect", "missing", "empty", "not what I ordered"],
+    body: [
+      ["p", "If the file is not the list you ordered, or it looks empty or damaged, [contact us](/contact) and include:"],
+      ["ul", ["Your order ID", "What you expected and what you received", "A screenshot of the first rows, with contact details hidden"]],
+      ["p", "We check it against the order and fix it. Bounced emails are handled under the [refund and replacement policy](/legal/refund-replacement)."],
+    ],
+    related: ["delivery/file-formats", "payments/refunds-and-replacements", "troubleshooting/contact-support"],
+  },
+  {
+    category: "delivery", slug: "access-your-file-again",
+    title: "How to access a purchased file again",
+    description: "Open the original delivery email. If you lost it, contact us with your order ID.",
+    keywords: ["lost", "again", "re-download", "resend", "access", "deleted email"],
+    body: [
+      ["p", "Your link is in the original delivery email. Save the file once you download it, because there is no account to log in to later."],
+      ["p", "If you can not find the email, [contact us](/contact) from the address you used at checkout and include your order ID. We can send it again."],
+    ],
+    related: ["delivery/download-your-list", "getting-started/do-i-need-an-account", "troubleshooting/no-delivery-email"],
+  },
+
+  // ---------- Data quality ----------
+  {
+    category: "data-quality", slug: "how-we-verify-data",
+    title: "How BeigeLeads verifies business data",
+    description: "Our team collects, cleans and checks data, verifies emails in-house and re-verifies everything every 60 days.",
+    keywords: ["verify", "verification", "quality", "accuracy", "clean", "process"],
+    body: [
+      ["p", "Our team collects raw business data from public sources, cleans and organises it, adds missing details such as owners and emails, and verifies emails with our own SMTP checks."],
+      ["p", "All data is re-verified every 60 days. No verification is perfect, so we back every list with a [replacement policy](/legal/refund-replacement) for bounced emails."],
+      ["p", "The full process is on the [verification page](/verification), and the sources are on the [data sources page](/data-sources)."],
+    ],
+    related: ["data-quality/email-verification", "data-quality/data-freshness", "privacy-compliance/data-sources"],
+    cta: { label: "Request a free sample", href: "/sample" },
+  },
+  {
+    category: "data-quality", slug: "email-verification",
+    title: "Understanding email verification",
+    description: "We check emails with in-house SMTP checks. Some servers accept every address, so no check is perfect.",
+    keywords: ["email verification", "smtp", "bounce", "valid", "deliverability", "accept all"],
+    body: [
+      ["p", "SMTP verification asks the receiving mail server whether an address can receive mail, without sending a message. We run these checks ourselves on every email."],
+      ["h", "What it can not do"],
+      ["p", "Some mail servers accept every address, so a check can not tell which ones are real. That is why a small share of emails can still bounce, and why we promise replacements instead of a perfect result."],
+      ["h", "What to do on your side"],
+      ["p", "Send from a properly set-up domain, and start with a small batch. Compare the bounce rate to our [replacement policy](/legal/refund-replacement)."],
+    ],
+    related: ["data-quality/how-we-verify-data", "data-quality/emails-become-outdated", "payments/refunds-and-replacements"],
+  },
+  {
+    category: "data-quality", slug: "emails-become-outdated",
+    title: "Why email addresses can become outdated",
+    description: "People change jobs, businesses close and domains change, so data ages even when it was correct.",
+    keywords: ["outdated", "stale", "old", "decay", "bounce", "change jobs"],
+    body: [
+      ["p", "Business contact data changes all the time. Businesses close or move, owners change, websites and domains change, and mailboxes are retired."],
+      ["p", "That is why we re-verify all data every 60 days, and why the list page shows when it was last verified. The newer the date, the fresher the list."],
+    ],
+    related: ["data-quality/data-freshness", "data-quality/email-verification", "data-quality/report-data-quality"],
+  },
+  {
+    category: "data-quality", slug: "masked-sample-data",
+    title: "Understanding masked sample data",
+    description: "Samples show the real layout with contact details masked, so they are not working contacts.",
+    keywords: ["masked", "sample", "hidden", "asterisks", "preview", "example"],
+    body: [
+      ["p", "A masked sample shows how a list is laid out. Emails and other contact details are partly hidden, for example with asterisks, so the sample can not be used as a working list."],
+      ["p", "It is free, needs no payment details and lets you check the fields and the structure. [Request a free sample](/sample) or open any list page."],
+    ],
+    related: ["getting-started/preview-data-before-purchase", "products/whats-in-a-list", "data-quality/how-we-verify-data"],
+    cta: { label: "Request a free sample", href: "/sample" },
+  },
+  {
+    category: "data-quality", slug: "data-freshness",
+    title: "What data freshness means",
+    description: "Freshness is how recently a list was verified. All data is re-verified every 60 days.",
+    keywords: ["freshness", "last verified", "up to date", "60 days", "recent"],
+    body: [
+      ["p", "Freshness tells you how recently the data was checked. Each list page shows a last-verified date. All data is re-verified every 60 days."],
+      ["p", "Fresh does not mean perfect. Read [understanding email verification](/help/data-quality/email-verification) for what checks can and can not catch."],
+    ],
+    related: ["data-quality/emails-become-outdated", "data-quality/how-we-verify-data", "products/record-counts"],
+  },
+  {
+    category: "data-quality", slug: "report-data-quality",
+    title: "How to report data-quality concerns",
+    description: "Contact us with your order ID. For bounces, include the report from your email tool.",
+    keywords: ["report", "bad data", "wrong data", "complaint", "bounces", "quality"],
+    body: [
+      ["p", "[Contact us](/contact) within 30 days of delivery. Include your order ID and describe the problem."],
+      ["ul", ["For bounces: attach the bounce report from your email tool.", "For wrong details: give a few example rows with the contact details hidden."]],
+      ["p", "We check the report against the list we delivered and replace or refund as set out in the [Refund & Returns policy](/legal/refund-replacement)."],
+    ],
+    related: ["payments/refunds-and-replacements", "data-quality/email-verification", "troubleshooting/contact-support"],
+  },
+];
