@@ -29,7 +29,7 @@ Open `https://beigeleads.com/checkout/new?product=dentists-us&package=Starter` (
 - Test 6, reject: submit a claim with a fake hash, press Reject. Expected: order unchanged.
 
 ## Stage 2: Ethereum Sepolia (ETH)
-Same tests as Stage 1 using option "Ether (ETH)" (needs 12 confirmations, about 3 minutes). This also checks the Blockscout reader for the first time: if payments are never detected, tell me, the parsing needs fixing.
+Same tests as Stage 1 using option "Ethereum (ETH coin)" (needs 12 confirmations, about 3 minutes). This also checks the Blockscout reader for the first time: if payments are never detected, tell me, the parsing needs fixing.
 
 ## Stage 3: TRON Nile (USDT)
 Get Nile test USDT from the Nile faucet (nileex.io). Add its token contract address as variable `TRON_NILE_USDT` (copy it from the faucet or Nile Tronscan page, do not guess). Repeat Test 1 and Test 4.
