@@ -86,7 +86,7 @@ export default function Home() {
   return (
     <>
       {/* 1. Hero + co-pilot */}
-      <section id="find-leads" className="scroll-mt-24 px-2 sm:px-4">
+      <section id="find-leads" className="scroll-mt-24 px-2 pt-6 sm:px-4">
         <div className="relative isolate mx-auto max-w-[96rem] overflow-hidden rounded-[2rem] bg-gradient-to-br from-forest-900 via-forest-700 to-forest-500 px-4 pb-16 pt-14 text-center sm:pb-20 sm:pt-20">
           <div aria-hidden className="drift pointer-events-none absolute -left-24 bottom-[-6rem] -z-10 size-[28rem] rounded-full bg-forest-900/60 blur-3xl" />
           <div aria-hidden className="drift pointer-events-none absolute -right-16 -top-16 -z-10 size-[24rem] rounded-full bg-sand-200/20 blur-3xl" />
