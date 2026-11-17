@@ -2,7 +2,7 @@
 // assistant. Wording is written from how BeigeLeads operates (CLAUDE.md) and is NOT lawyer-reviewed.
 
 /** Date the current wording was published. Update whenever any legal text or the verification page changes. */
-export const LEGAL_UPDATED = "2026-11-16";
+export const LEGAL_UPDATED = "2026-11-18";
 export const formatLegalDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -20,13 +20,12 @@ export const legalDocs: LegalDoc[] = [
         "Order email: you give us an email address so we can send your download link. There are no accounts and no passwords.",
         "Payment data: the coin and network you pick, the amount, the receiving address and the transaction hash. We never receive bank card details.",
         "Forms: if you request a sample, send a message or ask for a category, we keep what you type and your email address.",
-        "Download records: when you download a file we keep the time and a hashed version of your IP address, so we can settle disputes.",
         "Anti-spam signals: our forms use Cloudflare Turnstile and a rate limit to block bots.",
       ] },
       { h: "What we do not do", p: ["We do not run advertising trackers. Our analytics (Cloudflare Web Analytics) are cookie-free. We do not sell data about our visitors and buyers."] },
       { h: "Why we use your data", p: ["To deliver what you ordered, to answer you, to keep the service secure, and to meet legal duties. Lawful bases under GDPR: contract (to deliver your order), legitimate interests (security and fraud prevention) and legal obligation (tax and accounting records)."] },
       { h: "Who we share it with", p: ["Service providers that run the site: Cloudflare (hosting, storage, spam checks) and Resend (transactional email only; we never use it for marketing or cold email)."] },
-      { h: "How long we keep it", p: ["Orders and payment records are kept for 7 years for tax and accounting. Form messages and sample requests are kept for 12 months. Download logs are kept for 12 months. After that they are deleted or anonymised."] },
+      { h: "How long we keep it", p: ["Orders and payment records are kept for 7 years for tax and accounting. Form messages and sample requests are kept for 12 months. After that they are deleted or anonymised."] },
       { h: "The business contact data we sell", p: ["The lists we sell contain business contact details. They are covered on the data sources page, the opt-out page and our GDPR, CCPA, CAN-SPAM and CASL pages."] },
       { h: "Your rights", p: ["Depending on where you live you may ask to see, correct or delete your data, or object to how we use it. Use the contact page, or the opt-out page if you want to be removed from our lists."] },
       { h: "Changes", p: ["We will post changes here and update the date at the top of the page."] },
@@ -170,7 +169,7 @@ export const legalDocs: LegalDoc[] = [
       { h: "When this applies", p: ["Most of what we do is selling lists, where you receive data as your own controller. This agreement covers the cases where we process personal data on your behalf. A data processing agreement is available on request for customers who need it. It is signed by BeigeLeads LLC and the customer."] },
       { h: "Details of processing", p: ["Subject: the contact records you give us. Purpose: only the service you ordered. Kinds of data: business contact details. Duration: until the job is delivered, then deleted within 30 days."] },
       { h: "Our commitments", p: ["We process only on your documented instructions, keep the data confidential, and delete or return it when the service ends."] },
-      { h: "Security", p: ["Files are held in private storage, download links are random and stored only as hashes, links expire, and access to the admin area is protected by Cloudflare Access with two-factor authentication. Traffic uses HTTPS, and downloads are rate limited per IP."] },
+      { h: "Security", p: ["Access to our admin area is protected by Cloudflare Access plus a second login with a password and a one-time code. Traffic uses HTTPS. Our public forms use Cloudflare Turnstile and are rate limited per IP. Delivery links are sent only to the email address given at checkout. We do not store payment card details, private keys or seed phrases."] },
       { h: "Sub-processors", p: ["Cloudflare (hosting and storage) and Resend (transactional email). We tell customers about changes by updating this page."] },
       { h: "Incidents and audits", p: ["We will tell you without undue delay after we find a personal data breach that affects your data. We will notify you within 72 hours of becoming aware of a breach. On reasonable written request, once a year, we will answer your audit questions. Transfers rely on standard contractual clauses where they apply."] },
     ],

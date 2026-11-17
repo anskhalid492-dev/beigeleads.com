@@ -564,7 +564,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Delivery facts (owner): delivery is mostly instant, in some cases up to 12 hours at most; downloads are unlimited. Stated in the help articles, `/legal/delivery` (72h/5-download text and "within 15 minutes" removed), product FAQ and solution FAQs. Section 8's 72h / 5-download defaults are not used.
 - File formats (owner): "CSV, Excel or TXT" everywhere on the site (product pages, solutions, help, legal delivery). Do not write "CSV file" alone. Competitor facts in `lib/compare-data.ts` are unchanged.
 - `/legal/crypto-payments` was REMOVED (the doc entry is gone, the page now 404s, help links to it removed). Crypto rules are now stated only on checkout and in the help articles. Its 1% underpay tolerance text no longer exists anywhere.
-- Still inconsistent (needs the owner): `/legal/dpa` Security section still says links expire and are stored as hashes and files are in private storage.
+- `/legal/dpa` Security text and the privacy policy were corrected 18 Nov 2026 (no link expiry/hash/private-storage claims, no download-log claims, since links are external and nothing is logged). `LEGAL_UPDATED` is 2026-11-18.
 
 ## 43. Blog CMS (Nov 2026)
 
