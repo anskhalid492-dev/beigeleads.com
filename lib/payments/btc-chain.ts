@@ -8,7 +8,7 @@ type MempoolTx = {
   status: { confirmed: boolean; block_height?: number; block_time?: number };
 };
 
-export const BTC_API = { mainnet: "https://mempool.space/api", testnet: "https://mempool.space/testnet/api" } as const;
+export const BTC_API = { mainnet: "https://mempool.space/api", testnet: "https://mempool.space/testnet4/api" } as const;
 
 /** Sums what each transaction pays to `address`. Ignores transactions that pay it nothing. */
 export function summarizeTxs(address: string, txs: readonly MempoolTx[], tipHeight: number): ChainTx[] {

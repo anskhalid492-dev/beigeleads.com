@@ -10,7 +10,7 @@ Do ONE stage at a time. Write down every result (pass/fail) so we can fix failur
    - Missing? Run in order, only the ones not yet applied: `npx wrangler d1 execute beigeleads --remote --file=drizzle/0002_checkout_orders.sql`, then `0003_delivery.sql`, then `0004_claims_audit.sql`.
    - Check 0002 first: `PRAGMA table_info(order_items)` must show `product_slug`.
 3. Make two test wallets with PUBLIC addresses only (never share seed phrases):
-   - Bitcoin TESTNET wallet (for example Sparrow or Electrum in testnet mode): address starts with `tb1`.
+   - Bitcoin TESTNET4 wallet: install Sparrow (sparrowwallet.com), menu Tools > Restart In Testnet4, create a wallet; address starts with `tb1`. The site reads Bitcoin testnet4 (mempool.space/testnet4).
    - Ethereum wallet (MetaMask): address starts with `0x`. Switch it to the Sepolia test network.
    - TRON wallet (TronLink): switch it to the Nile test network.
 4. `/admin/wallets`: add each address as TEST network, then Enable. They go live 24 hours later. Wait.
