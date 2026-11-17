@@ -218,3 +218,26 @@ describe("fixed address matching", () => {
     expect(summarizeTransfers("TMine", "TUSDT", rows)).toEqual([{ txid: "1", sats: 99_000_137n, confirmations: 1, timeMs: 5 }]);
   });
 });
+
+import { isEvmAddress } from "@/lib/payments/evm-chain";
+import { OPTIONS, optionForWallet } from "@/lib/payments/options";
+import { validateWalletValue } from "@/lib/wallets/validate";
+
+describe("EVM options", () => {
+  it("maps wallet coin+network to an option", () => {
+    expect(optionForWallet("USDC", "ERC20")?.id).toBe("USDC-ERC20");
+    expect(optionForWallet("ETH", "sepolia")?.decimals).toBe(18);
+    expect(optionForWallet("USDT", "nope")).toBeUndefined();
+    expect(Object.keys(OPTIONS)).toHaveLength(5);
+  });
+  it("validates EVM addresses (lowercase ok, bad checksum rejected)", () => {
+    expect(isEvmAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")).toBe(true);
+    expect(isEvmAddress("0xdac17f958d2ee523a2206206994597c13d831ec7")).toBe(true);
+    expect(isEvmAddress("0xdAC17F958D2ee523a2206206994597C13D831ec8")).toBe(false);
+    expect(isEvmAddress("0x123")).toBe(false);
+  });
+  it("wallet validation accepts EVM for ETH and rejects TRON addresses", () => {
+    expect(validateWalletValue({ coin: "ETH", network: "ethereum" }, "0xdAC17F958D2ee523a2206206994597C13D831ec7")).toBeTruthy();
+    expect(() => validateWalletValue({ coin: "USDC", network: "ERC20" }, "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")).toThrow();
+  });
+});

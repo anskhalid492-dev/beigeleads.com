@@ -1,6 +1,7 @@
 "use client";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
+import { OPTIONS } from "@/lib/payments/options";
 import { addWalletAction, type ActionState } from "./actions";
 
 export function AddWalletForm() {
@@ -10,11 +11,11 @@ export function AddWalletForm() {
     <form action={action} className="space-y-4 rounded-2xl border border-sand-200 bg-white p-6">
       <p className="rounded-xl bg-purple-100 p-3 text-sm text-forest-900">Public data only. Paste your receiving <b>address</b>. Customers pay straight into it. Never paste a seed phrase or a private key: they are rejected.</p>
       <label className="block text-sm font-semibold">Coin and network
-        <select name="type" className={field} defaultValue="BTC-testnet">
-          <option value="BTC-testnet">BTC testnet (tb1...)</option>
-          <option value="BTC-mainnet">BTC mainnet (bc1... / 1... / 3...)</option>
-          <option value="USDT-nile">USDT TRON Nile testnet (T...)</option>
-          <option value="USDT-TRC20">USDT TRC20 mainnet (T...)</option>
+        <select name="type" className={field} defaultValue="BTC:test">
+          {Object.values(OPTIONS).flatMap((o) => [
+            <option key={`${o.id}:test`} value={`${o.id}:test`}>{o.label}: TEST network</option>,
+            <option key={`${o.id}:main`} value={`${o.id}:main`}>{o.label}: MAINNET (real money)</option>,
+          ])}
         </select>
       </label>
       <label className="block text-sm font-semibold">Receiving address

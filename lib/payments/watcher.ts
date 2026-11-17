@@ -1,7 +1,9 @@
 import { and, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { notifyOwner } from "@/lib/forms/email";
-import { COINS, QUOTE_LOCK_MS, formatAtomic, parseAtomic } from "./amounts";
+import { QUOTE_LOCK_MS, formatAtomic, parseAtomic } from "./amounts";
+import { EVM_MAINNET_API, EVM_SEPOLIA_API, fetchEvmPayments } from "./evm-chain";
+import { optionForWallet, type PayOption } from "./options";
 import { BTC_API, fetchBtcPayments, type ChainTx } from "./btc-chain";
 import { decideAttempt } from "./decide";
 import { matchPayments } from "./match";
@@ -14,6 +16,7 @@ const MAX_PER_RUN = 60;
 type Deps = {
   fetchBtc?: typeof fetchBtcPayments;
   fetchTron?: typeof fetchTronPayments;
+  fetchEvm?: typeof fetchEvmPayments;
   now?: () => number;
 };
 
@@ -25,6 +28,7 @@ type Deps = {
 export async function runPaymentWatcher(env: CloudflareEnv, deps: Deps = {}) {
   const fetchBtc = deps.fetchBtc ?? fetchBtcPayments;
   const fetchTron = deps.fetchTron ?? fetchTronPayments;
+  const fetchEvm = deps.fetchEvm ?? fetchEvmPayments;
   const now = (deps.now ?? Date.now)();
   const db = getDbFromEnv(env);
 
@@ -44,16 +48,25 @@ export async function runPaymentWatcher(env: CloudflareEnv, deps: Deps = {}) {
   let changed = 0;
   for (const list of groups.values()) {
     const first = list[0];
-    const spec = first.coin === "BTC" ? COINS.BTC : COINS.USDT_TRC20;
+    const opt = optionForWallet(first.coin, first.network);
+    if (!opt) continue;
+    const spec = { decimals: opt.decimals };
     try {
       let chain: ChainTx[];
-      if (first.coin === "BTC") {
-        chain = await fetchBtc(first.network === "mainnet" ? BTC_API.mainnet : (env.BTC_TESTNET_API ?? BTC_API.testnet), first.address);
-      } else {
-        const cfg = first.network === "TRC20" ? TRON_MAINNET : { api: env.TRON_NILE_API ?? "https://nile.trongrid.io", usdt: env.TRON_NILE_USDT ?? "" };
+      const isMain = first.network === opt.mainnet;
+      if (opt.chain === "bitcoin") {
+        chain = await fetchBtc(isMain ? BTC_API.mainnet : (env.BTC_TESTNET_API ?? BTC_API.testnet), first.address);
+      } else if (opt.chain === "tron") {
+        const cfg = isMain ? TRON_MAINNET : { api: env.TRON_NILE_API ?? "https://nile.trongrid.io", usdt: env.TRON_NILE_USDT ?? "" };
         if (!cfg.usdt) continue;
         const since = Math.min(...list.map((a) => a.expiresAt.getTime() - QUOTE_LOCK_MS));
         chain = await fetchTron(cfg, first.address, since, fetch, env.TRONGRID_API_KEY);
+      } else {
+        const base = isMain ? (env.EVM_API_BASE ?? EVM_MAINNET_API) : (env.EVM_TEST_API_BASE ?? EVM_SEPOLIA_API);
+        const contract = opt.contract ? (isMain ? opt.contract : evmTestContract(env, opt)) : undefined;
+        if (opt.contract && !contract) continue;
+        const wanted = new Set(list.map((a) => parseAtomic(a.expectedAmount, opt.decimals)));
+        chain = await fetchEvm({ base, apiKey: env.BLOCKSCOUT_API_KEY }, first.address, contract ? { kind: "erc20", contract } : { kind: "native" }, wanted);
       }
 
       const { byAttempt, unmatched } = matchPayments(
@@ -68,7 +81,7 @@ export async function runPaymentWatcher(env: CloudflareEnv, deps: Deps = {}) {
         const key = `unmatched:${tx.txid}`;
         if (known || (await env.CACHE.get(key))) continue;
         await env.CACHE.put(key, "1", { expirationTtl: 30 * 24 * 3600 });
-        await notifyOwner(env, "Payment matches no order", `${first.coin} transfer ${tx.txid} of ${formatAtomic(tx.sats, spec.decimals)} to ${first.address} matches no open order (wrong amount, fee deducted, or unrelated deposit). Review it.`);
+        await notifyOwner(env, "Payment matches no order", `${opt.label} transfer ${tx.txid} of ${formatAtomic(tx.sats, spec.decimals)} to ${first.address} matches no open order (wrong amount, fee deducted, or unrelated deposit). Review it.`);
       }
 
       for (const a of list) {
@@ -91,7 +104,9 @@ export async function runPaymentWatcher(env: CloudflareEnv, deps: Deps = {}) {
 
 async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttempts.$inferSelect, now: number): Promise<boolean> {
   const db = getDbFromEnv(env);
-  const spec = a.coin === "BTC" ? COINS.BTC : COINS.USDT_TRC20;
+  const opt = optionForWallet(a.coin, a.network);
+  if (!opt) return false;
+  const spec = { decimals: opt.decimals };
   const [order] = await db.select().from(schema.orders).where(eq(schema.orders.id, a.orderId));
   if (!order) return false;
   const [wallet] = a.walletId ? await db.select().from(schema.wallets).where(eq(schema.wallets.id, a.walletId)) : [];
@@ -101,7 +116,7 @@ async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttemp
   const d = decideAttempt({
     expectedAtomic: parseAtomic(a.expectedAmount, spec.decimals),
     txs: events.map((e) => ({ sats: parseAtomic(e.amount, spec.decimals), confirmations: e.confirmations, seenAtMs: e.seenAt.getTime() })),
-    confirmationsNeeded: confirmationsNeeded(a.coin, a.network === "TRC20" || a.network === "nile" ? "tron" : "bitcoin", item?.priceUsdCents ?? order.totalUsdCents, wallet?.minConfirmations ?? 1),
+    confirmationsNeeded: confirmationsNeeded(a.coin, opt.chain, item?.priceUsdCents ?? order.totalUsdCents, wallet?.minConfirmations ?? 1),
     expiresAtMs: a.expiresAt.getTime(),
     nowMs: now,
     orderStatus: order.status,
@@ -138,6 +153,10 @@ async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttemp
     }
   }
   return false;
+}
+
+function evmTestContract(env: CloudflareEnv, opt: PayOption): string | undefined {
+  return opt.id === "USDT-ERC20" ? env.EVM_TEST_USDT : opt.id === "USDC-ERC20" ? env.EVM_TEST_USDC : undefined;
 }
 
 /** Housekeeping used by the 15-minute cron: expire open quotes that never received anything. */

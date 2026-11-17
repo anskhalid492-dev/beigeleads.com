@@ -3,6 +3,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { ApiForm } from "@/components/forms/api-form";
 import { FormPage } from "@/components/shared/form-page";
 import { formatUsd, getProduct } from "@/lib/catalog";
+import { OPTIONS } from "@/lib/payments/options";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export default async function NewCheckout(props: PageProps<"/checkout/new">) {
         hidden={{ product: product.slug, package: pkg.name }}
         fields={[
           { name: "email", label: "Email for your download link", type: "email", required: true },
-          { name: "coin", label: "Pay with", type: "select", required: true, options: [{ value: "BTC", label: "Bitcoin (BTC)" }, { value: "USDT", label: "USDT on TRON (TRC20)" }] },
+          { name: "coin", label: "Pay with", type: "select", required: true, options: Object.values(OPTIONS).map((o) => ({ value: o.id, label: o.label })) },
         ]}
       />
     </FormPage>

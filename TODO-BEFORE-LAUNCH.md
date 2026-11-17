@@ -77,3 +77,6 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Testnet testing: add a BTC testnet address and a TRON Nile address in /admin/wallets; set `TRON_NILE_USDT` (Nile USDT contract) and `BTC_TESTNET_API` vars; enable them (24h delay)
 - [ ] Optional secret `TRONGRID_API_KEY` if TronGrid rate-limits
 - [ ] Decide handling for "amount does not match any order" payments (currently owner email only)
+
+- [ ] Verify Blockscout parsing live on Sepolia (ETH, USDT, USDC) before enabling ERC20/ETH mainnet; confirm mainnet contract addresses on etherscan.
+- [ ] Set `EVM_TEST_USDT` / `EVM_TEST_USDC` vars for Sepolia testing.

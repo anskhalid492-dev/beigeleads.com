@@ -3,7 +3,7 @@
  * checkout otherwise. Fetchers are injectable so tests never touch the network.
  */
 export type PriceSource = { name: string; fetch: () => Promise<number> };
-export type RateCoin = "BTC" | "USDT";
+export type RateCoin = "BTC" | "ETH" | "USDT" | "USDC";
 
 export const MAX_SPREAD = 0.015; // sources may differ by at most 1.5%
 export const MAX_DEPEG = 0.02; // stablecoin must be within 2% of $1
@@ -28,6 +28,21 @@ export function defaultSources(coin: RateCoin): PriceSource[] {
       { name: "kraken", fetch: async () => num(((await getJson("https://api.kraken.com/0/public/Ticker?pair=XBTUSD")) as { result: Record<string, { c: string[] }> }).result.XXBTZUSD.c[0]) },
       { name: "coinbase", fetch: async () => num(((await getJson("https://api.coinbase.com/v2/prices/BTC-USD/spot")) as { data: { amount: string } }).data.amount) },
       { name: "coingecko", fetch: async () => num(((await getJson("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")) as { bitcoin: { usd: number } }).bitcoin.usd) },
+    ];
+  }
+  if (coin === "ETH") {
+    return [
+      { name: "binance", fetch: async () => num(((await getJson("https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT")) as { price: string }).price) },
+      { name: "kraken", fetch: async () => num(Object.values(((await getJson("https://api.kraken.com/0/public/Ticker?pair=ETHUSD")) as { result: Record<string, { c: string[] }> }).result)[0].c[0]) },
+      { name: "coinbase", fetch: async () => num(((await getJson("https://api.coinbase.com/v2/prices/ETH-USD/spot")) as { data: { amount: string } }).data.amount) },
+      { name: "coingecko", fetch: async () => num(((await getJson("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")) as { ethereum: { usd: number } }).ethereum.usd) },
+    ];
+  }
+  if (coin === "USDC") {
+    return [
+      { name: "kraken", fetch: async () => num(Object.values(((await getJson("https://api.kraken.com/0/public/Ticker?pair=USDCUSD")) as { result: Record<string, { c: string[] }> }).result)[0].c[0]) },
+      { name: "coinbase", fetch: async () => num(((await getJson("https://api.coinbase.com/v2/prices/USDC-USD/spot")) as { data: { amount: string } }).data.amount) },
+      { name: "coingecko", fetch: async () => num(((await getJson("https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=usd")) as { "usd-coin": { usd: number } })["usd-coin"].usd) },
     ];
   }
   return [
@@ -60,7 +75,7 @@ export async function fetchUsdPrice(coin: RateCoin, sources: PriceSource[] = def
   const settled = await Promise.allSettled(sources.map((s) => s.fetch()));
   const prices = settled.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
   const price = aggregate(prices);
-  if (coin === "USDT") assertStablecoinPeg(price);
+  if (coin === "USDT" || coin === "USDC") assertStablecoinPeg(price);
   return price;
 }
 
@@ -72,7 +87,7 @@ export async function getUsdPriceCached(kv: KVNamespace, coin: RateCoin): Promis
   const hit = await kv.get(key);
   if (hit) return hit;
   const market = await fetchUsdPrice(coin); // throws on disagreement or depeg
-  const price = coin === "USDT" ? 1 : market; // stablecoins are treated as exactly $1
+  const price = coin === "USDT" || coin === "USDC" ? 1 : market; // stablecoins are treated as exactly $1
   const str = price.toFixed(8);
   await kv.put(key, str, { expirationTtl: CACHE_TTL_SECONDS });
   return str;

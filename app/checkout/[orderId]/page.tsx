@@ -1,3 +1,4 @@
+import { optionForWallet } from "@/lib/payments/options";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
@@ -22,16 +23,19 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
   const [a] = await db.select().from(schema.paymentAttempts).where(eq(schema.paymentAttempts.orderId, orderId)).orderBy(desc(schema.paymentAttempts.id)).limit(1);
   if (!item || !a) notFound();
 
-  const isBtc = a.coin === "BTC";
-  const testnet = a.network === "testnet" || a.network === "nile";
-  const unit = isBtc ? "BTC" : "USDT";
-  const uri = isBtc ? `bitcoin:${a.address}?amount=${a.expectedAmount}` : a.address; // TRON wallets scan the plain address
+  const opt = optionForWallet(a.coin, a.network);
+  if (!opt) notFound();
+  const testnet = a.network === opt.test;
+  const unit = opt.coin;
+  const netName = testnet ? opt.testNetworkName : opt.mainNetworkName;
+  // BTC and ETH wallets understand amount URIs; token wallets scan the plain address.
+  const uri = opt.id === "BTC" ? `bitcoin:${a.address}?amount=${a.expectedAmount}` : a.address;
   const qr = await qrToSvg(uri, { margin: 1, width: 220, errorCorrectionLevel: "M" });
   const row = "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-sand-200 py-3 last:border-0";
 
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
-      <h1 className="display text-4xl text-forest-900 sm:text-5xl">{isBtc ? "Pay with Bitcoin" : "Pay with USDT (TRC20)"}</h1>
+      <h1 className="display text-4xl text-forest-900 sm:text-5xl">Pay with {opt.label}</h1>
       <p className="mt-2">Order <span className="font-mono text-sm">{order.id}</span> · {item.packageName} package ({item.records.toLocaleString("en-US")} records) · {formatUsd(order.totalUsdCents)}</p>
 
       {testnet && (
@@ -52,7 +56,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
       </section>
 
       <ul className="mt-6 space-y-2 rounded-2xl bg-sand-100 p-5 text-sm">
-        <li><strong className="text-forest-900">Network:</strong> send only on {isBtc ? (testnet ? "the Bitcoin testnet" : "the Bitcoin (BTC) network") : (testnet ? "the TRON Nile test network" : "the TRON (TRC20) network")}. Funds sent on another network are lost.</li>
+        <li><strong className="text-forest-900">Network:</strong> send only on {netName}. Funds sent on another network are lost.</li>
         <li><strong className="text-forest-900">Amount:</strong> send the exact amount shown, to the last digit, in ONE payment. The small extra digits are how we match your payment to your order; if your wallet or exchange deducts a fee, add it on top so the amount we receive is exact.</li>
         <li><strong className="text-forest-900">Time:</strong> pay before the countdown ends. Payments after that need manual review.</li>
         <li><strong className="text-forest-900">Delivery:</strong> after the network confirms your payment we email a secure download link to the address you used at checkout.</li>

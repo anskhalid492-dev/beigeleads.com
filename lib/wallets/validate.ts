@@ -1,10 +1,10 @@
 import { bech32, bech32m, createBase58check } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { isEvmAddress } from "@/lib/payments/evm-chain";
+import { optionForWallet } from "@/lib/payments/options";
 
 // Wallets hold PUBLIC receiving addresses only. Customers pay straight into these.
-export type WalletKind =
-  | { coin: "BTC"; network: "mainnet" | "testnet" }
-  | { coin: "USDT"; network: "TRC20" | "nile" }; // nile = TRON test network
+export type WalletKind = { coin: "BTC" | "USDT" | "USDC" | "ETH"; network: string }; // network values: see lib/payments/options.ts
 
 const b58c = createBase58check(sha256);
 
@@ -49,11 +49,16 @@ export function validateWalletValue(kind: WalletKind, raw: string): string {
   if (/^[a-z]?(prv|pub)[0-9A-Za-z]{20,}$/.test(v) || v.split(" ").length > 3) {
     throw new Error("Paste a receiving ADDRESS, never a private key, extended key or seed phrase.");
   }
-  if (kind.coin === "BTC") {
-    if (!isBtcAddress(kind.network, v)) throw new Error(`Not a valid Bitcoin ${kind.network} address.`);
-    return v;
+  const opt = optionForWallet(kind.coin, kind.network);
+  if (!opt) throw new Error("Unsupported coin or network.");
+  if (opt.chain === "bitcoin") {
+    const net = kind.network === opt.mainnet ? "mainnet" : "testnet";
+    if (!isBtcAddress(net, v)) throw new Error(`Not a valid Bitcoin ${net} address.`);
+  } else if (opt.chain === "tron") {
+    if (!isTronAddress(v)) throw new Error("Not a valid TRON address (starts with T and passes the checksum).");
+  } else if (!isEvmAddress(v)) {
+    throw new Error("Not a valid Ethereum address (0x + 40 hex characters; mixed case must pass the checksum).");
   }
-  if (!isTronAddress(v)) throw new Error("Not a valid TRON address (starts with T and passes the checksum).");
   return v;
 }
 

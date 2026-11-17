@@ -17,6 +17,11 @@ interface CloudflareEnv {
   BTC_TESTNET_API?: string; // var (optional): mempool API base for testnet, e.g. https://mempool.space/testnet4/api
   TRON_NILE_USDT?: string; // var (testing only): USDT contract address on the TRON Nile test network
   TRON_NILE_API?: string; // var (optional): default https://nile.trongrid.io
+  EVM_API_BASE?: string; // var (optional): Blockscout base for Ethereum mainnet, default https://eth.blockscout.com
+  EVM_TEST_API_BASE?: string; // var (optional): Blockscout base for Sepolia, default https://eth-sepolia.blockscout.com
+  EVM_TEST_USDT?: string; // var (testing only): USDT contract on Sepolia
+  EVM_TEST_USDC?: string; // var (testing only): USDC contract on Sepolia
+  BLOCKSCOUT_API_KEY?: string; // secret (optional)
   TRONGRID_API_KEY?: string; // secret (optional): raises TronGrid rate limits
   ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>

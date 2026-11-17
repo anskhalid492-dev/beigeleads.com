@@ -4,12 +4,13 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { addWallet, setWalletEnabled } from "@/lib/wallets/service";
+import { OPTIONS } from "@/lib/payments/options";
 import type { WalletKind } from "@/lib/wallets/validate";
 
 export type ActionState = { ok: boolean; message: string } | null;
 
 const addSchema = z.object({
-  type: z.enum(["BTC-mainnet", "BTC-testnet", "USDT-TRC20", "USDT-nile"]),
+  type: z.string().max(40),
   value: z.string().min(10).max(200),
   minConfirmations: z.coerce.number().int().min(1).max(100),
 });
@@ -18,7 +19,10 @@ export async function addWalletAction(_: ActionState, form: FormData): Promise<A
   try {
     const admin = await requireAdmin();
     const p = addSchema.parse({ type: form.get("type"), value: form.get("value"), minConfirmations: form.get("minConfirmations") });
-    const kind: WalletKind = p.type.startsWith("USDT") ? { coin: "USDT", network: p.type === "USDT-TRC20" ? "TRC20" : "nile" } : { coin: "BTC", network: p.type === "BTC-mainnet" ? "mainnet" : "testnet" };
+    const [optId, net] = p.type.split(":");
+    const opt = OPTIONS[optId];
+    if (!opt || (net !== "main" && net !== "test")) throw new Error("Choose a coin and network.");
+    const kind: WalletKind = { coin: opt.coin, network: net === "main" ? opt.mainnet : opt.test };
     await addWallet(getCloudflareContext().env, admin.email, kind, p.value, p.minConfirmations);
     revalidatePath("/admin/wallets");
     return { ok: true, message: "Wallet added (disabled). Enable it below; it goes live 24 hours after enabling." };

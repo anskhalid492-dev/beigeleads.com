@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { CheckoutError, createOrder } from "@/lib/checkout/create";
 import { sha256Hex } from "@/lib/forms/hash";
+import { OPTION_IDS } from "@/lib/payments/options";
 import { isRateLimited } from "@/lib/forms/rate-limit";
 import { verifyTurnstile } from "@/lib/forms/turnstile";
 
@@ -11,7 +12,7 @@ const schema = z.object({
   email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.").max(254)),
   product: z.string().trim().min(1).max(80),
   package: z.string().trim().min(1).max(40),
-  coin: z.enum(["BTC", "USDT"], "Choose a coin."),
+  coin: z.enum(OPTION_IDS, "Choose how you want to pay."),
 });
 
 const json = (status: number, body: Record<string, unknown>) =>
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
   const ipHash = await sha256Hex(`${env.HASH_SALT ?? ""}:ip:${ip}`);
   if (await isRateLimited(env.CACHE, "checkout", ipHash, 10, 3600)) return json(429, { ok: false, error: "Too many requests. Try again later." });
   try {
-    const orderId = await createOrder(env, { email: p.data.email, productSlug: p.data.product, packageName: p.data.package, coin: p.data.coin });
+    const orderId = await createOrder(env, { email: p.data.email, productSlug: p.data.product, packageName: p.data.package, option: p.data.coin });
     return json(200, { ok: true, redirect: `/checkout/${orderId}` });
   } catch (e) {
     if (e instanceof CheckoutError) return json(409, { ok: false, error: e.message });
