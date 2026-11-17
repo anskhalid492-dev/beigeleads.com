@@ -22,16 +22,6 @@ const PIPELINE = [
   ["Re-verify", "All data is re-verified every 60 days."],
 ] as const;
 
-// Facts about BeigeLeads only (owner statement and our published policies).
-const TECH = [
-  "Every email checked with our own in-house SMTP verification",
-  "All data re-verified every 60 days",
-  "Seven fields: business name, address, city, country, phone, email, website",
-  "Free masked sample on every list before you pay",
-  "Pay once in crypto; link emailed after on-chain confirmation",
-  "Bounce rate above 5%: emails replaced until the list is back at 95% verified, or a proportional refund",
-  "No account, seats or credits",
-] as const;
 
 export function ComparePage({ c }: { c: Comparison }) {
   const title = compareTitle(c.name);
@@ -139,10 +129,6 @@ export function ComparePage({ c }: { c: Comparison }) {
                 <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-forest-900">Recommended for one-time list buyers</span>
                 <h3 className="mt-3 text-2xl font-bold text-forest-900">Choose BeigeLeads if</h3>
                 <ul className="mt-3 space-y-2">{c.chooseUs.map((t) => <li key={t} className="flex gap-2"><span aria-hidden className="text-forest-500">✓</span>{t}</li>)}</ul>
-                <p className="mt-6 text-sm font-bold text-forest-900">Key technical points</p>
-                <ul className="mt-2 space-y-1.5 text-sm">
-                  {TECH.map((t) => <li key={t} className="flex gap-2"><span aria-hidden className="text-forest-500">•</span>{t}</li>)}
-                </ul>
                 <Button asChild className="mt-6"><Link href="/sample">Get a free sample</Link></Button>
               </div>
               <div className={card}>
