@@ -14,6 +14,7 @@ interface CloudflareEnv {
   CHECKOUT_ENABLED?: string; // var: "true" opens checkout. Anything else = closed.
   CHECKOUT_ALLOW_PLACEHOLDER?: string; // var: "true" lets draft/placeholder products be bought (testnet testing only)
   MAINNET_ENABLED?: string; // var: "true" allows mainnet wallets. Leave unset until the testnet gate passes (CLAUDE.md section 7)
+  BTC_TESTNET_API?: string; // var (optional): mempool API base for testnet, e.g. https://mempool.space/testnet4/api
   ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
 }

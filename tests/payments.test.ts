@@ -142,3 +142,41 @@ describe("confirmations", () => {
     expect(confirmationsNeeded("BTC", "bitcoin", 5_000, 6)).toBe(6);
   });
 });
+
+import { decideAttempt } from "@/lib/payments/decide";
+import { summarizeTxs } from "@/lib/payments/btc-chain";
+
+describe("payment watcher decisions", () => {
+  const base = { expectedAtomic: 1_000_000n, confirmationsNeeded: 2, expiresAtMs: 10_000, nowMs: 5_000, orderStatus: "pending" as const };
+  const tx = (sats: bigint, confirmations: number, seenAtMs = 1_000) => ({ sats, confirmations, seenAtMs });
+
+  it("waits for confirmations, then marks paid (exact and within 1% under)", () => {
+    expect(decideAttempt({ ...base, txs: [tx(1_000_000n, 1)] }).action).toBe("none");
+    expect(decideAttempt({ ...base, txs: [tx(1_000_000n, 2)] }).action).toBe("paid");
+    expect(decideAttempt({ ...base, txs: [tx(990_000n, 2)] }).action).toBe("paid");
+  });
+  it("flags partial and overpaid payments", () => {
+    expect(decideAttempt({ ...base, txs: [tx(500_000n, 2)] })).toMatchObject({ action: "partial", remainingAtomic: 500_000n });
+    expect(decideAttempt({ ...base, txs: [tx(1_200_000n, 2)] })).toMatchObject({ action: "paid", overpaidAtomic: 200_000n });
+  });
+  it("two small transactions add up", () => {
+    expect(decideAttempt({ ...base, txs: [tx(600_000n, 2), tx(400_000n, 2)] }).action).toBe("paid");
+  });
+  it("late payment goes to manual review, never auto-paid", () => {
+    expect(decideAttempt({ ...base, nowMs: 20_000, orderStatus: "expired", txs: [tx(1_000_000n, 3, 15_000)] }).action).toBe("late");
+    expect(decideAttempt({ ...base, nowMs: 20_000, orderStatus: "late_payment", txs: [tx(1_000_000n, 3, 15_000)] }).action).toBe("none");
+  });
+  it("expires an unpaid quote once, and is idempotent for finished orders", () => {
+    expect(decideAttempt({ ...base, nowMs: 20_000, txs: [] }).action).toBe("expire");
+    expect(decideAttempt({ ...base, nowMs: 20_000, orderStatus: "expired", txs: [] }).action).toBe("none");
+    expect(decideAttempt({ ...base, orderStatus: "paid", txs: [tx(1_000_000n, 9)] }).action).toBe("none");
+  });
+  it("summarizes mempool transactions", () => {
+    const txs = [
+      { txid: "a", vout: [{ scriptpubkey_address: "tb1qme", value: 700 }, { scriptpubkey_address: "tb1qother", value: 5 }, { scriptpubkey_address: "tb1qme", value: 300 }], status: { confirmed: true, block_height: 100 } },
+      { txid: "b", vout: [{ scriptpubkey_address: "tb1qme", value: 50 }], status: { confirmed: false } },
+      { txid: "c", vout: [{ scriptpubkey_address: "tb1qnobody", value: 9 }], status: { confirmed: true, block_height: 99 } },
+    ];
+    expect(summarizeTxs("tb1qme", txs, 101)).toEqual([{ txid: "a", sats: 1000n, confirmations: 2 }, { txid: "b", sats: 50n, confirmations: 0 }]);
+  });
+});

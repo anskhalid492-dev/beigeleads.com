@@ -4,7 +4,7 @@
   "workers_dev": true,
   "keep_vars": true,
   "preview_urls": false,
-  "main": ".open-next/worker.js",
+  "main": "custom-worker.ts",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
@@ -12,6 +12,8 @@
     "binding": "ASSETS"
   },
   "observability": { "enabled": true },
+  // Payment watcher (every minute) and expiry sweep (every 15 minutes). Handled in custom-worker.ts.
+  "triggers": { "crons": ["* * * * *", "*/15 * * * *"] },
 
   // IMPORTANT: replace the placeholder IDs below with the real ones from the
   // Cloudflare dashboard (D1 database_id, KV namespace id). Names match the dashboard.

@@ -8,4 +8,9 @@ export function getDb() {
   return drizzle(env.DB, { schema });
 }
 
+/** For code that runs outside a request (Cron Triggers): there is no request context, so pass env directly. */
+export function getDbFromEnv(env: { DB: D1Database }) {
+  return drizzle(env.DB, { schema });
+}
+
 export { schema };

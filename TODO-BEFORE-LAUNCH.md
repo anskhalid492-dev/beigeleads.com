@@ -66,3 +66,8 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Apply `drizzle/0002_checkout_orders.sql` to the remote D1 (order_items rebuilt, payment_attempts +2 columns)
 - [ ] Checkout stays closed until vars are set: `CHECKOUT_ENABLED=true` (+ `CHECKOUT_ALLOW_PLACEHOLDER=true` for testnet testing only). Never set `MAINNET_ENABLED=true` before the testnet gate (CLAUDE.md section 7)
 - [ ] Product-page "Buy" buttons: wire to `/checkout/new?product=&package=` only when a product is live with real prices
+
+## Phase 4d
+- [ ] Confirm which testnet the testing wallet uses (testnet3 or testnet4); set `BTC_TESTNET_API` accordingly (default is mempool.space testnet3)
+- [ ] After deploy, check the Worker shows 2 cron triggers (Workers > beigeleads-com > Settings > Triggers) and Logs show the minute run
+- [ ] Persist an "overpaid" flag (currently email only)
