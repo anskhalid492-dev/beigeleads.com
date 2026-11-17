@@ -105,3 +105,4 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Run `drizzle/0008_newsletter.sql` in D1. Set `NEWSLETTER_ENABLED=true` only when you will really send emails; add newsletter signups to the privacy policy.
 - [ ] Editors: set `BLOG_EDITOR_EMAILS` and add those emails to the Cloudflare Access policy for /admin.
 - [ ] After 60 s caching: check Workers CPU/errors in the Cloudflare dashboard; decide on the Paid plan.
+- /sample: run drizzle/0009_sample_requests.sql in D1; samples are sent manually from /admin/sample-requests; example rows are fictional placeholders.

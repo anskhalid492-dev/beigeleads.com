@@ -190,10 +190,25 @@ export const sampleRequests = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     email: text("email").notNull(),
     productId: integer("product_id").references(() => products.id),
-    status: text("status", { enum: ["queued", "sent", "failed"] }).notNull().default("queued"),
+    // Fulfilment status (set by the owner). "sent"/"failed" are legacy values from before migration 0009.
+    status: text("status", { enum: ["queued", "in_progress", "fulfilled", "closed", "sent", "failed"] }).notNull().default("queued"),
     createdAt: createdAt(),
+    // Added in migration 0009.
+    productSlug: text("product_slug"),
+    customRequest: text("custom_request"),
+    /** email|product:<slug> or email|custom:<text> or email|general. Unique, so repeats never create rows. */
+    dedupeKey: text("dedupe_key"),
+    /** Result of handing the confirmation email to Resend. */
+    emailStatus: text("email_status", { enum: ["pending", "sent", "failed", "not_configured"] }).notNull().default("pending"),
+    emailError: text("email_error"),
+    attempts: integer("attempts").notNull().default(0),
+    updatedAt: integer("updated_at"),
+    adminNote: text("admin_note"),
   },
-  (t) => [uniqueIndex("sample_requests_email_product_uq").on(t.email, t.productId)],
+  (t) => [
+    uniqueIndex("sample_requests_email_product_uq").on(t.email, t.productId),
+    uniqueIndex("sample_requests_dedupe_uq").on(t.dedupeKey),
+  ],
 );
 
 export const suppressions = sqliteTable(

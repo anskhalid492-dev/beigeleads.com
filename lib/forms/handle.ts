@@ -18,7 +18,7 @@ export async function handleForm<T extends { turnstileToken: string; website?: s
   req: Request,
   route: string,
   schema: ZodType<T>,
-  handler: (data: T, ctx: Ctx) => Promise<void>,
+  handler: (data: T, ctx: Ctx) => Promise<void | Record<string, unknown>>,
 ): Promise<Response> {
   let raw: unknown;
   try {
@@ -49,10 +49,11 @@ export async function handleForm<T extends { turnstileToken: string; website?: s
     return json(429, { ok: false, error: "Too many requests. Try again later." });
   }
 
+  let extra: Record<string, unknown> = {};
   try {
-    await handler(parsed.data, { env, waitUntil: (p) => ctx.waitUntil(p), ipHash });
+    extra = (await handler(parsed.data, { env, waitUntil: (p) => ctx.waitUntil(p), ipHash })) ?? {};
   } catch {
     return json(500, { ok: false, error: "Something went wrong. Try again in a minute." });
   }
-  return json(200, { ok: true });
+  return json(200, { ...extra, ok: true });
 }

@@ -8,12 +8,16 @@ const base = {
 
 const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.").max(254));
 
-export const sampleSchema = z.object({
-  ...base,
-  email,
-  product: z.string().trim().max(80).optional(),
-  category: z.string().trim().max(80).optional(),
-});
+export const sampleSchema = z
+  .object({
+    ...base,
+    email,
+    product: z.string().trim().max(80).optional(),
+    /** Free text for "can't find your list" (also receives a category name from ?category=). */
+    custom: z.string().trim().max(300).optional(),
+    category: z.string().trim().max(80).optional(),
+  })
+  .refine((d) => !!(d.product || d.custom || d.category), { message: "Choose a list or tell us what you need.", path: ["product"] });
 
 export const categoryRequestSchema = z.object({
   ...base,
