@@ -1,32 +1,32 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ComingSoon } from "@/components/shared/coming-soon";
-import { competitors, compareHref, compareTitle } from "@/lib/compare";
+import { ComparePage } from "@/components/compare/compare-page";
+import { compareHref, compareTitle } from "@/lib/compare";
+import { comparisonBySlug, comparisons } from "@/lib/compare-data";
 
-// Stub until the real comparison is written. Slug format: beigeleads-vs-<competitor>.
+// Slug format: beigeleads-vs-<competitor>. Content and sources live in lib/compare-data.ts.
 export const dynamicParams = false;
 
-const find = (slug: string) => competitors.find((c) => `beigeleads-vs-${c.slug}` === slug);
+const find = (slug: string) => comparisonBySlug[slug.replace(/^beigeleads-vs-/, "")];
 
 export function generateStaticParams() {
-  return competitors.map((c) => ({ slug: `beigeleads-vs-${c.slug}` }));
+  return comparisons.map((c) => ({ slug: `beigeleads-vs-${c.slug}` }));
 }
 
 export async function generateMetadata(props: PageProps<"/compare/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const c = find(slug);
-  return c ? { title: compareTitle(c.name), robots: { index: false, follow: true } } : {};
+  if (!c) return {};
+  return {
+    title: compareTitle(c.name),
+    description: `${c.tagline} A sourced comparison with ${c.name}, read 17 November 2026.`,
+    alternates: { canonical: compareHref(c.slug) },
+  };
 }
 
-export default async function ComparePage(props: PageProps<"/compare/[slug]">) {
+export default async function CompareRoute(props: PageProps<"/compare/[slug]">) {
   const { slug } = await props.params;
   const c = find(slug);
   if (!c) notFound();
-  return (
-    <ComingSoon
-      title={compareTitle(c.name)}
-      note="An honest side-by-side comparison is being written."
-      crumbs={[{ name: "Compare", href: "/compare" }, { name: compareTitle(c.name), href: compareHref(c.slug) }]}
-    />
-  );
+  return <ComparePage c={c} />;
 }

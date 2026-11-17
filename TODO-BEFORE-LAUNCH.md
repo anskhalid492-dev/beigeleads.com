@@ -88,3 +88,5 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Apply migration `drizzle/0004_claims_audit.sql` to remote D1.
 - [ ] Run the testnet gate: 20+ test orders (exact/under/over/late), then $1-$5 per coin on mainnet, before setting MAINNET_ENABLED.
 - [ ] Settle the Refund policy wording for overpayments (credit or refund) and for fee-deducted payments.
+
+- [ ] Compare pages: re-read every source in `lib/compare-data.ts` before launch and update `CHECKED`; replace thin RocketReach/ZoomInfo rows if their pricing pages become readable.
