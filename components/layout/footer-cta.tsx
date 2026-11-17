@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-/** Global "see a sample" band. Hidden on /solutions and /verification, which end with their own CTA. */
+/** Global "see a sample" band. Hidden on /, /solutions and /verification, which end with their own CTA. */
 export function FooterCta() {
   const path = usePathname();
-  if (path === "/solutions" || path.startsWith("/solutions/") || path === "/verification") return null;
+  if (path === "/solutions" || path.startsWith("/solutions/") || path === "/verification" || path === "/") return null;
   return (
     <div className="border-b border-forest-700">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-4 py-20 sm:px-6 lg:px-8">

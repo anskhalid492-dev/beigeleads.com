@@ -10,7 +10,7 @@ import { customListHref, searchCatalog } from "@/lib/search";
 // Lead discovery co-pilot. This is a STRUCTURED search over the real catalog (lib/search.ts), not an AI model.
 // It never invents availability, counts or prices; placeholder product data is not shown as fact.
 
-const EXAMPLES = ["10,000 dentists in California", "restaurants in Chicago", "5k ski shops in Denver", "veterinarians in Texas"];
+const EXAMPLES = ["dentists in California", "restaurants in New York", "5k ski shops in Denver", "10,000 real estate agents in Texas"];
 const CHIPS = ["Dentists in the United States", "Restaurants in Chicago", "Ski shops in Denver"];
 
 function suggestionsFor(q: string): string[] {
@@ -192,9 +192,9 @@ export function Copilot() {
             )}
             {result.exact.length === 0 && (
               <div className="rounded-2xl border-2 border-forest-900 bg-forest-100 p-6">
-                <h2 className="display text-3xl text-forest-900">We couldn&apos;t find an exact match. Let&apos;s build your ideal list.</h2>
+                <h2 className="display text-3xl text-forest-900">Not seeing your ideal audience? We can help you build it.</h2>
                 <p className="mx-auto mt-2 max-w-lg">
-                  Nothing in our catalog matches &ldquo;{result.parsed.raw}&rdquo; exactly. Send us your requirements and we will check whether we can source it. Your search is carried over.
+                  We couldn&apos;t find an exact match for &ldquo;{result.parsed.raw}&rdquo;. Send us your requirements and we will check whether we can source it. Your search is carried over.
                 </p>
                 <Button asChild size="lg" className="mt-4"><Link href={customListHref(result.parsed.raw)}>Build my custom list</Link></Button>
               </div>

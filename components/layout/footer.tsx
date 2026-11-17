@@ -35,11 +35,11 @@ const columns: Column[] = [
   },
   {
     title: "Solutions",
-    links: [["All Solutions", "/solutions"], ...solutions.map((x) => [x.navName, `/solutions/${x.slug}`] as const)],
+    links: [...solutions.slice(0, 6).map((x) => [x.navName, `/solutions/${x.slug}`] as const), ["All Solutions", "/solutions"]],
   },
   {
     title: "Compare",
-    links: competitors.map((c) => [`BeigeLeads vs ${compareLabel(c.name)}`, compareHref(c.slug)] as const),
+    links: [...competitors.slice(0, 5).map((c) => [`BeigeLeads vs ${compareLabel(c.name)}`, compareHref(c.slug)] as const), ["All Comparisons", "/compare"]],
   },
   {
     title: "Resources",
