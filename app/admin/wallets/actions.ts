@@ -4,11 +4,12 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { addWallet, setWalletEnabled } from "@/lib/wallets/service";
+import type { WalletKind } from "@/lib/wallets/validate";
 
 export type ActionState = { ok: boolean; message: string } | null;
 
 const addSchema = z.object({
-  type: z.enum(["BTC-mainnet", "BTC-testnet", "USDT-TRC20"]),
+  type: z.enum(["BTC-mainnet", "BTC-testnet", "USDT-TRC20", "USDT-nile"]),
   value: z.string().min(10).max(200),
   minConfirmations: z.coerce.number().int().min(1).max(100),
 });
@@ -17,7 +18,7 @@ export async function addWalletAction(_: ActionState, form: FormData): Promise<A
   try {
     const admin = await requireAdmin();
     const p = addSchema.parse({ type: form.get("type"), value: form.get("value"), minConfirmations: form.get("minConfirmations") });
-    const kind = p.type === "USDT-TRC20" ? ({ coin: "USDT", network: "TRC20" } as const) : ({ coin: "BTC", network: p.type === "BTC-mainnet" ? "mainnet" : "testnet" } as const);
+    const kind: WalletKind = p.type.startsWith("USDT") ? { coin: "USDT", network: p.type === "USDT-TRC20" ? "TRC20" : "nile" } : { coin: "BTC", network: p.type === "BTC-mainnet" ? "mainnet" : "testnet" };
     await addWallet(getCloudflareContext().env, admin.email, kind, p.value, p.minConfirmations);
     revalidatePath("/admin/wallets");
     return { ok: true, message: "Wallet added (disabled). Enable it below; it goes live 24 hours after enabling." };

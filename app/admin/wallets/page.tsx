@@ -30,7 +30,7 @@ export default async function WalletsPage() {
             <li key={w.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-sand-200 bg-white p-5">
               <div>
                 <p className="font-bold text-forest-900">{w.coin} · {w.network} <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${live ? "bg-forest-100" : "bg-sand-200"}`}>{live ? "Live" : w.enabled ? `Starts ${w.activatesAt.toISOString().slice(0, 16).replace("T", " ")} UTC` : "Disabled"}</span></p>
-                <p className="mt-1 font-mono text-sm">{mask(w.addressOrXpub)} · {w.minConfirmations} conf · next index {w.nextIndex}</p>
+                <p className="mt-1 font-mono text-sm">{mask(w.addressOrXpub)} · {w.minConfirmations} conf</p>
               </div>
               <form action={toggleWalletAction}>
                 <input type="hidden" name="id" value={w.id} />

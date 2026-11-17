@@ -1,10 +1,11 @@
 // Reads Bitcoin payments from the free mempool.space API. Pure parsing is separate from fetching so it can be tested.
-export type ChainTx = { txid: string; sats: bigint; confirmations: number };
+/** One incoming payment to an address. `timeMs` = block time when known; unconfirmed payments have none. */
+export type ChainTx = { txid: string; sats: bigint; confirmations: number; timeMs?: number };
 
 type MempoolTx = {
   txid: string;
   vout: { scriptpubkey_address?: string; value: number }[];
-  status: { confirmed: boolean; block_height?: number };
+  status: { confirmed: boolean; block_height?: number; block_time?: number };
 };
 
 export const BTC_API = { mainnet: "https://mempool.space/api", testnet: "https://mempool.space/testnet/api" } as const;
@@ -18,7 +19,7 @@ export function summarizeTxs(address: string, txs: readonly MempoolTx[], tipHeig
     if (sats === 0n) continue;
     const h = tx.status.confirmed ? tx.status.block_height : undefined;
     const confirmations = h !== undefined && tipHeight >= h ? tipHeight - h + 1 : 0;
-    out.push({ txid: tx.txid, sats, confirmations });
+    out.push({ txid: tx.txid, sats, confirmations, timeMs: tx.status.block_time ? tx.status.block_time * 1000 : undefined });
   }
   return out;
 }
@@ -30,7 +31,7 @@ async function getJson<T>(url: string, fetcher: typeof fetch): Promise<T> {
 }
 
 export async function fetchBtcPayments(base: string, address: string, fetcher: typeof fetch = fetch): Promise<ChainTx[]> {
-  if (!/^(bc1|tb1)[a-z0-9]{20,90}$/.test(address)) throw new Error("unexpected address format");
+  if (!/^[a-zA-Z0-9]{25,100}$/.test(address)) throw new Error("unexpected address format");
   const [tip, txs] = await Promise.all([
     getJson<number>(`${base}/blocks/tip/height`, fetcher),
     getJson<MempoolTx[]>(`${base}/address/${address}/txs`, fetcher),

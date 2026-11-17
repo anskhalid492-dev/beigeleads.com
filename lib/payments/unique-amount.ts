@@ -3,13 +3,15 @@
  * decimal amount (e.g. 49.0137). Base amount is rounded up to 4 decimals, then a
  * random 0.0001..0.0999 offset is added that no other open order uses.
  */
-const STEP = 100n; // 0.0001 USDT in 1e-6 units
-const MAX_OFFSET = 999; // up to 0.0999 USDT
+export const USDT_STEP = 100n; // 0.0001 USDT in 1e-6 units
+export const BTC_STEP = 1n; // 1 satoshi (up to 999 sats, about $0.60 at $60k)
+const MAX_OFFSET = 999;
 
 export function allocateUniqueAmount(
   baseAtomic: bigint,
   taken: ReadonlySet<bigint>,
   random: () => number = Math.random,
+  STEP: bigint = USDT_STEP,
 ): bigint {
   const rounded = ((baseAtomic + STEP - 1n) / STEP) * STEP;
   const start = Math.floor(random() * MAX_OFFSET) + 1;

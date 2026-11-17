@@ -3,13 +3,20 @@ import { validateWalletValue } from "@/lib/wallets/validate";
 import { verifyAccessJwt } from "@/lib/admin/access";
 
 describe("wallet validation", () => {
-  it("rejects private keys and bad values", () => {
-    expect(() => validateWalletValue({ coin: "BTC", network: "mainnet" }, "zprvAWgYBBk7JR8Gj")).toThrow(/private/);
-    expect(() => validateWalletValue({ coin: "BTC", network: "mainnet" }, "xpub661MyMwAqRbcF")).toThrow();
+  const btc = { coin: "BTC", network: "mainnet" } as const;
+  it("rejects keys, seed phrases and bad addresses", () => {
+    expect(() => validateWalletValue(btc, "zprvAWgYBBk7JR8GjABCDEFGHIJKLMNOPQRSTUV")).toThrow(/ADDRESS/);
+    expect(() => validateWalletValue(btc, "zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs")).toThrow();
+    expect(() => validateWalletValue(btc, "abandon ability able about above absent")).toThrow();
+    expect(() => validateWalletValue(btc, "bc1qnotanaddress")).toThrow(/valid Bitcoin/);
     expect(() => validateWalletValue({ coin: "USDT", network: "TRC20" }, "TNotAnAddress")).toThrow();
     expect(() => validateWalletValue({ coin: "USDT", network: "TRC20" }, "")).toThrow();
   });
-  it("accepts a valid TRON address", () => {
+  it("accepts real public addresses on the right network only", () => {
+    expect(validateWalletValue(btc, "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq")).toContain("bc1q");
+    expect(validateWalletValue(btc, "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2")).toContain("1Bv");
+    expect(validateWalletValue(btc, "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy")).toContain("3J9");
+    expect(() => validateWalletValue({ coin: "BTC", network: "testnet" }, "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq")).toThrow();
     expect(validateWalletValue({ coin: "USDT", network: "TRC20" }, "TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7")).toContain("TLa2f6");
   });
 });

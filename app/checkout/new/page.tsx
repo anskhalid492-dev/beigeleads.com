@@ -24,7 +24,7 @@ export default async function NewCheckout(props: PageProps<"/checkout/new">) {
   return (
     <FormPage
       title={`Buy ${product.name}`}
-      intro={`${pkg.name} package: ${pkg.records.toLocaleString("en-US")} records for ${formatUsd(pkg.priceUsdCents)}. One payment in Bitcoin, no account. We email your download link to the address below.`}
+      intro={`${pkg.name} package: ${pkg.records.toLocaleString("en-US")} records for ${formatUsd(pkg.priceUsdCents)}. One payment in crypto, no account. We email your download link to the address below.`}
       crumbs={[{ name: product.name, href: `/product/${product.slug}` }, { name: "Checkout", href: "/checkout/new" }]}
     >
       <ApiForm
@@ -32,8 +32,11 @@ export default async function NewCheckout(props: PageProps<"/checkout/new">) {
         submitLabel="Continue to payment"
         successTitle="Creating your order"
         successText="Taking you to the payment page."
-        hidden={{ product: product.slug, package: pkg.name, coin: "BTC" }}
-        fields={[{ name: "email", label: "Email for your download link", type: "email", required: true }]}
+        hidden={{ product: product.slug, package: pkg.name }}
+        fields={[
+          { name: "email", label: "Email for your download link", type: "email", required: true },
+          { name: "coin", label: "Pay with", type: "select", required: true, options: [{ value: "BTC", label: "Bitcoin (BTC)" }, { value: "USDT", label: "USDT on TRON (TRC20)" }] },
+        ]}
       />
     </FormPage>
   );

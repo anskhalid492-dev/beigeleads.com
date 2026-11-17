@@ -71,3 +71,9 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Confirm which testnet the testing wallet uses (testnet3 or testnet4); set `BTC_TESTNET_API` accordingly (default is mempool.space testnet3)
 - [ ] After deploy, check the Worker shows 2 cron triggers (Workers > beigeleads-com > Settings > Triggers) and Logs show the minute run
 - [ ] Persist an "overpaid" flag (currently email only)
+
+## Phase 4e
+- [ ] Owner to decide ETH and USDC networks (suggested: ETH on Ethereum mainnet, USDC on Base) before they are built
+- [ ] Testnet testing: add a BTC testnet address and a TRON Nile address in /admin/wallets; set `TRON_NILE_USDT` (Nile USDT contract) and `BTC_TESTNET_API` vars; enable them (24h delay)
+- [ ] Optional secret `TRONGRID_API_KEY` if TronGrid rate-limits
+- [ ] Decide handling for "amount does not match any order" payments (currently owner email only)

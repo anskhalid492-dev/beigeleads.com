@@ -11,7 +11,7 @@ const schema = z.object({
   email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.").max(254)),
   product: z.string().trim().min(1).max(80),
   package: z.string().trim().min(1).max(40),
-  coin: z.literal("BTC", "Choose Bitcoin. Other coins are coming."),
+  coin: z.enum(["BTC", "USDT"], "Choose a coin."),
 });
 
 const json = (status: number, body: Record<string, unknown>) =>

@@ -15,6 +15,9 @@ interface CloudflareEnv {
   CHECKOUT_ALLOW_PLACEHOLDER?: string; // var: "true" lets draft/placeholder products be bought (testnet testing only)
   MAINNET_ENABLED?: string; // var: "true" allows mainnet wallets. Leave unset until the testnet gate passes (CLAUDE.md section 7)
   BTC_TESTNET_API?: string; // var (optional): mempool API base for testnet, e.g. https://mempool.space/testnet4/api
+  TRON_NILE_USDT?: string; // var (testing only): USDT contract address on the TRON Nile test network
+  TRON_NILE_API?: string; // var (optional): default https://nile.trongrid.io
+  TRONGRID_API_KEY?: string; // secret (optional): raises TronGrid rate limits
   ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
 }

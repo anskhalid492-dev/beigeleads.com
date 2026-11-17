@@ -180,3 +180,41 @@ describe("payment watcher decisions", () => {
     expect(summarizeTxs("tb1qme", txs, 101)).toEqual([{ txid: "a", sats: 1000n, confirmations: 2 }, { txid: "b", sats: 50n, confirmations: 0 }]);
   });
 });
+
+import { matchPayments } from "@/lib/payments/match";
+import { summarizeTransfers } from "@/lib/payments/tron-chain";
+import { BTC_STEP } from "@/lib/payments/unique-amount";
+
+describe("fixed address matching", () => {
+  const T0 = 1_000_000_000_000;
+  const A = { id: 1, expectedAtomic: 99_000_137n, expiresAtMs: T0 + 30 * 60_000 }; // quote created at T0
+  const B = { id: 2, expectedAtomic: 99_000_412n, expiresAtMs: T0 + 40 * 60_000 };
+  const tx = (id: string, sats: bigint, timeMs?: number) => ({ txid: id, sats, confirmations: 1, timeMs });
+
+  it("matches by exact amount only", () => {
+    const m = matchPayments([A, B], [tx("a", 99_000_137n, T0 + 60_000), tx("b", 99_000_412n, T0 + 11 * 60_000), tx("x", 99_000_000n, T0 + 80_000)], T0 + 12 * 60_000);
+    expect(m.byAttempt.get(1)?.[0].txid).toBe("a");
+    expect(m.byAttempt.get(2)?.[0].txid).toBe("b");
+    expect(m.unmatched.map((t) => t.txid)).toEqual(["x"]);
+  });
+  it("never gives an old payment to a newer order with the same amount", () => {
+    const m = matchPayments([A], [tx("old", 99_000_137n, T0 - 3_600_000)], T0 + 60_000);
+    expect(m.byAttempt.size).toBe(0);
+    expect(m.unmatched).toHaveLength(1);
+  });
+  it("ignores transfers older than 7 days", () => {
+    expect(matchPayments([A], [tx("ancient", 5n, T0 - 8 * 24 * 3_600_000)], T0).unmatched).toHaveLength(0);
+  });
+  it("BTC unique amounts differ by whole satoshis", () => {
+    const a = allocateUniqueAmount(147_762n, new Set([147_763n]), () => 0, BTC_STEP);
+    expect(a).toBe(147_764n);
+  });
+  it("reads only USDT transfers sent to our address", () => {
+    const rows = [
+      { transaction_id: "1", to: "TMine", value: "99000137", block_timestamp: 5, token_info: { address: "TUSDT" } },
+      { transaction_id: "2", to: "TOther", value: "5", block_timestamp: 5, token_info: { address: "TUSDT" } },
+      { transaction_id: "3", to: "TMine", value: "7", block_timestamp: 5, token_info: { address: "TFAKE" } },
+    ];
+    expect(summarizeTransfers("TMine", "TUSDT", rows)).toEqual([{ txid: "1", sats: 99_000_137n, confirmations: 1, timeMs: 5 }]);
+  });
+});

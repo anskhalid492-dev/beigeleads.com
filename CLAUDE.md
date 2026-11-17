@@ -230,8 +230,7 @@ Rules: money in integer cents; hash emails in suppression/logs where possible; n
 7. On enough confirmations: order -> `paid` (idempotent), create download token, queue delivery email via Resend.
 
 ### Matching strategy
-- **BTC and EVM:** per-order address derived from an **xpub** stored in the `wallets` table (public key only). Increment `next_index` atomically.
-- **USDT TRC20 at launch:** one address + **unique decimal amount per order** (e.g. 49.0137 USDT). Guarantee no two open orders share an amount.
+- **OWNER DECISION (Nov 2026): every coin uses ONE fixed receiving address (entered by the admin in `/admin/wallets`) + a UNIQUE AMOUNT per order.** Customers pay straight into the owner's wallet; no per-order addresses, no xpub. BTC unique amount = base + 1..999 satoshis; USDT = base + 0.0001..0.0999. An incoming transfer belongs to the order whose amount it equals EXACTLY (and that happened after the quote was created). Transfers matching no order are emailed to the owner for manual review. (The earlier xpub/per-order design in section 20 is superseded; `lib/payments/derive.ts` is kept but unused.)
 
 ### Admin wallet management (highest-risk feature)
 - Located at `/admin/wallets`, behind Cloudflare Access + 2FA.
@@ -478,3 +477,12 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Cron Triggers need a custom Worker entry: `wrangler.jsonc` `main` is `custom-worker.ts` (re-exports OpenNext's `fetch`, adds `scheduled`; per the OpenNext "custom worker" how-to). Crons: `* * * * *` = payment watcher, `*/15 * * * *` = expiry sweep. Cron code has no request context, so it uses `getDbFromEnv(env)`, never `getCloudflareContext()`.
 - `lib/payments/watcher.ts` (BTC only so far): reads mempool.space (`BTC_TESTNET_API` var overrides the testnet base, e.g. testnet4), upserts `payment_events` (tx_hash UNIQUE = idempotent), then `decideAttempt` (pure, tested) -> guarded status flips (`UPDATE ... WHERE status IN (...) RETURNING`) so the owner is notified at most once per transition. Paid -> order `paid`; under 99% -> `partial`; after quote expiry -> `late_payment` (never auto-delivered); overpaid -> owner email. Expired quotes are watched for 7 days to catch late payments. Delivery token + email hook is the marked spot in the `paid` branch (Phase 4f).
 - Known limits: a top-up that arrives after expiry is judged by the EARLIEST transaction's seen time; overpayment is only flagged by email (no DB column yet); amounts in D1 are decimal strings, parsed with `parseAtomic` (no floats).
+
+
+## 31. Phase 4e: fixed-address checkout, BTC + USDT TRC20 (Nov 2026)
+
+- Owner decision (see section 7): fixed address per coin + unique amount. Wallet admin now accepts PUBLIC ADDRESSES only (BTC bc1/1/3 or tb1/m/n/2 testnet, TRON T... with checksum); keys, xpubs and seed phrases are rejected (`lib/wallets/validate.ts`). Admin kinds: BTC mainnet/testnet, USDT TRC20 mainnet / TRON Nile testnet.
+- `lib/checkout/create.ts`: coins `BTC` | `USDT`; mainnet only when `MAINNET_ENABLED=true` (otherwise BTC testnet + USDT Nile, Nile needs var `TRON_NILE_USDT`). Amounts reserved for 7 days per address; a race for the same amount is detected after insert and retried.
+- `lib/payments/watcher.ts`: one chain read per (coin, network, address) -> `match.ts` (exact amount, after quote creation, 7-day window) -> `decideAttempt`. BTC via mempool.space; USDT via TronGrid `only_confirmed` (`tron-chain.ts`; mainnet contract TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t, set `TRONGRID_API_KEY` secret if rate-limited). Event `seenAt` uses the transfer's block time so outages do not make on-time payments look late.
+- Consequences to keep honest: no 1% underpay tolerance anymore (exact match); a buyer whose exchange deducts a fee will not match (owner is emailed); the checkout page tells buyers to add fees on top. BTC unique offset costs the buyer up to 999 sats (~$0.60 at $60k) extra, shown in the exact amount.
+- Not yet: ETH and USDC (waiting for the owner's network choice), delivery + emails (4f), tx-hash claim form and testnet gate (4g).
