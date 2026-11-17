@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DbBadge } from "@/components/shared/db-icon";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Copilot } from "@/components/home/copilot";
 import { SampleLedger } from "@/components/home/sample-ledger";
 import { Faq } from "@/components/shared/faq";
 import { FieldColumns } from "@/components/shared/field-columns";
@@ -49,15 +50,26 @@ const faq = [
 export default function Home() {
   return (
     <>
+      {/* Lead discovery co-pilot: structured catalog search, the primary entry point. */}
+      <section className="border-b border-sand-200 bg-sand-100">
+        <div className="mx-auto max-w-4xl px-4 pb-16 pt-14 text-center md:pt-20">
+          <h1 className="display text-5xl text-forest-900 sm:text-7xl">Find the right leads. Own the list.</h1>
+          <p className="mx-auto mt-5 max-w-2xl text-lg">
+            Discover business contact lists by industry, location and audience. Search our catalog, or request a custom-built list.
+          </p>
+          <div className="mt-8"><Copilot /></div>
+        </div>
+      </section>
+
       {/* Hero: the list itself is the first thing you see. */}
       <section className="ruled border-b border-sand-200">
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
           <div>
-            <h1 className="display text-6xl text-forest-900 sm:text-7xl lg:text-[5.5rem]">
+            <h2 className="display text-6xl text-forest-900 sm:text-7xl lg:text-[5.5rem]">
               Pay once.
               <br />
               Own the list.
-            </h1>
+            </h2>
             <p className="mt-6 max-w-md text-lg">
               Business contact lists by category, country and city. Look at a masked sample first.
               Pay one time. Download your file.
