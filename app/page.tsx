@@ -51,13 +51,16 @@ export default function Home() {
   return (
     <>
       {/* Lead discovery co-pilot: structured catalog search, the primary entry point. */}
-      <section className="border-b border-sand-200 bg-sand-100">
-        <div className="mx-auto max-w-4xl px-4 pb-16 pt-14 text-center md:pt-20">
-          <h1 className="display text-5xl text-forest-900 sm:text-7xl">Find the right leads. Own the list.</h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg">
-            Discover business contact lists by industry, location and audience. Search our catalog, or request a custom-built list.
+      <section className="px-2 pt-2 sm:px-4">
+        <div className="relative isolate mx-auto max-w-[96rem] overflow-hidden rounded-[2rem] bg-gradient-to-br from-forest-900 via-forest-700 to-forest-500 px-4 pb-16 pt-16 text-center sm:pb-20 sm:pt-24">
+          <div aria-hidden className="pointer-events-none absolute -left-24 bottom-[-6rem] -z-10 size-[28rem] rounded-full bg-forest-900/60 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 -z-10 size-[24rem] rounded-full bg-sand-200/20 blur-3xl" />
+          <h1 className="display text-5xl text-sand-50 sm:text-7xl">Find the right leads. Own the list.</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-sand-100">
+            Search business contact lists by industry and location, or ask for a custom one.
           </p>
-          <div className="mt-8"><Copilot /></div>
+          <div className="mt-10"><Copilot /></div>
+          <p className="mt-12 text-sm text-sand-200">One-time purchase · No subscription · No account · Free masked sample</p>
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,7 @@ export function Copilot() {
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
   const [ph, setPh] = useState(EXAMPLES[0]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Rotating example placeholder (skipped under reduced motion).
   useEffect(() => {
@@ -80,7 +81,7 @@ export function Copilot() {
     setActive(-1);
   }
 
-  function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
+  function onKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "ArrowDown" && suggestions.length) {
       e.preventDefault();
       setOpen(true);
@@ -91,9 +92,9 @@ export function Copilot() {
     } else if (e.key === "Escape") {
       setOpen(false);
       setActive(-1);
-    } else if (e.key === "Enter" && open && active >= 0) {
+    } else if (e.key === "Enter") {
       e.preventDefault();
-      run(suggestions[active]);
+      run(open && active >= 0 ? suggestions[active] : value);
     }
   }
 
@@ -109,10 +110,11 @@ export function Copilot() {
         className="relative"
       >
         <label htmlFor={`${uid}-q`} className="sr-only">Describe your ideal leads</label>
-        <div className="flex flex-col gap-2 rounded-2xl border-2 border-forest-900 bg-white p-2 shadow-lg focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-purple-600 sm:flex-row sm:items-center">
-          <input
+        <div className="relative rounded-2xl bg-white p-4 shadow-2xl focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-purple-600">
+          <textarea
             ref={inputRef}
             id={`${uid}-q`}
+            rows={3}
             role="combobox"
             aria-expanded={open && suggestions.length > 0}
             aria-controls={listId}
@@ -120,7 +122,7 @@ export function Copilot() {
             aria-activedescendant={active >= 0 ? `${uid}-s${active}` : undefined}
             value={value}
             onChange={(e) => {
-              setValue(e.target.value);
+              setValue(e.target.value.replace(/\n/g, " "));
               setOpen(true);
               setActive(-1);
             }}
@@ -128,9 +130,15 @@ export function Copilot() {
             onBlur={() => setTimeout(() => setOpen(false), 120)}
             placeholder={`Describe your ideal leads, e.g. ${ph}`}
             autoComplete="off"
-            className="min-w-0 flex-1 bg-transparent px-3 py-3 text-base text-forest-900 placeholder:text-forest-500/70 focus:outline-none sm:text-lg"
+            className="block w-full resize-none bg-transparent pb-10 pr-14 text-left text-base text-forest-900 placeholder:text-forest-500/70 focus:outline-none sm:text-lg"
           />
-          <Button type="submit" size="lg">Find my leads</Button>
+          <button
+            type="submit"
+            className="absolute bottom-3 right-3 grid size-11 place-items-center rounded-xl bg-purple-600 text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+          >
+            <ArrowUp className="size-5" aria-hidden />
+            <span className="sr-only">Find my leads</span>
+          </button>
         </div>
         {open && suggestions.length > 0 && (
           <ul id={listId} role="listbox" aria-label="Suggestions" className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-sand-200 bg-white text-left shadow-xl">
@@ -155,19 +163,19 @@ export function Copilot() {
 
       <div className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Popular searches">
         {CHIPS.map((c) => (
-          <button key={c} type="button" onClick={() => run(c)} className="rounded-full border border-sand-300 bg-sand-50 px-4 py-1.5 text-sm font-medium text-forest-900 transition-colors hover:bg-purple-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+          <button key={c} type="button" onClick={() => run(c)} className="rounded-full bg-white px-4 py-1.5 text-sm font-medium text-forest-900 shadow-sm transition-colors hover:bg-purple-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
             {c}
           </button>
         ))}
       </div>
-      <p className="mt-3 flex items-center justify-center gap-2 text-sm">
-        <span aria-hidden className="size-2 rounded-full bg-forest-500" />
+      <p className="mt-4 flex items-center justify-center gap-2 text-sm text-sand-200">
+        <span aria-hidden className="size-2 rounded-full bg-forest-100" />
         Searches our real catalog. No sign-up.
       </p>
 
       <div aria-live="polite" className="mt-8 text-center">
         {result && (
-          <div className="space-y-6">
+          <div className="space-y-6 rounded-2xl bg-sand-50 p-5 text-forest-900 shadow-xl sm:p-6">
             {result.exact.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-forest-900">
