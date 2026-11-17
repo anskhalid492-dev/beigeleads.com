@@ -11,6 +11,9 @@ interface CloudflareEnv {
   ADMIN_PASSWORD_HASH?: string; // secret: output of scripts/admin-setup.mjs
   ADMIN_TOTP_SECRET?: string; // secret: base32, output of scripts/admin-setup.mjs
   ADMIN_SESSION_SECRET?: string; // secret: random 32+ chars, output of scripts/admin-setup.mjs
+  CHECKOUT_ENABLED?: string; // var: "true" opens checkout. Anything else = closed.
+  CHECKOUT_ALLOW_PLACEHOLDER?: string; // var: "true" lets draft/placeholder products be bought (testnet testing only)
+  MAINNET_ENABLED?: string; // var: "true" allows mainnet wallets. Leave unset until the testnet gate passes (CLAUDE.md section 7)
   ADMIN_EMAILS?: string; // var (optional): comma-separated extra allow-list
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
 }

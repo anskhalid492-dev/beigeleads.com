@@ -61,3 +61,8 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Create Cloudflare Access app for `beigeleads.com/admin*` (+ 2FA, short session on /admin/wallets); set vars `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` (and optionally `ADMIN_EMAILS`); then regenerate `npm run cf-typegen`
 - [ ] Test add/enable/disable on testnet vpub before any mainnet zpub
 - [ ] Run `node scripts/admin-setup.mjs` locally, set secrets ADMIN_PASSWORD_HASH, ADMIN_TOTP_SECRET, ADMIN_SESSION_SECRET in the dashboard, add the TOTP secret to an authenticator app
+
+## Phase 4c
+- [ ] Apply `drizzle/0002_checkout_orders.sql` to the remote D1 (order_items rebuilt, payment_attempts +2 columns)
+- [ ] Checkout stays closed until vars are set: `CHECKOUT_ENABLED=true` (+ `CHECKOUT_ALLOW_PLACEHOLDER=true` for testnet testing only). Never set `MAINNET_ENABLED=true` before the testnet gate (CLAUDE.md section 7)
+- [ ] Product-page "Buy" buttons: wire to `/checkout/new?product=&package=` only when a product is live with real prices

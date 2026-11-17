@@ -16,6 +16,8 @@ type Props = {
   successTitle: string;
   successText: string;
   defaults?: Record<string, string>;
+  /** Extra values sent with the form (not shown). */
+  hidden?: Record<string, string>;
 };
 
 // Cloudflare's published always-passes test key; used only if no real key is configured (local dev).
@@ -33,7 +35,7 @@ declare global {
 const inputClass =
   "w-full rounded-lg border border-sand-300 bg-white px-4 py-3 text-base text-forest-900 placeholder:text-forest-500/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 
-export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, defaults = {} }: Props) {
+export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, defaults = {}, hidden = {} }: Props) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || TEST_SITE_KEY;
   const formId = useId();
   const widgetRef = useRef<HTMLDivElement>(null);
@@ -65,7 +67,7 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
       return;
     }
     const form = new FormData(e.currentTarget);
-    const body: Record<string, string> = { turnstileToken: token };
+    const body: Record<string, string> = { ...hidden, turnstileToken: token };
     for (const [k, v] of form.entries()) if (typeof v === "string") body[k] = v;
 
     setState("sending");
@@ -75,8 +77,12 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
+      const data = (await res.json()) as { ok?: boolean; error?: string; redirect?: string };
       if (res.ok && data.ok) {
+        if (typeof data.redirect === "string" && data.redirect.startsWith("/")) {
+          window.location.assign(data.redirect);
+          return;
+        }
         setState("done");
         return;
       }

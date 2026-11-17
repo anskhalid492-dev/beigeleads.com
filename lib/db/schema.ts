@@ -99,8 +99,10 @@ export const orders = sqliteTable(
 export const orderItems = sqliteTable("order_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   orderId: text("order_id").notNull().references(() => orders.id),
-  productId: integer("product_id").notNull().references(() => products.id),
-  tierId: integer("tier_id").notNull().references(() => priceTiers.id),
+  // The catalog is static code (lib/catalog.ts), so orders reference products by slug and package name.
+  productSlug: text("product_slug").notNull(),
+  packageName: text("package_name").notNull(),
+  records: integer("records").notNull(),
   priceUsdCents: integer("price_usd_cents").notNull(),
 });
 
@@ -112,6 +114,8 @@ export const paymentAttempts = sqliteTable(
     coin: text("coin").notNull(),
     network: text("network").notNull(),
     address: text("address").notNull(),
+    walletId: integer("wallet_id").references(() => wallets.id),
+    derivationIndex: integer("derivation_index"), // BTC: index derived from the wallet zpub
     expectedAmount: text("expected_amount").notNull(), // decimal string, never float
     lockedRate: text("locked_rate").notNull(),
     expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
