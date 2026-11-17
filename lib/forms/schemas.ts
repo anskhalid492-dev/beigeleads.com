@@ -22,6 +22,19 @@ export const categoryRequestSchema = z.object({
   details: z.string().trim().max(1000).optional(),
 });
 
+export const customListSchema = z.object({
+  ...base,
+  email,
+  category: z.string().trim().min(2, "Tell us which businesses you need.").max(120),
+  country: z.string().trim().min(2, "Choose a country.").max(80),
+  region: z.string().trim().max(120).optional(),
+  quantity: z.number().int().min(1, "Enter how many contacts you need.").max(100_000_000).optional(),
+  jobTitles: z.string().trim().max(300).optional(),
+  fields: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
+  notes: z.string().trim().max(2000).optional(),
+  originalQuery: z.string().trim().max(300).optional(),
+});
+
 export const contactSchema = z.object({
   ...base,
   name: z.string().trim().max(120).optional(),
@@ -36,5 +49,6 @@ export const optOutSchema = z.object({
 
 export type SampleInput = z.infer<typeof sampleSchema>;
 export type CategoryRequestInput = z.infer<typeof categoryRequestSchema>;
+export type CustomListInput = z.infer<typeof customListSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
 export type OptOutInput = z.infer<typeof optOutSchema>;

@@ -224,6 +224,22 @@ export const categoryRequests = sqliteTable("category_requests", {
   createdAt: createdAt(),
 });
 
+// Custom list requests from /custom-list. Free text is stored as the buyer typed it; nothing
+// here is a promise that the list can be built or what it would cost.
+export const customListRequests = sqliteTable("custom_list_requests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull(),
+  category: text("category").notNull(),
+  country: text("country").notNull(),
+  region: text("region"),
+  quantity: integer("quantity"),
+  jobTitles: text("job_titles"),
+  fieldsJson: text("fields_json").notNull(),
+  notes: text("notes"),
+  originalQuery: text("original_query"),
+  createdAt: createdAt(),
+});
+
 // Product-specific FAQs, editable from the future admin panel. Until then the page falls back to
 // templates in lib/catalog.ts (getProductFaqs).
 export const productFaqs = sqliteTable(

@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Solutions replaces the planned /use-cases hub (CLAUDE.md section 23).
   async redirects() {
-    return [{ source: "/use-cases", destination: "/solutions", permanent: true }];
+    return [
+      { source: "/use-cases", destination: "/solutions", permanent: true },
+      { source: "/custom-list-builder", destination: "/custom-list", permanent: true },
+    ];
   },
   // Tailwind v4 loader (kept from the create-next-app scaffold).
   turbopack: {

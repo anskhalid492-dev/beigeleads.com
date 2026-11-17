@@ -8,7 +8,6 @@ const pages: Record<string, { title: string; note: string }> = {
   pricing: { title: "Pricing", note: "Pricing is published when the first lists go on sale." },
   "how-it-works": { title: "How it works", note: "A full walkthrough is on the way." },
   compare: { title: "Compare", note: "Honest comparisons with other list providers are being written." },
-  "custom-list": { title: "Custom list", note: "The custom list builder is on the way." },
   about: { title: "About", note: "This page is being written." },
   bundles: { title: "Bundles", note: "Bundles are on the way." },
   creators: { title: "Creators", note: "Creator and influencer lists are on the way." },
