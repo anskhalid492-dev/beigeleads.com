@@ -92,5 +92,6 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Compare pages: re-read every source in `lib/compare-data.ts` before launch and update `CHECKED`; replace thin RocketReach/ZoomInfo rows if their pricing pages become readable.
 
 - [ ] Apply migration `drizzle/0005_custom_list_requests.sql` to remote D1 (custom list requests fail until then).
+- [ ] Apply migration `drizzle/0006_custom_request_status.sql` to remote D1 (admin custom-request status tracking is off until then).
 - [ ] Decide how custom list requests are answered/priced (owner process); add an admin view if volume grows.
 

@@ -311,3 +311,11 @@ export const orderAuditLog = sqliteTable("order_audit_log", {
   detail: text("detail"),
   createdAt: createdAt(),
 });
+
+/** Admin-managed status of a custom list request (migration 0006). No row = "new". */
+export const customRequestStatus = sqliteTable("custom_request_status", {
+  requestId: integer("request_id").primaryKey(),
+  status: text("status", { enum: ["new", "in_progress", "quoted", "done", "declined"] }).notNull().default("new"),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+});

@@ -38,7 +38,7 @@ async function doLogin(_: LoginState, form: FormData): Promise<LoginState> {
   (await cookies()).set(SESSION_COOKIE, await createSessionValue(env.ADMIN_SESSION_SECRET, who.email), {
     httpOnly: true, secure: true, sameSite: "strict", path: "/", maxAge: SESSION_SECONDS,
   });
-  redirect("/admin/wallets");
+  redirect("/admin");
 }
 
 export async function logoutAction(): Promise<void> {
