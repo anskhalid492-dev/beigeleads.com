@@ -94,4 +94,3 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Apply migration `drizzle/0005_custom_list_requests.sql` to remote D1 (custom list requests fail until then).
 - [ ] Decide how custom list requests are answered/priced (owner process); add an admin view if volume grows.
 
-- [ ] Competitor logos are in; confirm you are comfortable with using them (nominative use) before launch. BeigeLeads' own logo is still a text wordmark on compare pages.

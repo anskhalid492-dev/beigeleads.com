@@ -13,10 +13,6 @@ export type Row = { label: string; them: string; us: string };
 export type Comparison = {
   slug: string;
   name: string;
-  /** Official logo file under /public/logos/compare (owner-supplied). Text badge is shown until set. */
-  logo?: string;
-  /** true when the logo file is an icon without the name (the name is shown beside it). */
-  logoIconOnly?: boolean;
   /** One line used on the hub and in the meta description. */
   tagline: string;
   /** What they are, from their own description. */
@@ -38,7 +34,7 @@ export const US = {
   delivery: "A download link is emailed after the payment is confirmed on the blockchain.",
   guarantee: "If more than 5% of the emails bounce, we replace them until the list is back at 95% verified; otherwise we refund proportionally in crypto. See our refund and replacement policy.",
   freshness: "Re-verified every 60 days, using our own SMTP checks.",
-  coverage: "United States businesses only, and three lists so far (dentists, restaurants, ski shops). More categories are added step by step.",
+  coverage: "Lists of United States businesses. Need a niche or place you do not see? Request a custom list.",
   use: "Lawful business outreach only. No spam, fraud, harassment or resale.",
 };
 
@@ -49,7 +45,6 @@ const common = (): [string, string][] => [
 export const comparisons: Comparison[] = [
   {
     slug: "leadsmunch",
-    logo: "/logos/compare/leadsmunch.png",
     name: "LeadsMunch",
     tagline: "Another store where you buy ready-made contact lists once.",
     about: "LeadsMunch sells ready-made business contact lists. Its home page says \"Buy now from $49, no sign-up required\" and promises instant access after purchase.",
@@ -63,15 +58,14 @@ export const comparisons: Comparison[] = [
       { label: "Accuracy promise", them: "Aims for \"up to 95% accurate\" data. If accuracy falls below 95% they replace inaccurate data free. Money-back terms: not stated on that page.", us: US.guarantee },
       { label: "Catalog size", them: "Claims \"6B+ records, 180+ countries\" and \"800+\" business email lists.", us: US.coverage },
     ],
-    chooseThem: ["You need a country or niche outside our three US lists.", "You want a much larger catalog today.", "You want custom databases for a wider set of markets."],
-    chooseUs: ["Your target is US dentists, restaurants or ski shops.", "You want the replacement rule written down in a policy you can read before buying.", "You want data we re-verify every 60 days (they state 90)."],
+    chooseThem: ["You need a country or niche we do not cover yet.", "You want a much larger catalog today.", "You want custom databases for a wider set of markets."],
+    chooseUs: ["Your target is US local businesses and you want a list you can inspect first.", "You want the replacement rule written down in a policy you can read before buying.", "You want data we re-verify every 60 days (they state 90)."],
     verdict: "LeadsMunch and BeigeLeads sell the same way: buy a list once, pay in crypto, no account. LeadsMunch has a far bigger catalog today. We are smaller and US-only for now, so choose us only if our lists match your target.",
     sources: [{ label: "LeadsMunch home page", url: "https://leadsmunch.com/" }],
     faqs: common(),
   },
   {
     slug: "cognism",
-    logo: "/logos/compare/cognism.svg",
     name: "Cognism",
     tagline: "A sales-intelligence platform sold on custom pricing.",
     about: "Cognism is a prospecting platform. Its pricing page says pricing \"is tailored based on the product you need, your team setup and how you plan to use the platform.\"",
@@ -91,7 +85,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "zoominfo",
-    logo: "/logos/compare/zoominfo.png",
     name: "ZoomInfo",
     tagline: "A large go-to-market platform with usage-based credits.",
     about: "ZoomInfo describes itself as a go-to-market platform. Its own information page says it is \"free to start with consumption credits based on usage\" and does not use fixed seat tiers.",
@@ -114,7 +107,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "apollo",
-    logo: "/logos/compare/apollo.png",
     name: "Apollo",
     tagline: "A sales platform with credit-based plans and a free tier.",
     about: "Apollo is a sales engagement and data platform. Its pricing page lists Free, Basic, Professional and Custom plans.",
@@ -135,7 +127,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "lusha",
-    logo: "/logos/compare/lusha.png",
     name: "Lusha",
     tagline: "Contact lookup sold as monthly or annual credit plans.",
     about: "Lusha offers Free, Starter, Pro and Premium self-serve plans, plus Scale for larger teams. Starter, Pro and Premium use a credit slider.",
@@ -155,7 +146,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "seamless-ai",
-    logo: "/logos/compare/seamless-ai.png",
     name: "Seamless.AI",
     tagline: "A prospecting tool with a free plan and sales-led pricing.",
     about: "Seamless.AI names a Free plan and a Pro plan and mentions more advanced tiers. Its own article says it is free to use with 50 credits and no credit card.",
@@ -174,8 +164,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "rocketreach",
-    logo: "/logos/compare/rocketreach.png",
-    logoIconOnly: true,
     name: "RocketReach",
     tagline: "Contact search with a free plan and paid monthly tiers.",
     about: "RocketReach offers a free plan \"that lets you test data quality before upgrading,\" and team plans through a demo.",
@@ -194,7 +182,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "uplead",
-    logo: "/logos/compare/uplead.png",
     name: "UpLead",
     tagline: "Credit plans with published prices and a short free trial.",
     about: "UpLead publishes Essentials and Plus prices and a custom Professional plan. Its page says \"We verify email addresses with a data accuracy rate of 95%.\"",
@@ -215,7 +202,6 @@ export const comparisons: Comparison[] = [
   },
   {
     slug: "hunter",
-    logo: "/logos/compare/hunter.png",
     name: "Hunter",
     tagline: "Email finder and verifier sold as monthly credits.",
     about: "Hunter finds and verifies email addresses. Its pricing page defines \"1 credit = 1 email found via Domain Search, Email Finder, or Bulk Email Finder.\"",

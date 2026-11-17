@@ -288,7 +288,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Your tools, your method", d: "A CSV opens in Excel, Sheets, BI tools and scripts. We do not lock you into a dashboard." },
     ],
     productSlugs: ["dentists-us", "restaurants-us", "ski-shops-us"],
-    productNote: "Today's lists cover three industries in the United States. More industries and countries are added list by list.",
+    productNote: "More industries and countries are added list by list.",
     applications: [
       { t: "Count businesses per city", d: "Group rows by city to see where an industry is dense and where it is thin." },
       { t: "Compare two industries", d: "Load two lists side by side to compare coverage across the same cities." },

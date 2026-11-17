@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const faq = [
   ["What is a BeigeLeads solution?", "A guide to using our business databases for one goal, such as cold email or sales prospecting. Each solution page explains the problem, the databases that help, how to use them and what to watch out for."],
   ["Do I have to buy a solution?", "No. Solutions are guides, not products. You buy a database, and the solution page helps you pick the right one."],
-  ["Which databases are available today?", "Dentists, restaurants and ski shops in the United States. More industries and countries are added list by list, and you can request one."],
+  ["Which databases are available?", "Browse the lists page for what you can buy now. Not there? Request a custom list or a new category and we will say honestly whether we can build it."],
   ["Is there a subscription?", "No. You pay once in crypto and keep the file. There is no account."],
   ["Can I see the data before I pay?", "Yes. Every database page shows a masked sample, and you can request a free sample by email."],
 ] as const;

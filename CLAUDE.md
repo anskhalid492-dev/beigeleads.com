@@ -527,7 +527,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 - Owner decision: comparison pages are conversion landing pages. Visible research notes are REMOVED (no "we are a competitor" box, no source dates, no "not stated", no "honest take"). `lib/compare-view.ts` drops sentences containing "not stated" and hides rows left empty; `lib/compare-data.ts` keeps `sources` and `CHECKED` internally for re-verification before launch (not rendered).
 - Page = `components/compare/compare-page.tsx`: logo VS hero, "Meet BeigeLeads", at-a-glance, table (BeigeLeads column highlighted), why-choose cards, who-should-choose, final CTA, 8 generated FAQs (`compareFaqs`, customised from each competitor's data). Claims about BeigeLeads still come only from `US` (no price, no accuracy claim). Do not add claims about a competitor that are not in its `sources`.
-- Logos: owner supplied the official competitor logos (Nov 2026); trimmed PNGs/SVG live in `public/logos/compare/` and are set via `logo` in `lib/compare-data.ts` (RocketReach is an icon only: `logoIconOnly`). A text wordmark is the fallback. Never draw or fabricate a logo. BeigeLeads currently shows as a wordmark too.
+- Competitor logos were tried and REMOVED (owner, Nov 2026): pages use text names only. Layout follows the owner's Openmart reference: hero, intro + at-a-glance card, why different, data-source trust section (owner's sourcing statement, no numbers), when to use each, feature table, pricing band, CTA, 8 FAQs. No testimonials (none exist).
+- Owner rule (Nov 2026): NEVER state how many lists BeigeLeads has (no "three lists", no list of the live niches) anywhere on the site. Point to /lists instead.
 
 ## 38. Lead discovery co-pilot on the home page (Nov 2026)
 

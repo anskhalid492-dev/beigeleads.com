@@ -372,7 +372,7 @@ export default function VerificationPage() {
         <div className={wrap}>
           <div className="reveal mx-auto max-w-3xl text-center">
             <h2 className={h2}>Explore our databases</h2>
-            <p className="mt-4 text-lg">Three United States lists are live today. The other categories show where we are heading, and we say clearly which are not available yet.</p>
+            <p className="mt-4 text-lg">The other categories show where we are heading, and we say clearly which are not available yet.</p>
           </div>
           <ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {dbCards.map((c) => (

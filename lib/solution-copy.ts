@@ -1,6 +1,6 @@
 // Audience-specific copy for each solution: one named reader, their real pain points, and a
-// specific closing line. Only claims what exists today: three US lists (dentists, restaurants,
-// ski shops), seven fields, masked samples, 60-day re-verification, one-time crypto payment.
+// specific closing line. Only claims what exists today: the lists on the lists page,
+// seven fields, masked samples, 60-day re-verification, one-time crypto payment.
 // No statistics, no promised results. Needs lawyer review for compliance wording.
 
 export type Pain = { pain: string; fix: string };
@@ -52,7 +52,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "cold-email-marketing": {
     seoTitle: "Verified Email Lists for Cold Email",
     seoDescription:
-      "Business email lists for cold outreach to dentists, restaurants and ski shops. SMTP-checked, re-verified every 60 days, with a masked sample first.",
+      "Business email lists for cold outreach to local businesses. SMTP-checked, re-verified every 60 days, with a masked sample first.",
     h1: "Cold email to business owners without burning your domain",
     lede:
       "A cold campaign lives or dies on bounces. These business email lists are checked by our own team and re-verified every 60 days, so your first send starts from addresses that were accepted by their mail servers recently.",
@@ -116,7 +116,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "marketing-agencies": {
     seoTitle: "Prospect Lists for Marketing Agencies",
     seoDescription:
-      "Business lists for marketing agencies that pitch local clients. Find dentists, restaurants and ski shops by city, with a masked sample before you pay.",
+      "Business lists for marketing agencies that pitch local clients. Find local businesses by city, with a masked sample before you pay.",
     h1: "Prospect lists for agencies that win clients from local businesses",
     lede:
       "Agencies grow by pitching businesses that need more customers. Pick the niche you serve, filter by city, and get a CSV with phone, email and website so you can spend the week on proposals, not on finding who to send them to.",
@@ -132,7 +132,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "Prospect lists that cannot be filtered by city.", fix: "Every row has city and country fields, so each pitch can name the place." },
       { pain: "You cannot tell which prospects lack a website or a good one.", fix: "The website column shows who has a site at all, which is a natural opening for web and local-SEO services." },
       { pain: "Unclear what you may do with a bought list for clients.", fix: "The licence note in the delivery email and our terms page set the rules. Running campaigns for clients is normal use, and reselling the raw file is not." },
-      { pain: "Only a few niches are available.", fix: "Three US lists are live today. Request a category and we will say honestly whether we can build it." },
+      { pain: "Only a few niches are available.", fix: "Browse the lists page for what is available now. Request a category and we will say honestly whether we can build it." },
     ],
     applications: [
       { t: "Pitch a niche you already serve", d: "If you work with dental practices, take the dentist list and pitch the ones in a city you can reference." },
@@ -324,7 +324,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "You cannot tell which shops are online.", fix: "The website column shows which shops have a site at all." },
       { pain: "Supplier outreach has no direct contacts.", fix: "Phone, email and website are on every row for a direct trade approach." },
       { pain: "Expecting revenue, traffic or product data.", fix: "That is not in the data. Use other tools for performance figures." },
-      { pain: "Your niche is not listed.", fix: "Three lists exist today. Request a category and we will say whether it can be built." },
+      { pain: "Your niche is not listed.", fix: "Check the lists page for what is available now. Request a category and we will say whether it can be built." },
     ],
     applications: [
       { t: "Size a retail niche by city", d: "Count shops per city and see where the niche is dense." },
