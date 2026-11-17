@@ -4,53 +4,97 @@ import { Faq } from "@/components/shared/faq";
 import { JsonLd } from "@/components/shared/json-ld";
 import { Button } from "@/components/ui/button";
 import { compareHref, compareTitle } from "@/lib/compare";
-import { CHECKED, CHECKED_LABEL, US, type Comparison } from "@/lib/compare-data";
+import { US, type Comparison } from "@/lib/compare-data";
+import { compareFaqs, visibleRows } from "@/lib/compare-view";
 import { SITE_URL } from "@/lib/site";
 
 const cell = "block px-4 py-3 align-top md:table-cell before:mb-1 before:block before:text-xs before:font-semibold before:text-forest-500 before:content-[attr(data-label)] md:before:hidden";
+const card = "rounded-2xl border border-sand-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md";
+
+/** Official logo when the owner has supplied the file; otherwise the name set as a wordmark badge. */
+function Mark({ name, logo, dark = false }: { name: string; logo?: string; dark?: boolean }) {
+  // eslint-disable-next-line @next/next/no-img-element -- static files, image optimizer is off
+  if (logo) return <img src={logo} alt={`${name} logo`} className="h-10 w-auto max-w-[180px] object-contain" />;
+  return <span className={`display text-3xl ${dark ? "text-forest-900" : "text-forest-700"}`}>{name}</span>;
+}
+
+const benefits = [
+  { t: "Pay once", d: "No subscription, seats or credits. One purchase per list, nothing renews." },
+  { t: "See the list before you buy", d: "Every list page shows its fields and a free masked sample." },
+  { t: "Fixed packages", d: "Each list has its own page and packages, so you know the cost of the list you want." },
+  { t: "Delivered by email link", d: "After the payment is confirmed, the download link is emailed to you. No account." },
+  { t: "Custom requests", d: "Not in the catalog? Describe the list and we reply after checking if we can source it." },
+  { t: "A replacement rule in writing", d: "Above 5% bounces we replace emails until the list is back at 95% verified, or refund proportionally." },
+] as const;
 
 export function ComparePage({ c }: { c: Comparison }) {
   const title = compareTitle(c.name);
+  const rows = visibleRows(c);
+  const faqs = compareFaqs(c);
+  const isGroup = c.slug === "subscription-tools";
   return (
     <>
       <Breadcrumbs items={[{ name: "Compare", href: "/compare" }, { name: title, href: compareHref(c.slug) }]} />
-      <main className="mx-auto max-w-6xl px-4 pb-20 pt-8">
-        <h1 className="display text-5xl text-forest-900 sm:text-6xl">{title}</h1>
-        <p className="mt-3 max-w-2xl text-lg">{c.tagline}</p>
-        <p className="mt-3 max-w-2xl rounded-2xl border border-sand-200 bg-sand-100 p-4 text-sm">
-          We are a competitor, so read this with care. Everything about {c.name} comes from its own pages (linked at the bottom), read on <time dateTime={CHECKED}>{CHECKED_LABEL}</time>. Where a page did not say something, we write &ldquo;not stated&rdquo;. Plans change: check their site before you decide.
-        </p>
-
-        <section aria-labelledby="glance" className="mt-10 grid gap-4 md:grid-cols-2">
-          <h2 id="glance" className="sr-only">At a glance</h2>
-          <div className="rounded-2xl border border-sand-200 bg-white p-6">
-            <h3 className="text-xl font-bold text-forest-900">{c.name}</h3>
-            <p className="mt-2">{c.about}</p>
-          </div>
-          <div className="rounded-2xl border border-sand-200 bg-white p-6">
-            <h3 className="text-xl font-bold text-forest-900">BeigeLeads</h3>
-            <p className="mt-2">{US.model} {US.coverage}</p>
+      <main>
+        {/* Hero */}
+        <section className="border-b border-sand-200 bg-sand-100">
+          <div className="mx-auto max-w-5xl px-4 pb-16 pt-10 text-center">
+            <div className="mx-auto flex max-w-xl items-center justify-center gap-4 sm:gap-6" aria-hidden={false}>
+              <div className="flex flex-1 justify-end"><Mark name="BeigeLeads" dark /></div>
+              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-forest-900 text-sm font-bold text-sand-50">VS</span>
+              <div className="flex flex-1 justify-start"><Mark name={c.name} logo={c.logo} /></div>
+            </div>
+            <h1 className="display mt-8 text-5xl text-forest-900 sm:text-7xl">{title}: which is better for buying B2B contact lists?</h1>
+            <p className="mx-auto mt-5 max-w-2xl text-lg">
+              Want business contacts without another subscription? See how BeigeLeads lets you browse, preview and buy ready-made contact lists with a single payment, and how it differs from {isGroup ? "subscription tools" : c.name}.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Button asChild size="lg"><Link href="/lists">Browse lead lists</Link></Button>
+              <Button asChild variant="secondary" size="lg"><Link href="/sample">Get a free sample</Link></Button>
+            </div>
+            <p className="mt-4 text-sm">One-time purchase. No subscription. No account. Free masked sample first.</p>
           </div>
         </section>
 
-        <section aria-labelledby="table" className="mt-12">
-          <h2 id="table" className="display text-4xl text-forest-900 sm:text-5xl">Side by side</h2>
+        {/* Meet BeigeLeads */}
+        <section aria-labelledby="meet" className="mx-auto max-w-6xl px-4 py-16">
+          <h2 id="meet" className="display text-4xl text-forest-900 sm:text-5xl">Meet BeigeLeads: a simpler way to buy business contact lists</h2>
+          <p className="mt-4 max-w-3xl text-lg">
+            BeigeLeads is a marketplace for ready-made business contact lists. It is built for agencies, sales teams, founders and recruiters who need a list for a campaign and would rather pay once than run another subscription.
+          </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className={card}><h3 className="text-lg font-bold text-forest-900">How it works</h3><p className="mt-2">Browse the lists, open one, check the free masked sample, pick a package and pay once in crypto. {US.delivery}</p></div>
+            <div className={card}><h3 className="text-lg font-bold text-forest-900">What you get</h3><p className="mt-2">Business name, address, city, country, phone, email and website. {US.freshness}</p></div>
+            <div className={card}><h3 className="text-lg font-bold text-forest-900">Where it is today</h3><p className="mt-2">{US.coverage} Need something else? <Link href="/custom-list" className="font-semibold underline underline-offset-4">Request a custom list</Link>.</p></div>
+          </div>
+        </section>
+
+        {/* About them / us */}
+        <section aria-labelledby="glance" className="mx-auto grid max-w-6xl gap-4 px-4 md:grid-cols-2">
+          <h2 id="glance" className="sr-only">At a glance</h2>
+          <div className={card}><h3 className="text-xl font-bold text-forest-900">{c.name}</h3><p className="mt-2">{c.about}</p></div>
+          <div className={`${card} border-forest-900`}><h3 className="text-xl font-bold text-forest-900">BeigeLeads</h3><p className="mt-2">{US.model}</p></div>
+        </section>
+
+        {/* Table */}
+        <section aria-labelledby="table" className="mx-auto max-w-6xl px-4 py-16">
+          <h2 id="table" className="display text-4xl text-forest-900 sm:text-5xl">{title}: side by side</h2>
           <div className="mt-6 overflow-hidden rounded-2xl border border-sand-200 bg-white">
             <table className="w-full border-collapse text-left text-sm md:text-base">
               <caption className="sr-only">{title}: feature comparison</caption>
               <thead className="sr-only md:not-sr-only md:table-header-group">
                 <tr className="bg-sand-100 text-forest-900">
-                  <th scope="col" className="px-4 py-3 font-semibold md:w-1/5">Topic</th>
-                  <th scope="col" className="px-4 py-3 font-semibold md:w-2/5">{c.name}</th>
-                  <th scope="col" className="px-4 py-3 font-semibold md:w-2/5">BeigeLeads</th>
+                  <th scope="col" className="px-4 py-4 font-semibold md:w-1/5">Topic</th>
+                  <th scope="col" className="px-4 py-4 md:w-2/5"><Mark name={c.name} logo={c.logo} /></th>
+                  <th scope="col" className="border-x-2 border-t-2 border-forest-900 bg-forest-100 px-4 py-4 md:w-2/5"><Mark name="BeigeLeads" dark /></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand-200">
-                {c.rows.map((r) => (
+                {rows.map((r) => (
                   <tr key={r.label} className="block md:table-row">
                     <th scope="row" className={`${cell} font-semibold text-forest-900 before:hidden`}>{r.label}</th>
                     <td data-label={c.name} className={cell}>{r.them}</td>
-                    <td data-label="BeigeLeads" className={cell}>{r.us}</td>
+                    <td data-label="BeigeLeads" className={`${cell} bg-forest-100/50 md:border-x-2 md:border-forest-900`}>{r.us}</td>
                   </tr>
                 ))}
               </tbody>
@@ -58,40 +102,57 @@ export function ComparePage({ c }: { c: Comparison }) {
           </div>
         </section>
 
-        <section aria-labelledby="choose" className="mt-12 grid gap-4 md:grid-cols-2">
-          <h2 id="choose" className="sr-only">Who should choose which</h2>
-          <div className="rounded-2xl border border-sand-200 bg-white p-6">
-            <h3 className="text-xl font-bold text-forest-900">Choose {c.name} if</h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5">{c.chooseThem.map((t) => <li key={t}>{t}</li>)}</ul>
-          </div>
-          <div className="rounded-2xl border border-sand-200 bg-white p-6">
-            <h3 className="text-xl font-bold text-forest-900">Choose BeigeLeads if</h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5">{c.chooseUs.map((t) => <li key={t}>{t}</li>)}</ul>
-          </div>
-        </section>
-
-        <section aria-labelledby="verdict" className="mt-12 rounded-2xl bg-forest-100 p-6 sm:p-8">
-          <h2 id="verdict" className="display text-4xl text-forest-900">Our honest take</h2>
-          <p className="mt-3 max-w-3xl text-lg">{c.verdict}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild size="lg"><Link href="/sample">Get a free masked sample</Link></Button>
-            <Button asChild variant="secondary" size="lg"><Link href="/lists">Browse lists</Link></Button>
+        {/* Why BeigeLeads */}
+        <section aria-labelledby="why" className="border-y border-sand-200 bg-sand-100 py-16">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 id="why" className="display text-4xl text-forest-900 sm:text-5xl">Why choose BeigeLeads?</h2>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {benefits.map((b) => (
+                <div key={b.t} className={`${card} hover:-translate-y-0.5`}>
+                  <span aria-hidden className="mb-3 grid size-9 place-items-center rounded-full bg-forest-100 text-forest-700">✓</span>
+                  <h3 className="text-lg font-bold text-forest-900">{b.t}</h3>
+                  <p className="mt-1.5">{b.d}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8"><Button asChild size="lg"><Link href="/lists">Explore available lists</Link></Button></div>
           </div>
         </section>
 
-        <section aria-labelledby="sources" className="mt-12">
-          <h2 id="sources" className="text-xl font-bold text-forest-900">Sources (read {CHECKED_LABEL})</h2>
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
-            {c.sources.map((s) => (
-              <li key={s.url}><a href={s.url} rel="noopener noreferrer nofollow" target="_blank" className="underline underline-offset-4 hover:text-forest-900">{s.label}</a></li>
-            ))}
-            <li><Link href="/legal/refund-replacement" className="underline underline-offset-4 hover:text-forest-900">BeigeLeads refund and replacement policy</Link></li>
-            <li><Link href="/verification" className="underline underline-offset-4 hover:text-forest-900">How BeigeLeads verifies data</Link></li>
-          </ul>
+        {/* Who should choose */}
+        <section aria-labelledby="choose" className="mx-auto max-w-6xl px-4 py-16">
+          <h2 id="choose" className="display text-4xl text-forest-900 sm:text-5xl">Who should choose which?</h2>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <div className={`${card} border-2 border-forest-900`}>
+              <h3 className="text-xl font-bold text-forest-900">Choose BeigeLeads if</h3>
+              <ul className="mt-3 list-disc space-y-2 pl-5">{c.chooseUs.map((t) => <li key={t}>{t}</li>)}</ul>
+              <Button asChild className="mt-5"><Link href="/sample">Get a free sample</Link></Button>
+            </div>
+            <div className={card}>
+              <h3 className="text-xl font-bold text-forest-900">Choose {c.name} if</h3>
+              <ul className="mt-3 list-disc space-y-2 pl-5">{c.chooseThem.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section aria-labelledby="cta" className="mx-auto max-w-6xl px-4 pb-20">
+          <div className="rounded-[2rem] bg-forest-900 p-8 text-center text-sand-50 sm:p-12">
+            <h2 id="cta" className="display text-4xl sm:text-6xl">Why pay for another subscription when you just need the list?</h2>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-sand-200">Explore ready-made business contact lists, preview available data, and purchase only what you need.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Button asChild size="lg"><Link href="/lists">Find my leads</Link></Button>
+              <Button asChild variant="secondary" size="lg"><Link href="/sample">Get a free sample</Link></Button>
+              <Button asChild variant="secondary" size="lg"><Link href="/custom-list">Request a custom list</Link></Button>
+            </div>
+          </div>
+          <p className="mt-6 text-center text-sm">
+            More comparisons: <Link href="/compare" className="underline underline-offset-4">all BeigeLeads comparisons</Link> · <Link href="/verification" className="underline underline-offset-4">how we verify data</Link> · <Link href="/legal/refund-replacement" className="underline underline-offset-4">refund and replacement policy</Link>
+          </p>
         </section>
       </main>
-      <Faq items={c.faqs} heading={`Questions about ${c.name}`} />
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: title, url: `${SITE_URL}${compareHref(c.slug)}`, dateModified: CHECKED }} />
+      <Faq items={faqs} heading={`Questions about BeigeLeads vs ${c.name}`} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: title, url: `${SITE_URL}${compareHref(c.slug)}` }} />
     </>
   );
 }

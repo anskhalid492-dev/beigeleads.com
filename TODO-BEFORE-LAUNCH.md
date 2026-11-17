@@ -93,3 +93,5 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 
 - [ ] Apply migration `drizzle/0005_custom_list_requests.sql` to remote D1 (custom list requests fail until then).
 - [ ] Decide how custom list requests are answered/priced (owner process); add an admin view if volume grows.
+
+- [ ] Competitor logo files from owner -> `public/logos/compare/`, then set `logo` in `lib/compare-data.ts` (10 pages; "subscription tools" has no logo).

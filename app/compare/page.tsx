@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { compareHref, compareTitle } from "@/lib/compare";
-import { CHECKED_LABEL, comparisons } from "@/lib/compare-data";
+import { comparisons } from "@/lib/compare-data";
 
 export const metadata: Metadata = {
   title: "Compare BeigeLeads with other list and prospecting tools",
@@ -16,7 +16,7 @@ export default function CompareHub() {
       <Breadcrumbs items={[{ name: "Compare", href: "/compare" }]} />
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-8">
         <h1 className="display text-5xl text-forest-900 sm:text-6xl">Compare BeigeLeads</h1>
-        <p className="mt-3 max-w-2xl text-lg">BeigeLeads sells a list once. Many other tools sell access. Each page below sets out the differences using only what the other company says on its own pages, with sources, last read {CHECKED_LABEL}.</p>
+        <p className="mt-3 max-w-2xl text-lg">BeigeLeads sells a list once. Many other tools sell access. Each page below shows how buying a ready-made list once differs from the tool you are looking at.</p>
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {comparisons.map((c) => (
             <li key={c.slug}>

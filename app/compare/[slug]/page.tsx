@@ -18,8 +18,8 @@ export async function generateMetadata(props: PageProps<"/compare/[slug]">): Pro
   const c = find(slug);
   if (!c) return {};
   return {
-    title: compareTitle(c.name),
-    description: `${c.tagline} A sourced comparison with ${c.name}, read 17 November 2026.`,
+    title: `${compareTitle(c.name)}: ${c.name} alternative for one-time contact lists`,
+    description: `${compareTitle(c.name)}. See how buying a ready-made B2B contact list once, with a free masked sample and no subscription, compares with ${c.name}.`,
     alternates: { canonical: compareHref(c.slug) },
   };
 }

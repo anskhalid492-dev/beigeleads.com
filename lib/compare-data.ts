@@ -13,6 +13,8 @@ export type Row = { label: string; them: string; us: string };
 export type Comparison = {
   slug: string;
   name: string;
+  /** Official logo file under /public/logos/compare (owner-supplied). Text badge is shown until set. */
+  logo?: string;
   /** One line used on the hub and in the meta description. */
   tagline: string;
   /** What they are, from their own description. */
@@ -38,9 +40,8 @@ export const US = {
   use: "Lawful business outreach only. No spam, fraud, harassment or resale.",
 };
 
-const common = (name: string): [string, string][] => [
+const common = (): [string, string][] => [
   ["Can I try BeigeLeads before paying?", "Yes. Every list page has a free masked sample so you can check the fields and the format before you pay."],
-  [`Is this comparison neutral?`, `No page written by a competitor is fully neutral, and we are a competitor of ${name}. We only state what ${name} says on its own pages, we link every source, and we say 'not stated' when we could not find something. Check their site before you decide.`],
 ];
 
 export const comparisons: Comparison[] = [
@@ -63,7 +64,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["Your target is US dentists, restaurants or ski shops.", "You want the replacement rule written down in a policy you can read before buying.", "You want data we re-verify every 60 days (they state 90)."],
     verdict: "LeadsMunch and BeigeLeads sell the same way: buy a list once, pay in crypto, no account. LeadsMunch has a far bigger catalog today. We are smaller and US-only for now, so choose us only if our lists match your target.",
     sources: [{ label: "LeadsMunch home page", url: "https://leadsmunch.com/" }],
-    faqs: common("LeadsMunch"),
+    faqs: common(),
   },
   {
     slug: "cognism",
@@ -82,7 +83,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You want one list for one campaign without seats or a sales call.", "You want to see a masked sample and a policy before talking to anyone."],
     verdict: "Cognism is a platform for teams that work from data every day. BeigeLeads is a file you buy once. They solve different problems, so the right pick depends on whether you need a tool or a list.",
     sources: [{ label: "Cognism pricing", url: "https://cognism.com/pricing" }],
-    faqs: common("Cognism"),
+    faqs: common(),
   },
   {
     slug: "zoominfo",
@@ -104,7 +105,7 @@ export const comparisons: Comparison[] = [
       { label: "ZoomInfo AI information page", url: "https://www.zoominfo.com/ai-information" },
       { label: "ZoomInfo pricing overview", url: "https://zoominfo.com/business/zoominfo-pricing" },
     ],
-    faqs: common("ZoomInfo"),
+    faqs: common(),
   },
   {
     slug: "apollo",
@@ -124,7 +125,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You want a file you keep, without a credit meter or a renewing plan.", "You want to pay with crypto and skip account creation."],
     verdict: "Apollo is a working tool with credits that reset every cycle. BeigeLeads is a one-time file. If you prospect daily, Apollo's workflow may save time. If you need one list for one push, the one-time model avoids paying for a platform you will not use.",
     sources: [{ label: "Apollo pricing", url: "https://www.apollo.io/pricing?solution=outbound" }],
-    faqs: common("Apollo"),
+    faqs: common(),
   },
   {
     slug: "lusha",
@@ -143,7 +144,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You want a whole list for a campaign instead of one contact at a time.", "You do not want a renewing plan."],
     verdict: "Lusha is built for looking up people as you work, and credits are the unit. BeigeLeads sells a whole list at once. Pick by how you work: lookups on demand or a list for a campaign.",
     sources: [{ label: "Lusha pricing", url: "https://www.lusha.com/pricing/" }],
-    faqs: common("Lusha"),
+    faqs: common(),
   },
   {
     slug: "seamless-ai",
@@ -161,7 +162,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You want the list and the policy in front of you before any sales conversation.", "You want to pay once."],
     verdict: "Seamless.AI starts free and moves to quoted pricing. BeigeLeads has no sales call, but it covers far less today. Choose by whether you need a tool or a US file.",
     sources: [{ label: "Seamless.AI pricing article", url: "https://seamless.ai/customers/blog/products/how-much-does-seamless-ai-cost" }],
-    faqs: common("Seamless.AI"),
+    faqs: common(),
   },
   {
     slug: "rocketreach",
@@ -179,7 +180,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You want a ready-made US list instead of searching one contact at a time.", "You want to see a masked sample first."],
     verdict: "RocketReach is search-first. BeigeLeads is list-first. We could not confirm its plan details from the pages we read, so we leave prices and credits out.",
     sources: [{ label: "RocketReach price comparison page", url: "https://rocketreach.co/resources/contact-search-price-comparison-choosing-the-right-plan/" }],
-    faqs: common("RocketReach"),
+    faqs: common(),
   },
   {
     slug: "uplead",
@@ -199,7 +200,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You want a full list for one push without monthly credits.", "You want to pay in crypto."],
     verdict: "UpLead's published prices make it easy to estimate a monthly cost. BeigeLeads has no monthly cost, but you buy a fixed list in one go. Which is cheaper depends on how many contacts you need and how often.",
     sources: [{ label: "UpLead pricing", url: "https://uplead.com/pricing/" }],
-    faqs: common("UpLead"),
+    faqs: common(),
   },
   {
     slug: "hunter",
@@ -219,7 +220,7 @@ export const comparisons: Comparison[] = [
     chooseUs: ["You need to find the businesses first, not only their emails.", "You want one finished list."],
     verdict: "Hunter is a tool for finding emails at companies you already know. BeigeLeads sells lists of businesses by category and place. They work well together: build the list, then use a finder for gaps.",
     sources: [{ label: "Hunter pricing", url: "https://hunter.io/pricing" }],
-    faqs: common("Hunter"),
+    faqs: common(),
   },
   {
     slug: "subscription-tools",
@@ -244,7 +245,7 @@ export const comparisons: Comparison[] = [
       { label: "Cognism pricing", url: "https://cognism.com/pricing" },
       { label: "ZoomInfo AI information page", url: "https://www.zoominfo.com/ai-information" },
     ],
-    faqs: common("subscription tools"),
+    faqs: common(),
   },
 ];
 
