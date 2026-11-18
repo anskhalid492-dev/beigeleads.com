@@ -479,3 +479,29 @@ summary::-webkit-details-marker {
 .prose-bl .callout[data-tone="info"], .ProseMirror .callout[data-tone="info"] { border-left-color: var(--color-purple-600); background: var(--color-purple-100); }
 .ProseMirror { outline: none; min-height: 24rem; }
 .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--color-sand-300); }
+
+/* How-it-works page: workflow line fills, nodes glow in turn, a few floating chips. CSS only;
+   everything is static and fully visible under prefers-reduced-motion. */
+@keyframes hiw-fill-x {
+  0% { transform: scaleX(0); }
+  80%, 100% { transform: scaleX(1); }
+}
+@keyframes hiw-fill-y {
+  0% { transform: scaleY(0); }
+  80%, 100% { transform: scaleY(1); }
+}
+@keyframes hiw-glow {
+  0%, 30%, 100% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0); }
+  12% { box-shadow: 0 0 0 9px rgba(45, 106, 79, 0.18); }
+}
+@keyframes hiw-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.hiw-fill-x { transform-origin: left; animation: hiw-fill-x 7s ease-in-out infinite; }
+.hiw-fill-y { transform-origin: top; animation: hiw-fill-y 7s ease-in-out infinite; }
+.hiw-glow { animation: hiw-glow 7s ease-out infinite; }
+.hiw-float { animation: hiw-float 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hiw-fill-x, .hiw-fill-y, .hiw-glow, .hiw-float { animation: none; }
+}

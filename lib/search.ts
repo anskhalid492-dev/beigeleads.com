@@ -50,7 +50,7 @@ export function parseQuery(raw: string): ParsedQuery {
   const pm = rest.match(/^(.*)\s(?:in|near|from|within)\s(.+)$/);
   if (pm) {
     rest = pm[1].trim();
-    place = pm[2].trim();
+    place = pm[2].trim().replace(/^the\s+/, ""); // "in the US" = "in US"
   }
 
   let countrySlug: string | null = null;

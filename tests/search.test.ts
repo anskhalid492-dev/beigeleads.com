@@ -30,6 +30,12 @@ describe("searchCatalog", () => {
     expect(searchCatalog("veterinarians in Canada").exact).toHaveLength(0);
     expect(searchCatalog("dentists in Germany").exact).toHaveLength(0);
   });
+  it('treats "in the US" like "in US"', () => {
+    const r = searchCatalog("dentists in the US");
+    expect(r.parsed.countrySlug).toBe("us");
+    expect(r.parsed.region).toBe("");
+    expect(r.exact).toHaveLength(1);
+  });
   it("builds a prefilled custom-list link", () => {
     const h = customListHref("2000 veterinarians in Texas");
     expect(h).toContain("/custom-list?");
