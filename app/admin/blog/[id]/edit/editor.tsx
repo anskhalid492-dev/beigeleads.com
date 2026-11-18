@@ -120,7 +120,8 @@ export function Editor({ role, post, cats, tags, options, targets }: { role: "ad
     if (saving.current) { again.current = true; return false; }
     saving.current = true; setSave("saving"); setMsg("");
     const startTick = ticks.current;
-    const input = { ...fRef.current, doc: editor.getJSON() };
+    // Plain-JSON copy: editor attrs can be non-plain objects, which React cannot send to a server action ("temporary client reference").
+    const input = { ...fRef.current, doc: JSON.parse(JSON.stringify(editor.getJSON())) as DocNode };
     const r = await saveAction(post.id, input, version.current, kind);
     saving.current = false;
     if (r.ok) {
