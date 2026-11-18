@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { ArticleView } from "@/components/blog/article-view";
+import { getPublicAuthorById } from "@/lib/blog/authors";
 import { getPublishedBySlug, relatedPublished } from "@/lib/blog/posts";
 import { newsletterOn } from "@/lib/newsletter";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -33,10 +34,11 @@ export default async function BlogArticle(props: PageProps<"/blog/[slug]">) {
   const p = await load((await props.params).slug);
   if (!p) notFound();
   const { row } = p;
-  const related = await relatedPublished(getCloudflareContext().env, row).catch(() => []);
+  const env = getCloudflareContext().env;
+  const [related, profile] = await Promise.all([relatedPublished(env, row).catch(() => []), getPublicAuthorById(env, row.authorId).catch(() => null)]);
   return (
     <ArticleView newsletter={newsletterOn(getCloudflareContext().env)} related={related} a={{
-      title: row.title, slug: row.slug, excerpt: row.excerpt, author: row.author, readingMinutes: row.readingMinutes, featuredImage: row.featuredImage, featuredAlt: row.featuredAlt,
+      title: row.title, slug: row.slug, excerpt: row.excerpt, author: row.author, authorProfile: profile ? { slug: profile.slug, name: profile.name, title: profile.title, photo: profile.photo, shortBio: profile.shortBio, links: profile.links } : null, readingMinutes: row.readingMinutes, featuredImage: row.featuredImage, featuredAlt: row.featuredAlt,
       publishedAt: row.publishedAt ?? row.scheduledAt ?? row.createdAt, updatedAt: row.updatedAt, category: p.category ? { name: p.category.name, slug: p.category.slug } : null, tags: p.tags, doc: p.doc, ogImage: row.ogImage,
     }} />
   );

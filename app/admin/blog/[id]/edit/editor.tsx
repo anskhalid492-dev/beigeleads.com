@@ -15,10 +15,11 @@ import { cleanDoc, embedUrl, readingMinutes, slugifyText, wordCount, type DocNod
 import { analyzeSeo, META_RANGE, SEO_TITLE_RANGE, suggestLinks, type InternalTarget } from "@/lib/blog/seo";
 import { saveAction, transitionAction } from "../../actions";
 import { MediaPicker, type Picked } from "../../media-picker";
+import { AuthorPicker, type AuthorOption } from "./author-picker";
 
 type Status = "draft" | "scheduled" | "published" | "archived";
 export type Fields = {
-  title: string; slug: string; excerpt: string; categoryId: number | null; author: string; featuredImage: string | null; featuredAlt: string;
+  title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null; featuredImage: string | null; featuredAlt: string;
   seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean; ogTitle: string; ogDescription: string; ogImage: string | null;
   focusKeyword: string; related: number[]; tagIds: number[]; scheduledAt: number | null;
 };
@@ -32,7 +33,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (ms: number | null) => { if (!ms) return ""; const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const tzLabel = () => { try { const o = -new Date().getTimezoneOffset(); const sign = o >= 0 ? "+" : "-"; return `${Intl.DateTimeFormat().resolvedOptions().timeZone} (UTC${sign}${pad(Math.floor(Math.abs(o) / 60))}:${pad(Math.abs(o) % 60)})`; } catch { return "your local time"; } };
 
-export function Editor({ role, post, cats, tags, options, targets }: { role: "admin" | "editor"; post: EditorPost; cats: { id: number; name: string }[]; tags: { id: number; name: string }[]; options: { id: number; title: string }[]; targets: InternalTarget[] }) {
+export function Editor({ role, post, authors, cats, tags, options, targets }: { role: "admin" | "editor"; post: EditorPost; authors: AuthorOption[]; cats: { id: number; name: string }[]; tags: { id: number; name: string }[]; options: { id: number; title: string }[]; targets: InternalTarget[] }) {
   const router = useRouter();
   const toast = useToast();
   const [f, setF] = useState<Fields>(post.fields);
@@ -277,7 +278,9 @@ export function Editor({ role, post, cats, tags, options, targets }: { role: "ad
             <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
               <div><label htmlFor="slug" className={label}>URL slug</label><input id="slug" value={f.slug} onChange={(e) => { setSlugTouched(true); update("slug", slugifyText(e.target.value)); }} className={input} /><p className="mt-1 break-all text-xs">beigeleads.com/blog/{f.slug || "…"}</p></div>
               <div><label htmlFor="excerpt" className={label}>Excerpt</label><textarea id="excerpt" rows={3} maxLength={500} value={f.excerpt} onChange={(e) => update("excerpt", e.target.value)} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /><p className="mt-1 text-xs">Shown on blog cards. {f.excerpt.length}/500</p></div>
-              <div><label htmlFor="author" className={label}>Author</label><input id="author" value={f.author} onChange={(e) => update("author", e.target.value)} className={input} /></div>
+              <AuthorPicker authors={authors} authorId={f.authorId} legacyName={f.author} canCreate={role === "admin"}
+                onPick={(a) => { setF((p) => ({ ...p, authorId: a?.id ?? null, author: a ? a.name : "" })); touch(); }}
+                onLegacy={(n) => update("author", n)} />
               <div><label htmlFor="cat" className={label}>Category</label><select id="cat" value={f.categoryId ?? ""} onChange={(e) => update("categoryId", e.target.value ? Number(e.target.value) : null)} className={input}><option value="">No category</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>{cats.length === 0 && <p className="mt-1 text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create a category</Link> first.</p>}</div>
               <fieldset><legend className={label}>Tags</legend>
                 {tags.length === 0 ? <p className="text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create tags</Link> to use them here.</p> : (

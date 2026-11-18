@@ -366,6 +366,8 @@ export const blogPosts = sqliteTable(
     status: text("status", { enum: ["draft", "scheduled", "published", "archived"] }).notNull().default("draft"),
     categoryId: integer("category_id"),
     author: text("author").notNull().default(""),
+    /** Link to blog_authors (migration 0010). `author` keeps the display name text for cards and legacy posts. */
+    authorId: integer("author_id"),
     featuredImage: text("featured_image"),
     featuredAlt: text("featured_alt").notNull().default(""),
     readingMinutes: integer("reading_minutes").notNull().default(1),
@@ -450,4 +452,34 @@ export const newsletterSubscribers = sqliteTable(
     unsubscribedAt: integer("unsubscribed_at", { mode: "timestamp" }),
   },
   (t) => [uniqueIndex("newsletter_email_uq").on(t.email), uniqueIndex("newsletter_token_uq").on(t.token)],
+);
+
+export const blogAuthors = sqliteTable(
+  "blog_authors",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    fullName: text("full_name").notNull(),
+    displayName: text("display_name").notNull(),
+    title: text("title").notNull().default(""),
+    /** Private: never shown publicly. */
+    email: text("email").notNull().default(""),
+    shortBio: text("short_bio").notNull().default(""),
+    fullBio: text("full_bio").notNull().default(""),
+    expertiseJson: text("expertise_json").notNull().default("[]"),
+    company: text("company").notNull().default(""),
+    location: text("location").notNull().default(""),
+    photo: text("photo"),
+    linksJson: text("links_json").notNull().default("{}"),
+    seoTitle: text("seo_title").notNull().default(""),
+    metaDescription: text("meta_description").notNull().default(""),
+    ogImage: text("og_image"),
+    canonicalUrl: text("canonical_url").notNull().default(""),
+    noindex: integer("noindex", { mode: "boolean" }).notNull().default(false),
+    status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+    updatedBy: text("updated_by").notNull().default(""),
+  },
+  (t) => [uniqueIndex("blog_authors_slug_uq").on(t.slug)],
 );

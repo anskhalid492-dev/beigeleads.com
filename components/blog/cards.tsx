@@ -16,7 +16,7 @@ export function PostCard({ p, priority = false }: { p: PublicCard; priority?: bo
         <p className="text-xs font-semibold text-forest-500">{p.categoryName ?? "Article"} · {p.readingMinutes} min read</p>
         <h3 className="mt-2 text-xl font-bold leading-snug text-forest-900"><Link href={`/blog/${p.slug}`} className="hover:underline">{p.title}</Link></h3>
         {p.excerpt && <p className="mt-2 line-clamp-3 text-sm">{p.excerpt}</p>}
-        <p className="mt-auto pt-4 text-xs">{fmtDate(p.at)}{p.author ? ` · ${p.author}` : ""}</p>
+        <p className="mt-auto pt-4 text-xs">{fmtDate(p.at)}{p.author && !p.author.includes("@") ? ` · ${p.author}` : ""}</p>
       </div>
     </article>
   );

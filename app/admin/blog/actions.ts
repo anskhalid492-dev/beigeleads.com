@@ -30,7 +30,7 @@ const fail = (e: unknown): { ok: false; error: string; conflict?: boolean } => {
 };
 
 const inputSchema = z.object({
-  title: z.string().max(300), slug: z.string().max(200), excerpt: z.string().max(1000), categoryId: z.number().int().nullable(), author: z.string().max(200),
+  title: z.string().max(300), slug: z.string().max(200), excerpt: z.string().max(1000), categoryId: z.number().int().nullable(), author: z.string().max(200), authorId: z.number().int().nullish().transform((v) => v ?? null),
   featuredImage: z.string().max(600).nullable(), featuredAlt: z.string().max(400), seoTitle: z.string().max(300), metaDescription: z.string().max(600), canonicalUrl: z.string().max(2100), noindex: z.boolean(),
   ogTitle: z.string().max(300), ogDescription: z.string().max(600), ogImage: z.string().max(600).nullable(), focusKeyword: z.string().max(200),
   related: z.array(z.number().int()).max(10), tagIds: z.array(z.number().int()).max(30), scheduledAt: z.number().nullable(), doc: z.unknown(),

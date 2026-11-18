@@ -15,14 +15,14 @@ const A = "admin@test.dev";
 
 const doc = (text: string) => ({ type: "doc", content: [{ type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Intro" }] }, { type: "paragraph", content: [{ type: "text", text }] }] });
 const input = (title: string, slug: string, text: string): PostInput => ({
-  title, slug, excerpt: "x", categoryId: null, author: "A", featuredImage: null, featuredAlt: "", seoTitle: "", metaDescription: "", canonicalUrl: "", noindex: false,
+  title, slug, excerpt: "x", categoryId: null, authorId: null, author: "A", featuredImage: null, featuredAlt: "", seoTitle: "", metaDescription: "", canonicalUrl: "", noindex: false,
   ogTitle: "", ogDescription: "", ogImage: null, focusKeyword: "", related: [], tagIds: [], scheduledAt: null, doc: doc(text),
 });
 
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "blog-e2e-")) } });
   env = proxy.env;
-  const sql = ["drizzle/0007_blog_cms.sql", "drizzle/0008_newsletter.sql"].map((f) => readFileSync(f, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
+  const sql = ["drizzle/0007_blog_cms.sql", "drizzle/0008_newsletter.sql", "drizzle/0010_blog_authors.sql"].map((f) => readFileSync(f, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const stmt of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(stmt).run();
 }, 60_000);
 afterAll(async () => { await proxy?.dispose(); });

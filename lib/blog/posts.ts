@@ -9,7 +9,7 @@ export type PostStatus = "draft" | "scheduled" | "published" | "archived";
 export type Post = typeof schema.blogPosts.$inferSelect;
 
 export type PostInput = {
-  title: string; slug: string; excerpt: string; categoryId: number | null; author: string;
+  title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null;
   featuredImage: string | null; featuredAlt: string; seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean;
   ogTitle: string; ogDescription: string; ogImage: string | null; focusKeyword: string;
   related: number[]; tagIds: number[]; scheduledAt: number | null; doc: unknown;
@@ -42,7 +42,7 @@ export async function uniqueSlug(env: Env, wanted: string, exceptId?: number): P
 export async function createPost(env: Env, actor: string, title = "Untitled article") {
   const db = getDbFromEnv(env);
   const slug = await uniqueSlug(env, title);
-  const [row] = await db.insert(t).values({ title: s(title, 200) || "Untitled article", slug, updatedBy: actor, author: actor }).returning({ id: t.id });
+  const [row] = await db.insert(t).values({ title: s(title, 200) || "Untitled article", slug, updatedBy: actor, author: "" }).returning({ id: t.id });
   await writeBody(env, row.id, cleanDoc(null));
   await audit(env, row.id, actor, "created");
   return row.id;
@@ -75,10 +75,18 @@ export async function savePost(env: Env, actor: string, id: number, input: PostI
   const taken = await db.select({ id: t.id }).from(t).where(and(eq(t.slug, slug), ne(t.id, id))).limit(1);
   if (taken[0]) throw new BlogError("Another article already uses that slug.");
 
+  // A chosen author profile wins: the post stores its link and the current display name (used by cards and filters).
+  let authorId: number | null = null;
+  let authorName = s(input.author, 120);
+  if (input.authorId) {
+    const a = await db.select({ id: schema.blogAuthors.id, name: schema.blogAuthors.displayName }).from(schema.blogAuthors).where(eq(schema.blogAuthors.id, input.authorId)).limit(1);
+    if (!a[0]) throw new BlogError("That author no longer exists. Choose another author.");
+    authorId = a[0].id; authorName = a[0].name;
+  }
   const text = plainText(doc);
   const scheduledAt = input.scheduledAt && Number.isFinite(input.scheduledAt) ? new Date(input.scheduledAt) : null;
   const updated = await db.update(t).set({
-    title, slug, excerpt: s(input.excerpt, 500), categoryId: input.categoryId, author: s(input.author, 120),
+    title, slug, excerpt: s(input.excerpt, 500), categoryId: input.categoryId, author: authorName, authorId,
     featuredImage: mediaPath(input.featuredImage), featuredAlt: s(input.featuredAlt, 300), readingMinutes: readingMinutes(doc),
     searchText: text.replace(/\s+/g, " ").slice(0, 3000),
     seoTitle: s(input.seoTitle, 200), metaDescription: s(input.metaDescription, 400), canonicalUrl: url(input.canonicalUrl), noindex: !!input.noindex,
@@ -148,7 +156,7 @@ export async function restoreRevision(env: Env, actor: string, postId: number, r
   if (!post || !rev) throw new BlogError("That revision no longer exists.");
   const r = post.row;
   const input: PostInput = {
-    title: rev.snap.title || r.title, slug: r.slug, excerpt: rev.snap.excerpt, categoryId: r.categoryId, author: r.author, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt,
+    title: rev.snap.title || r.title, slug: r.slug, excerpt: rev.snap.excerpt, categoryId: r.categoryId, author: r.author, authorId: r.authorId, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt,
     seoTitle: r.seoTitle, metaDescription: r.metaDescription, canonicalUrl: r.canonicalUrl, noindex: r.noindex, ogTitle: r.ogTitle, ogDescription: r.ogDescription, ogImage: r.ogImage,
     focusKeyword: r.focusKeyword, related: JSON.parse(r.relatedJson || "[]"), tagIds: post.tagIds, scheduledAt: r.scheduledAt?.getTime() ?? null, doc: rev.snap.doc,
   };
@@ -204,7 +212,7 @@ export async function duplicatePost(env: Env, actor: string, id: number) {
   const slug = await uniqueSlug(env, `${src.row.slug}-copy`);
   const r = src.row;
   const [row] = await db.insert(t).values({
-    slug, title: `${r.title} (copy)`, excerpt: r.excerpt, status: "draft", categoryId: r.categoryId, author: r.author, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt,
+    slug, title: `${r.title} (copy)`, excerpt: r.excerpt, status: "draft", categoryId: r.categoryId, author: r.author, authorId: r.authorId, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt,
     readingMinutes: r.readingMinutes, searchText: r.searchText, seoTitle: r.seoTitle, metaDescription: r.metaDescription, noindex: r.noindex, ogTitle: r.ogTitle, ogDescription: r.ogDescription,
     ogImage: r.ogImage, focusKeyword: r.focusKeyword, relatedJson: r.relatedJson, updatedBy: actor,
   }).returning({ id: t.id });
@@ -266,7 +274,7 @@ export async function postOptions(env: Env, exceptId?: number) {
 
 // ---------- public queries ----------
 
-const live = () => {
+export const live = () => {
   const now = new Date();
   return or(and(eq(t.status, "published"), lte(t.publishedAt, now)), and(eq(t.status, "scheduled"), lte(t.scheduledAt, now)))!;
 };
@@ -276,12 +284,13 @@ export type PublicCard = { id: number; slug: string; title: string; excerpt: str
 const cardCols = { id: t.id, slug: t.slug, title: t.title, excerpt: t.excerpt, featuredImage: t.featuredImage, featuredAlt: t.featuredAlt, readingMinutes: t.readingMinutes, author: t.author, publishedAt: t.publishedAt, scheduledAt: t.scheduledAt, categoryName: schema.blogCategories.name, categorySlug: schema.blogCategories.slug };
 const toCard = (r: { publishedAt: Date | null; scheduledAt: Date | null } & Omit<PublicCard, "at">): PublicCard => ({ ...r, at: (r.publishedAt ?? r.scheduledAt ?? new Date(0)) });
 
-export async function listPublished(env: Env, o: { q?: string; categoryId?: number; tagId?: number; page?: number; per?: number }) {
+export async function listPublished(env: Env, o: { q?: string; categoryId?: number; tagId?: number; authorId?: number; page?: number; per?: number }) {
   const db = getDbFromEnv(env);
   const per = o.per ?? 9;
   const page = Math.max(1, o.page ?? 1);
   const where: SQL[] = [live()];
   if (o.categoryId) where.push(eq(t.categoryId, o.categoryId));
+  if (o.authorId) where.push(eq(t.authorId, o.authorId));
   if (o.tagId) where.push(sql`${t.id} in (select post_id from blog_post_tags where tag_id = ${o.tagId})`);
   if (o.q) { const q = `%${o.q.replace(/[%_]/g, "").slice(0, 80)}%`; where.push(or(like(t.title, q), like(t.excerpt, q), like(t.searchText, q))!); }
   const [rows, total] = await Promise.all([

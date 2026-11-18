@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { headingsOf, type DocNode } from "@/lib/blog/doc";
 import type { PublicCard } from "@/lib/blog/posts";
+import { AboutAuthor, Byline, publicName, type ArticleAuthor } from "./author-parts";
 import { NewsletterCta } from "./newsletter";
 import { PostCard, fmtDate } from "./cards";
 import { CopyLink, ReadingProgress } from "./client";
@@ -13,7 +14,7 @@ import { ArticleBody } from "./render";
 export type ArticleData = {
   title: string; slug: string; excerpt: string; author: string; readingMinutes: number; featuredImage: string | null; featuredAlt: string;
   publishedAt: Date; updatedAt: Date; category: { name: string; slug: string } | null; tags: { id: number; name: string; slug: string }[]; doc: DocNode;
-  ogImage: string | null;
+  ogImage: string | null; authorProfile?: ArticleAuthor | null;
 };
 
 /** The article page, shared by the public route and the admin preview so what you preview is what is published. */
@@ -29,9 +30,14 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
       <Breadcrumbs wide items={[{ name: "Blog", href: "/blog" }, ...(a.category ? [{ name: a.category.name, href: `/blog/category/${a.category.slug}` }] : []), { name: a.title, href: `/blog/${a.slug}` }]} />
       {!preview && (
         <JsonLd data={{
-          "@context": "https://schema.org", "@type": "Article", headline: a.title, description: a.excerpt || undefined,
+          "@context": "https://schema.org", "@type": "BlogPosting", headline: a.title, description: a.excerpt || undefined,
           datePublished: a.publishedAt.toISOString(), dateModified: a.updatedAt.toISOString(),
-          author: a.author ? { "@type": "Person", name: a.author } : { "@type": "Organization", name: SITE_NAME },
+          author: (() => {
+            const pa = a.authorProfile;
+            if (pa) return { "@type": "Person", "@id": `${SITE_URL}/blog/author/${pa.slug}#person`, name: pa.name, url: `${SITE_URL}/blog/author/${pa.slug}` };
+            const n = publicName(a.author);
+            return n ? { "@type": "Person", name: n } : { "@type": "Organization", name: SITE_NAME };
+          })(),
           publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
           mainEntityOfPage: url, image: img ? [img.startsWith("http") ? img : `${SITE_URL}${img}`] : undefined,
         }} />
@@ -41,7 +47,8 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
           {a.category && <Link href={`/blog/category/${a.category.slug}`} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}
           <h1 className="display mt-2 text-5xl text-forest-900 sm:text-7xl">{a.title}</h1>
           {a.excerpt && <p className="mt-4 text-xl">{a.excerpt}</p>}
-          <p className="mt-5 text-sm">{a.author ? `By ${a.author} · ` : ""}{fmtDate(a.publishedAt)}{a.updatedAt.getTime() - a.publishedAt.getTime() > 86_400_000 ? ` · Updated ${fmtDate(a.updatedAt)}` : ""} · {a.readingMinutes} min read</p>
+          <Byline author={a.authorProfile ?? null} plainName={a.author} date={a.publishedAt} />
+          <p className="mt-3 text-sm">{a.updatedAt.getTime() - a.publishedAt.getTime() > 86_400_000 ? `Updated ${fmtDate(a.updatedAt)} · ` : ""}{a.readingMinutes} min read</p>
         </header>
         {a.featuredImage && (
            
@@ -59,6 +66,7 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
               <a className="rounded-full border border-sand-300 px-3 py-1.5 text-sm font-semibold text-forest-900 hover:bg-sand-100" href={`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`} target="_blank" rel="noopener noreferrer">Facebook</a>
               <CopyLink url={url} />
             </div>
+            {a.authorProfile && <AboutAuthor author={a.authorProfile} />}
           </div>
           <aside className="hidden lg:block">
             <div className="sticky top-28 space-y-6">

@@ -9,6 +9,7 @@ export const isEditorEmail = (list: string | undefined, email: string) => parseE
 export const can = {
   publish: (r: BlogRole) => r === "admin",
   delete: (r: BlogRole) => r === "admin",
+  manageAuthors: (r: BlogRole) => r === "admin",
   manageTaxonomy: (r: BlogRole) => r === "admin",
   replaceMedia: (r: BlogRole) => r === "admin",
   deleteMedia: (r: BlogRole) => r === "admin",

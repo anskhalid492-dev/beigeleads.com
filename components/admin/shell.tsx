@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, FileText, Inbox, ImageIcon, Mail, LogOut, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
+import { BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, FileText, Inbox, ImageIcon, Mail, LogOut, Users, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
@@ -14,6 +14,7 @@ const NAV = [
   ["Sample Requests", "/admin/sample-requests", Inbox],
   ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Blog", "/admin/blog", FileText],
+  ["Authors", "/admin/blog/authors", Users],
   ["Media", "/admin/media", ImageIcon],
   ["Newsletter", "/admin/newsletter", Mail],
   ["Settings", "/admin/settings", Settings],
@@ -34,7 +35,7 @@ export function AdminShell({ email, role = "admin", logout, children }: { email:
   if (path === "/admin/login") return <main className="mx-auto w-full max-w-md px-5 py-16">{children}</main>;
 
   const title = TITLES[path] ?? NAV.find(([, h]) => h !== "/admin" && path.startsWith(h))?.[0] ?? "Admin";
-  const active = (h: string) => (h === "/admin" ? path === "/admin" : path.startsWith(h));
+  const active = (h: string) => (h === "/admin" ? path === "/admin" : h === "/admin/blog" ? path.startsWith(h) && !path.startsWith("/admin/blog/authors") : path.startsWith(h));
 
   const links = (compact: boolean) => (
     <ul className="space-y-1">
