@@ -253,6 +253,15 @@ export const customListRequests = sqliteTable("custom_list_requests", {
   notes: text("notes"),
   originalQuery: text("original_query"),
   createdAt: createdAt(),
+  // Builder 2.0 (migration 0011). Null on older rows.
+  reference: text("reference"),
+  name: text("name"),
+  company: text("company"),
+  audience: text("audience"),
+  detailJson: text("detail_json"),
+  dedupeKey: text("dedupe_key"),
+  ownerNotify: text("owner_notify").notNull().default("pending"),
+  customerEmailStatus: text("customer_email_status").notNull().default("pending"),
 });
 
 // Product-specific FAQs, editable from the future admin panel. Until then the page falls back to
@@ -333,6 +342,8 @@ export const customRequestStatus = sqliteTable("custom_request_status", {
   status: text("status", { enum: ["new", "in_progress", "quoted", "done", "declined"] }).notNull().default("new"),
   updatedBy: text("updated_by").notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  /** Internal note, never shown to the customer (migration 0011). */
+  note: text("note").notNull().default(""),
 });
 
 // ---- Blog CMS (migration 0007). Bodies/revisions/images are in R2; see lib/blog/*. ----

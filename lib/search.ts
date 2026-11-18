@@ -129,6 +129,7 @@ export function customListHref(raw: string): string {
   else if (p.categoryText) u.set("categoryText", p.categoryText);
   if (p.quantity) u.set("quantity", String(p.quantity));
   if (p.countryText || p.countrySlug) u.set("country", p.countrySlug ?? "other");
+  if (p.countryText) u.set("countryText", p.countryText);
   if (p.region) u.set("region", titleCase(p.region));
   return `/custom-list?${u.toString()}`;
 }
