@@ -22,7 +22,11 @@ async function mayEdit(u: BlogUser, id: number) {
 const fail = (e: unknown): { ok: false; error: string; conflict?: boolean } => {
   if (e instanceof BlogError) return e.message === "conflict" ? { ok: false, error: "A newer version of this article was saved elsewhere. Reload to see it before you save again.", conflict: true } : { ok: false, error: e.message };
   if (e instanceof z.ZodError) return { ok: false, error: "Some fields are not valid." };
-  return { ok: false, error: e instanceof Error && e.message === "forbidden" ? "Not allowed." : "Something went wrong. Try again." };
+  if (e instanceof Error && e.message === "forbidden") return { ok: false, error: "Not allowed." };
+  // Admin-only screen: show the technical reason so a failing save can be diagnosed (no article text or personal data in it).
+  const detail = e instanceof Error ? `${e.name}: ${e.message}`.replace(/\s+/g, " ").slice(0, 300) : "unknown error";
+  console.error("blog action failed:", detail);
+  return { ok: false, error: `Something went wrong. Try again. (${detail})` };
 };
 
 const inputSchema = z.object({
