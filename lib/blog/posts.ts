@@ -279,10 +279,16 @@ export const live = () => {
   return or(and(eq(t.status, "published"), lte(t.publishedAt, now)), and(eq(t.status, "scheduled"), lte(t.scheduledAt, now)))!;
 };
 
-export type PublicCard = { id: number; slug: string; title: string; excerpt: string; featuredImage: string | null; featuredAlt: string; readingMinutes: number; author: string; at: Date; categoryName: string | null; categorySlug: string | null };
+export type PublicCard = { id: number; slug: string; title: string; excerpt: string; featuredImage: string | null; featuredAlt: string; readingMinutes: number; author: string; authorSlug: string | null; authorPhoto: string | null; authorTitle: string; at: Date; categoryName: string | null; categorySlug: string | null };
 
-const cardCols = { id: t.id, slug: t.slug, title: t.title, excerpt: t.excerpt, featuredImage: t.featuredImage, featuredAlt: t.featuredAlt, readingMinutes: t.readingMinutes, author: t.author, publishedAt: t.publishedAt, scheduledAt: t.scheduledAt, categoryName: schema.blogCategories.name, categorySlug: schema.blogCategories.slug };
-const toCard = (r: { publishedAt: Date | null; scheduledAt: Date | null } & Omit<PublicCard, "at">): PublicCard => ({ ...r, at: (r.publishedAt ?? r.scheduledAt ?? new Date(0)) });
+const cardCols = { id: t.id, slug: t.slug, title: t.title, excerpt: t.excerpt, featuredImage: t.featuredImage, featuredAlt: t.featuredAlt, readingMinutes: t.readingMinutes, author: t.author, publishedAt: t.publishedAt, scheduledAt: t.scheduledAt, categoryName: schema.blogCategories.name, categorySlug: schema.blogCategories.slug, authorSlug: schema.blogAuthors.slug, authorPhoto: schema.blogAuthors.photo, authorName: schema.blogAuthors.displayName, authorTitle: schema.blogAuthors.title };
+type CardRow = { publishedAt: Date | null; scheduledAt: Date | null; authorName: string | null; authorTitle: string | null } & Omit<PublicCard, "at" | "authorTitle">;
+// A published profile's current name wins; otherwise the plain-text byline, and anything that looks like an email is never shown.
+const toCard = ({ authorName, authorTitle, ...r }: CardRow): PublicCard => ({ ...r, author: authorName ?? (r.author.includes("@") ? "" : r.author), authorTitle: authorTitle ?? "", at: (r.publishedAt ?? r.scheduledAt ?? new Date(0)) });
+/** Card query: category and (published) author profile joined once, so every list shows the same data. */
+const cardSelect = (db: ReturnType<typeof getDbFromEnv>) => db.select(cardCols).from(t)
+  .leftJoin(schema.blogCategories, eq(schema.blogCategories.id, t.categoryId))
+  .leftJoin(schema.blogAuthors, and(eq(schema.blogAuthors.id, t.authorId), eq(schema.blogAuthors.status, "published")));
 
 export async function listPublished(env: Env, o: { q?: string; categoryId?: number; tagId?: number; authorId?: number; page?: number; per?: number }) {
   const db = getDbFromEnv(env);
@@ -294,10 +300,10 @@ export async function listPublished(env: Env, o: { q?: string; categoryId?: numb
   if (o.tagId) where.push(sql`${t.id} in (select post_id from blog_post_tags where tag_id = ${o.tagId})`);
   if (o.q) { const q = `%${o.q.replace(/[%_]/g, "").slice(0, 80)}%`; where.push(or(like(t.title, q), like(t.excerpt, q), like(t.searchText, q))!); }
   const [rows, total] = await Promise.all([
-    db.select(cardCols).from(t).leftJoin(schema.blogCategories, eq(schema.blogCategories.id, t.categoryId)).where(and(...where)).orderBy(desc(sql`coalesce(${t.publishedAt}, ${t.scheduledAt})`)).limit(per).offset((page - 1) * per),
+    cardSelect(db).where(and(...where)).orderBy(desc(sql`coalesce(${t.publishedAt}, ${t.scheduledAt})`)).limit(per).offset((page - 1) * per),
     db.select({ n: sql<number>`count(*)` }).from(t).where(and(...where)),
   ]);
-  return { cards: rows.map((r) => toCard(r as never)), total: total[0]?.n ?? 0, per, page };
+  return { cards: rows.map((r) => toCard(r)), total: total[0]?.n ?? 0, per, page };
 }
 
 export async function getPublishedBySlug(env: Env, slug: string) {
@@ -316,13 +322,13 @@ export async function getPublishedBySlug(env: Env, slug: string) {
 export async function relatedPublished(env: Env, row: Post, limit = 3): Promise<PublicCard[]> {
   const db = getDbFromEnv(env);
   const picked: number[] = (() => { try { return JSON.parse(row.relatedJson); } catch { return []; } })();
-  const sel = db.select(cardCols).from(t).leftJoin(schema.blogCategories, eq(schema.blogCategories.id, t.categoryId));
+  const sel = cardSelect(db);
   const manual = picked.length ? await sel.where(and(live(), inArray(t.id, picked))).limit(limit) : [];
-  if (manual.length >= limit) return manual.map((r) => toCard(r as never));
-  const more = await db.select(cardCols).from(t).leftJoin(schema.blogCategories, eq(schema.blogCategories.id, t.categoryId))
+  if (manual.length >= limit) return manual.map((r) => toCard(r));
+  const more = await cardSelect(db)
     .where(and(live(), ne(t.id, row.id), row.categoryId ? eq(t.categoryId, row.categoryId) : undefined)).orderBy(desc(sql`coalesce(${t.publishedAt}, ${t.scheduledAt})`)).limit(limit);
   const seen = new Set(manual.map((m) => m.id));
-  return [...manual, ...more.filter((m) => !seen.has(m.id))].slice(0, limit).map((r) => toCard(r as never));
+  return [...manual, ...more.filter((m) => !seen.has(m.id))].slice(0, limit).map((r) => toCard(r));
 }
 
 export async function publishedCategories(env: Env) {

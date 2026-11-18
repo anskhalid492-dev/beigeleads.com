@@ -8,7 +8,10 @@ import type { PublicCard } from "@/lib/blog/posts";
 import { AboutAuthor, Byline, publicName, type ArticleAuthor } from "./author-parts";
 import { NewsletterCta } from "./newsletter";
 import { PostCard, fmtDate } from "./cards";
-import { CopyLink, ReadingProgress } from "./client";
+import { ReadingProgress } from "./client";
+import { InlineCta, ctaFor } from "./inline-cta";
+import { Share } from "./share";
+import { Toc } from "./toc";
 import { ArticleBody } from "./render";
 
 export type ArticleData = {
@@ -21,7 +24,6 @@ export type ArticleData = {
 export function ArticleView({ a, related, preview = false, newsletter = false }: { a: ArticleData; related: PublicCard[]; preview?: boolean; newsletter?: boolean }) {
   const toc = headingsOf(a.doc).filter((h) => h.level <= 3);
   const url = `${SITE_URL}/blog/${a.slug}`;
-  const enc = encodeURIComponent;
   const img = a.ogImage ?? a.featuredImage;
   return (
     <>
@@ -43,41 +45,31 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
         }} />
       )}
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <header className="mx-auto max-w-3xl">
+        <header className="mx-auto max-w-4xl">
           {a.category && <Link href={`/blog/category/${a.category.slug}`} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}
-          <h1 className="display mt-2 text-5xl text-forest-900 sm:text-7xl">{a.title}</h1>
-          {a.excerpt && <p className="mt-4 text-xl">{a.excerpt}</p>}
+          <h1 className="display mt-2 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{a.title}</h1>
+          {a.excerpt && <p className="mt-4 max-w-3xl text-lg sm:text-xl">{a.excerpt}</p>}
           <Byline author={a.authorProfile ?? null} plainName={a.author} date={a.publishedAt} />
           <p className="mt-3 text-sm">{a.updatedAt.getTime() - a.publishedAt.getTime() > 86_400_000 ? `Updated ${fmtDate(a.updatedAt)} · ` : ""}{a.readingMinutes} min read</p>
         </header>
         {a.featuredImage && (
-           
-          <img src={a.featuredImage} alt={a.featuredAlt} className="mx-auto mt-8 aspect-[16/9] w-full max-w-5xl rounded-3xl object-cover" />
+          <img src={a.featuredImage} alt={a.featuredAlt} width={1600} height={900} fetchPriority="high" decoding="async" className="mx-auto mt-8 aspect-[16/9] w-full max-w-5xl rounded-3xl object-cover" />
         )}
 
-        <div className="mx-auto mt-10 grid max-w-5xl gap-10 lg:grid-cols-[minmax(0,44rem)_14rem] lg:justify-between">
-          <div>
+        <div className="mx-auto mt-10 grid max-w-6xl gap-x-10 gap-y-6 lg:grid-cols-[3rem_minmax(0,44rem)_15rem] lg:justify-center">
+          <div className="hidden lg:block"><div className="sticky top-32"><Share url={url} title={a.title} vertical /></div></div>
+          <div className="min-w-0 lg:col-start-2 lg:row-start-1">
+            {toc.length > 1 && <div className="mb-8 lg:hidden"><Toc items={toc} /></div>}
             <div id="article-body"><ArticleBody doc={a.doc} /></div>
             {a.tags.length > 0 && <ul className="mt-10 flex flex-wrap gap-2" aria-label="Tags">{a.tags.map((t) => <li key={t.id} className="rounded-full bg-sand-100 px-3 py-1 text-sm">{t.name}</li>)}</ul>}
-            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-sand-200 pt-6" aria-label="Share this article">
-              <span className="text-sm font-semibold text-forest-900">Share</span>
-              <a className="rounded-full border border-sand-300 px-3 py-1.5 text-sm font-semibold text-forest-900 hover:bg-sand-100" href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-              <a className="rounded-full border border-sand-300 px-3 py-1.5 text-sm font-semibold text-forest-900 hover:bg-sand-100" href={`https://twitter.com/intent/tweet?url=${enc(url)}&text=${enc(a.title)}`} target="_blank" rel="noopener noreferrer">X</a>
-              <a className="rounded-full border border-sand-300 px-3 py-1.5 text-sm font-semibold text-forest-900 hover:bg-sand-100" href={`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`} target="_blank" rel="noopener noreferrer">Facebook</a>
-              <CopyLink url={url} />
-            </div>
+            <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-sand-200 pt-6 lg:hidden"><span className="text-sm font-semibold text-forest-900">Share</span><Share url={url} title={a.title} /></div>
+            <InlineCta cta={ctaFor(a)} />
             {a.authorProfile && <AboutAuthor author={a.authorProfile} />}
+            <p className="mt-8"><Link href="/blog" className="text-sm font-semibold text-forest-900 underline underline-offset-4">← Back to all articles</Link></p>
           </div>
-          <aside className="hidden lg:block">
-            <div className="sticky top-28 space-y-6">
-              {toc.length > 1 && (
-                <nav aria-label="On this page">
-                  <p className="mb-2 text-sm font-bold text-forest-900">On this page</p>
-                  <ul className="space-y-1.5 border-l border-sand-300 text-sm">
-                    {toc.map((h) => <li key={h.id} style={{ paddingLeft: h.level === 3 ? "1.5rem" : "0.75rem" }}><a href={`#${h.id}`} className="hover:text-forest-900 hover:underline">{h.text}</a></li>)}
-                  </ul>
-                </nav>
-              )}
+          <aside className="hidden lg:col-start-3 lg:row-start-1 lg:block">
+            <div className="sticky top-32 space-y-6">
+              {toc.length > 1 && <Toc items={toc} />}
               <div className="rounded-2xl bg-sand-100 p-4 text-sm">
                 <p className="font-bold text-forest-900">See a sample first</p>
                 <p className="mt-1">Request a free masked sample of a business contact list.</p>
@@ -87,17 +79,11 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
           </aside>
         </div>
 
-        <section className="mx-auto mt-14 max-w-5xl rounded-[2rem] bg-forest-900 p-8 text-center sm:p-12" aria-labelledby="cta">
-          <h2 id="cta" className="display text-4xl !text-sand-50 sm:text-5xl">Pay once. Own the list.</h2>
-          <p className="mx-auto mt-3 max-w-xl text-sand-200">Browse ready-made business contact lists, or tell us what you need and we will review a custom list request.</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3"><Button asChild><Link href="/lists">Browse lists</Link></Button><Button asChild variant="secondary"><Link href="/custom-list">Build a custom list</Link></Button></div>
-        </section>
-
         {newsletter && <NewsletterCta />}
 
         {related.length > 0 && (
           <section className="mx-auto mt-16 max-w-6xl" aria-labelledby="rel">
-            <h2 id="rel" className="display text-4xl text-forest-900">Keep reading</h2>
+            <h2 id="rel" className="display text-4xl text-forest-900">Continue reading</h2>
             <ul className="mt-6 grid gap-5 md:grid-cols-3">{related.map((p) => <li key={p.id}><PostCard p={p} /></li>)}</ul>
           </section>
         )}

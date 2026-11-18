@@ -37,7 +37,7 @@ export default async function BlogAdmin({ searchParams }: { searchParams: SP }) 
   return (
     <>
       <PageHeader title="Blog" text="Write, schedule and publish articles. Bodies and images are stored in R2; settings and status in D1."
-        actions={<div className="flex gap-2">{user.role === "admin" && <Button asChild variant="secondary"><Link href="/admin/blog/taxonomy">Categories & tags</Link></Button>}<form action={createAction}><Button type="submit">New article</Button></form></div>} />
+        actions={<div className="flex gap-2">{user.role === "admin" && <Button asChild variant="secondary"><Link href="/admin/blog/taxonomy">Categories & tags</Link></Button>}{user.role === "admin" && <Button asChild variant="secondary"><Link href="/admin/blog/starters">Starter articles</Link></Button>}<form action={createAction}><Button type="submit">New article</Button></form></div>} />
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatCard label="All articles" value={stats.total} />
         <StatCard label="Published" value={stats.published} />
