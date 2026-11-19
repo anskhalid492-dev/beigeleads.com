@@ -1,4 +1,5 @@
-import { getCategories, getCategory, getCountry, getProductFor } from "@/lib/catalog";
+import { getCategories, getCategory, getProductFor } from "@/lib/catalog";
+import { findCountry } from "@/lib/catalog-extra";
 import { getDb } from "@/lib/db";
 import { geoCopy } from "./content";
 import { getGeoContent } from "./page-content";
@@ -10,9 +11,9 @@ export type GeoLink = { name: string; href: string; records: number | null };
 /** Everything a geography page needs, from real data. Returns null when the URL is not a real place. */
 export async function loadGeoPage(categorySlug: string, countrySlug: string, segments: string[]) {
   const c = getCategory(categorySlug);
-  const k = getCountry(countrySlug);
-  if (!c || !k) return null;
   const db = getDb();
+  const k = await findCountry(db, countrySlug);
+  if (!c || !k) return null;
   const base = `/lists/${c.slug}/${k.slug}`;
   const product = getProductFor(c.slug, k.slug);
   const view = segments.length ? await resolveArea(db, k.slug, segments) : null;

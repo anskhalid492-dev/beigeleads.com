@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Badge, Empty, PageHeader, Panel } from "@/components/admin/ui";
 import { guardAdmin } from "@/lib/admin/guard";
-import { getCategories, getCountries } from "@/lib/catalog";
+import { getCategories } from "@/lib/catalog";
+import { loadCountries } from "@/lib/catalog-extra";
 import { getDb } from "@/lib/db";
 import { allCoverage } from "@/lib/geo/store";
 import { ImportForm } from "./import-form";
@@ -21,7 +22,7 @@ export default async function GeographyPage() {
       <PageHeader title="Geography" text="Countries, states/regions and cities, and the REAL number of records you have in each. Pages for a place are views of an existing product. They are indexable only when the place has real records." />
       {!g.ready && <p className="mb-5 max-w-3xl rounded-xl bg-amber-100 px-4 py-3 text-sm text-amber-900">Migration 0028 is not applied yet. Until then only the built-in cities exist and every place page is noindex.</p>}
       <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">
-        <Panel title="Import places and counts"><ImportForm countries={getCountries().map((c) => ({ slug: c.slug, name: c.name }))} /></Panel>
+        <Panel title="Import places and counts"><ImportForm countries={(await loadCountries(getDb())).map((c) => ({ slug: c.slug, name: c.name }))} /></Panel>
         <Panel title={`Places (${g.areas.length})`}>
           {g.areas.length === 0 ? <Empty title="No places yet" text="Import a CSV to add states and cities with real record counts." /> : (
             <div className="max-h-[32rem] overflow-auto"><table className="w-full text-left text-sm">

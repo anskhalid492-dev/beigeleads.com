@@ -1,0 +1,4 @@
+-- Admin-managed catalog extras: countries, sub-industries, consumer categories. Run ONE statement at a time in D1 Studio.
+CREATE TABLE IF NOT EXISTS catalog_countries (slug TEXT PRIMARY KEY, code TEXT NOT NULL, name TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+CREATE TABLE IF NOT EXISTS catalog_subindustries (id INTEGER PRIMARY KEY AUTOINCREMENT, category_slug TEXT NOT NULL, slug TEXT NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', enabled INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL DEFAULT (unixepoch()), UNIQUE (category_slug, slug));
+CREATE TABLE IF NOT EXISTS catalog_consumer_categories (id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', enabled INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL DEFAULT (unixepoch()));

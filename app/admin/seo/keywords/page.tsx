@@ -3,7 +3,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Badge, Empty, PageHeader, Panel } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { guardAdmin } from "@/lib/admin/guard";
-import { getCategories, getCountries } from "@/lib/catalog";
+import { getCategories } from "@/lib/catalog";
+import { loadCountries } from "@/lib/catalog-extra";
 import { getDbFromEnv } from "@/lib/db";
 import { INTENTS, STATUSES, TARGETS, buildBrief, classifyIntent, duplicateTargets, listKeywords, suggestTarget, type Intent, type KeywordRow } from "@/lib/seo/keywords";
 import { deleteKeywordAction, saveKeywordAction } from "./actions";
@@ -36,7 +37,7 @@ export default async function KeywordsPage({ searchParams }: { searchParams: Pro
   const db = getDbFromEnv(getCloudflareContext().env);
   const { ready, rows } = await listKeywords(db, { q: (sp.q ?? "").slice(0, 80), status: sp.status });
   const cats = getCategories().map((c) => ({ slug: c.slug, name: c.name }));
-  const countries = getCountries().map((c) => ({ slug: c.slug, name: c.name }));
+  const countries = (await loadCountries(db)).map((c) => ({ slug: c.slug, name: c.name }));
   const dupes = duplicateTargets(rows);
   const open = rows.find((r) => String(r.id) === sp.brief);
   const brief = open ? buildBrief({ keyword: open.keyword, intent: open.intent as Intent, category: open.categorySlug, country: open.countrySlug, place: open.place }) : null;

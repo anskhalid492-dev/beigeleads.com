@@ -825,3 +825,30 @@ export const geoPageContent = sqliteTable("geo_page_content", {
   secondaryKeywords: text("secondary_keywords").notNull().default(""),
   updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
 });
+
+export const catalogCountries = sqliteTable("catalog_countries", {
+  slug: text("slug").primaryKey(),
+  code: text("code").notNull(),
+  name: text("name").notNull(),
+  enabled: integer("enabled").notNull().default(1),
+  createdAt: createdAt(),
+});
+
+export const catalogSubindustries = sqliteTable("catalog_subindustries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  categorySlug: text("category_slug").notNull(),
+  slug: text("slug").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  enabled: integer("enabled").notNull().default(1),
+  createdAt: createdAt(),
+});
+
+export const catalogConsumerCategories = sqliteTable("catalog_consumer_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  enabled: integer("enabled").notNull().default(0),
+  createdAt: createdAt(),
+});

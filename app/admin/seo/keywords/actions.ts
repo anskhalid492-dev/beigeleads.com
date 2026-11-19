@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireAdmin } from "@/lib/admin/require-admin";
+import { loadCountries } from "@/lib/catalog-extra";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { cleanKeyword, deleteKeyword, saveKeyword } from "@/lib/seo/keywords";
 
@@ -13,7 +14,8 @@ export async function saveKeywordAction(form: FormData): Promise<void> {
   let admin;
   try { admin = await requireAdmin(); } catch { redirect("/admin/login"); }
   const f = fd(form);
-  const { value, error } = cleanKeyword({ keyword: f.keyword, intent: f.intent, targetType: f.targetType, targetPath: f.targetPath, category: f.category, country: f.country, place: f.place, status: f.status, notes: f.notes });
+  const extra = (await loadCountries(getDbFromEnv(getCloudflareContext().env))).map((c) => c.slug);
+  const { value, error } = cleanKeyword({ keyword: f.keyword, intent: f.intent, targetType: f.targetType, targetPath: f.targetPath, category: f.category, country: f.country, place: f.place, status: f.status, notes: f.notes }, extra);
   if (!value) redirect(`/admin/seo/keywords?error=${encodeURIComponent(error ?? "Check the form.")}`);
   const id = Number(f.id) || null;
   const db = getDbFromEnv(getCloudflareContext().env);

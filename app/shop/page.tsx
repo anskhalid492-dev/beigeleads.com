@@ -1,147 +1,124 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { DbBadge, Flag } from "@/components/shared/db-icon";
 import { Faq } from "@/components/shared/faq";
+import { GeoExplorer } from "@/components/shop/geo-explorer";
 import { ProductCard } from "@/components/shop/product-card";
+import { ShopCatalog } from "@/components/shop/shop-catalog";
+import { ShopHero } from "@/components/shop/shop-hero";
 import { Button } from "@/components/ui/button";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getCategories, getCountries, getProducts } from "@/lib/catalog";
-import { getDb } from "@/lib/db";
-import { allCoverage } from "@/lib/geo/store";
-import { customListHref } from "@/lib/search";
+import { getCategories } from "@/lib/catalog";
 import { parseSlugList, getPublicSettings } from "@/lib/settings/service";
-import { PAGE_SIZE, parseShopQuery, shopHref, shopProducts, SORTS } from "@/lib/shop";
+import { isFiltered, parseFilters, shopHref } from "@/lib/shop";
+import { loadShopData } from "@/lib/shop-data";
 
 export const dynamic = "force-dynamic";
 type SP = Promise<Record<string, string | string[] | undefined>>;
-const field = "h-11 rounded-xl border border-sand-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-purple-600";
 
 export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
-  const sp = await searchParams;
-  const q = parseShopQuery(sp);
-  const type = sp.type === "b2c" ? "b2c" : "b2b";
+  const f = parseFilters(await searchParams);
   // Filtered, searched, sorted and B2C views are thin or duplicate: noindex, canonical to the clean page. Plain pagination keeps its own canonical.
-  const filtered = !!(q.q || q.category || q.country || q.sort !== "relevance") || type === "b2c";
+  const filtered = isFiltered(f);
   return {
-    title: "Shop business contact databases",
-    description: "Browse ready-made business contact databases by industry, country, state and city. Masked samples, one-time payment, no account.",
-    alternates: { canonical: filtered ? "/shop" : shopHref({ page: q.page }) },
+    title: "Shop business contact databases by industry, country and city",
+    description: "Explore targeted business contact databases by industry, country, state and city. Preview a masked sample, pay once, own the list. No account.",
+    alternates: { canonical: filtered ? "/shop" : shopHref({ page: f.page }) },
     ...(filtered ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
+const TRUST = ["Pay once, own the list", "Masked sample on every list", "CSV, Excel or TXT", "No account needed"];
+
 export default async function ShopPage({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
-  const q = parseShopQuery(sp);
-  const type = sp.type === "b2c" ? "b2c" : "b2b";
+  const f = parseFilters(await searchParams);
   const { env } = getCloudflareContext();
   const featured = parseSlugList((await getPublicSettings(env)).featured?.industries.join(",") ?? "");
-  const all = getProducts();
+  const data = await loadShopData();
   const cats = getCategories();
-  const countries = getCountries();
-  const r = shopProducts(all, q, featured);
-  const filtering = !!(q.q || q.category || q.country);
-  const popular = shopProducts(all, { ...q, q: "", category: "", country: "", sort: "relevance", page: 1 }, featured).items.slice(0, 4);
-  const international = all.filter((p) => p.countrySlug !== "united-states");
-  const hasRealPrices = all.some((p) => !p.placeholderData);
-  const geo = await allCoverage(getDb());
-  const byId = new Map(geo.areas.map((a) => [a.id, a]));
-  const places = new Map<string, { name: string; href: string }>();
-  for (const cv of geo.coverage) {
-    const a = byId.get(cv.areaId);
-    const par = a?.parentId ? byId.get(a.parentId) : null;
-    if (!a || cv.recordCount <= 0 || !a.indexable || (a.parentId && !par)) continue;
-    const key = `${a.countrySlug}/${par?.slug ?? ""}/${a.slug}`;
-    if (!places.has(key)) places.set(key, { name: par ? `${a.name}, ${par.name}` : a.name, href: `/lists/${cv.categorySlug}/${a.countrySlug}/${par ? `${par.slug}/` : ""}${a.slug}` });
-  }
-  const regionLinks = [...places.values()].slice(0, 60);
-  const sortLabel: Record<(typeof SORTS)[number], string> = { relevance: "Relevance", availability: "Availability", "price-low": "Price: low to high", "price-high": "Price: high to low" };
-  const noMatchHref = q.q ? customListHref(q.q) : "/custom-list";
+  const productCats: Record<string, string[]> = {};
+  for (const p of data.products) { const l = (productCats[p.countrySlug] ??= []); if (!l.includes(p.categorySlug)) l.push(p.categorySlug); }
+  const initial = f;
 
-  const tab = (t: "b2b" | "b2c", label: string) => <Link href={t === "b2b" ? "/shop" : "/shop?type=b2c"} aria-current={type === t ? "page" : undefined} className={`rounded-full px-5 py-2.5 text-sm font-semibold ${type === t ? "bg-forest-900 text-sand-50" : "border border-sand-300 bg-white text-forest-900 hover:border-forest-900"}`}>{label}</Link>;
+  // Collections that would only repeat the catalog stay hidden until there is enough real inventory.
+  const showPopular = data.products.length > 6;
+  const popular = showPopular ? [...data.products].sort((a, b) => (featured.indexOf(a.categorySlug) + 1 || 999) - (featured.indexOf(b.categorySlug) + 1 || 999)).slice(0, 8) : [];
+  const international = data.products.filter((p) => p.countrySlug !== "united-states");
+  const cityTiles = data.tree.flatMap((c) => c.cities.flatMap((ct) => ct.cats.map((cat) => ({ key: `${c.slug}/${ct.regionSlug ?? ""}/${ct.slug}/${cat}`, cat, name: ct.name, code: c.code, href: `/lists/${cat}/${c.slug}/${ct.regionSlug ? `${ct.regionSlug}/` : ""}${ct.slug}` })))).slice(0, 12);
+  const catName = new Map(cats.map((c) => [c.slug, c.name]));
 
   return (
     <>
-      <Breadcrumbs items={[{ name: "Shop", href: "/shop" }]} />
-      <section className="mx-auto max-w-6xl px-4 pb-10 pt-2">
-        <h1 className="display text-5xl text-forest-900 sm:text-7xl">Find the database you need.</h1>
-        <p className="mt-4 max-w-2xl text-lg">Browse ready-made business contact databases by industry, country, state and city. Check a masked sample first, pay once, own the list.</p>
-        <form action="/shop" role="search" className="mt-7 flex max-w-2xl gap-3">
-          <label htmlFor="shop-q" className="sr-only">Search databases</label>
-          <input id="shop-q" name="q" defaultValue={q.q} placeholder="Search by industry or country, e.g. dentists" className={`${field} flex-1`} />
-          <Button type="submit" size="lg">Search</Button>
-        </form>
-        <div className="mt-6 flex flex-wrap gap-2" role="navigation" aria-label="Audience">{tab("b2b", "B2B databases")}{tab("b2c", "B2C databases")}</div>
-      </section>
+      <div className="mx-auto max-w-7xl px-4"><Breadcrumbs items={[{ name: "Shop", href: "/shop" }]} /></div>
+      <ShopHero audience={f.type} industries={data.industries} countries={data.countries} tree={data.tree} niches={data.niches.map((n) => ({ name: n.name, categoryName: n.categoryName }))} />
 
-      {type === "b2c" ? (
-        <section className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-3xl px-4">
+      {f.type === "b2c" ? (
+        <section className="py-14"><div className="mx-auto max-w-3xl px-4">
           <h2 className="display text-4xl text-forest-900">Consumer databases are not available yet.</h2>
-          <p className="mt-4">BeigeLeads currently provides business contact data only. We do not sell consumer contact lists. If you need one, tell us what you are looking for and we will tell you honestly what is possible.</p>
-          <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link href="/custom-list">Request a custom list</Link></Button><Button asChild variant="secondary" size="lg"><Link href="/shop">See B2B databases</Link></Button></div>
+          <p className="mt-4">BeigeLeads currently provides business contact data only. We do not sell consumer contact lists. If you need an audience segment, tell us what you are looking for and we will tell you honestly what is possible.</p>
+          <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button><Button asChild variant="secondary" size="lg"><Link href="/shop">Explore B2B Databases</Link></Button></div>
         </div></section>
       ) : (
         <>
-          <section className="border-t border-sand-200 py-10"><div className="mx-auto max-w-6xl px-4">
-            <form action="/shop" className="flex flex-wrap items-end gap-3">
-              {q.q && <input type="hidden" name="q" value={q.q} />}
-              <div><label htmlFor="f-c" className="mb-1 block text-xs font-bold text-forest-900">Industry</label><select id="f-c" name="category" defaultValue={q.category} className={field}><option value="">All industries</option>{cats.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select></div>
-              <div><label htmlFor="f-k" className="mb-1 block text-xs font-bold text-forest-900">Country</label><select id="f-k" name="country" defaultValue={q.country} className={field}><option value="">All countries</option>{countries.map((k) => <option key={k.slug} value={k.slug}>{k.name}</option>)}</select></div>
-              <div><label htmlFor="f-s" className="mb-1 block text-xs font-bold text-forest-900">Sort by</label><select id="f-s" name="sort" defaultValue={q.sort} className={field}>{SORTS.filter((s) => hasRealPrices || !s.startsWith("price")).map((s) => <option key={s} value={s}>{sortLabel[s]}</option>)}</select></div>
-              <Button type="submit" variant="secondary" size="lg">Apply</Button>
-              {filtering && <Link href="/shop" className="pb-3 text-sm font-semibold underline">Clear filters</Link>}
-            </form>
-            <h2 className="display mt-8 text-3xl text-forest-900">{filtering ? "Matching databases" : "All databases"}</h2>
-            {r.items.length ? (
-              <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{r.items.map((p) => <ProductCard key={p.slug} p={p} />)}</ul>
-            ) : (
-              <div className="mt-5 rounded-2xl border border-sand-300 bg-sand-100 p-6"><p className="font-semibold text-forest-900">We do not have a ready-made database for that yet.</p><p className="mt-1 text-sm">Describe what you need and we will tell you what is possible.</p><Button asChild className="mt-4"><Link href={noMatchHref}>Build my custom list</Link></Button></div>
-            )}
-            {r.pages > 1 && (
-              <nav aria-label="Pagination" className="mt-8 flex items-center justify-between text-sm">
-                <span>Page {r.page} of {r.pages} · {PAGE_SIZE} per page</span>
-                <span className="flex gap-2">
-                  {r.page > 1 && <Link rel="prev" href={shopHref({ ...q, page: r.page - 1 })} className="rounded-full border border-sand-300 px-4 py-1.5 font-semibold">Previous</Link>}
-                  {r.page < r.pages && <Link rel="next" href={shopHref({ ...q, page: r.page + 1 })} className="rounded-full border border-sand-300 px-4 py-1.5 font-semibold">Next</Link>}
-                </span>
-              </nav>
-            )}
-          </div></section>
+          <ul className="border-b border-sand-200 bg-sand-100"><li className="sr-only">Why buy here</li>
+            <div className="mx-auto flex max-w-7xl flex-wrap justify-center gap-x-8 gap-y-2 px-4 py-4 text-sm font-semibold text-forest-900">{TRUST.map((t) => <span key={t} className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-forest-500" aria-hidden />{t}</span>)}</div>
+          </ul>
 
-          {!filtering && popular.length > 0 && (
-            <section className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-6xl px-4"><h2 className="display text-4xl text-forest-900">Popular databases</h2><ul className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{popular.map((p) => <ProductCard key={p.slug} p={p} />)}</ul></div></section>
-          )}
-          {!filtering && international.length > 0 && (
-            <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-6xl px-4"><h2 className="display text-4xl text-forest-900">International databases</h2><ul className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{international.map((p) => <ProductCard key={p.slug} p={p} />)}</ul></div></section>
+          <ShopCatalog data={data} initial={initial} featured={featured} />
+
+          {popular.length > 0 && !isFiltered(f) && (
+            <section className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-7xl px-4">
+              <h2 className="display text-4xl text-forest-900">Popular business databases</h2>
+              <ul className="mt-6 flex snap-x gap-5 overflow-x-auto pb-4 [&>li]:w-[19rem] [&>li]:shrink-0 [&>li]:snap-start">{popular.map((p) => <ProductCard key={p.slug} p={p} />)}</ul>
+            </div></section>
           )}
 
-          <section id="industries" className="border-t border-sand-200 py-14"><div className="mx-auto max-w-6xl px-4">
+          <section id="industries" className="scroll-mt-24 border-t border-sand-200 py-14"><div className="mx-auto max-w-7xl px-4">
             <h2 className="display text-4xl text-forest-900">Browse by industry</h2>
-            <ul className="mt-6 flex flex-wrap gap-2">{cats.map((c) => <li key={c.slug}><Link href={`/lists/${c.slug}`} className="inline-flex rounded-full border border-forest-900 px-4 py-2 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">{c.name}</Link></li>)}</ul>
+            <p className="mt-2 max-w-2xl">Each industry page lists its countries, states and cities.</p>
+            <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {cats.map((c) => {
+                const niches = data.niches.filter((n) => n.category === c.slug);
+                return (
+                  <li key={c.slug} className="rounded-[1.4rem] border border-sand-300 bg-white p-6 transition hover:border-forest-500">
+                    <div className="flex items-center gap-4"><DbBadge category={c.slug} size="lg" /><div><h3 className="display text-2xl leading-tight text-forest-900"><Link href={`/lists/${c.slug}`} className="after:absolute after:inset-0 relative">{c.name}</Link></h3><p className="text-sm">{c.blurb}</p></div></div>
+                    {niches.length > 0 && <p className="mt-4 flex flex-wrap gap-1.5">{niches.slice(0, 6).map((n) => <Link key={n.name} href={`/custom-list?category=${c.slug}&categoryText=${encodeURIComponent(n.name)}`} className="relative z-10 rounded-full bg-sand-100 px-2.5 py-1 text-xs font-medium text-forest-900 hover:bg-purple-100">{n.name}</Link>)}</p>}
+                  </li>
+                );
+              })}
+            </ul>
           </div></section>
-          <section id="countries" className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-6xl px-4">
-            <h2 className="display text-4xl text-forest-900">Browse by country</h2>
-            <ul className="mt-6 flex flex-wrap gap-2">{countries.map((k) => <li key={k.slug}><Link href={shopHref({ country: k.slug })} className="inline-flex rounded-full border border-forest-900 px-4 py-2 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">{k.name}</Link></li>)}</ul>
-            <p className="mt-4 text-sm">More countries are added list by list. Need another one? <Link href="/custom-list" className="font-semibold underline">Request it</Link>.</p>
+
+          <section id="explore" className="scroll-mt-24 border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-7xl px-4">
+            <h2 className="display text-4xl text-forest-900">Explore by country, state and city</h2>
+            <p className="mt-2 max-w-2xl">Start with a country and narrow down. Only places where we have recorded real inventory are listed.</p>
+            <div className="mt-7"><GeoExplorer tree={data.tree} industries={data.industries} productCats={productCats} /></div>
           </div></section>
-          {regionLinks.length > 0 && (
-            <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-6xl px-4">
-              <h2 className="display text-4xl text-forest-900">Browse by state and city</h2>
-              <ul className="mt-6 flex flex-wrap gap-2">{regionLinks.map((p) => <li key={p.href}><Link href={p.href} className="inline-flex rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900 hover:border-forest-900">{p.name}</Link></li>)}</ul>
-              <p className="mt-4 text-sm">Only places where we have recorded real inventory are listed.</p>
+
+          {international.length > 0 && (
+            <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-7xl px-4"><h2 className="display text-4xl text-forest-900">International databases</h2><ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{international.map((p) => <ProductCard key={p.slug} p={p} />)}</ul></div></section>
+          )}
+
+          {cityTiles.length > 0 && (
+            <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-7xl px-4">
+              <h2 className="display text-4xl text-forest-900">City-specific contact lists</h2>
+              <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{cityTiles.map((t) => <li key={t.key}><Link href={t.href} className="flex items-center gap-3 rounded-2xl border border-sand-300 bg-white px-4 py-3 text-sm font-semibold text-forest-900 hover:border-forest-900"><Flag code={t.code} className="h-4 w-6" />{catName.get(t.cat)} in {t.name}</Link></li>)}</ul>
+              <p className="mt-4 text-sm">City pages are views of the national list for that industry.</p>
             </div></section>
           )}
         </>
       )}
 
-      <section className="border-t border-sand-200 bg-forest-900 py-14 text-sand-50"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4">
+      <section className="border-t border-sand-200 bg-forest-900 py-14 text-sand-50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4">
         <div><h2 className="display text-3xl">Can&apos;t find your list?</h2><p className="mt-1 text-sand-200">Describe the industry, place and size you need.</p></div>
-        <Button asChild size="lg"><Link href="/custom-list">Build my custom list</Link></Button>
+        <Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button>
       </div></section>
       <Faq heading="Shop questions" items={[
         ["Do I need an account?", "No. You pay once in crypto and receive a download link by email."],
         ["Can I check the data first?", "Yes. Every list page shows a masked sample, and you can request a free sample file by email."],
         ["Are consumer databases available?", "Not yet. BeigeLeads currently provides business contact data only."],
+        ["Is a city page a separate list?", "No. City and state pages are views of the national list for that industry. They are shown only where we have recorded real inventory."],
         ["What if my industry or country is missing?", "Request it on the custom list page. New industries and countries are added over time."],
       ]} />
     </>

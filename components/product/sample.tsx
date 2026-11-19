@@ -19,7 +19,7 @@ const masked = new Set(["address", "phone", "email"]);
 export function ProductSample({ product, rows }: { product: Product; rows: readonly ProductSampleRow[] }) {
   const cols = columns.filter((c) => product.fields.includes(c.field)); // only fields this list really has
   return (
-    <section className="bg-sand-100 py-20 lg:py-24">
+    <section id="sample" className="scroll-mt-20 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>

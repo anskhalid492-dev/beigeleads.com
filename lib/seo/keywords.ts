@@ -27,7 +27,7 @@ export type Brief = { h1: string; titleIdea: string; outline: string[]; question
 /** Deterministic content brief from the keyword and the real catalog. No statistics, no invented counts. */
 export function buildBrief(i: { keyword: string; intent: Intent; category?: string; country?: string; place?: string }): Brief {
   const c = i.category ? getCategory(i.category) : undefined;
-  const k = i.country ? getCountry(i.country) : undefined;
+  const k = i.country ? getCountry(i.country) ?? { slug: i.country, name: i.country.replace(/-/g, " ").replace(/\b\p{L}/gu, (m) => m.toUpperCase()), code: "" } : undefined;
   const kw = i.keyword.trim();
   const title = kw.replace(/\b\p{L}/gu, (m) => m.toUpperCase());
   const where = i.place || k?.name || "";
@@ -61,7 +61,8 @@ export async function listKeywords(db: Db, o: { q?: string; status?: string } = 
 
 export type KeywordInput = { keyword: string; intent: Intent; targetType: TargetType; targetPath: string; category: string; country: string; place: string; status: Status; notes: string };
 
-export function cleanKeyword(raw: Partial<Record<keyof KeywordInput, unknown>>): { value?: KeywordInput; error?: string } {
+/** `extraCountries` = admin-added country slugs (catalog_countries). */
+export function cleanKeyword(raw: Partial<Record<keyof KeywordInput, unknown>>, extraCountries: readonly string[] = []): { value?: KeywordInput; error?: string } {
   const s = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
   const keyword = s(raw.keyword, 120).toLowerCase().replace(/\s+/g, " ");
   if (keyword.length < 3) return { error: "Enter a keyword (at least 3 characters)." };
@@ -72,7 +73,7 @@ export function cleanKeyword(raw: Partial<Record<keyof KeywordInput, unknown>>):
   const category = s(raw.category, 60);
   if (category && !getCategory(category)) return { error: "Unknown industry." };
   const country = s(raw.country, 60);
-  if (country && !getCountry(country)) return { error: "Unknown country." };
+  if (country && !getCountry(country) && !extraCountries.includes(country)) return { error: "Unknown country." };
   const status = STATUSES.includes(raw.status as Status) ? (raw.status as Status) : "idea";
   return { value: { keyword, intent, targetType, targetPath, category, country, place: s(raw.place, 80), status, notes: s(raw.notes, 1000) } };
 }

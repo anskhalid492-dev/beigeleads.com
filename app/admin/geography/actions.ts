@@ -3,7 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireAdmin } from "@/lib/admin/require-admin";
-import { getCategories, getCountry } from "@/lib/catalog";
+import { getCategories } from "@/lib/catalog";
+import { findCountry } from "@/lib/catalog-extra";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { importGeo, parseImport } from "@/lib/geo/store";
 
@@ -16,13 +17,13 @@ export async function importGeoAction(_: ImportState, form: FormData): Promise<I
   const country = String(form.get("country") ?? "");
   const text = String(form.get("csv") ?? "").slice(0, 400_000);
   const dry = form.get("dry") === "1";
-  if (!getCountry(country)) return { ok: false, message: "Pick a country." };
   const { rows, errors } = parseImport(text, getCategories().map((c) => c.slug));
   if (errors.length) return { ok: false, message: "Nothing was imported. Fix these lines first:", errors };
   if (dry) return { ok: true, message: `The file is valid: ${rows.length} rows. Press Import to save them.` };
   try {
     const { env } = getCloudflareContext();
     const db = getDbFromEnv(env);
+    if (!(await findCountry(db, country))) return { ok: false, message: "Pick a country." };
     const rep = await importGeo(db, country, rows);
     await db.insert(schema.settingsAuditLog).values({ actor: admin.email, category: "geography", settingKey: country, newValue: `import: ${rep.regions} regions, ${rep.cities} cities, ${rep.coverage} counts` });
     revalidatePath("/admin/geography");

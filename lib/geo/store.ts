@@ -1,5 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { getCategories, getCategory, getCities, getCity, getCountries, getCountry } from "@/lib/catalog";
+import { getCategories, getCategory, getCities, getCity } from "@/lib/catalog";
+import { loadCountries } from "@/lib/catalog-extra";
 import type { getDbFromEnv } from "@/lib/db";
 import { schema } from "@/lib/db";
 import { parseImport, slugify, type ImportRow } from "./rules";
@@ -128,12 +129,13 @@ export async function geoSitemapPaths(db: Db): Promise<string[]> {
     const byId = new Map(areas.map((a) => [a.id, a]));
     const cov = await db.select().from(schema.geoCoverage).limit(10000);
     const out = new Set<string>();
+    const known = new Set((await loadCountries(db)).map((c) => c.slug));
     for (const r of cov) {
       const a = byId.get(r.areaId);
       if (!a || r.recordCount <= 0) continue;
       const par = a.parentId ? byId.get(a.parentId) : null;
       if (a.parentId && !par) continue;
-      if (!getCountry(a.countrySlug)) continue;
+      if (!known.has(a.countrySlug)) continue;
       out.add(`/lists/${r.categorySlug}/${a.countrySlug}/${par ? `${par.slug}/` : ""}${a.slug}`);
     }
     return [...out];
@@ -143,7 +145,7 @@ export async function geoSitemapPaths(db: Db): Promise<string[]> {
 /** Every geography page the owner may write copy for: each industry's country page, plus each place with recorded inventory. */
 export async function geoPageList(db: Db): Promise<{ path: string; label: string }[]> {
   const out: { path: string; label: string }[] = [];
-  for (const c of getCategories()) for (const k of getCountries()) out.push({ path: `/lists/${c.slug}/${k.slug}`, label: `${c.name} in ${k.name}` });
+  for (const c of getCategories()) for (const k of await loadCountries(db)) out.push({ path: `/lists/${c.slug}/${k.slug}`, label: `${c.name} in ${k.name}` });
   const g = await allCoverage(db);
   const byId = new Map(g.areas.map((a) => [a.id, a]));
   for (const r of g.coverage) {
