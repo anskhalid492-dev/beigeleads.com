@@ -627,3 +627,10 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Editor: `app/admin/blog/[id]/edit/featured-image.tsx` (drag-and-drop, upload with progress via XHR, library, replace, remove, focal point click, alt/caption on the article, title/description/attribution saved to the library, SEO warning when alt is empty, 3 live previews) and `cropper.tsx` (16:9 1600x900, 1.91:1 1200x628 = social image, square 1080; zoom, drag, arrow keys; output WebP/JPEG made in the BROWSER, uploaded as a new library item with `original_id`; repeat crops start from the original). No server-side resizing or srcset (still no free option on Workers).
 - Public: cards, featured slot and article hero apply the focal point; article shows caption + attribution as a figcaption. No image = existing brand gradient on cards, no hero block.
 - Tests: `tests/featured-image-e2e.test.ts`; other blog e2e tests now apply migration 0012 too. Not browser-tested: the editor panel and cropper behind Access.
+
+## 51. SEO brief Phase 3: editor tabs (Nov 2026)
+
+- Migration `0013_blog_seo.sql` (MUST be run in D1 before deploy): `blog_posts.secondary_keywords`.
+- Blog editor sidebar is now five tabs: Content (excerpt, related), Featured Image, SEO (search preview, on-page score, SEO title/meta/slug with "Suggest", focus + secondary keywords, canonical, noindex, checks, internal link ideas), Social (Facebook/LinkedIn and X previews, social title/description/image, fallback to featured image), Publishing (author, category, tags, dates, schedule, status actions). Top bar Preview/Save/Publish unchanged.
+- `lib/blog/seo.ts`: `onPageScore` (share of passing checks, labelled "not a ranking prediction"), deterministic `suggestSeoTitle/suggestMeta/suggestSlug`; Suggest buttons ask before replacing existing text. Changing a live slug shows a warning (redirect manager comes in Phase 5).
+- Not browser-tested (behind Access).

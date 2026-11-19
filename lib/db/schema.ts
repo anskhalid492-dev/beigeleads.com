@@ -395,6 +395,8 @@ export const blogPosts = sqliteTable(
     ogDescription: text("og_description").notNull().default(""),
     ogImage: text("og_image"),
     focusKeyword: text("focus_keyword").notNull().default(""),
+    /** Comma-separated (migration 0013). */
+    secondaryKeywords: text("secondary_keywords").notNull().default(""),
     relatedJson: text("related_json").notNull().default("[]"),
     publishedAt: integer("published_at", { mode: "timestamp" }),
     scheduledAt: integer("scheduled_at", { mode: "timestamp" }),

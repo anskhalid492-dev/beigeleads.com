@@ -29,7 +29,7 @@ export default async function EditPage({ params }: PageProps<"/admin/blog/[id]/e
     fields: {
       title: r.title, slug: r.slug, excerpt: r.excerpt, categoryId: r.categoryId, author: r.author.includes("@") ? "" : r.author, authorId: r.authorId, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt, featuredCaption: r.featuredCaption, featuredFocalX: r.featuredFocalX, featuredFocalY: r.featuredFocalY,
       seoTitle: r.seoTitle, metaDescription: r.metaDescription, canonicalUrl: r.canonicalUrl, noindex: r.noindex, ogTitle: r.ogTitle, ogDescription: r.ogDescription, ogImage: r.ogImage,
-      focusKeyword: r.focusKeyword, related: JSON.parse(r.relatedJson || "[]") as number[], tagIds: post.tagIds, scheduledAt: r.scheduledAt?.getTime() ?? null,
+      focusKeyword: r.focusKeyword, secondaryKeywords: r.secondaryKeywords, related: JSON.parse(r.relatedJson || "[]") as number[], tagIds: post.tagIds, scheduledAt: r.scheduledAt?.getTime() ?? null,
     },
   };
   return <Editor role={user.role} post={initial} authors={authors} cats={cats.map((c) => ({ id: c.id, name: c.name }))} tags={tags.map((t) => ({ id: t.id, name: t.name }))} options={options} targets={internalTargets()} />;

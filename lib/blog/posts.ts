@@ -11,7 +11,7 @@ export type Post = typeof schema.blogPosts.$inferSelect;
 export type PostInput = {
   title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null;
   featuredImage: string | null; featuredAlt: string; featuredCaption?: string; featuredFocalX?: number; featuredFocalY?: number; seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean;
-  ogTitle: string; ogDescription: string; ogImage: string | null; focusKeyword: string;
+  ogTitle: string; ogDescription: string; ogImage: string | null; focusKeyword: string; secondaryKeywords?: string;
   related: number[]; tagIds: number[]; scheduledAt: number | null; doc: unknown;
 };
 
@@ -91,7 +91,7 @@ export async function savePost(env: Env, actor: string, id: number, input: PostI
     featuredImage: mediaPath(input.featuredImage), featuredAlt: s(input.featuredAlt, 300), featuredCaption: s(input.featuredCaption, 300), featuredFocalX: pct(input.featuredFocalX), featuredFocalY: pct(input.featuredFocalY), readingMinutes: readingMinutes(doc),
     searchText: text.replace(/\s+/g, " ").slice(0, 3000),
     seoTitle: s(input.seoTitle, 200), metaDescription: s(input.metaDescription, 400), canonicalUrl: url(input.canonicalUrl), noindex: !!input.noindex,
-    ogTitle: s(input.ogTitle, 200), ogDescription: s(input.ogDescription, 400), ogImage: mediaPath(input.ogImage), focusKeyword: s(input.focusKeyword, 100),
+    ogTitle: s(input.ogTitle, 200), ogDescription: s(input.ogDescription, 400), ogImage: mediaPath(input.ogImage), focusKeyword: s(input.focusKeyword, 100), secondaryKeywords: s(input.secondaryKeywords, 300),
     relatedJson: JSON.stringify(input.related.filter((n) => Number.isInteger(n) && n !== id).slice(0, 6)),
     scheduledAt, version: sql`${t.version} + 1`, updatedAt: new Date(), updatedBy: actor,
   }).where(and(eq(t.id, id), eq(t.version, expectedVersion))).returning({ version: t.version, updatedAt: t.updatedAt, status: t.status });

@@ -12,9 +12,10 @@ import { ArticleBody } from "@/components/blog/render";
 import { editorExtensions } from "@/components/blog/extensions";
 import { uploadImage } from "@/lib/blog/upload-client";
 import { cleanDoc, embedUrl, readingMinutes, slugifyText, wordCount, type DocNode } from "@/lib/blog/doc";
-import { analyzeSeo, META_RANGE, SEO_TITLE_RANGE, suggestLinks, type InternalTarget } from "@/lib/blog/seo";
+import { analyzeSeo, onPageScore, suggestSeoTitle, suggestMeta, suggestSlug, META_RANGE, SEO_TITLE_RANGE, suggestLinks, type InternalTarget } from "@/lib/blog/seo";
 import { saveAction, transitionAction } from "../../actions";
 import { FeaturedImage } from "./featured-image";
+import { SocialPreviews } from "./social-preview";
 import { MediaPicker, type Picked } from "../../media-picker";
 import { AuthorPicker, type AuthorOption } from "./author-picker";
 
@@ -22,7 +23,7 @@ type Status = "draft" | "scheduled" | "published" | "archived";
 export type Fields = {
   title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null; featuredImage: string | null; featuredAlt: string; featuredCaption: string; featuredFocalX: number; featuredFocalY: number;
   seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean; ogTitle: string; ogDescription: string; ogImage: string | null;
-  focusKeyword: string; related: number[]; tagIds: number[]; scheduledAt: number | null;
+  focusKeyword: string; secondaryKeywords: string; related: number[]; tagIds: number[]; scheduledAt: number | null;
 };
 export type EditorPost = { id: number; version: number; status: Status; updatedAt: number; publishedAt: number | null; doc: DocNode; fields: Fields };
 type Save = "saved" | "dirty" | "saving" | "failed";
@@ -43,7 +44,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
   const [savedAt, setSavedAt] = useState<number>(post.updatedAt);
   const [msg, setMsg] = useState("");
   const [conflict, setConflict] = useState(false);
-  const [tab, setTab] = useState<"publish" | "details" | "seo">("publish");
+  const [tab, setTab] = useState<"content" | "image" | "seo" | "social" | "publish">("content");
   const [slugTouched, setSlugTouched] = useState(post.status !== "draft");
   const [dialog, setDialog] = useState<null | "link" | "video" | "image" | "feature" | "og" | "preview">(null);
   const [recover, setRecover] = useState<null | { at: number; fields: Fields; doc: DocNode }>(null);
@@ -174,7 +175,8 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
   }, [editor, f, save]);
 
   const words = wordCount(analysisDoc);
-  const checks = useMemo(() => analyzeSeo({ title: f.title, slug: f.slug, seoTitle: f.seoTitle, metaDescription: f.metaDescription, focusKeyword: f.focusKeyword, excerpt: f.excerpt, doc: analysisDoc, targets }), [f.title, f.slug, f.seoTitle, f.metaDescription, f.focusKeyword, f.excerpt, analysisDoc, targets]);
+  const checks = useMemo(() => analyzeSeo({ title: f.title, slug: f.slug, seoTitle: f.seoTitle, metaDescription: f.metaDescription, focusKeyword: f.focusKeyword, excerpt: f.excerpt, doc: analysisDoc, targets, secondaryKeywords: f.secondaryKeywords, featuredImage: f.featuredImage, featuredAlt: f.featuredAlt, canonicalUrl: f.canonicalUrl }), [f.title, f.slug, f.seoTitle, f.metaDescription, f.focusKeyword, f.excerpt, analysisDoc, targets, f.secondaryKeywords, f.featuredImage, f.featuredAlt, f.canonicalUrl]);
+  const score = onPageScore(checks);
   const suggestions = useMemo(() => suggestLinks(analysisDoc, targets, 6), [analysisDoc, targets]);
 
   const onTitle = (v: string) => { update("title", v); if (!slugTouched) setF((p) => ({ ...p, slug: slugifyText(v) })); };
@@ -194,6 +196,14 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
   };
   const ask = (text: string, run: () => void) => setConfirm({ text, run });
 
+  /** Fills a field with a deterministic suggestion; asks before replacing text the author already wrote. */
+  const suggestInto = (k: "seoTitle" | "metaDescription" | "slug", v: string) => {
+    if (!v) return;
+    const cur = f[k];
+    if (cur && cur !== v && !window.confirm("Replace the current value with the suggestion?")) return;
+    if (k === "slug") setSlugTouched(true);
+    update(k, v);
+  };
   const insertLinkSuggestion = (t: InternalTarget) => {
     if (!editor) return;
     const kws = t.keywords.filter((k) => k.length > 3).map((k) => k.toLowerCase());
@@ -248,14 +258,103 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
         </div>
 
         <aside className="min-w-0 space-y-4">
-          <div role="tablist" aria-label="Article settings" className="grid grid-cols-3 rounded-xl bg-sand-100 p-1 text-sm font-semibold">
-            {([["publish", "Publish"], ["details", "Details"], ["seo", "SEO"]] as const).map(([k, l]) => (
-              <button key={k} role="tab" type="button" aria-selected={tab === k} onClick={() => setTab(k)} className={`rounded-lg px-2 py-1.5 ${tab === k ? "bg-white text-forest-900 shadow-sm" : ""}`}>{l}</button>
+          <div role="tablist" aria-label="Article settings" className="grid grid-cols-5 rounded-xl bg-sand-100 p-1 text-xs font-semibold sm:text-sm">
+            {([["content", "Content", "Content"], ["image", "Image", "Featured Image"], ["seo", "SEO", "SEO"], ["social", "Social", "Social Preview"], ["publish", "Publish", "Publishing"]] as const).map(([k, l, full]) => (
+              <button key={k} role="tab" type="button" aria-label={full} title={full} aria-selected={tab === k} onClick={() => setTab(k)} className={`rounded-lg px-1 py-1.5 ${tab === k ? "bg-white text-forest-900 shadow-sm" : ""}`}>{l}</button>
             ))}
           </div>
 
+          {tab === "content" && (
+            <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
+              <div><label htmlFor="excerpt" className={label}>Excerpt</label><textarea id="excerpt" rows={3} maxLength={500} value={f.excerpt} onChange={(e) => update("excerpt", e.target.value)} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /><p className="mt-1 text-xs">Shown on blog cards. {f.excerpt.length}/500</p></div>
+              <fieldset><legend className={label}>Related articles (up to 6)</legend>
+                {options.length === 0 ? <p className="text-xs">No other articles yet. If none are chosen, related articles are picked by category.</p> : (
+                  <ul className="max-h-48 space-y-1 overflow-y-auto text-sm">{options.map((o) => { const on = f.related.includes(o.id); return <li key={o.id}><label className="flex items-start gap-2"><input type="checkbox" checked={on} disabled={!on && f.related.length >= 6} onChange={() => update("related", on ? f.related.filter((x) => x !== o.id) : [...f.related, o.id])} className="mt-1" /><span>{o.title || "Untitled"}</span></label></li>; })}</ul>
+                )}
+              </fieldset>
+            </section>
+          )}
+
+          {tab === "image" && (
+            <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
+              <FeaturedImage f={f} update={(k, v) => update(k as keyof Fields, v as never)} onPickLibrary={() => setDialog("feature")} />
+            </section>
+          )}
+
+          {tab === "seo" && (
+            <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
+              <div className="rounded-xl border border-sand-200 p-3" aria-label="Search result preview">
+                <p className="truncate text-xs">beigeleads.com › blog › {f.slug}</p>
+                <p className="mt-0.5 line-clamp-2 text-base font-semibold text-[#1a0dab]">{pageTitle || "Untitled"}</p>
+                <p className="mt-0.5 line-clamp-2 text-sm">{f.metaDescription || f.excerpt || "No description yet."}</p>
+              </div>
+              <div className="rounded-xl bg-sand-100 p-3" role="group" aria-label="On-page optimization score">
+                <div className="flex items-baseline justify-between"><span className="text-sm font-bold text-forest-900">On-page optimization score</span><span className="text-xl font-bold text-forest-900">{score}/100</span></div>
+                <div role="progressbar" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100} aria-label="On-page optimization score" className="mt-2 h-2 overflow-hidden rounded-full bg-sand-200"><div className="h-full rounded-full bg-forest-500" style={{ width: `${score}%` }} /></div>
+                <p className="mt-2 text-xs">Share of the checks below that pass. It is not a Google ranking prediction and guarantees no traffic.</p>
+              </div>
+              <div>
+                <div className="flex items-center justify-between"><label htmlFor="st" className={label}>SEO title</label><button type="button" className="text-xs font-semibold underline" onClick={() => suggestInto("seoTitle", suggestSeoTitle(f.title))}>Suggest</button></div>
+                <input id="st" value={f.seoTitle} onChange={(e) => update("seoTitle", e.target.value)} placeholder={f.title} className={input} /><Counter n={(f.seoTitle || f.title).length} range={SEO_TITLE_RANGE} />
+              </div>
+              <div>
+                <div className="flex items-center justify-between"><label htmlFor="md" className={label}>Meta description</label><button type="button" className="text-xs font-semibold underline" onClick={() => suggestInto("metaDescription", suggestMeta(f.excerpt, analysisDoc))}>Suggest</button></div>
+                <textarea id="md" rows={3} value={f.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /><Counter n={f.metaDescription.length} range={META_RANGE} />
+              </div>
+              <div>
+                <div className="flex items-center justify-between"><label htmlFor="slug" className={label}>URL slug</label><button type="button" className="text-xs font-semibold underline" onClick={() => suggestInto("slug", suggestSlug(f.title))}>Suggest</button></div>
+                <input id="slug" value={f.slug} onChange={(e) => { setSlugTouched(true); update("slug", slugifyText(e.target.value)); }} className={input} /><p className="mt-1 break-all text-xs">beigeleads.com/blog/{f.slug || "…"}</p>
+                {status === "published" && f.slug !== post.fields.slug && <p role="status" className="mt-1 text-xs font-semibold text-amber-900">This article is live. Changing the slug breaks the old address until a redirect exists. Redirects arrive with the redirect manager; until then, avoid changing live slugs.</p>}
+              </div>
+              <div><label htmlFor="kw" className={label}>Focus keyword</label><input id="kw" value={f.focusKeyword} onChange={(e) => update("focusKeyword", e.target.value)} className={input} /></div>
+              <div><label htmlFor="kw2" className={label}>Secondary keywords</label><input id="kw2" value={f.secondaryKeywords} onChange={(e) => update("secondaryKeywords", e.target.value)} placeholder="Separate with commas" className={input} maxLength={300} /></div>
+              <div><label htmlFor="cu" className={label}>Canonical URL</label><input id="cu" value={f.canonicalUrl} onChange={(e) => update("canonicalUrl", e.target.value)} placeholder="Leave empty to use this article's own URL" className={input} /></div>
+              <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={f.noindex} onChange={(e) => update("noindex", e.target.checked)} className="mt-1" /><span>Hide from search engines (noindex). Also removes it from the sitemap.</span></label>
+              <p className="text-xs">The whole site is still hidden from search engines until launch. This setting cannot override that.</p>
+              <div>
+                <h3 className="mb-2 text-sm font-bold text-forest-900">Checks</h3>
+                <ul className="space-y-1.5 text-sm">{checks.map((c, i) => <li key={i} className="flex gap-2"><span aria-hidden className={`mt-1.5 size-2 shrink-0 rounded-full ${c.level === "good" ? "bg-forest-500" : c.level === "warn" ? "bg-amber-500" : "bg-sand-300"}`} /><span><span className="sr-only">{c.level}: </span>{c.text}</span></li>)}</ul>
+                <p className="mt-2 text-xs">These are writing aids, not a ranking score.</p>
+              </div>
+              <div>
+                <h3 className="mb-2 text-sm font-bold text-forest-900">Internal link suggestions</h3>
+                {suggestions.length === 0 ? <p className="text-xs">No suggestions. They appear when your text mentions a BeigeLeads page that is not linked yet.</p> : (
+                  <ul className="space-y-2">{suggestions.map((s) => <li key={s.url} className="flex items-center justify-between gap-2 text-sm"><span className="min-w-0"><span className="block truncate font-semibold">{s.title}</span><span className="block truncate text-xs">{s.url}</span></span><Button size="sm" variant="secondary" onClick={() => insertLinkSuggestion(s)}>Link it</Button></li>)}</ul>
+                )}
+              </div>
+              <p className="text-xs">Article and breadcrumb structured data (JSON-LD) and the sitemap entry are generated automatically when the article is live.</p>
+            </section>
+          )}
+
+          {tab === "social" && (
+            <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
+              <SocialPreviews title={f.ogTitle || pageTitle} description={f.ogDescription || f.metaDescription || f.excerpt} image={f.ogImage ?? f.featuredImage} focal={`${f.featuredFocalX}% ${f.featuredFocalY}%`} />
+              <div><label htmlFor="ogt" className={label}>Social title</label><input id="ogt" value={f.ogTitle} onChange={(e) => update("ogTitle", e.target.value)} placeholder={pageTitle} className={input} /><p className="mt-1 text-xs">Empty uses the SEO title.</p></div>
+              <div><label htmlFor="ogd" className={label}>Social description</label><textarea id="ogd" rows={2} value={f.ogDescription} onChange={(e) => update("ogDescription", e.target.value)} placeholder={f.metaDescription} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /><p className="mt-1 text-xs">Empty uses the meta description.</p></div>
+              <div>
+                <p className={label}>Social image</p>
+                {f.ogImage ? <div className="flex items-center gap-3">{ }<img src={f.ogImage} alt="" className="h-14 w-24 rounded-lg object-cover" /><Button size="sm" variant="secondary" onClick={() => setDialog("og")}>Change</Button><Button size="sm" variant="secondary" onClick={() => update("ogImage", null)}>Remove</Button></div> : <Button size="sm" variant="secondary" onClick={() => setDialog("og")}>Choose image</Button>}
+                <p className="mt-1 text-xs">Empty uses the featured image. To make a 1.91:1 social crop, open the Image tab, press Crop and choose 1.91:1 social.</p>
+              </div>
+            </section>
+          )}
+
           {tab === "publish" && (
             <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
+              <AuthorPicker authors={authors} authorId={f.authorId} legacyName={f.author} canCreate={role === "admin"}
+                onPick={(a) => { setF((p) => ({ ...p, authorId: a?.id ?? null, author: a ? a.name : "" })); touch(); }}
+                onLegacy={(n) => update("author", n)} />
+              <div><label htmlFor="cat" className={label}>Category</label><select id="cat" value={f.categoryId ?? ""} onChange={(e) => update("categoryId", e.target.value ? Number(e.target.value) : null)} className={input}><option value="">No category</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>{cats.length === 0 && <p className="mt-1 text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create a category</Link> first.</p>}</div>
+              <fieldset><legend className={label}>Tags</legend>
+                {tags.length === 0 ? <p className="text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create tags</Link> to use them here.</p> : (
+                  <div className="flex flex-wrap gap-2">{tags.map((t) => { const on = f.tagIds.includes(t.id); return <button key={t.id} type="button" aria-pressed={on} onClick={() => update("tagIds", on ? f.tagIds.filter((x) => x !== t.id) : [...f.tagIds, t.id])} className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? "border-forest-700 bg-forest-100 text-forest-900" : "border-sand-300"}`}>{t.name}</button>; })}</div>
+                )}
+              </fieldset>
+              <dl className="grid grid-cols-2 gap-2 text-xs">
+                <div><dt className="font-bold text-forest-900">First published</dt><dd>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "Not yet"}</dd></div>
+                <div><dt className="font-bold text-forest-900">Last modified</dt><dd>{new Date(savedAt).toLocaleString()}</dd></div>
+              </dl>
+
               <p className="text-sm">Status: <strong>{status}</strong>{post.publishedAt ? ` · first published ${new Date(post.publishedAt).toLocaleDateString()}` : ""}</p>
               {role === "editor" ? <p className="text-sm">You can write and save this draft. An admin reviews and publishes it.</p> : <>
               <div>
@@ -272,66 +371,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
               <p className="text-xs">Scheduled articles are published by a job that runs every minute. They are shown from the scheduled time even if the job is late.</p>
               </>}
               <Link href={`/admin/blog/${post.id}/revisions`} className="text-sm font-semibold underline">Revision history</Link>
-            </section>
-          )}
-
-          {tab === "details" && (
-            <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
-              <div><label htmlFor="slug" className={label}>URL slug</label><input id="slug" value={f.slug} onChange={(e) => { setSlugTouched(true); update("slug", slugifyText(e.target.value)); }} className={input} /><p className="mt-1 break-all text-xs">beigeleads.com/blog/{f.slug || "…"}</p></div>
-              <div><label htmlFor="excerpt" className={label}>Excerpt</label><textarea id="excerpt" rows={3} maxLength={500} value={f.excerpt} onChange={(e) => update("excerpt", e.target.value)} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /><p className="mt-1 text-xs">Shown on blog cards. {f.excerpt.length}/500</p></div>
-              <AuthorPicker authors={authors} authorId={f.authorId} legacyName={f.author} canCreate={role === "admin"}
-                onPick={(a) => { setF((p) => ({ ...p, authorId: a?.id ?? null, author: a ? a.name : "" })); touch(); }}
-                onLegacy={(n) => update("author", n)} />
-              <div><label htmlFor="cat" className={label}>Category</label><select id="cat" value={f.categoryId ?? ""} onChange={(e) => update("categoryId", e.target.value ? Number(e.target.value) : null)} className={input}><option value="">No category</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>{cats.length === 0 && <p className="mt-1 text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create a category</Link> first.</p>}</div>
-              <fieldset><legend className={label}>Tags</legend>
-                {tags.length === 0 ? <p className="text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create tags</Link> to use them here.</p> : (
-                  <div className="flex flex-wrap gap-2">{tags.map((t) => { const on = f.tagIds.includes(t.id); return <button key={t.id} type="button" aria-pressed={on} onClick={() => update("tagIds", on ? f.tagIds.filter((x) => x !== t.id) : [...f.tagIds, t.id])} className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? "border-forest-700 bg-forest-100 text-forest-900" : "border-sand-300"}`}>{t.name}</button>; })}</div>
-                )}
-              </fieldset>
-              <div>
-                <p className={label}>Featured image</p>
-                <FeaturedImage f={f} update={(k, v) => update(k as keyof Fields, v as never)} onPickLibrary={() => setDialog("feature")} />
-              </div>
-              <fieldset><legend className={label}>Related articles (up to 6)</legend>
-                {options.length === 0 ? <p className="text-xs">No other articles yet. If none are chosen, related articles are picked by category.</p> : (
-                  <ul className="max-h-48 space-y-1 overflow-y-auto text-sm">{options.map((o) => { const on = f.related.includes(o.id); return <li key={o.id}><label className="flex items-start gap-2"><input type="checkbox" checked={on} disabled={!on && f.related.length >= 6} onChange={() => update("related", on ? f.related.filter((x) => x !== o.id) : [...f.related, o.id])} className="mt-1" /><span>{o.title || "Untitled"}</span></label></li>; })}</ul>
-                )}
-              </fieldset>
-            </section>
-          )}
-
-          {tab === "seo" && (
-            <section className="space-y-4 rounded-2xl border border-sand-200 bg-white p-4">
-              <div className="rounded-xl border border-sand-200 p-3" aria-label="Search result preview">
-                <p className="truncate text-xs">beigeleads.com › blog › {f.slug}</p>
-                <p className="mt-0.5 line-clamp-2 text-base font-semibold text-[#1a0dab]">{pageTitle || "Untitled"}</p>
-                <p className="mt-0.5 line-clamp-2 text-sm">{f.metaDescription || f.excerpt || "No description yet."}</p>
-              </div>
-              <div><label htmlFor="st" className={label}>SEO title</label><input id="st" value={f.seoTitle} onChange={(e) => update("seoTitle", e.target.value)} placeholder={f.title} className={input} /><Counter n={(f.seoTitle || f.title).length} range={SEO_TITLE_RANGE} /></div>
-              <div><label htmlFor="md" className={label}>Meta description</label><textarea id="md" rows={3} value={f.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /><Counter n={f.metaDescription.length} range={META_RANGE} /></div>
-              <div><label htmlFor="kw" className={label}>Focus keyword</label><input id="kw" value={f.focusKeyword} onChange={(e) => update("focusKeyword", e.target.value)} className={input} /></div>
-              <div><label htmlFor="cu" className={label}>Canonical URL</label><input id="cu" value={f.canonicalUrl} onChange={(e) => update("canonicalUrl", e.target.value)} placeholder="Leave empty to use this article's own URL" className={input} /></div>
-              <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={f.noindex} onChange={(e) => update("noindex", e.target.checked)} className="mt-1" /><span>Hide from search engines (noindex). Also removes it from the sitemap.</span></label>
-              <details className="rounded-xl border border-sand-200 p-3"><summary className="cursor-pointer text-sm font-semibold">Social sharing (Open Graph)</summary>
-                <div className="mt-3 space-y-3">
-                  <div><label htmlFor="ogt" className={label}>OG title</label><input id="ogt" value={f.ogTitle} onChange={(e) => update("ogTitle", e.target.value)} placeholder={pageTitle} className={input} /></div>
-                  <div><label htmlFor="ogd" className={label}>OG description</label><textarea id="ogd" rows={2} value={f.ogDescription} onChange={(e) => update("ogDescription", e.target.value)} className="w-full rounded-xl border border-sand-300 p-3 text-sm" /></div>
-                  <div><p className={label}>OG image</p>{f.ogImage ? <div className="flex items-center gap-3">{ }<img src={f.ogImage} alt="" className="h-14 w-24 rounded-lg object-cover" /><Button size="sm" variant="secondary" onClick={() => update("ogImage", null)}>Remove</Button></div> : <Button size="sm" variant="secondary" onClick={() => setDialog("og")}>Choose image</Button>}<p className="mt-1 text-xs">Empty uses the featured image.</p></div>
-                </div>
-              </details>
-              <div>
-                <h3 className="mb-2 text-sm font-bold text-forest-900">Checks</h3>
-                <ul className="space-y-1.5 text-sm">{checks.map((c, i) => <li key={i} className="flex gap-2"><span aria-hidden className={`mt-1.5 size-2 shrink-0 rounded-full ${c.level === "good" ? "bg-forest-500" : c.level === "warn" ? "bg-amber-500" : "bg-sand-300"}`} /><span><span className="sr-only">{c.level}: </span>{c.text}</span></li>)}</ul>
-                <p className="mt-2 text-xs">These are writing aids, not a ranking score.</p>
-              </div>
-              <div>
-                <h3 className="mb-2 text-sm font-bold text-forest-900">Internal link suggestions</h3>
-                {suggestions.length === 0 ? <p className="text-xs">No suggestions. They appear when your text mentions a BeigeLeads page that is not linked yet.</p> : (
-                  <ul className="space-y-2">{suggestions.map((s) => <li key={s.url} className="flex items-center justify-between gap-2 text-sm"><span className="min-w-0"><span className="block truncate font-semibold">{s.title}</span><span className="block truncate text-xs">{s.url}</span></span><Button size="sm" variant="secondary" onClick={() => insertLinkSuggestion(s)}>Link it</Button></li>)}</ul>
-                )}
-              </div>
-              <p className="text-xs">Article and breadcrumb structured data (JSON-LD) and the sitemap entry are generated automatically when the article is live.</p>
-            </section>
+                        </section>
           )}
         </aside>
       </div>
