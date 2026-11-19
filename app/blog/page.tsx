@@ -71,7 +71,7 @@ export default async function BlogIndex(props: PageProps<"/blog">) {
               <article className="mt-10 grid overflow-hidden rounded-3xl border border-sand-200 bg-white lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
                 <Link href={`/blog/${featured.slug}`} tabIndex={-1} aria-hidden className="block">
                   {featured.featuredImage ? (
-                    <img src={featured.featuredImage} alt="" className="aspect-[16/10] h-full w-full object-cover lg:aspect-auto" />
+                    <img src={featured.featuredImage} alt="" style={{ objectPosition: `${featured.focalX}% ${featured.focalY}%` }} className="aspect-[16/10] h-full w-full object-cover lg:aspect-auto" />
                   ) : <div className="aspect-[16/10] h-full bg-gradient-to-br from-forest-100 to-sand-200 lg:aspect-auto" />}
                 </Link>
                 <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">

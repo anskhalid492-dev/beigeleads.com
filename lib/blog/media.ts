@@ -4,7 +4,7 @@ import { BlogError } from "./taxonomy";
 
 type Env = CloudflareEnv;
 export const MAX_UPLOAD = 5 * 1024 * 1024;
-const TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" } as const;
+const TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/avif": "avif" } as const;
 export type AllowedMime = keyof typeof TYPES;
 
 /** The file type is decided from the file's own bytes, never from the name or the browser's claim. SVG is refused on purpose (it can carry scripts). */
@@ -13,6 +13,7 @@ export function sniff(b: Uint8Array): AllowedMime | null {
   if (b.length > 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image/png";
   if (b.length > 12 && String.fromCharCode(...b.slice(0, 4)) === "RIFF" && String.fromCharCode(...b.slice(8, 12)) === "WEBP") return "image/webp";
   if (b.length > 6 && String.fromCharCode(...b.slice(0, 4)) === "GIF8") return "image/gif";
+  if (b.length > 16 && String.fromCharCode(...b.slice(4, 8)) === "ftyp" && ["avif", "avis"].includes(String.fromCharCode(...b.slice(8, 12)))) return "image/avif";
   return null;
 }
 
@@ -31,6 +32,12 @@ export function dimensions(b: Uint8Array, mime: AllowedMime): { width: number; h
       }
       return null;
     }
+    if (mime === "image/avif") {
+      // The image size sits in the "ispe" box near the start of the file.
+      const head = b.subarray(0, Math.min(b.length, 4096));
+      for (let i = 4; i + 16 < head.length; i++) if (head[i] === 0x69 && head[i + 1] === 0x73 && head[i + 2] === 0x70 && head[i + 3] === 0x65) return { width: dv.getUint32(i + 8), height: dv.getUint32(i + 12) };
+      return null;
+    }
     const chunk = String.fromCharCode(...b.slice(12, 16));
     if (chunk === "VP8X") return { width: 1 + (b[24] | (b[25] << 8) | (b[26] << 16)), height: 1 + (b[27] | (b[28] << 8) | (b[29] << 16)) };
     if (chunk === "VP8 ") return { width: dv.getUint16(26, true) & 0x3fff, height: dv.getUint16(28, true) & 0x3fff };
@@ -41,16 +48,27 @@ export function dimensions(b: Uint8Array, mime: AllowedMime): { width: number; h
 
 export const safeFilename = (name: string) => name.replace(/\.[^.]*$/, "").normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").toLowerCase().slice(0, 60) || "image";
 
-export async function saveUpload(env: Env, actor: string, file: { name: string; bytes: Uint8Array }) {
+export const MIN_WIDTH = 400;
+export const MAX_SIDE = 8000;
+
+/** Rejects images that are unreadable, tiny or absurdly large. Unknown dimensions (rare formats) are allowed through. */
+export function checkDimensions(d: { width: number; height: number } | null) {
+  if (!d) return;
+  if (d.width < MIN_WIDTH) throw new BlogError(`The image is too small (${d.width} px wide). Use at least ${MIN_WIDTH} px.`);
+  if (d.width > MAX_SIDE || d.height > MAX_SIDE) throw new BlogError(`The image is too large (${d.width} x ${d.height}). Keep each side under ${MAX_SIDE} px.`);
+}
+
+export async function saveUpload(env: Env, actor: string, file: { name: string; bytes: Uint8Array }, opts: { originalId?: number } = {}) {
   if (file.bytes.length === 0) throw new BlogError("That file is empty.");
   if (file.bytes.length > MAX_UPLOAD) throw new BlogError("Images can be up to 5 MB. Make it smaller and try again.");
   const mime = sniff(file.bytes);
-  if (!mime) throw new BlogError("Only JPEG, PNG, WebP and GIF images are allowed.");
+  if (!mime) throw new BlogError("Only JPEG, PNG, WebP, AVIF and GIF images are allowed.");
   const d = dimensions(file.bytes, mime);
+  checkDimensions(d);
   const year = new Date().getUTCFullYear();
   const key = `blog/media/${year}/${crypto.randomUUID()}.${TYPES[mime]}`;
   await env.LISTS.put(key, file.bytes, { httpMetadata: { contentType: mime, cacheControl: "public, max-age=3600" } });
-  const [row] = await getDbFromEnv(env).insert(schema.blogMedia).values({ key, filename: `${safeFilename(file.name)}.${TYPES[mime]}`, mime, size: file.bytes.length, width: d?.width ?? null, height: d?.height ?? null, uploadedBy: actor }).returning();
+  const [row] = await getDbFromEnv(env).insert(schema.blogMedia).values({ key, filename: `${safeFilename(file.name)}.${TYPES[mime]}`, mime, size: file.bytes.length, width: d?.width ?? null, height: d?.height ?? null, originalId: opts.originalId ?? null, uploadedBy: actor }).returning();
   return { ...row, url: mediaUrl(key) };
 }
 
@@ -64,6 +82,7 @@ export async function replaceUpload(env: Env, id: number, file: { bytes: Uint8Ar
   const mime = sniff(file.bytes);
   if (mime !== rows[0].mime) throw new BlogError("Use the same image type as the original so every article keeps working.");
   const d = dimensions(file.bytes, mime);
+  checkDimensions(d);
   await env.LISTS.put(rows[0].key, file.bytes, { httpMetadata: { contentType: mime, cacheControl: "public, max-age=3600" } });
   await db.update(schema.blogMedia).set({ size: file.bytes.length, width: d?.width ?? null, height: d?.height ?? null }).where(eq(schema.blogMedia.id, id));
 }
@@ -98,4 +117,30 @@ export async function deleteMedia(env: Env, id: number, force: boolean) {
   await env.LISTS.delete(rows[0].key);
   await db.delete(schema.blogPostMedia).where(eq(schema.blogPostMedia.mediaId, id));
   await db.delete(schema.blogMedia).where(and(eq(schema.blogMedia.id, id)));
+}
+
+export type MediaMeta = { alt: string; title: string; description: string; attribution: string };
+
+export async function setMediaMeta(env: Env, id: number, m: Partial<MediaMeta>) {
+  const c = (v: string | undefined, max: number) => (v ?? "").trim().slice(0, max);
+  const set: Record<string, string> = {};
+  if (m.alt !== undefined) set.alt = c(m.alt, 300);
+  if (m.title !== undefined) set.title = c(m.title, 200);
+  if (m.description !== undefined) set.description = c(m.description, 1000);
+  if (m.attribution !== undefined) set.attribution = c(m.attribution, 300);
+  if (!Object.keys(set).length) return;
+  await getDbFromEnv(env).update(schema.blogMedia).set(set).where(eq(schema.blogMedia.id, id));
+}
+
+/** Library record for a public /media/... path (used for credits and structured data). */
+export async function mediaByUrl(env: Env, url: string | null) {
+  if (!url || !url.startsWith("/media/")) return null;
+  const rows = await getDbFromEnv(env).select().from(schema.blogMedia).where(eq(schema.blogMedia.key, `blog${url}`)).limit(1);
+  return rows[0] ? { ...rows[0], url } : null;
+}
+
+/** Public path of the untouched original that a crop was made from. */
+export async function originalUrlOf(env: Env, id: number) {
+  const r = await getDbFromEnv(env).select({ key: schema.blogMedia.key }).from(schema.blogMedia).where(eq(schema.blogMedia.id, id)).limit(1);
+  return r[0] ? mediaUrl(r[0].key) : null;
 }

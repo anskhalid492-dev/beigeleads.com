@@ -381,6 +381,10 @@ export const blogPosts = sqliteTable(
     authorId: integer("author_id"),
     featuredImage: text("featured_image"),
     featuredAlt: text("featured_alt").notNull().default(""),
+    featuredCaption: text("featured_caption").notNull().default(""),
+    /** Focal point in percent (0-100), used as CSS object-position so crops keep the subject (migration 0012). */
+    featuredFocalX: integer("featured_focal_x").notNull().default(50),
+    featuredFocalY: integer("featured_focal_y").notNull().default(50),
     readingMinutes: integer("reading_minutes").notNull().default(1),
     searchText: text("search_text").notNull().default(""),
     seoTitle: text("seo_title").notNull().default(""),
@@ -432,6 +436,11 @@ export const blogMedia = sqliteTable(
     width: integer("width"),
     height: integer("height"),
     alt: text("alt").notNull().default(""),
+    /** Library-level metadata (migration 0012). `originalId` links a crop to the untouched original. */
+    title: text("title").notNull().default(""),
+    description: text("description").notNull().default(""),
+    attribution: text("attribution").notNull().default(""),
+    originalId: integer("original_id"),
     uploadedBy: text("uploaded_by").notNull(),
     createdAt: createdAt(),
   },

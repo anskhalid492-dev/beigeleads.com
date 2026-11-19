@@ -21,8 +21,9 @@ export async function POST(req: Request) {
     const replace = Number(new URL(req.url).searchParams.get("replace"));
     if (replace && !can.replaceMedia(admin.role)) return json({ error: "Only an admin can replace an image." }, 403);
     if (replace) { await replaceUpload(env, replace, { bytes }); return json({ ok: true }); }
-    const m = await saveUpload(env, admin.email, { name: f.name, bytes });
-    return json({ ok: true, media: { id: m.id, url: m.url, filename: m.filename, alt: m.alt, width: m.width, height: m.height } });
+    const originalId = Number(form.get("originalId")) || undefined;
+    const m = await saveUpload(env, admin.email, { name: f.name, bytes }, { originalId });
+    return json({ ok: true, media: { id: m.id, url: m.url, filename: m.filename, alt: m.alt, title: m.title, description: m.description, attribution: m.attribution, width: m.width, height: m.height } });
   } catch (e) {
     return json({ error: e instanceof BlogError ? e.message : "Upload failed. Try again." }, e instanceof BlogError ? 400 : 500);
   }

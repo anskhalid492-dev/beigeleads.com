@@ -41,3 +41,27 @@ export async function uploadImage(file: File): Promise<{ ok: true; media: Upload
     return { ok: true, media: { url: j.media.url, alt: j.media.alt } };
   } catch { return { ok: false, error: "Upload failed. Check your connection and try again." }; }
 }
+
+export type UploadedFull = { id: number; url: string; alt: string };
+
+/** Upload with a progress callback (0-100). Used by the featured image panel. Crops are sent as they are. */
+export async function uploadWithProgress(file: File, o: { onProgress?: (pct: number) => void; originalId?: number; raw?: boolean } = {}): Promise<{ ok: true; media: UploadedFull } | { ok: false; error: string }> {
+  const prepared = o.raw ? file : await prepareImage(file);
+  return new Promise((resolve) => {
+    const body = new FormData();
+    body.set("file", prepared);
+    if (o.originalId) body.set("originalId", String(o.originalId));
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/media");
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) o.onProgress?.(Math.round((e.loaded / e.total) * 100)); };
+    xhr.onerror = () => resolve({ ok: false, error: "Upload failed. Check your connection and try again." });
+    xhr.onload = () => {
+      try {
+        const j = JSON.parse(xhr.responseText) as { error?: string; media?: UploadedFull };
+        if (xhr.status >= 200 && xhr.status < 300 && j.media) resolve({ ok: true, media: j.media });
+        else resolve({ ok: false, error: j.error ?? "Upload failed." });
+      } catch { resolve({ ok: false, error: "Upload failed." }); }
+    };
+    xhr.send(body);
+  });
+}

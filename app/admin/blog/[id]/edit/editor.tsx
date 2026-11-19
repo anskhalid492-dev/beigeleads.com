@@ -14,12 +14,13 @@ import { uploadImage } from "@/lib/blog/upload-client";
 import { cleanDoc, embedUrl, readingMinutes, slugifyText, wordCount, type DocNode } from "@/lib/blog/doc";
 import { analyzeSeo, META_RANGE, SEO_TITLE_RANGE, suggestLinks, type InternalTarget } from "@/lib/blog/seo";
 import { saveAction, transitionAction } from "../../actions";
+import { FeaturedImage } from "./featured-image";
 import { MediaPicker, type Picked } from "../../media-picker";
 import { AuthorPicker, type AuthorOption } from "./author-picker";
 
 type Status = "draft" | "scheduled" | "published" | "archived";
 export type Fields = {
-  title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null; featuredImage: string | null; featuredAlt: string;
+  title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null; featuredImage: string | null; featuredAlt: string; featuredCaption: string; featuredFocalX: number; featuredFocalY: number;
   seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean; ogTitle: string; ogDescription: string; ogImage: string | null;
   focusKeyword: string; related: number[]; tagIds: number[]; scheduledAt: number | null;
 };
@@ -289,15 +290,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
               </fieldset>
               <div>
                 <p className={label}>Featured image</p>
-                {f.featuredImage ? (
-                  <div className="space-y-2">
-                    { }
-                    <img src={f.featuredImage} alt={f.featuredAlt} className="aspect-video w-full rounded-xl object-cover" />
-                    <label htmlFor="falt" className="text-xs font-semibold">Alt text</label>
-                    <input id="falt" value={f.featuredAlt} onChange={(e) => update("featuredAlt", e.target.value)} className={input} placeholder="Describe the image" />
-                    <div className="flex gap-2"><Button size="sm" variant="secondary" onClick={() => setDialog("feature")}>Change</Button><Button size="sm" variant="secondary" onClick={() => { update("featuredImage", null); update("featuredAlt", ""); }}>Remove</Button></div>
-                  </div>
-                ) : <Button variant="secondary" onClick={() => setDialog("feature")}>Choose image</Button>}
+                <FeaturedImage f={f} update={(k, v) => update(k as keyof Fields, v as never)} onPickLibrary={() => setDialog("feature")} />
               </div>
               <fieldset><legend className={label}>Related articles (up to 6)</legend>
                 {options.length === 0 ? <p className="text-xs">No other articles yet. If none are chosen, related articles are picked by category.</p> : (

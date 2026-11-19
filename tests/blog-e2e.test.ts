@@ -22,7 +22,7 @@ const input = (title: string, slug: string, text: string): PostInput => ({
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "blog-e2e-")) } });
   env = proxy.env;
-  const sql = ["drizzle/0007_blog_cms.sql", "drizzle/0008_newsletter.sql", "drizzle/0010_blog_authors.sql"].map((f) => readFileSync(f, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
+  const sql = ["drizzle/0007_blog_cms.sql", "drizzle/0008_newsletter.sql", "drizzle/0010_blog_authors.sql", "drizzle/0012_featured_image.sql"].map((f) => readFileSync(f, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const stmt of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(stmt).run();
 }, 60_000);
 afterAll(async () => { await proxy?.dispose(); });

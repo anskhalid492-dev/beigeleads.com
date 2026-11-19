@@ -18,7 +18,7 @@ const S = STARTERS[0];
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "starter-e2e-")) } });
   env = proxy.env;
-  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010/.test(f) && f.endsWith(".sql")).sort();
+  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012/.test(f) && f.endsWith(".sql")).sort();
   const sql = files.map((f) => readFileSync(join("drizzle", f), "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const stmt of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(stmt).run();
 }, 60_000);

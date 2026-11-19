@@ -22,7 +22,7 @@ export function PostCard({ p, priority = false }: { p: PublicCard; priority?: bo
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-sand-200 bg-white transition-shadow hover:shadow-md">
       <Link href={`/blog/${p.slug}`} tabIndex={-1} aria-hidden className="block overflow-hidden">
         {p.featuredImage ? (
-          <img src={p.featuredImage} alt="" loading={priority ? "eager" : "lazy"} decoding="async" className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+          <img src={p.featuredImage} alt="" loading={priority ? "eager" : "lazy"} decoding="async" style={{ objectPosition: `${p.focalX}% ${p.focalY}%` }} className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
         ) : <div className="aspect-[16/9] w-full bg-gradient-to-br from-forest-100 to-sand-200" />}
       </Link>
       <div className="flex flex-1 flex-col p-5">

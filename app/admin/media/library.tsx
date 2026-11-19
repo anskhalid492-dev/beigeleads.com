@@ -53,7 +53,7 @@ export function MediaLibrary({ role, items, total, page, per, q }: { role: "admi
         className={`mb-4 rounded-2xl border-2 border-dashed p-6 text-center text-sm ${drag ? "border-purple-600 bg-purple-100" : "border-sand-300 bg-white"}`}>
         <p className="font-semibold text-forest-900">{busy ? "Working…" : "Drop images here to upload"}</p>
         <p className="mt-1">JPEG, PNG, WebP or GIF, up to 5 MB each. The file type is checked from its contents. Large photos are shrunk to 2000 px wide before upload.</p>
-        <input ref={file} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" aria-label="Upload images" onChange={(e) => { if (e.target.files?.length) void upload(e.target.files); e.target.value = ""; }} />
+        <input ref={file} type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,image/gif" className="sr-only" aria-label="Upload images" onChange={(e) => { if (e.target.files?.length) void upload(e.target.files); e.target.value = ""; }} />
         <Button className="mt-3" variant="secondary" disabled={busy} onClick={() => file.current?.click()}>Choose files</Button>
       </div>
       <form method="get" className="mb-4 flex gap-2"><input name="q" defaultValue={q} placeholder="Search by file name or alt text" aria-label="Search media" className="h-10 flex-1 rounded-xl border border-sand-300 bg-white px-3 text-sm" /><Button type="submit" variant="secondary">Search</Button></form>

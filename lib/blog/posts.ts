@@ -10,7 +10,7 @@ export type Post = typeof schema.blogPosts.$inferSelect;
 
 export type PostInput = {
   title: string; slug: string; excerpt: string; categoryId: number | null; author: string; authorId: number | null;
-  featuredImage: string | null; featuredAlt: string; seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean;
+  featuredImage: string | null; featuredAlt: string; featuredCaption?: string; featuredFocalX?: number; featuredFocalY?: number; seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean;
   ogTitle: string; ogDescription: string; ogImage: string | null; focusKeyword: string;
   related: number[]; tagIds: number[]; scheduledAt: number | null; doc: unknown;
 };
@@ -21,6 +21,7 @@ const t = schema.blogPosts;
 
 const s = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
 const url = (v: unknown) => { const x = s(v, 2000); if (!x) return ""; try { const u = new URL(x); return u.protocol === "https:" || u.protocol === "http:" ? x : ""; } catch { return ""; } };
+const pct = (v: unknown) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 50; };
 const mediaPath = (v: unknown) => { const x = s(v, 600); return x.startsWith("/media/") && !x.includes("..") ? x : null; };
 
 export async function audit(env: Env, postId: number | null, actor: string, action: string, detail = "") {
@@ -87,7 +88,7 @@ export async function savePost(env: Env, actor: string, id: number, input: PostI
   const scheduledAt = input.scheduledAt && Number.isFinite(input.scheduledAt) ? new Date(input.scheduledAt) : null;
   const updated = await db.update(t).set({
     title, slug, excerpt: s(input.excerpt, 500), categoryId: input.categoryId, author: authorName, authorId,
-    featuredImage: mediaPath(input.featuredImage), featuredAlt: s(input.featuredAlt, 300), readingMinutes: readingMinutes(doc),
+    featuredImage: mediaPath(input.featuredImage), featuredAlt: s(input.featuredAlt, 300), featuredCaption: s(input.featuredCaption, 300), featuredFocalX: pct(input.featuredFocalX), featuredFocalY: pct(input.featuredFocalY), readingMinutes: readingMinutes(doc),
     searchText: text.replace(/\s+/g, " ").slice(0, 3000),
     seoTitle: s(input.seoTitle, 200), metaDescription: s(input.metaDescription, 400), canonicalUrl: url(input.canonicalUrl), noindex: !!input.noindex,
     ogTitle: s(input.ogTitle, 200), ogDescription: s(input.ogDescription, 400), ogImage: mediaPath(input.ogImage), focusKeyword: s(input.focusKeyword, 100),
@@ -279,9 +280,9 @@ export const live = () => {
   return or(and(eq(t.status, "published"), lte(t.publishedAt, now)), and(eq(t.status, "scheduled"), lte(t.scheduledAt, now)))!;
 };
 
-export type PublicCard = { id: number; slug: string; title: string; excerpt: string; featuredImage: string | null; featuredAlt: string; readingMinutes: number; author: string; authorSlug: string | null; authorPhoto: string | null; authorTitle: string; at: Date; categoryName: string | null; categorySlug: string | null };
+export type PublicCard = { id: number; slug: string; title: string; excerpt: string; featuredImage: string | null; featuredAlt: string; focalX: number; focalY: number; readingMinutes: number; author: string; authorSlug: string | null; authorPhoto: string | null; authorTitle: string; at: Date; categoryName: string | null; categorySlug: string | null };
 
-const cardCols = { id: t.id, slug: t.slug, title: t.title, excerpt: t.excerpt, featuredImage: t.featuredImage, featuredAlt: t.featuredAlt, readingMinutes: t.readingMinutes, author: t.author, publishedAt: t.publishedAt, scheduledAt: t.scheduledAt, categoryName: schema.blogCategories.name, categorySlug: schema.blogCategories.slug, authorSlug: schema.blogAuthors.slug, authorPhoto: schema.blogAuthors.photo, authorName: schema.blogAuthors.displayName, authorTitle: schema.blogAuthors.title };
+const cardCols = { id: t.id, slug: t.slug, title: t.title, excerpt: t.excerpt, featuredImage: t.featuredImage, featuredAlt: t.featuredAlt, focalX: t.featuredFocalX, focalY: t.featuredFocalY, readingMinutes: t.readingMinutes, author: t.author, publishedAt: t.publishedAt, scheduledAt: t.scheduledAt, categoryName: schema.blogCategories.name, categorySlug: schema.blogCategories.slug, authorSlug: schema.blogAuthors.slug, authorPhoto: schema.blogAuthors.photo, authorName: schema.blogAuthors.displayName, authorTitle: schema.blogAuthors.title };
 type CardRow = { publishedAt: Date | null; scheduledAt: Date | null; authorName: string | null; authorTitle: string | null } & Omit<PublicCard, "at" | "authorTitle">;
 // A published profile's current name wins; otherwise the plain-text byline, and anything that looks like an email is never shown.
 const toCard = ({ authorName, authorTitle, ...r }: CardRow): PublicCard => ({ ...r, author: authorName ?? (r.author.includes("@") ? "" : r.author), authorTitle: authorTitle ?? "", at: (r.publishedAt ?? r.scheduledAt ?? new Date(0)) });

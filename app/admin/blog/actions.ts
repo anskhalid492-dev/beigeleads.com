@@ -7,7 +7,7 @@ import { can, type BlogUser } from "@/lib/admin/roles";
 import { requireBlogUser } from "@/lib/admin/require-admin";
 import { createPost, deletePost, duplicatePost, getPost, restoreRevision, savePost, transition, type Action } from "@/lib/blog/posts";
 import { deleteCategory, deleteTag, saveCategory, saveTag, BlogError } from "@/lib/blog/taxonomy";
-import { deleteMedia, listMedia, mediaUsage, setAlt } from "@/lib/blog/media";
+import { deleteMedia, listMedia, mediaByUrl, mediaUsage, originalUrlOf, setAlt, setMediaMeta } from "@/lib/blog/media";
 
 export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string; conflict?: boolean };
 
@@ -31,7 +31,7 @@ const fail = (e: unknown): { ok: false; error: string; conflict?: boolean } => {
 
 const inputSchema = z.object({
   title: z.string().max(300), slug: z.string().max(200), excerpt: z.string().max(1000), categoryId: z.number().int().nullable(), author: z.string().max(200), authorId: z.number().int().nullish().transform((v) => v ?? null),
-  featuredImage: z.string().max(600).nullable(), featuredAlt: z.string().max(400), seoTitle: z.string().max(300), metaDescription: z.string().max(600), canonicalUrl: z.string().max(2100), noindex: z.boolean(),
+  featuredImage: z.string().max(600).nullable(), featuredAlt: z.string().max(400), featuredCaption: z.string().max(400).default(""), featuredFocalX: z.number().min(0).max(100).default(50), featuredFocalY: z.number().min(0).max(100).default(50), seoTitle: z.string().max(300), metaDescription: z.string().max(600), canonicalUrl: z.string().max(2100), noindex: z.boolean(),
   ogTitle: z.string().max(300), ogDescription: z.string().max(600), ogImage: z.string().max(600).nullable(), focusKeyword: z.string().max(200),
   related: z.array(z.number().int()).max(10), tagIds: z.array(z.number().int()).max(30), scheduledAt: z.number().nullable(), doc: z.unknown(),
 });
@@ -136,6 +136,25 @@ export async function tagAction(form: FormData): Promise<Result> {
 
 export async function mediaAltAction(id: number, alt: string): Promise<Result> {
   try { await requireBlogUser(); await setAlt(getCloudflareContext().env, id, alt); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
+}
+
+const metaSchema = z.object({ alt: z.string().max(400).optional(), title: z.string().max(300).optional(), description: z.string().max(1500).optional(), attribution: z.string().max(400).optional() });
+export type MediaInfo = { id: number; url: string; width: number | null; height: number | null; size: number; mime: string; filename: string; alt: string; title: string; description: string; attribution: string; originalUrl: string | null; originalId: number | null };
+
+/** Library record for a /media/... path, so the editor can show and edit its title, description and credit. */
+export async function mediaInfoAction(url: string): Promise<Result<{ info: MediaInfo | null }>> {
+  try {
+    await requireBlogUser();
+    const env = getCloudflareContext().env;
+    const m = await mediaByUrl(env, url);
+    if (!m) return { ok: true, info: null };
+    const originalUrl = m.originalId ? await originalUrlOf(env, m.originalId) : null;
+    return { ok: true, info: { id: m.id, url: m.url, width: m.width, height: m.height, size: m.size, mime: m.mime, filename: m.filename, alt: m.alt, title: m.title, description: m.description, attribution: m.attribution, originalUrl, originalId: m.originalId } };
+  } catch (e) { return fail(e); }
+}
+
+export async function mediaMetaAction(id: number, meta: unknown): Promise<Result> {
+  try { await requireBlogUser(); await setMediaMeta(getCloudflareContext().env, id, metaSchema.parse(meta)); revalidatePath("/admin/media"); return { ok: true }; } catch (e) { return fail(e); }
 }
 
 export async function mediaDeleteAction(id: number, force: boolean): Promise<Result> {

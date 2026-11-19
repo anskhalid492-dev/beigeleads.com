@@ -15,7 +15,7 @@ import { Toc } from "./toc";
 import { ArticleBody } from "./render";
 
 export type ArticleData = {
-  title: string; slug: string; excerpt: string; author: string; readingMinutes: number; featuredImage: string | null; featuredAlt: string;
+  title: string; slug: string; excerpt: string; author: string; readingMinutes: number; featuredImage: string | null; featuredAlt: string; featuredCaption?: string; focalX?: number; focalY?: number; imageCredit?: string;
   publishedAt: Date; updatedAt: Date; category: { name: string; slug: string } | null; tags: { id: number; name: string; slug: string }[]; doc: DocNode;
   ogImage: string | null; authorProfile?: ArticleAuthor | null;
 };
@@ -53,7 +53,10 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
           <p className="mt-3 text-sm">{a.updatedAt.getTime() - a.publishedAt.getTime() > 86_400_000 ? `Updated ${fmtDate(a.updatedAt)} · ` : ""}{a.readingMinutes} min read</p>
         </header>
         {a.featuredImage && (
-          <img src={a.featuredImage} alt={a.featuredAlt} width={1600} height={900} fetchPriority="high" decoding="async" className="mx-auto mt-8 aspect-[16/9] w-full max-w-5xl rounded-3xl object-cover" />
+          <figure className="mx-auto mt-8 w-full max-w-5xl">
+            <img src={a.featuredImage} alt={a.featuredAlt} width={1600} height={900} fetchPriority="high" decoding="async" style={{ objectPosition: `${a.focalX ?? 50}% ${a.focalY ?? 50}%` }} className="aspect-[16/9] w-full rounded-3xl object-cover" />
+            {(a.featuredCaption || a.imageCredit) && <figcaption className="mt-2 text-center text-sm">{a.featuredCaption}{a.featuredCaption && a.imageCredit ? " · " : ""}{a.imageCredit}</figcaption>}
+          </figure>
         )}
 
         <div className="mx-auto mt-10 grid max-w-6xl gap-x-10 gap-y-6 lg:grid-cols-[3rem_minmax(0,44rem)_15rem] lg:justify-center">

@@ -1,3 +1,4 @@
+import { mediaByUrl } from "@/lib/blog/media";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -35,10 +36,10 @@ export default async function BlogArticle(props: PageProps<"/blog/[slug]">) {
   if (!p) notFound();
   const { row } = p;
   const env = getCloudflareContext().env;
-  const [related, profile] = await Promise.all([relatedPublished(env, row).catch(() => []), getPublicAuthorById(env, row.authorId).catch(() => null)]);
+  const [related, profile, media] = await Promise.all([relatedPublished(env, row).catch(() => []), getPublicAuthorById(env, row.authorId).catch(() => null), mediaByUrl(env, row.featuredImage).catch(() => null)]);
   return (
     <ArticleView newsletter={newsletterOn(getCloudflareContext().env)} related={related} a={{
-      title: row.title, slug: row.slug, excerpt: row.excerpt, author: row.author, authorProfile: profile ? { slug: profile.slug, name: profile.name, title: profile.title, photo: profile.photo, shortBio: profile.shortBio, links: profile.links } : null, readingMinutes: row.readingMinutes, featuredImage: row.featuredImage, featuredAlt: row.featuredAlt,
+      title: row.title, slug: row.slug, excerpt: row.excerpt, author: row.author, authorProfile: profile ? { slug: profile.slug, name: profile.name, title: profile.title, photo: profile.photo, shortBio: profile.shortBio, links: profile.links } : null, readingMinutes: row.readingMinutes, featuredImage: row.featuredImage, featuredAlt: row.featuredAlt, featuredCaption: row.featuredCaption, focalX: row.featuredFocalX, focalY: row.featuredFocalY, imageCredit: media?.attribution || undefined,
       publishedAt: row.publishedAt ?? row.scheduledAt ?? row.createdAt, updatedAt: row.updatedAt, category: p.category ? { name: p.category.name, slug: p.category.slug } : null, tags: p.tags, doc: p.doc, ogImage: row.ogImage,
     }} />
   );
