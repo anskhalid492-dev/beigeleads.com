@@ -11,7 +11,7 @@ function Portrait() {
       <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-forest-900 shadow-[0_24px_60px_rgba(15,42,29,0.22)]">
         {FOUNDER.photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={FOUNDER.photo} alt={`${FOUNDER.name}, founder of BeigeLeads`} className="size-full object-cover" />
+          <img src={FOUNDER.photo} alt={`${FOUNDER.name}, founder of BeigeLeads`} className="size-full object-cover object-[50%_20%]" width={960} height={1152} />
         ) : (
           <div className="flex size-full items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}

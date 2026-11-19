@@ -110,6 +110,6 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 ## About page (19 Nov 2026)
 - [x] Name "Anus" confirmed by the owner. MunchReach is not mentioned (owner decision).
 - [x] Facts from the owner (19 Nov 2026): dropped out of college, outbound since 2020 (6+ years), 50M+ emails, several failed businesses, BeigeLeads built entirely by him, quote "I wasn't supposed to make it."
-- [ ] Add an approved founder photograph (set `FOUNDER.photo`, file under /public). Until then a logo card is shown, never a stock face.
-- [ ] Optional: the real BeigeLeads origin moment (when and how the idea began, first list). The page does not state one; the "scattered part" chapter is general.
+- [x] Founder photo added (owner-supplied, background recoloured to the brand forest green; `FOUNDER.photo`).
+- Origin moment: owner decided to skip it; the page does not state one.
 - [ ] Optional: last name / full name for the byline and schema (the page uses "Anus" only).

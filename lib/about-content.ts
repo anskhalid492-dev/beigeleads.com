@@ -7,7 +7,7 @@ export const FOUNDER = {
   name: "Anus", // confirmed by the owner, 19 Nov 2026
   first: "Anus",
   role: "Founder",
-  photo: null as string | null, // path under /public once an approved photograph exists; until then an initials card is shown
+  photo: "/about/founder-anus.webp" as string | null, // owner-supplied photo (19 Nov 2026), background recoloured to forest-500; null shows a logo card
 };
 
 export type Chapter = { id: string; label: string; title: string; paragraphs: string[] };
