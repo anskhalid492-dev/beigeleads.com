@@ -3,6 +3,7 @@ import "@fontsource-variable/bricolage-grotesque/wdth.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AnnouncementBanner } from "@/components/layout/announcement-banner";
+import { PopupHost } from "@/components/popups/host";
 import { PublicChrome } from "@/components/layout/public-chrome";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PublicChrome><AnnouncementBanner /><Header /></PublicChrome>
         <main className="flex-1">{children}</main>
         <PublicChrome><Footer /></PublicChrome>
+        <PopupHost />
         <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/brand/png/beigeleads-symbol-light.png` }} />
       </body>
     </html>

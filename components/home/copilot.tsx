@@ -68,6 +68,10 @@ export function Copilot() {
 
   const suggestions = useMemo(() => suggestionsFor(value), [value]);
   const result = useMemo(() => (submitted ? searchCatalog(submitted) : null), [submitted]);
+  // Real event for the popup system: a search that found no exact match (it carries the custom-list link).
+  useEffect(() => {
+    if (result && result.exact.length === 0) window.dispatchEvent(new CustomEvent("bl:search-noresults", { detail: { query: result.parsed.raw, href: customListHref(result.parsed.raw) } }));
+  }, [result]);
 
   function run(q: string) {
     const t = q.trim();

@@ -15,6 +15,7 @@ const NAV = [
   ["Contact Inquiries", "/admin/contact-inquiries", MessageSquare],
   ["Help Center", "/admin/help", LifeBuoy],
   ["System Emails", "/admin/system-emails", MailCheck],
+  ["Popups", "/admin/popups", MessageSquare],
   ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Blog", "/admin/blog", FileText],
   ["SEO", "/admin/seo", Search],

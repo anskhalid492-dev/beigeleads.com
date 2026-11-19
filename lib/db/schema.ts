@@ -745,3 +745,23 @@ export const emailWebhookEvents = sqliteTable("email_webhook_events", {
   matched: integer("matched").notNull().default(0),
   createdAt: createdAt(),
 });
+
+export const popupCampaigns = sqliteTable("popup_campaigns", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  stage: text("stage").notNull(),
+  status: text("status").notNull().default("draft"),
+  priority: integer("priority").notNull().default(50),
+  contentJson: text("content_json").notNull(),
+  version: integer("version").notNull().default(1),
+  createdAt: createdAt(),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
+});
+
+export const popupEvents = sqliteTable("popup_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  campaignId: text("campaign_id").notNull(),
+  event: text("event").notNull(),
+  pageType: text("page_type").notNull().default(""),
+  createdAt: createdAt(),
+});

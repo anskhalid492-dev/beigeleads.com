@@ -72,6 +72,7 @@ export function SampleForm({ options, initialProduct, initialCustom }: { options
       if (res.ok && data.ok) {
         setResult({ delivery: data.delivery ?? "received", label: data.label ?? selected?.label ?? custom.trim(), email: email.trim() });
         setState("done");
+        window.dispatchEvent(new CustomEvent("bl:sample-requested"));
         return;
       }
       setErrors({ form: data.error ?? "Something went wrong. Try again." });

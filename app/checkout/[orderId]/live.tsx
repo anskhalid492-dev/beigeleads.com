@@ -30,6 +30,8 @@ export function CheckoutLive({ orderId, expiresAt, initial }: { orderId: string;
 
   const left = now === null ? null : Math.max(0, Math.floor((expiresAt - now) / 1000));
   const effective = status.status === "pending" && left === 0 ? "expired" : status.status;
+  // Real event for the popup system: the server says the order is paid (never the browser's guess).
+  useEffect(() => { if (status.status === "paid") window.dispatchEvent(new CustomEvent("bl:purchased")); }, [status.status]);
   const l = label[effective] ?? label.pending;
   const mm = left === null ? "--" : String(Math.floor(left / 60)).padStart(2, "0");
   const ss = left === null ? "--" : String(left % 60).padStart(2, "0");
