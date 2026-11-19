@@ -7,6 +7,8 @@ import { requireAdmin } from "@/lib/admin/require-admin";
 import { getDb, schema } from "@/lib/db";
 import { sendEmail } from "@/lib/forms/email";
 import { requestLabel, sendConfirmation } from "@/lib/sample/requests";
+import { sendHistory, sendOnce } from "@/lib/system-emails/triggers";
+import { getDbFromEnv } from "@/lib/db";
 
 const upd = z.object({
   id: z.coerce.number().int().positive(),
@@ -32,5 +34,22 @@ export async function retrySampleEmailAction(form: FormData): Promise<void> {
   if (!row) return;
   const { env } = getCloudflareContext();
   await sendConfirmation(db, env, (m) => sendEmail(env, m), id, row.email, requestLabel(row.productSlug, row.customRequest));
+  revalidatePath("/admin/sample-requests");
+}
+
+/** Emails the sample link (template sample_delivery). Only https links; once per request unless "send again" is ticked. */
+export async function sendSampleAction(form: FormData): Promise<void> {
+  await requireAdmin();
+  const p = z.object({ id: z.coerce.number().int().positive(), url: z.string().trim().url().max(500).refine((u) => u.startsWith("https://"), "https only"), again: z.string().optional() }).parse({ id: form.get("id"), url: form.get("url"), again: form.get("again") ?? undefined });
+  const db = getDb();
+  const row = await db.query.sampleRequests.findFirst({ where: (t, { eq: e }) => e(t.id, p.id) });
+  if (!row) return;
+  const { env } = getCloudflareContext();
+  const ref = `sample:${p.id}`;
+  if (!p.again && (await sendHistory(env, "sample_delivery", ref)).sent) return;
+  // "send again" uses a fresh reference so the once-only check does not block an explicit admin decision
+  const useRef = p.again ? `${ref}:${Date.now()}` : ref;
+  const r = await sendOnce(env, getDbFromEnv(env), "sample_delivery", row.email, { product_name: requestLabel(row.productSlug, row.customRequest), sample_url: p.url }, useRef);
+  if (r === "sent") await db.update(schema.sampleRequests).set({ status: "fulfilled", updatedAt: Date.now() }).where(eq(schema.sampleRequests.id, p.id));
   revalidatePath("/admin/sample-requests");
 }

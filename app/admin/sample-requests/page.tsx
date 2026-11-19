@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { getProduct } from "@/lib/catalog";
 import { getDb, schema } from "@/lib/db";
-import { retrySampleEmailAction, updateSampleAction } from "./actions";
+import { retrySampleEmailAction, sendSampleAction, updateSampleAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +91,14 @@ export default async function SampleRequestsPage({ searchParams }: { searchParam
                           <input name="note" defaultValue={r.adminNote ?? ""} maxLength={1000} className="mt-1 w-full rounded-xl border border-sand-300 bg-white px-3 py-2 font-normal" />
                         </label>
                         <Button type="submit" size="sm">Save</Button>
+                      </form>
+                      <form action={sendSampleAction} className="flex flex-wrap items-end gap-2 rounded-xl border border-sand-200 bg-white p-3">
+                        <input type="hidden" name="id" value={r.id} />
+                        <label className="min-w-[16rem] flex-1 font-semibold text-forest-900">Sample link (https)
+                          <input name="url" type="url" required placeholder="https://…" maxLength={500} className="mt-1 w-full rounded-xl border border-sand-300 bg-white px-3 py-2 font-normal" />
+                        </label>
+                        <label className="flex items-center gap-2 text-forest-700"><input type="checkbox" name="again" value="1" /> Send again if already sent</label>
+                        <Button type="submit" size="sm">Email sample to buyer</Button>
                       </form>
                       {r.emailStatus !== "sent" && (
                         <form action={retrySampleEmailAction}>

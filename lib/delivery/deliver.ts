@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { notifyOwner, sendEmail } from "@/lib/forms/email";
 import { systemMail } from "@/lib/system-emails/mail";
+import { sendOnce } from "@/lib/system-emails/triggers";
 import { findDeliveryLink } from "./links";
 
 const MAX_ATTEMPTS = 5;
@@ -44,6 +45,12 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   const [existing] = await db.select().from(schema.deliveries).where(eq(schema.deliveries.orderId, orderId));
   if (existing?.status === "sent" && !opts.force) return "already-sent";
   if (existing && existing.status === "failed" && existing.attempts >= MAX_ATTEMPTS && !opts.force) return "failed";
+
+  // "Payment received" note (template payment_received): once per order, never blocks delivery.
+  try {
+    const { getProduct: gp } = await import("@/lib/catalog");
+    await sendOnce(env, db, "payment_received", order.email, { order_number: orderId, product_name: gp(item.productSlug)?.name ?? item.productSlug, order_url: `${SITE}/checkout/${orderId}` }, orderId);
+  } catch { /* delivery must never depend on this note */ }
 
   const url = await findDeliveryLink(env, item.productSlug, item.packageName);
   if (!url) {

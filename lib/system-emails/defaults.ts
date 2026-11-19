@@ -103,7 +103,7 @@ export const TEMPLATES: TemplateDef[] = [
     },
   },
   {
-    key: "payment_received", name: "Payment received", audience: "customer", connection: "not_connected",
+    key: "payment_received", name: "Payment received", audience: "customer", connection: "connected",
     connectionNote: "The payment watcher marks orders paid but does not email the buyer separately; delivery is the buyer's email today.",
     event: "A payment is verified on-chain.",
     vars: ["first_name", "order_number", "order_url", "product_name"], required: ["product_name"],
@@ -159,7 +159,7 @@ export const TEMPLATES: TemplateDef[] = [
     },
   },
   {
-    key: "sample_delivery", name: "Free sample delivery", audience: "customer", connection: "not_connected",
+    key: "sample_delivery", name: "Free sample delivery", audience: "customer", connection: "connected",
     connectionNote: "Samples are prepared by hand and there is no \"sample fulfilled\" event or link field yet.",
     event: "A sample is marked fulfilled and has an authorised link.",
     vars: ["first_name", "product_name", "sample_url"], required: ["sample_url", "product_name"],
@@ -194,7 +194,7 @@ export const TEMPLATES: TemplateDef[] = [
     },
   },
   {
-    key: "category_request_received", name: "Category request received", audience: "customer", connection: "not_connected",
+    key: "category_request_received", name: "Category request received", audience: "customer", connection: "connected",
     connectionNote: "The category request form only alerts the owner today; there is no customer confirmation.",
     event: "Someone suggests a business category.",
     vars: ["first_name", "category_name"], required: [],

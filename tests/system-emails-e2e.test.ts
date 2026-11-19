@@ -17,7 +17,7 @@ const fallback = { to: "a@b.co", subject: "legacy", text: "legacy text" };
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "sysmail-e2e-")) } });
   env = { ...proxy.env, RESEND_API_KEY: "test-key" } as CloudflareEnv;
-  const files = readdirSync("drizzle").filter((f) => /^00(0[0-9]|1[0-9]|2[0-3])_.*\.sql$/.test(f)).sort();
+  const files = readdirSync("drizzle").filter((f) => /^00(0[0-9]|1[0-9]|2[0-4])_.*\.sql$/.test(f)).sort();
   const sql = files.map((f) => readFileSync(join("drizzle", f), "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const stmt of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(stmt).run();
 }, 60_000);

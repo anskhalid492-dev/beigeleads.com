@@ -732,5 +732,16 @@ export const emailDeliveryLogs = sqliteTable("email_delivery_logs", {
   status: text("status").notNull(),
   providerId: text("provider_id").notNull().default(""),
   error: text("error").notNull().default(""),
+  deliveryStatus: text("delivery_status").notNull().default(""),
+  deliveryDetail: text("delivery_detail").notNull().default(""),
+  statusAt: integer("status_at"),
+  createdAt: createdAt(),
+});
+
+export const emailWebhookEvents = sqliteTable("email_webhook_events", {
+  id: text("id").primaryKey(),
+  type: text("type").notNull(),
+  providerId: text("provider_id").notNull().default(""),
+  matched: integer("matched").notNull().default(0),
   createdAt: createdAt(),
 });

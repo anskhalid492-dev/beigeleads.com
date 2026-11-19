@@ -5,6 +5,7 @@
 import { default as handler } from "./.open-next/worker.js";
 import { publishDue } from "./lib/blog/posts";
 import { purgeOldSearches } from "./lib/help/analytics";
+import { purgeEmailLogs } from "./lib/system-emails/webhook";
 import { applyPageSeo, type PageOverrideMap } from "./lib/seo/page-rewrite";
 import { findRedirect, isProtected, type RedirectMap } from "./lib/seo/redirect-rules";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
@@ -90,6 +91,7 @@ export default {
       ctx.waitUntil(expireStaleAttempts(env));
       // Help Center search words are kept 90 days. A missing table (migration 0021 not applied yet) must not matter.
       ctx.waitUntil(purgeOldSearches(env).catch(() => undefined));
+      ctx.waitUntil(purgeEmailLogs(env).catch(() => undefined));
     }
     else {
       ctx.waitUntil(runPaymentWatcher(env));
