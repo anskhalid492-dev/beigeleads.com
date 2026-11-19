@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { toString as qrToSvg } from "qrcode/lib/browser.js"; // browser build: no fs, safe on Workers
 import { TriangleAlert } from "lucide-react";
-import { formatUsd } from "@/lib/catalog";
+import { formatUsd, getProduct } from "@/lib/catalog";
 import { getDb, schema } from "@/lib/db";
 import { CheckoutLive } from "./live";
 
@@ -20,9 +20,9 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
   const db = getDb();
   const [order] = await db.select().from(schema.orders).where(eq(schema.orders.id, orderId));
   if (!order) notFound();
-  const [item] = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId));
+  const items = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).orderBy(schema.orderItems.id);
   const [a] = await db.select().from(schema.paymentAttempts).where(eq(schema.paymentAttempts.orderId, orderId)).orderBy(desc(schema.paymentAttempts.id)).limit(1);
-  if (!item || !a) notFound();
+  if (items.length === 0 || !a) notFound();
 
   const opt = optionForWallet(a.coin, a.network);
   if (!opt) notFound();
@@ -37,7 +37,15 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
       <h1 className="display text-4xl text-forest-900 sm:text-5xl">Pay with {opt.label}</h1>
-      <p className="mt-2">Order <span className="font-mono text-sm">{order.id}</span> · {item.packageName} package ({item.records.toLocaleString("en-US")} records) · {formatUsd(order.totalUsdCents)}</p>
+      <p className="mt-2">Order <span className="font-mono text-sm">{order.id}</span> · {formatUsd(order.totalUsdCents)}</p>
+      <ul aria-label="Lists in this order" className="mt-3 space-y-1.5 rounded-2xl border border-sand-200 bg-white p-4 text-sm">
+        {items.map((it) => (
+          <li key={it.id} className="flex flex-wrap items-baseline justify-between gap-x-4">
+            <span className="font-semibold text-forest-900">{getProduct(it.productSlug)?.name ?? it.productSlug} <span className="font-normal">· {it.packageName} package, {it.records.toLocaleString("en-US")} records</span></span>
+            <span>{formatUsd(it.priceUsdCents)}</span>
+          </li>
+        ))}
+      </ul>
 
       {testnet && (
         <p className="mt-5 flex gap-3 rounded-2xl border-2 border-purple-600 bg-purple-100 p-4 font-semibold text-forest-900">
@@ -45,7 +53,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
         </p>
       )}
 
-      <div className="mt-6"><CheckoutLive orderId={order.id} expiresAt={a.expiresAt.getTime()} initial={order.status} /></div>
+      <div className="mt-6"><CheckoutLive orderId={order.id} expiresAt={a.expiresAt.getTime()} initial={order.status} slugs={items.map((i) => i.productSlug)} /></div>
 
       <section aria-label="Payment details" className="mt-6 grid gap-6 rounded-3xl border border-sand-200 bg-white p-6 sm:grid-cols-[auto_1fr] sm:p-8">
         <div className="mx-auto" role="img" aria-label="QR code for the payment address and amount" dangerouslySetInnerHTML={{ __html: qr }} />
@@ -60,7 +68,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
         <li><strong className="text-forest-900">Network:</strong> send only on {netName}. Funds sent on another network are lost.</li>
         <li><strong className="text-forest-900">Amount:</strong> send the exact amount shown, to the last digit, in ONE payment. The small extra digits are how we match your payment to your order; if your wallet or exchange deducts a fee, add it on top so the amount we receive is exact.</li>
         <li><strong className="text-forest-900">Time:</strong> pay before the countdown ends. Payments after that need manual review.</li>
-        <li><strong className="text-forest-900">Delivery:</strong> after the network confirms your payment we email a secure download link to the address you used at checkout.</li>
+        <li><strong className="text-forest-900">Delivery:</strong> after the network confirms your payment we email your download link{items.length > 1 ? "s" : ""} to the address you used at checkout.</li>
       </ul>
       <section className="mt-6 rounded-2xl border border-sand-200 bg-white p-5">
         <h2 className="text-lg font-bold text-forest-900">Already paid but nothing happened?</h2>

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, like, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, like, or } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, Empty, PageHeader, Panel, fmtDate, usd } from "@/components/admin/ui";
@@ -34,14 +34,19 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const page = Math.max(1, Number(sp.page) || 1);
   const db = getDb();
   const where = and(status ? eq(schema.orders.status, status) : undefined, q ? or(like(schema.orders.email, `%${q}%`), like(schema.orders.id, `%${q}%`)) : undefined);
-  const [[{ total }], rows] = await Promise.all([
+  const [[{ total }], base] = await Promise.all([
     db.select({ total: count() }).from(schema.orders).where(where),
-    db.select({ id: schema.orders.id, email: schema.orders.email, status: schema.orders.status, cents: schema.orders.totalUsdCents, createdAt: schema.orders.createdAt, slug: schema.orderItems.productSlug, pkg: schema.orderItems.packageName, dStatus: schema.deliveries.status })
+    db.select({ id: schema.orders.id, email: schema.orders.email, status: schema.orders.status, cents: schema.orders.totalUsdCents, createdAt: schema.orders.createdAt, dStatus: schema.deliveries.status })
       .from(schema.orders)
-      .leftJoin(schema.orderItems, eq(schema.orderItems.orderId, schema.orders.id))
       .leftJoin(schema.deliveries, eq(schema.deliveries.orderId, schema.orders.id))
       .where(where).orderBy(desc(schema.orders.createdAt)).limit(PAGE).offset((page - 1) * PAGE),
   ]);
+  // An order can hold several lists: fetch its items separately so paging counts ORDERS, not items.
+  const itemRows = base.length ? await db.select().from(schema.orderItems).where(inArray(schema.orderItems.orderId, base.map((b) => b.id))) : [];
+  const rows = base.map((o) => {
+    const its = itemRows.filter((i) => i.orderId === o.id);
+    return { ...o, slug: its.length ? its.map((i) => i.productSlug).join(", ") : null, pkg: its.length ? its.map((i) => i.packageName).join(", ") : null };
+  });
   const pages = Math.max(1, Math.ceil(total / PAGE));
   const href = (p: number) => `/admin/orders?${new URLSearchParams({ ...(q && { q }), ...(status && { status }), page: String(p) })}`;
 

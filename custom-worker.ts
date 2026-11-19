@@ -5,6 +5,7 @@
 import { default as handler } from "./.open-next/worker.js";
 import { publishDue } from "./lib/blog/posts";
 import { purgeOldSearches } from "./lib/help/analytics";
+import { purgeCartEvents } from "./lib/cart/stats";
 import { purgeOldPopupEvents } from "./lib/popups/store";
 import { purgeEmailLogs } from "./lib/system-emails/webhook";
 import { applyPageSeo, type PageOverrideMap } from "./lib/seo/page-rewrite";
@@ -94,6 +95,7 @@ export default {
       ctx.waitUntil(purgeOldSearches(env).catch(() => undefined));
       ctx.waitUntil(purgeEmailLogs(env).catch(() => undefined));
       ctx.waitUntil(purgeOldPopupEvents(env).catch(() => undefined));
+      ctx.waitUntil(purgeCartEvents(env));
     }
     else {
       ctx.waitUntil(runPaymentWatcher(env));

@@ -10,10 +10,14 @@ const schema = z.object({
   turnstileToken: z.string().min(1, "Please complete the check."),
   website: z.string().max(0).optional(),
   email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.").max(254)),
-  product: z.string().trim().min(1).max(80),
-  package: z.string().trim().min(1).max(40),
+  // Either one list (product + package) or a cart (items). Prices are never accepted from the browser.
+  product: z.string().trim().min(1).max(80).optional(),
+  package: z.string().trim().min(1).max(40).optional(),
+  items: z.array(z.object({ product: z.string().trim().min(1).max(80), package: z.string().trim().min(1).max(40) })).min(1).max(10).optional(),
   coin: z.enum(OPTION_IDS, "Choose how you want to pay."),
 });
+
+const orderItems = (d: z.infer<typeof schema>) => (d.items ?? (d.product && d.package ? [{ product: d.product, package: d.package }] : [])).map((i) => ({ productSlug: i.product, packageName: i.package }));
 
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -31,7 +35,7 @@ export async function POST(req: Request) {
   const ipHash = await sha256Hex(`${env.HASH_SALT ?? ""}:ip:${ip}`);
   if (await isRateLimited(env.CACHE, "checkout", ipHash, 10, 3600)) return json(429, { ok: false, error: "Too many requests. Try again later." });
   try {
-    const orderId = await createOrder(env, { email: p.data.email, productSlug: p.data.product, packageName: p.data.package, option: p.data.coin });
+    const orderId = await createOrder(env, { email: p.data.email, items: orderItems(p.data), option: p.data.coin });
     return json(200, { ok: true, redirect: `/checkout/${orderId}` });
   } catch (e) {
     if (e instanceof CheckoutError) return json(409, { ok: false, error: e.message });

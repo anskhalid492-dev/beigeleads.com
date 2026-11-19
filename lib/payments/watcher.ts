@@ -115,12 +115,11 @@ async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttemp
   if (!order) return false;
   const [wallet] = a.walletId ? await db.select().from(schema.wallets).where(eq(schema.wallets.id, a.walletId)) : [];
   const events = await db.select().from(schema.paymentEvents).where(eq(schema.paymentEvents.attemptId, a.id));
-  const [item] = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, a.orderId));
 
   const d = decideAttempt({
     expectedAtomic: parseAtomic(a.expectedAmount, spec.decimals),
     txs: events.map((e) => ({ sats: parseAtomic(e.amount, spec.decimals), confirmations: e.confirmations, seenAtMs: e.seenAt.getTime() })),
-    confirmationsNeeded: confirmationsNeeded(a.coin, opt.chain, item?.priceUsdCents ?? order.totalUsdCents, wallet?.minConfirmations ?? 1),
+    confirmationsNeeded: confirmationsNeeded(a.coin, opt.chain, order.totalUsdCents, wallet?.minConfirmations ?? 1),
     expiresAtMs: a.expiresAt.getTime(),
     nowMs: now,
     orderStatus: order.status,

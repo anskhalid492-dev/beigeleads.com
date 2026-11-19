@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Badge, Empty, PageHeader, Panel, fmtDate } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
@@ -16,14 +16,19 @@ export default async function DeliveryPage() {
     redirect(`/admin/login?reason=${["no-cookie", "bad-session", "email-mismatch"].includes(m) ? m : "forbidden"}`);
   }
   const db = getDb();
-  const [links, paid] = await Promise.all([
+  const [links, paidBase] = await Promise.all([
     db.select().from(schema.deliveryLinks),
-    db.select({ id: schema.orders.id, email: schema.orders.email, paidAt: schema.orders.paidAt, pkg: schema.orderItems.packageName, slug: schema.orderItems.productSlug, dStatus: schema.deliveries.status, dAttempts: schema.deliveries.attempts })
+    db.select({ id: schema.orders.id, email: schema.orders.email, paidAt: schema.orders.paidAt, dStatus: schema.deliveries.status, dAttempts: schema.deliveries.attempts })
       .from(schema.orders)
-      .innerJoin(schema.orderItems, eq(schema.orderItems.orderId, schema.orders.id))
       .leftJoin(schema.deliveries, eq(schema.deliveries.orderId, schema.orders.id))
       .where(eq(schema.orders.status, "paid")).orderBy(desc(schema.orders.paidAt)).limit(30),
   ]);
+  // Several lists can be in one order: fetch the items separately and show them together.
+  const itemRows = paidBase.length ? await db.select().from(schema.orderItems).where(inArray(schema.orderItems.orderId, paidBase.map((o) => o.id))) : [];
+  const paid = paidBase.map((o) => {
+    const its = itemRows.filter((i) => i.orderId === o.id);
+    return { ...o, slug: its.map((i) => i.productSlug).join(", "), pkg: its.map((i) => i.packageName).join(", ") };
+  });
   const rows: Row[] = getProducts().map((p) => ({
     slug: p.slug,
     name: p.name,

@@ -59,7 +59,7 @@ export function pageTypeOf(path: string): PageType {
   if (path.startsWith("/product/")) return "product";
   if (path === "/blog" || path.startsWith("/blog/")) return "blog";
   if (path.startsWith("/help")) return "help";
-  if (path.startsWith("/checkout")) return "checkout";
+  if (path.startsWith("/checkout") || path === "/cart") return "checkout"; // no popups on the cart either
   if (path.startsWith("/custom-list")) return "custom-list";
   if (path.startsWith("/sample")) return "sample";
   return "other";

@@ -28,4 +28,5 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-initOpenNextCloudflareForDev();
+// BL_DEV_PERSIST keeps the local D1/KV state outside the project folder (used for browser checks, so writes do not trigger reloads).
+initOpenNextCloudflareForDev(process.env.BL_DEV_PERSIST ? { persist: { path: process.env.BL_DEV_PERSIST } } : undefined);

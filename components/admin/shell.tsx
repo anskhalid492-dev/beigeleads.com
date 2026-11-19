@@ -10,6 +10,7 @@ const NAV = [
   ["Products", "/admin/products", Package],
   ["Delivery Links", "/admin/delivery", Send],
   ["Orders", "/admin/orders", ShoppingCart],
+  ["Cart funnel", "/admin/cart", ShoppingCart],
   ["Payments & Wallets", "/admin/wallets", Wallet],
   ["Sample Requests", "/admin/sample-requests", Inbox],
   ["Contact Inquiries", "/admin/contact-inquiries", MessageSquare],

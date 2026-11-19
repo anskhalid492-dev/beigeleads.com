@@ -29,6 +29,25 @@ export function deliveryEmailText(i: { orderId: string; packageName: string; rec
   ].join("\n");
 }
 
+export function deliveryEmailMultiText(i: { orderId: string; items: { productName: string; packageName: string; records: number; url: string }[] }): string {
+  return [
+    "Thank you for your order. Your payment is confirmed.",
+    "",
+    `Order: ${i.orderId}`,
+    `You bought ${i.items.length} lists. Each one has its own download link:`,
+    "",
+    ...i.items.flatMap((x, n) => [`${n + 1}. ${x.productName}, ${x.packageName} package (${x.records.toLocaleString("en-US")} records)`, x.url, ""]),
+    "Permitted use: you may use these lists for your own lawful business outreach. You must not use them for spam, fraud, harassment or unlawful processing, and you must not resell or publish them.",
+    `Lawful use policy: ${SITE}/legal/lawful-use`,
+    `Replacement and refund policy: ${SITE}/legal/refund-replacement`,
+    `Opt-out requests (people who ask to be removed from our data): ${SITE}/opt-out`,
+    "",
+    "Keep this email as your receipt. If a link does not work, reply to this email or use the contact page and quote your order number.",
+    "",
+    "BeigeLeads",
+  ].join("\n");
+}
+
 export type DeliverResult = "sent" | "already-sent" | "no-link" | "not-paid" | "failed" | "busy";
 
 /**
@@ -39,8 +58,10 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   const db = getDbFromEnv(env);
   const [order] = await db.select().from(schema.orders).where(eq(schema.orders.id, orderId));
   if (!order || order.status !== "paid") return "not-paid";
-  const [item] = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId));
+  const items = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).orderBy(schema.orderItems.id);
+  const item = items[0];
   if (!item) return "not-paid";
+  const multi = items.length > 1;
 
   const [existing] = await db.select().from(schema.deliveries).where(eq(schema.deliveries.orderId, orderId));
   if (existing?.status === "sent" && !opts.force) return "already-sent";
@@ -49,18 +70,21 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   // "Payment received" note (template payment_received): once per order, never blocks delivery.
   try {
     const { getProduct: gp } = await import("@/lib/catalog");
-    await sendOnce(env, db, "payment_received", order.email, { order_number: orderId, product_name: gp(item.productSlug)?.name ?? item.productSlug, order_url: `${SITE}/checkout/${orderId}` }, orderId);
+    await sendOnce(env, db, "payment_received", order.email, { order_number: orderId, product_name: items.map((x) => gp(x.productSlug)?.name ?? x.productSlug).join(", "), order_url: `${SITE}/checkout/${orderId}` }, orderId);
   } catch { /* delivery must never depend on this note */ }
 
-  const url = await findDeliveryLink(env, item.productSlug, item.packageName);
-  if (!url) {
+  // Every list in the order needs its own delivery link. If any is missing nothing is sent (the cron retries every minute).
+  const links = await Promise.all(items.map((x) => findDeliveryLink(env, x.productSlug, x.packageName)));
+  const missing = items.filter((_, n) => !links[n]);
+  if (missing.length > 0) {
     const key = `nolink:${orderId}`;
     if (!(await env.CACHE.get(key))) {
       await env.CACHE.put(key, "1", { expirationTtl: 24 * 3600 });
-      await notifyOwner(env, "PAID order has no delivery link", `Order ${orderId} (${item.productSlug}, ${item.packageName}) is paid but no delivery link is set. Add one in /admin/delivery; it is sent automatically within a minute.`);
+      await notifyOwner(env, "PAID order has no delivery link", `Order ${orderId} (${missing.map((m) => `${m.productSlug}, ${m.packageName}`).join("; ")}) is paid but no delivery link is set. Add one in /admin/delivery; it is sent automatically within a minute.`);
     }
     return "no-link";
   }
+  const url = multi ? links.join("\n") : (links[0] as string); // snapshot of what was sent
 
   // Claim the order. Only one runner can move a row into "sending".
   if (!existing) {
@@ -75,15 +99,25 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   }
 
   const { getProduct } = await import("@/lib/catalog");
-  const product = getProduct(item.productSlug);
-  const productName = product?.name ?? item.productSlug;
-  const legacy = {
-    to: order.email,
-    subject: `Your BeigeLeads list: ${productName}`,
-    text: deliveryEmailText({ orderId, packageName: item.packageName, records: item.records, productName, url }),
-  };
-  // The branded template is used when it renders cleanly; otherwise the built-in text above is sent unchanged.
-  const mail = await systemMail(db, "product_delivery", order.email, { order_number: orderId, product_name: productName, package_name: item.packageName, records: item.records.toLocaleString("en-US"), download_url: url }, legacy, { reference: orderId });
+  const nameOf = (slug: string) => getProduct(slug)?.name ?? slug;
+  let mail;
+  if (multi) {
+    // Several lists in one email: plain text (the branded template has one download link).
+    mail = {
+      to: order.email,
+      subject: `Your BeigeLeads lists (${items.length})`,
+      text: deliveryEmailMultiText({ orderId, items: items.map((x, n) => ({ productName: nameOf(x.productSlug), packageName: x.packageName, records: x.records, url: links[n] as string })) }),
+    };
+  } else {
+    const productName = nameOf(item.productSlug);
+    const legacy = {
+      to: order.email,
+      subject: `Your BeigeLeads list: ${productName}`,
+      text: deliveryEmailText({ orderId, packageName: item.packageName, records: item.records, productName, url }),
+    };
+    // The branded template is used when it renders cleanly; otherwise the built-in text above is sent unchanged.
+    mail = await systemMail(db, "product_delivery", order.email, { order_number: orderId, product_name: productName, package_name: item.packageName, records: item.records.toLocaleString("en-US"), download_url: url }, legacy, { reference: orderId });
+  }
   const ok = await sendEmail(env, mail);
   if (ok) {
     await db.update(schema.deliveries).set({ status: "sent", sentAt: new Date() }).where(eq(schema.deliveries.orderId, orderId));

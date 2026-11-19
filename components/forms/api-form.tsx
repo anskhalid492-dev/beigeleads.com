@@ -17,7 +17,9 @@ type Props = {
   successText: string;
   defaults?: Record<string, string>;
   /** Extra values sent with the form (not shown). */
-  hidden?: Record<string, string>;
+  hidden?: Record<string, unknown>;
+  /** Called when a valid submit starts (for example to count a checkout start). */
+  onSubmitStart?: () => void;
 };
 
 // Cloudflare's published always-passes test key; used only if no real key is configured (local dev).
@@ -35,7 +37,7 @@ declare global {
 const inputClass =
   "w-full rounded-lg border border-sand-300 bg-white px-4 py-3 text-base text-forest-900 placeholder:text-forest-500/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 
-export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, defaults = {}, hidden = {} }: Props) {
+export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, defaults = {}, hidden = {}, onSubmitStart }: Props) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || TEST_SITE_KEY;
   const formId = useId();
   const widgetRef = useRef<HTMLDivElement>(null);
@@ -67,10 +69,11 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
       return;
     }
     const form = new FormData(e.currentTarget);
-    const body: Record<string, string> = { ...hidden, turnstileToken: token };
+    const body: Record<string, unknown> = { ...hidden, turnstileToken: token };
     for (const [k, v] of form.entries()) if (typeof v === "string") body[k] = v;
 
     setState("sending");
+    onSubmitStart?.();
     try {
       const res = await fetch(endpoint, {
         method: "POST",

@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
+import { cartActions } from "@/lib/cart/client";
 
 type Status = { status: string; attempt: string | null; expiresAt: number | null };
 
 const label: Record<string, { title: string; text: string }> = {
   pending: { title: "Waiting for payment", text: "We check the network every minute. You can close this page: we email you when the payment is confirmed." },
-  paid: { title: "Payment confirmed", text: "Thank you. Your download link is being prepared and will be emailed to you." },
+  paid: { title: "Payment confirmed", text: "Thank you. Your download link is being prepared and will be emailed to you (one link per list)." },
   expired: { title: "This quote has expired", text: "Do not send funds to this address. Start a new order to get a fresh price." },
   partial: { title: "Partial payment received", text: "We received less than the full amount. Contact us with your order number." },
   late_payment: { title: "Payment arrived after the quote expired", text: "We will review it manually and email you. Please contact us with your order number." },
@@ -13,7 +14,7 @@ const label: Record<string, { title: string; text: string }> = {
 };
 
 /** Countdown + status poll (every 12s). Only reads; never trusts the browser for payment state. */
-export function CheckoutLive({ orderId, expiresAt, initial }: { orderId: string; expiresAt: number; initial: string }) {
+export function CheckoutLive({ orderId, expiresAt, initial, slugs = [] }: { orderId: string; expiresAt: number; initial: string; slugs?: string[] }) {
   const [now, setNow] = useState<number | null>(null);
   const [status, setStatus] = useState<Status>({ status: initial, attempt: null, expiresAt });
 
@@ -31,7 +32,12 @@ export function CheckoutLive({ orderId, expiresAt, initial }: { orderId: string;
   const left = now === null ? null : Math.max(0, Math.floor((expiresAt - now) / 1000));
   const effective = status.status === "pending" && left === 0 ? "expired" : status.status;
   // Real event for the popup system: the server says the order is paid (never the browser's guess).
-  useEffect(() => { if (status.status === "paid") window.dispatchEvent(new CustomEvent("bl:purchased")); }, [status.status]);
+  useEffect(() => {
+    if (status.status !== "paid") return;
+    window.dispatchEvent(new CustomEvent("bl:purchased"));
+    for (const slug of slugs) cartActions.remove(slug); // the cart keeps its lists until payment is really confirmed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status.status]);
   const l = label[effective] ?? label.pending;
   const mm = left === null ? "--" : String(Math.floor(left / 60)).padStart(2, "0");
   const ss = left === null ? "--" : String(left % 60).padStart(2, "0");

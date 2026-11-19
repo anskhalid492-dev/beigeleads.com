@@ -768,3 +768,11 @@ export const popupEvents = sqliteTable("popup_events", {
   pageType: text("page_type").notNull().default(""),
   createdAt: createdAt(),
 });
+
+// Anonymous cart funnel counters (migration 0027): event name and item count only.
+export const cartEvents = sqliteTable("cart_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  event: text("event").notNull(),
+  items: integer("items").notNull().default(0),
+  createdAt: createdAt(),
+});

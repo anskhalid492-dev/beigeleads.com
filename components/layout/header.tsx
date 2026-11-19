@@ -1,5 +1,6 @@
 "use client";
 
+import { CartHeaderLink } from "@/components/cart/header-link";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -118,6 +119,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <CartHeaderLink />
             <Button asChild variant="secondary" size="sm" className="h-10 rounded-full px-5 text-[0.9375rem] tracking-[-0.005em] [font-stretch:90%] transition-all duration-200 hidden border-forest-900/20 hover:border-forest-900 hover:bg-sand-100 xl:inline-flex">
               <Link href="/sample">Try a Sample</Link>
             </Button>
@@ -217,6 +219,7 @@ export function Header() {
           <div id="mobile-menu" className="mega-in absolute inset-x-0 top-full mt-3 max-h-[75vh] overflow-y-auto rounded-3xl border border-sand-200 bg-white p-4 shadow-2xl lg:hidden">
             <ul className="space-y-1 text-base font-medium text-forest-900">
               <li><Link href="/lists" className="block rounded-xl px-3 py-3 hover:bg-sand-100">Lists</Link></li>
+              <li><CartHeaderLink withLabel onClick={close} /></li>
               <li>
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-sand-100">
