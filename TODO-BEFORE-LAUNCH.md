@@ -108,9 +108,8 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - /sample: run drizzle/0009_sample_requests.sql in D1; samples are sent manually from /admin/sample-requests; example rows are fictional placeholders.
 
 ## About page (19 Nov 2026)
-- [ ] CONFIRM the founder's name spelling: the owner wrote "Anus", his own MunchReach story says "Anas Khalid" (used on the page; one constant, `FOUNDER` in `lib/about-content.ts`).
-- [ ] Add an approved founder photograph (set `FOUNDER.photo`, file under /public). Until then an initials-free logo card is shown, never a stock face.
-- [ ] CONFIRM the "30M+ cold emails" figure (from the owner's MunchReach page) may be repeated on BeigeLeads.
-- [ ] CONFIRM the origin link: the page says sourcing leads was "the same fragmentation, one step earlier". The founder's text does not say when or how the BeigeLeads idea began. Provide the real moment (date, trigger, first list) to replace that sentence.
-- [ ] Decide whether MunchReach may be mentioned (it is deliberately NOT named on the page).
-- [ ] No quotations from the founder are used; add real ones only if he supplies them.
+- [x] Name "Anus" confirmed by the owner. MunchReach is not mentioned (owner decision).
+- [x] Facts from the owner (19 Nov 2026): dropped out of college, outbound since 2020 (6+ years), 50M+ emails, several failed businesses, BeigeLeads built entirely by him, quote "I wasn't supposed to make it."
+- [ ] Add an approved founder photograph (set `FOUNDER.photo`, file under /public). Until then a logo card is shown, never a stock face.
+- [ ] Optional: the real BeigeLeads origin moment (when and how the idea began, first list). The page does not state one; the "scattered part" chapter is general.
+- [ ] Optional: last name / full name for the byline and schema (the page uses "Anus" only).

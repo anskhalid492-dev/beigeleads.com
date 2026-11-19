@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About BeigeLeads: the story behind the lists",
-  description: "How years of client acquisition work led founder Anas Khalid to build BeigeLeads: ready-made and custom B2B contact lists you pay for once and own.",
+  description: "How years of client acquisition work led founder Anus to build BeigeLeads: ready-made and custom B2B contact lists you pay for once and own.",
   alternates: { canonical: "/about" },
   robots: { index: false, follow: true }, // site-wide noindex until launch
 };

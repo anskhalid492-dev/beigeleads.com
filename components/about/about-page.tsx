@@ -37,7 +37,7 @@ export function AboutPage() {
             Every outbound campaign begins with a list.
           </h1>
           <p className="mt-6 max-w-xl text-xl leading-relaxed">
-            BeigeLeads grew out of years of client acquisition work. This is how {FOUNDER.name} got from cold emails and failed offers to a business that sells contact lists once, for good.
+            BeigeLeads grew out of years of client acquisition work. This is how {FOUNDER.name} went from dropping out of college to six years of outbound, and then to building a business that sells contact lists once, for good.
           </p>
         </div>
         <Portrait />
