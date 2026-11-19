@@ -118,11 +118,11 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Button asChild variant="secondary" size="sm" className="hidden rounded-full xl:inline-flex">
-              <Link href="/sample">Request a Sample</Link>
+            <Button asChild variant="secondary" size="sm" className="h-10 rounded-full px-5 text-[0.9375rem] tracking-[-0.005em] [font-stretch:90%] transition-all duration-200 hidden border-forest-900/20 hover:border-forest-900 hover:bg-sand-100 xl:inline-flex">
+              <Link href="/sample">Try a Sample</Link>
             </Button>
-            <Button asChild size="sm" className="hidden rounded-full sm:inline-flex">
-              <Link href="/custom-list">Custom List Builder</Link>
+            <Button asChild size="sm" className="h-10 rounded-full px-5 text-[0.9375rem] tracking-[-0.005em] [font-stretch:90%] transition-all duration-200 hidden shadow-[0_6px_16px_rgba(124,58,237,0.28)] hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(109,40,217,0.34)] sm:inline-flex">
+              <Link href="/custom-list">Build My List</Link>
             </Button>
             <button
               type="button"
@@ -240,8 +240,8 @@ export function Header() {
               ))}
             </ul>
             <div className="mt-3 grid gap-2 border-t border-sand-200 pt-3">
-              <Button asChild size="lg" className="rounded-full"><Link href="/custom-list">Custom List Builder</Link></Button>
-              <Button asChild variant="secondary" size="lg" className="rounded-full"><Link href="/sample">Request a Sample</Link></Button>
+              <Button asChild size="lg" className="rounded-full"><Link href="/custom-list">Build My List</Link></Button>
+              <Button asChild variant="secondary" size="lg" className="rounded-full"><Link href="/sample">Try a Sample</Link></Button>
             </div>
           </div>
         )}
