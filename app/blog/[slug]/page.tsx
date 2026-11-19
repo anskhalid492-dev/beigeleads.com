@@ -5,6 +5,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { ArticleView } from "@/components/blog/article-view";
 import { getPublicAuthorById } from "@/lib/blog/authors";
 import { getPublishedBySlug, relatedPublished } from "@/lib/blog/posts";
+import { getSeoSettings } from "@/lib/seo/settings";
 import { newsletterOn } from "@/lib/newsletter";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -19,15 +20,16 @@ export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promis
   if (!p) return { title: "Article not found", robots: { index: false } };
   const r = p.row;
   const title = r.seoTitle || r.title;
-  const description = r.metaDescription || r.excerpt || undefined;
-  const img = r.ogImage || r.featuredImage;
+  const g = await getSeoSettings(getCloudflareContext().env); // global defaults; the article's own fields win
+  const description = r.metaDescription || r.excerpt || g.defaultDescription || undefined;
+  const img = r.ogImage || r.featuredImage || g.defaultOgImage || null;
   const abs = img ? (img.startsWith("http") ? img : `${SITE_URL}${img}`) : undefined;
   return {
     title, description,
     alternates: { canonical: r.canonicalUrl || `/blog/${r.slug}` },
     ...(r.noindex ? { robots: { index: false, follow: true } } : {}),
-    openGraph: { type: "article", siteName: SITE_NAME, title: r.ogTitle || title, description: r.ogDescription || description, url: `${SITE_URL}/blog/${r.slug}`, images: abs ? [abs] : undefined, publishedTime: (r.publishedAt ?? r.scheduledAt)?.toISOString() },
-    twitter: { card: abs ? "summary_large_image" : "summary", title: r.ogTitle || title, description: r.ogDescription || description, images: abs ? [abs] : undefined },
+    openGraph: { type: "article", siteName: g.siteName || SITE_NAME, title: r.ogTitle || title, description: r.ogDescription || description, url: `${SITE_URL}/blog/${r.slug}`, images: abs ? [abs] : undefined, publishedTime: (r.publishedAt ?? r.scheduledAt)?.toISOString() },
+    twitter: { ...(g.twitterSite ? { site: g.twitterSite } : {}), card: abs ? "summary_large_image" : "summary", title: r.ogTitle || title, description: r.ogDescription || description, images: abs ? [abs] : undefined },
   };
 }
 

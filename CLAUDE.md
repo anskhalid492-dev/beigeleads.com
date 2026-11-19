@@ -634,3 +634,10 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Blog editor sidebar is now five tabs: Content (excerpt, related), Featured Image, SEO (search preview, on-page score, SEO title/meta/slug with "Suggest", focus + secondary keywords, canonical, noindex, checks, internal link ideas), Social (Facebook/LinkedIn and X previews, social title/description/image, fallback to featured image), Publishing (author, category, tags, dates, schedule, status actions). Top bar Preview/Save/Publish unchanged.
 - `lib/blog/seo.ts`: `onPageScore` (share of passing checks, labelled "not a ranking prediction"), deterministic `suggestSeoTitle/suggestMeta/suggestSlug`; Suggest buttons ask before replacing existing text. Changing a live slug shows a warning (redirect manager comes in Phase 5).
 - Not browser-tested (behind Access).
+
+## 52. SEO brief Phase 4: dashboard, defaults, article SEO list (Nov 2026)
+
+- Migration `0014_seo_settings.sql` (MUST be run in D1 before deploy; 1 statement): key/value table `seo_settings`.
+- Admin (admins only, sidebar "SEO"): `/admin/seo` (real counts over published blog articles: missing meta/title/focus/image/alt, length outliers, noindex; links to the filtered list), `/admin/seo/pages` (SEO fields of every article, `?missing=` filters, links to the editor), `/admin/seo/settings` (site name, default description, default social image, X handle; https/path URLs only).
+- `lib/seo/settings.ts` `getSeoSettings` never throws (defaults before 0014). Defaults are applied ONLY in `app/blog/[slug]` metadata (description and social image fallback, OG site name, twitter:site). The article's own fields always win. Home/Pricing/etc. are NOT affected: editable SEO on static pages would force a D1 read per visit (Workers CPU / Paid-plan question, owner decision pending). Site-wide noindex cannot be changed from here.
+- Test: `tests/seo-settings-e2e.test.ts`. Not built yet: sitemap manager, redirects, structured data manager (Phase 5), audit (6), Search Console setup (7).

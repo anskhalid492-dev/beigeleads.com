@@ -505,3 +505,11 @@ export const blogAuthors = sqliteTable(
   },
   (t) => [uniqueIndex("blog_authors_slug_uq").on(t.slug)],
 );
+
+/** Global SEO defaults edited in /admin/seo/settings (migration 0014). Key/value so new settings need no migration. */
+export const seoSettings = sqliteTable("seo_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull().default(""),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedBy: text("updated_by").notNull().default(""),
+});
