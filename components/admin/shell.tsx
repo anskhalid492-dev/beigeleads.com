@@ -17,6 +17,8 @@ const NAV = [
   ["SEO", "/admin/seo", Search],
   ["Redirects", "/admin/seo/redirects", Search],
   ["Sitemap", "/admin/seo/sitemap", Search],
+  ["Site audit", "/admin/seo/audit", Search],
+  ["Search Console", "/admin/seo/search-console", Search],
   ["Authors", "/admin/blog/authors", Users],
   ["Media", "/admin/media", ImageIcon],
   ["Newsletter", "/admin/newsletter", Mail],

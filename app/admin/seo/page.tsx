@@ -40,7 +40,7 @@ export default async function SeoDashboard() {
           ))}
         </ul>
       </Panel>
-      <p className="mt-6 text-sm">Next: <Link href="/admin/seo/pages" className="underline">all article SEO</Link> · <Link href="/admin/seo/settings" className="underline">global defaults</Link> · <Link href="/admin/seo/redirects" className="underline">redirects</Link> · <Link href="/admin/seo/sitemap" className="underline">sitemap</Link> · <Link href="/admin/seo/structured-data" className="underline">structured data</Link>. The site audit and Search Console setup are not built yet.</p>
+      <p className="mt-6 text-sm">Next: <Link href="/admin/seo/pages" className="underline">all article SEO</Link> · <Link href="/admin/seo/settings" className="underline">global defaults</Link> · <Link href="/admin/seo/redirects" className="underline">redirects</Link> · <Link href="/admin/seo/sitemap" className="underline">sitemap</Link> · <Link href="/admin/seo/structured-data" className="underline">structured data</Link>. · <Link href="/admin/seo/audit" className="underline">site audit</Link>. <Link href="/admin/seo/search-console" className="underline">Search Console</Link> (setup steps only).</p>
     </>
   );
 }

@@ -38,3 +38,29 @@ export const toggleRedirectAction = async (id: number, enabled: boolean) => run(
 export const deleteRedirectAction = async (id: number) => run((env) => deleteRedirect(env, id), ["/admin/seo/redirects"]);
 export const excludePathAction = async (path: string) => run((env, who) => excludePath(env, who, path), ["/admin/seo/sitemap"]);
 export const includePathAction = async (path: string) => run((env) => includePath(env, path), ["/admin/seo/sitemap"]);
+
+import sitemap from "@/app/sitemap";
+import { AUDIT_BATCH, analyzeHtml, type PageAudit } from "@/lib/seo/audit";
+import { SITE_URL } from "@/lib/site";
+
+/**
+ * Audits one batch of the site's OWN sitemap pages. The browser sends only an offset: every URL is built here from the
+ * sitemap path on the fixed site origin, redirects are not followed, so this can never be pointed at another host.
+ */
+export async function auditBatchAction(offset: number): Promise<{ ok: true; total: number; next: number | null; pages: PageAudit[] } | { ok: false; error: string }> {
+  try {
+    await requireAdmin();
+    const start = Math.max(0, Math.floor(Number(offset) || 0));
+    const paths = (await sitemap()).map((e) => e.url.replace(SITE_URL, "") || "/").filter((p) => p.startsWith("/") && !p.startsWith("//"));
+    const slice = paths.slice(start, start + AUDIT_BATCH);
+    const pages = await Promise.all(slice.map(async (p): Promise<PageAudit> => {
+      try {
+        const res = await fetch(`${SITE_URL}${p}`, { redirect: "manual", signal: AbortSignal.timeout(8000), headers: { "user-agent": "BeigeLeads-SEO-audit", accept: "text/html" } });
+        const html = res.status < 300 ? (await res.text()).slice(0, 1_000_000) : "";
+        return analyzeHtml(p, res.status, html);
+      } catch { return { path: p, status: 0, issues: [{ kind: "verified", code: "fetch", text: "The page could not be fetched (timeout or network error)." }] }; }
+    }));
+    const next = start + AUDIT_BATCH < paths.length ? start + AUDIT_BATCH : null;
+    return { ok: true, total: paths.length, next, pages };
+  } catch { return { ok: false, error: "The audit could not run. Sign in again and retry." }; }
+}
