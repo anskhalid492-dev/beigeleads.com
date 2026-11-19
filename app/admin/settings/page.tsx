@@ -2,6 +2,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { redirect } from "next/navigation";
 import { Badge, PageHeader, Panel } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/require-admin";
+import { SettingsSearch } from "@/components/admin/settings-search";
+import { CATEGORIES, SETTINGS } from "@/lib/settings/registry";
 
 export const dynamic = "force-dynamic";
 const on = (v: string | undefined) => v === "true";
@@ -25,8 +27,11 @@ export default async function SettingsPage() {
   ];
   return (
     <>
-      <PageHeader title="Settings" text="Read-only status of the deployment. Values and secrets are never shown. Change them in the Cloudflare dashboard (Settings, Variables and Secrets)." />
-      <Panel title="Deployment">
+      <PageHeader title="Settings" text="Everyday website settings you can change here. Secrets, wallets and infrastructure stay outside this screen." />
+      <SettingsSearch
+        sections={CATEGORIES.map((c) => ({ id: c.id, label: c.label, text: c.text, href: c.live ? ("href" in c ? c.href : `/admin/settings/${c.id === "audit" ? "audit" : c.id}`) : null }))}
+        fields={SETTINGS.map((s) => ({ key: s.key, label: s.label, description: s.description, sectionLabel: CATEGORIES.find((c) => c.id === s.category)?.label ?? "", href: `/admin/settings/${s.category}` }))} />
+      <Panel title="Deployment status (read-only)" className="mt-8">
         <ul className="divide-y divide-sand-200 text-sm">
           {rows.map(([label, key, active, text]) => (
             <li key={key} className="flex items-center justify-between gap-4 px-5 py-3">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/bricolage-grotesque/wdth.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { AnnouncementBanner } from "@/components/layout/announcement-banner";
 import { PublicChrome } from "@/components/layout/public-chrome";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
-        <PublicChrome><Header /></PublicChrome>
+        <PublicChrome><AnnouncementBanner /><Header /></PublicChrome>
         <main className="flex-1">{children}</main>
         <PublicChrome><Footer /></PublicChrome>
         <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL }} />

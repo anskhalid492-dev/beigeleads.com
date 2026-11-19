@@ -537,3 +537,23 @@ export const seoSitemapExclusions = sqliteTable("seo_sitemap_exclusions", {
   createdAt: createdAt(),
   createdBy: text("created_by").notNull().default(""),
 });
+
+/** Typed admin-editable settings (migration 0016). One row per key; definitions live in lib/settings/registry.ts. No secrets ever. */
+export const systemSettings = sqliteTable("system_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull().default(""),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedBy: text("updated_by").notNull().default(""),
+});
+
+/** Append-only history of settings changes. The app has no update or delete path for it. */
+export const settingsAuditLog = sqliteTable("settings_audit_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  actor: text("actor").notNull(),
+  category: text("category").notNull(),
+  settingKey: text("setting_key").notNull(),
+  oldValue: text("old_value").notNull().default(""),
+  newValue: text("new_value").notNull().default(""),
+  result: text("result").notNull().default("saved"),
+  createdAt: createdAt(),
+});

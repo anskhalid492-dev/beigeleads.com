@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDbFromEnv, schema } from "@/lib/db";
 
@@ -26,6 +27,9 @@ export async function getSeoSettings(env: Env): Promise<SeoSettings> {
   try {
     const rows = await getDbFromEnv(env).select().from(schema.seoSettings);
     const out: SeoSettings = { ...SEO_DEFAULTS };
+    // The General settings "Website name" is the base; an SEO-specific value (below) still wins.
+    const gen = await getDbFromEnv(env).select().from(schema.systemSettings).where(eq(schema.systemSettings.key, "siteName")).limit(1).catch(() => []);
+    if (gen[0]?.value) out.siteName = gen[0].value;
     for (const r of rows) if (r.key in out && r.value !== "") (out as Record<string, string>)[r.key] = r.value;
     return out;
   } catch { return { ...SEO_DEFAULTS }; }
