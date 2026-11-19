@@ -1,5 +1,5 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { getCities, getCity, getCountry } from "@/lib/catalog";
+import { getCategories, getCategory, getCities, getCity, getCountries, getCountry } from "@/lib/catalog";
 import type { getDbFromEnv } from "@/lib/db";
 import { schema } from "@/lib/db";
 import { parseImport, slugify, type ImportRow } from "./rules";
@@ -138,4 +138,20 @@ export async function geoSitemapPaths(db: Db): Promise<string[]> {
     }
     return [...out];
   } catch { return []; }
+}
+
+/** Every geography page the owner may write copy for: each industry's country page, plus each place with recorded inventory. */
+export async function geoPageList(db: Db): Promise<{ path: string; label: string }[]> {
+  const out: { path: string; label: string }[] = [];
+  for (const c of getCategories()) for (const k of getCountries()) out.push({ path: `/lists/${c.slug}/${k.slug}`, label: `${c.name} in ${k.name}` });
+  const g = await allCoverage(db);
+  const byId = new Map(g.areas.map((a) => [a.id, a]));
+  for (const r of g.coverage) {
+    const a = byId.get(r.areaId);
+    const par = a?.parentId ? byId.get(a.parentId) : null;
+    const cat = getCategory(r.categorySlug);
+    if (!a || !cat || r.recordCount <= 0 || (a.parentId && !par)) continue;
+    out.push({ path: `/lists/${r.categorySlug}/${a.countrySlug}/${par ? `${par.slug}/` : ""}${a.slug}`, label: `${cat.name} in ${par ? `${a.name}, ${par.name}` : a.name}` });
+  }
+  return out;
 }

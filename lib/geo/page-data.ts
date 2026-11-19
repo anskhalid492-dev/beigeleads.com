@@ -1,6 +1,7 @@
 import { getCategories, getCategory, getCountry, getProductFor } from "@/lib/catalog";
 import { getDb } from "@/lib/db";
 import { geoCopy } from "./content";
+import { getGeoContent } from "./page-content";
 import { isIndexable } from "./rules";
 import { categoriesInArea, coverageFor, listAllCities, listAreas, regionTotals, resolveArea } from "./store";
 
@@ -53,7 +54,10 @@ export async function loadGeoPage(categorySlug: string, countrySlug: string, seg
   }
 
   const kids = (view ? children : [...regions, ...cities]).filter((x) => (x.records ?? 0) > 0).map((x) => ({ name: x.name, records: x.records! })).sort((a, b) => b.records - a.records);
-  const copy = geoCopy({ category: c, country: k, place: view ? { name: view.area.name, level: view.area.level, parentName: view.parent?.name } : null, product, records, children: kids });
+  const gen = geoCopy({ category: c, country: k, place: view ? { name: view.area.name, level: view.area.level, parentName: view.parent?.name } : null, product, records, children: kids });
+  // Owner-written copy (admin) replaces the generated title, description and intro when it exists.
+  const custom = await getGeoContent(db, path);
+  const copy = { ...gen, title: custom.seoTitle || gen.title, description: custom.metaDescription || gen.description, intro: custom.intro || gen.intro };
   // The country page is indexable when the country has a real product or real place inventory; places need their own real inventory.
   const indexable = view ? isIndexable({ coverageCount: records, areaIndexable: view.area.indexable }) : isIndexable({ coverageCount: records ?? (product && !product.placeholderData ? product.recordCount : null), areaIndexable: true });
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: c.name, href: `/lists/${c.slug}` }, { name: k.name, href: base }, ...(view?.parent ? [{ name: view.parent.name, href: `${base}/${view.parent.slug}` }] : []), ...(view ? [{ name: view.area.name, href: path }] : [])];

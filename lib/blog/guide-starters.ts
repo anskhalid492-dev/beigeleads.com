@@ -1,3 +1,4 @@
+import { GEO_GUIDE } from "./guide-starters-geo";
 import type { StarterArticle } from "./starters";
 
 /**
@@ -260,3 +261,5 @@ There is no single number. It depends on your industry, offer, list and message,
 Yes, you can describe it in the [custom list builder](/custom-list). It is a request rather than an instant order, and the Help Center explains [how custom list requests work](/help/custom-list/request-a-custom-list). If you are not sure which list fits, you can also [ask for a free sample](/sample) first.`,
   },
 ];
+
+GUIDE_STARTERS.push(GEO_GUIDE);

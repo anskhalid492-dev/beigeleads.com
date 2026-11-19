@@ -799,3 +799,29 @@ export const geoCoverage = sqliteTable("geo_coverage", {
   recordCount: integer("record_count").notNull(),
   updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
 });
+
+// Keyword-to-content workflow and per-page copy for geography pages (migration 0029).
+export const seoKeywords = sqliteTable("seo_keywords", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  keyword: text("keyword").notNull(),
+  intent: text("intent", { enum: ["informational", "commercial", "transactional", "navigational"] }).notNull().default("commercial"),
+  targetType: text("target_type", { enum: ["none", "page", "guide", "article"] }).notNull().default("none"),
+  targetPath: text("target_path").notNull().default(""),
+  categorySlug: text("category_slug").notNull().default(""),
+  countrySlug: text("country_slug").notNull().default(""),
+  place: text("place").notNull().default(""),
+  status: text("status", { enum: ["idea", "briefed", "writing", "published"] }).notNull().default("idea"),
+  notes: text("notes").notNull().default(""),
+  createdAt: createdAt(),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
+});
+
+export const geoPageContent = sqliteTable("geo_page_content", {
+  path: text("path").primaryKey(),
+  seoTitle: text("seo_title").notNull().default(""),
+  metaDescription: text("meta_description").notNull().default(""),
+  intro: text("intro").notNull().default(""),
+  primaryKeyword: text("primary_keyword").notNull().default(""),
+  secondaryKeywords: text("secondary_keywords").notNull().default(""),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
+});
