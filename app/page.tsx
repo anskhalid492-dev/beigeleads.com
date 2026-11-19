@@ -65,7 +65,7 @@ const compareRows = [
   ["What you pay for", "Ongoing access, seats or credits", "One list, once"],
   ["Cost of staying", "Keeps renewing", "Nothing renews"],
   ["If you stop paying", "Access ends", "The file is yours"],
-  ["Preview", "Varies by tool", "Free masked sample on every list"],
+  ["Preview", "Varies by tool", "Masked sample on every list page"],
   ["Best for", "Prospecting every week", "A list for a campaign"],
 ] as const;
 
@@ -103,7 +103,7 @@ export default function Home() {
             Search ready-made business contact lists by industry and location. Preview available data, pay once, or request a custom list built around your audience.
           </p>
           <div className="hero-in mt-10" style={{ animationDelay: "240ms" }}><Copilot /></div>
-          <p className="mt-12 text-sm text-sand-200">One-time purchase · No subscription · No account · Free masked sample</p>
+          <p className="mt-12 text-sm text-sand-200">One-time purchase · No subscription · No account · Masked sample on every list page</p>
         </div>
       </section>
 

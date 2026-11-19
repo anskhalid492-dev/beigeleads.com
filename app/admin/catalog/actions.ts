@@ -18,7 +18,7 @@ async function ctx() {
   return { db, log };
 }
 const MIG = "Could not save. Migration 0030 may not be applied yet.";
-const done = (m: string): never => { revalidatePath(BASE); revalidatePath("/shop"); return back(m, "saved"); };
+const done = (m: string): never => { revalidatePath(BASE); revalidatePath("/lists"); return back(m, "saved"); };
 
 export async function addCountryAction(form: FormData): Promise<void> {
   const { db, log } = await ctx();

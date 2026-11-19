@@ -9,7 +9,7 @@ import type { InternalTarget } from "./seo";
 /** Real internal pages, for link suggestions in the editor. Built from site data, never invented. */
 export function internalTargets(help: readonly Pick<HelpArticle, "category" | "slug" | "title">[] = helpArticles): InternalTarget[] {
   return [
-    { url: "/shop", title: "Shop all databases", keywords: ["business databases", "contact database", "email database"] },
+    { url: "/lists", title: "Browse all lists", keywords: ["business databases", "contact database", "email database"] },
     { url: "/lists", title: "Browse all lists", keywords: ["business contact lists", "contact list", "email list", "email database"] },
     { url: "/custom-list", title: "Custom list builder", keywords: ["custom list", "custom database"] },
     { url: "/sample", title: "Request a free sample", keywords: ["free sample", "masked sample"] },

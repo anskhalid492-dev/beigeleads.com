@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getProducts } from "@/lib/catalog";
 import { parseSlugList } from "@/lib/settings/service";
-import { EMPTY, applyFilters, chips, facets, interpret, isFiltered, paginate, parseFilters, shopHref, type GeoTree, type ShopData, type ShopProduct } from "@/lib/shop";
+import { EMPTY, applyFilters, chips, facets, interpret, isFiltered, paginate, parseFilters, listsHref, type GeoTree, type ShopData, type ShopProduct } from "@/lib/shop";
 
 const mk = (slug: string, cat: string, catName: string, k = "united-states", over: Partial<ShopProduct> = {}): ShopProduct => ({ slug, name: `${catName} Email List`, title: `${catName} in ${k}`, categorySlug: cat, categoryName: catName, countrySlug: k, countryName: k === "germany" ? "Germany" : "United States", countryCode: k === "germany" ? "DE" : "US", fields: ["Business name", "Email"], status: "draft", recordCount: null, fromCents: null, ...over });
 const tree: GeoTree = [
@@ -24,9 +24,9 @@ describe("shop filters", () => {
     expect(parseFilters({ minPrice: "abc" }).minPrice).toBeNull();
   });
   it("one canonical URL per view, round-trips", () => {
-    expect(shopHref({})).toBe("/shop");
+    expect(listsHref({})).toBe("/lists");
     const x = f({ industries: ["dentists"], countries: ["united-states"], state: "alabama", sort: "name", page: 2 });
-    expect(parseFilters(new URL(`http://x${shopHref(x)}`).searchParams)).toEqual(x);
+    expect(parseFilters(new URL(`http://x${listsHref(x)}`).searchParams)).toEqual(x);
   });
   it("multi-select industry and country", () => {
     expect(slugs(applyFilters(data, f({ industries: ["restaurants"] }))).sort()).toEqual(["restaurants-de", "restaurants-us"]);

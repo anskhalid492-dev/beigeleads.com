@@ -1,4 +1,4 @@
-// Server side: builds the serialisable shop data from the real catalog + geography tables.
+// Server side: builds the serialisable catalog data for /lists from the real catalog + geography tables.
 import { getCategories, getProducts, startingPriceCents } from "@/lib/catalog";
 import { loadCountries, loadSubindustries } from "@/lib/catalog-extra";
 import { getDb } from "@/lib/db";
@@ -7,7 +7,7 @@ import type { GeoTree, ShopData } from "@/lib/shop";
 
 const HINTS: Record<string, string[]> = { dentists: ["dentist", "dental", "orthodontist"], restaurants: ["restaurant", "cafe", "bar", "diner"], "ski-shops": ["ski", "snowboard"] };
 
-export async function loadShopData(): Promise<ShopData & { niches: { category: string; categoryName: string; name: string }[] }> {
+export async function loadListsData(): Promise<ShopData & { niches: { category: string; categoryName: string; name: string }[] }> {
   const db = getDb();
   const countries = await loadCountries(db);
   const cats = getCategories();
@@ -46,7 +46,7 @@ export async function loadShopData(): Promise<ShopData & { niches: { category: s
   const subs = await loadSubindustries(db);
   return {
     products, tree,
-    industries: cats.map((c) => ({ slug: c.slug, name: c.name, hints: [...(HINTS[c.slug] ?? []), c.singular] })),
+    industries: cats.map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })),
     countries: countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code })),
     niches: subs.rows.map((s) => ({ category: s.categorySlug, categoryName: catName.get(s.categorySlug) ?? "", name: s.name })),
   };

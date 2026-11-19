@@ -22,7 +22,7 @@ const faq = [
 ] as const;
 
 const trust = [
-  { icon: EyeOff, t: "Masked sample first", d: "See real columns before you pay." },
+  { icon: EyeOff, t: "Masked sample on every list page", d: "See real columns before you pay." },
   { icon: CalendarCheck2, t: "Re-verified every 60 days", d: "A last-verified date sits on every list." },
   { icon: ShieldCheck, t: "Opt-outs honoured", d: "People who ask to be removed are left out of delivered files." },
   { icon: Wallet, t: "Pay once", d: "No subscription, no account." },
@@ -43,7 +43,7 @@ export default function SolutionsPage() {
           { label: "Restaurants", category: "restaurants", country: "US" },
           { label: "Ski shops", category: "ski-shops", country: "US" },
           { label: "Pay once" },
-          { label: "Masked sample first" },
+          { label: "Masked sample on every list page" },
         ]}
         icon={<Layers className="size-8" aria-hidden />}
       />

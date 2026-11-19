@@ -29,9 +29,9 @@ describe("geography guide", () => {
   });
   it("only links to pages that exist", () => {
     const cats = getCategories().map((c) => `/lists/${c.slug}`);
-    const known = new Set(["/shop", "/lists", "/custom-list", "/sample", "/verification", "/data-sources", "/guides/b2b-lead-generation-guide", "/lists/dentists/united-states", ...cats, ...legalDocs.map((d) => `/legal/${d.slug}`)]);
+    const known = new Set(["/lists", "/custom-list", "/sample", "/verification", "/data-sources", "/guides/b2b-lead-generation-guide", "/lists/dentists/united-states", ...cats, ...legalDocs.map((d) => `/legal/${d.slug}`)]);
     for (const l of linksOf(doc).filter((x) => x.startsWith("/"))) expect(known.has(l), l).toBe(true);
-    expect(linksOf(doc)).toEqual(expect.arrayContaining(["/shop", "/custom-list", "/sample", "/lists/dentists"]));
+    expect(linksOf(doc)).toEqual(expect.arrayContaining(["/lists", "/custom-list", "/sample", "/lists/dentists"]));
   });
   it("makes no invented numbers or banned words", () => {
     const t = plainText(doc);

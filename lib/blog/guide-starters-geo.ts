@@ -54,7 +54,7 @@ Think of location as three layers, from broad to narrow:
 
 Start at the layer that matches how you sell. A software company selling nationwide may only need country and industry. A local-services supplier may need the city. Going narrower than you need just shrinks your list without improving it.
 
-On BeigeLeads you can follow this structure directly. Pick an industry such as [dentists](/lists/dentists), open a country such as [the United States](/lists/dentists/united-states), then move down to a state or city page where one exists. Each place page shows the records we have recorded for it and links to its neighbours. You can also browse everything from the [shop](/shop).
+On BeigeLeads you can follow this structure directly. Pick an industry such as [dentists](/lists/dentists), open a country such as [the United States](/lists/dentists/united-states), then move down to a state or city page where one exists. Each place page shows the records we have recorded for it and links to its neighbours. You can also browse everything on the [lists page](/lists).
 
 ## 4. Combine location with industry
 

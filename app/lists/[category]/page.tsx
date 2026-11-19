@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SampleTable } from "@/components/shared/sample-table";
 import { Faq } from "@/components/shared/faq";
+import { RelatedGuides } from "@/components/lists/related-guides";
 import { getCategory, getCountries, getCountry, getProducts } from "@/lib/catalog";
 import { sampleSheets } from "@/lib/sample-data";
 import { PlaceDirectory } from "@/components/geo/city-directory";
@@ -132,6 +133,8 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
           </ul>
         </div>
       </section>
+
+      <RelatedGuides terms={[c.name, "email list"]} />
 
       <Faq
         heading={`${c.name} lists: questions`}

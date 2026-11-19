@@ -20,7 +20,7 @@ describe("keywords (pure)", () => {
   });
   it("builds a brief with real links only and no numbers", () => {
     const b = buildBrief({ keyword: "alabama dentist email list", intent: "commercial", category: "dentists", country: "united-states", place: "Alabama" });
-    expect(b.links.map((l) => l.url)).toEqual(expect.arrayContaining(["/shop", "/lists/dentists", "/lists/dentists/united-states", "/product/dentists-us"]));
+    expect(b.links.map((l) => l.url)).toEqual(expect.arrayContaining(["/lists", "/lists/dentists", "/lists/dentists/united-states", "/product/dentists-us"]));
     expect(b.titleIdea.length).toBeLessThanOrEqual(60);
     expect(JSON.stringify(b)).not.toMatch(/\d+%/);
     expect(buildBrief({ keyword: "how to find dentists", intent: "informational" }).outline.length).toBeGreaterThan(4);

@@ -16,7 +16,7 @@ function DbWindow({ product, rows }: { product: Product; rows: readonly ProductS
         <span className="size-2.5 rounded-full bg-white/25" />
         <span className="size-2.5 rounded-full bg-white/25" />
         <span className="ml-3 truncate font-mono text-xs text-sand-300">{file}</span>
-        <span className="ml-auto rounded-full bg-forest-100 px-2.5 py-0.5 text-[0.7rem] font-semibold text-forest-900">Masked sample</span>
+        <span className="ml-auto rounded-full bg-forest-100 px-2.5 py-0.5 text-[0.7rem] font-semibold text-forest-900">Masked sample on every list page</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[26rem] text-left text-[0.8rem]">

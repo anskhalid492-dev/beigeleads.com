@@ -28,16 +28,15 @@ type Key = "lists" | "solutions" | null;
 export type ListsMenuData = { industries: { slug: string; name: string }[]; countries: { slug: string; name: string }[] };
 
 const AUDIENCES = [
-  { label: "B2B Databases", href: "/shop?type=b2b" },
-  { label: "B2C Databases", href: "/shop?type=b2c" },
-  { label: "Industry Lists", href: "/lists" },
+  { label: "B2B Databases", href: "/lists" },
+  { label: "B2C Databases", href: "/lists?type=b2c" },
+  { label: "Industry Lists", href: "/lists#industries" },
   { label: "Custom Lists", href: "/custom-list" },
 ] as const;
 const EXPLORE = [
   { label: "Browse All Lists", href: "/lists" },
-  { label: "Browse Industries", href: "/shop#industries" },
-  { label: "Browse Countries", href: "/shop#countries" },
-  { label: "Shop All Databases", href: "/shop" },
+  { label: "Browse Industries", href: "/lists#industries" },
+  { label: "Browse Countries", href: "/lists#locations" },
 ] as const;
 
 /** Order the menu by the admin's featured slugs; unknown slugs are ignored, empty = everything. */
@@ -233,7 +232,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
                     <p className="mb-2 text-sm font-bold text-forest-900">Popular Countries</p>
                     <ul className="space-y-1">
                       {countries.slice(0, 8).map((k) => (
-                        <li key={k.slug}><Link href={`/shop?country=${k.slug}`} onClick={close} className="block rounded-lg p-1.5 text-sm text-forest-900 hover:bg-sand-100">{k.name}</Link></li>
+                        <li key={k.slug}><Link href={`/lists?country=${k.slug}#databases`} onClick={close} className="block rounded-lg p-1.5 text-sm text-forest-900 hover:bg-sand-100">{k.name}</Link></li>
                       ))}
                     </ul>
                   </div>
@@ -256,7 +255,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
           <div id="mobile-menu" className="mega-in absolute inset-x-0 top-full mt-3 max-h-[75vh] overflow-y-auto rounded-3xl border border-sand-200 bg-white p-4 shadow-2xl lg:hidden">
             <ul className="space-y-1 text-base font-medium text-forest-900">
               <li><Link href="/lists" className="block rounded-xl px-3 py-3 hover:bg-sand-100">Lists</Link></li>
-              <li><Link href="/shop" className="block rounded-xl px-3 py-3 hover:bg-sand-100">Shop all databases</Link></li>
+              <li><Link href="/lists" className="block rounded-xl px-3 py-3 hover:bg-sand-100">Browse all lists</Link></li>
               <li><CartHeaderLink withLabel onClick={close} /></li>
               <li>
                 <details className="group">

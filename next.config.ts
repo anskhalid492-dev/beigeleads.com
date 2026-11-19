@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
       // Country slug is now the full name (CLAUDE.md section 71); old short URLs keep working.
       { source: "/lists/:category/us", destination: "/lists/:category/united-states", permanent: true },
       { source: "/lists/:category/us/:path*", destination: "/lists/:category/united-states/:path*", permanent: true },
+      // /shop was removed: /lists is the single catalog. Old filter params are kept (category -> industry).
+      { source: "/shop", has: [{ type: "query", key: "category", value: "(?<category>.+)" }], destination: "/lists?industry=:category", permanent: true },
+      { source: "/shop", destination: "/lists", permanent: true },
+      { source: "/shop/:path*", destination: "/lists", permanent: true },
       { source: "/help", destination: "/help-center", permanent: false },
     ];
   },

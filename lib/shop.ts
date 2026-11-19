@@ -54,7 +54,7 @@ export function parseFilters(sp: SP | URLSearchParams): Filters {
 }
 
 /** One canonical query string per view; defaults are left out. */
-export function shopHref(f: Partial<Filters>): string {
+export function listsHref(f: Partial<Filters>): string {
   const u = new URLSearchParams();
   if (f.type && f.type !== "b2b") u.set("type", f.type);
   if (f.q) u.set("q", f.q);
@@ -71,7 +71,7 @@ export function shopHref(f: Partial<Filters>): string {
   if (f.sort && f.sort !== "relevance") u.set("sort", f.sort);
   if (f.page && f.page > 1) u.set("page", String(f.page));
   const s = u.toString();
-  return s ? `/shop?${s}` : "/shop";
+  return s ? `/lists?${s}` : "/lists";
 }
 
 /** True when anything other than the plain page is selected (such views are noindex and canonical to /shop). */
@@ -147,7 +147,7 @@ export function interpret(q: string, industries: { slug: string; name: string; h
 }
 
 // ---------- filtering ----------
-export type ShopData = { products: ShopProduct[]; tree: GeoTree; industries: { slug: string; name: string; hints?: string[] }[]; countries: { slug: string; name: string; code: string }[] };
+export type ShopData = { products: ShopProduct[]; tree: GeoTree; industries: { slug: string; name: string; blurb?: string; hints?: string[] }[]; countries: { slug: string; name: string; code: string }[] };
 
 /** Applies every filter. The free-text query is interpreted first ("dentists in alabama"), then falls back to word matching. */
 export function applyFilters(data: ShopData, f: Filters, featured: string[] = []): ShopProduct[] {

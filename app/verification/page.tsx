@@ -119,7 +119,7 @@ export default function VerificationPage() {
                 <Button asChild size="lg" variant="secondary"><Link href="/data-sources">See where data comes from</Link></Button>
               </div>
               <ul className="rise mt-8 flex flex-wrap gap-2" style={{ animationDelay: "600ms" }}>
-                {["In-house SMTP checks", "Re-verified every 60 days", "Masked sample first"].map((t) => (
+                {["In-house SMTP checks", "Re-verified every 60 days", "Masked sample on every list page"].map((t) => (
                   <li key={t} className="rounded-full border border-forest-300/40 px-3 py-1 text-sm text-forest-100">{t}</li>
                 ))}
               </ul>
