@@ -2,7 +2,7 @@
 // assistant. Wording is written from how BeigeLeads operates (CLAUDE.md) and is NOT lawyer-reviewed.
 
 /** Date the current wording was published. Update whenever any legal text or the verification page changes. */
-export const LEGAL_UPDATED = "2026-11-18";
+export const LEGAL_UPDATED = "2026-11-19";
 export const formatLegalDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -21,6 +21,7 @@ export const legalDocs: LegalDoc[] = [
         "Payment data: the coin and network you pick, the amount, the receiving address and the transaction hash. We never receive bank card details.",
         "Forms: if you request a sample, send a message or ask for a category, we keep what you type and your email address.",
         "Help Center feedback: if you tell us an article was or was not helpful, we store that answer together with the article name. We do not store your email, IP address or a cookie with it.",
+        "Help Center searches and views: when you search the Help Center we store the words you typed and how many articles matched, for up to 90 days, to find missing answers. We also count article views per day. This is stored without your IP address, email, account or a cookie. We ignore searches that look like an email address or a long number, so please do not type personal details into the search box.",
         "Anti-spam signals: our forms use Cloudflare Turnstile and a rate limit to block bots.",
       ] },
       { h: "What we do not do", p: ["We do not run advertising trackers. Our analytics (Cloudflare Web Analytics) are cookie-free. We do not sell data about our visitors and buyers."] },

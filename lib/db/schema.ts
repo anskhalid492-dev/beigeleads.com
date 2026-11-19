@@ -631,3 +631,61 @@ export const helpFeedback = sqliteTable("help_feedback", {
   helpful: integer("helpful", { mode: "boolean" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });
+
+// Help Center CMS (migration 0021). Articles are stored as JSON blocks; see lib/help/types.ts.
+export const helpCategories = sqliteTable("help_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  icon: text("icon").notNull().default("book"),
+  description: text("description").notNull().default(""),
+  sort: integer("sort").notNull().default(0),
+  status: text("status", { enum: ["published", "hidden"] }).notNull().default("published"),
+  createdAt: createdAt(),
+  updatedAt: integer("updated_at"),
+});
+
+export const helpArticles = sqliteTable(
+  "help_articles",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    category: text("category").notNull(),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    description: text("description").notNull().default(""),
+    keywords: text("keywords").notNull().default("[]"),
+    body: text("body").notNull().default("[]"),
+    related: text("related").notNull().default("[]"),
+    ctaLabel: text("cta_label"),
+    ctaHref: text("cta_href"),
+    group: text("grp").notNull().default(""),
+    sort: integer("sort").notNull().default(0),
+    /** 0 = not shown in "Getting started"; otherwise the position. */
+    featured: integer("featured").notNull().default(0),
+    /** 0 = not shown in "Common questions"; otherwise the position. */
+    common: integer("common").notNull().default(0),
+    status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+    seoTitle: text("seo_title"),
+    metaDescription: text("meta_description"),
+    noindex: integer("noindex").notNull().default(0),
+    /** Date shown as "Last updated" (YYYY-MM-DD). */
+    updated: text("updated"),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at").notNull().default(0),
+  },
+  (t) => [uniqueIndex("help_articles_cat_slug_uq").on(t.category, t.slug)],
+);
+
+/** Anonymous search words (no IP, no account, no cookie). Rows older than 90 days are deleted by the cron sweep. */
+export const helpSearchLog = sqliteTable("help_search_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  q: text("q").notNull(),
+  results: integer("results").notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const helpViews = sqliteTable("help_views", {
+  articleId: text("article_id").notNull(),
+  day: text("day").notNull(),
+  views: integer("views").notNull().default(0),
+});

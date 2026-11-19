@@ -6,7 +6,8 @@ import { excludedSitemapPaths } from "@/lib/seo/sitemap";
 import { SITE_URL } from "@/lib/site";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { solutions } from "@/lib/solutions";
-import { articleHref, helpArticles, helpCategories } from "@/lib/help";
+import { articleHref } from "@/lib/help/data";
+import { loadHelp } from "@/lib/help/store";
 import { comparisons } from "@/lib/compare-data";
 
 export const dynamic = "force-dynamic"; // blog articles come from D1 at request time
@@ -19,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try { blog = (await publishedSitemap(getCloudflareContext().env)).filter((p) => !p.noindex).map((p) => ({ url: `${SITE_URL}/blog/${p.slug}`, lastModified: p.updatedAt })); } catch { /* blog not set up yet */ }
   try { authors = (await authorSitemap(getCloudflareContext().env)).map((a) => ({ url: `${SITE_URL}/blog/author/${a.slug}`, lastModified: a.updatedAt })); } catch { /* authors not set up yet */ }
   const excluded = await excludedSitemapPaths(getCloudflareContext().env);
+  const help = await loadHelp(getCloudflareContext().env);
   const all: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/blog` },
     ...blog,
@@ -31,8 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/compare` },
     ...comparisons.map((c) => ({ url: `${SITE_URL}/compare/beigeleads-vs-${c.slug}` })),
     { url: `${SITE_URL}/help-center` },
-    ...helpCategories.map((c) => ({ url: `${SITE_URL}/help/${c.slug}` })),
-    ...helpArticles.map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
+    ...help.categories.map((c) => ({ url: `${SITE_URL}/help/${c.slug}` })),
+    ...help.articles.filter((a) => !a.noindex).map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
     ...getProducts().map((p) => ({ url: `${SITE_URL}/product/${p.slug}` })),
   ];
   return all.filter((e) => !excluded.has(e.url.replace(SITE_URL, "") || "/"));

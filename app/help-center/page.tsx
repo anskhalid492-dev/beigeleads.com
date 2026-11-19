@@ -6,9 +6,13 @@ import { CommonQuestions } from "@/components/help/common-questions";
 import { CategoryIcon } from "@/components/help/icons";
 import { HelpSearch } from "@/components/help/search";
 import { JsonLd } from "@/components/shared/json-ld";
-import { articleHref, articlesIn, commonQuestions, getArticle, helpArticles, helpCategories, plainText, readingMinutes, startingPoints } from "@/lib/help";
+import { articleHref, articlesIn, commonArticles, featuredArticles } from "@/lib/help/data";
+import { getHelp } from "@/lib/help/server";
+import { plainText, readingMinutes } from "@/lib/help";
 import { toDoc } from "@/lib/help/search";
 import { SITE_URL } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Help Center",
@@ -24,10 +28,14 @@ const help = [
   { href: "/opt-out", Icon: ShieldOff, title: "Remove your data", text: "Ask to be removed from our lists." },
 ] as const;
 
-export default function HelpCenterPage() {
+export default async function HelpCenterPage() {
+  const d = await getHelp();
+  const helpCategories = d.categories;
+  const helpArticles = d.articles;
   const catName = (slug: string) => helpCategories.find((c) => c.slug === slug)?.name ?? slug;
   const docs = helpArticles.map((a) => toDoc(a, catName(a.category), plainText(a)));
-  const picks = startingPoints.map((id) => { const [c, s] = id.split("/"); return getArticle(c, s); }).filter((a) => !!a);
+  const picks = featuredArticles(d);
+  const common = commonArticles(d);
 
   return (
     <>
@@ -45,7 +53,7 @@ export default function HelpCenterPage() {
           <h2 id="topics-h" className="display text-3xl text-forest-900 sm:text-4xl">Browse by topic</h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {helpCategories.map((c) => {
-              const list = articlesIn(c.slug);
+              const list = articlesIn(d, c.slug);
               return (
                 <li key={c.slug}>
                   <Link href={`/help/${c.slug}`} className="group flex h-full gap-4 rounded-2xl border border-sand-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-forest-900 hover:shadow-md focus-visible:outline-2 focus-visible:outline-purple-600">
@@ -62,30 +70,30 @@ export default function HelpCenterPage() {
           </ul>
         </section>
 
-        <section aria-labelledby="start">
+        {picks.length > 0 && <section aria-labelledby="start">
           <h2 id="start" className="display text-3xl text-forest-900 sm:text-4xl">Getting started</h2>
           <p className="mt-1">Our editors&rsquo; picks for new buyers.</p>
           <ul className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {picks.map((a) => (
-              <li key={a!.slug}>
-                <Link href={articleHref(a!)} className="group flex h-full flex-col rounded-2xl border border-sand-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-purple-600">
-                  <span className="text-xs font-bold text-forest-500">{catName(a!.category)} · {readingMinutes(a!)} min read</span>
-                  <h3 className="mt-1 text-lg font-bold text-forest-900">{a!.title}</h3>
-                  <p className="mt-1 flex-1 text-sm">{first(a!.description)}</p>
+              <li key={a.slug}>
+                <Link href={articleHref(a)} className="group flex h-full flex-col rounded-2xl border border-sand-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-purple-600">
+                  <span className="text-xs font-bold text-forest-500">{catName(a.category)} · {readingMinutes(a)} min read</span>
+                  <h3 className="mt-1 text-lg font-bold text-forest-900">{a.title}</h3>
+                  <p className="mt-1 flex-1 text-sm">{first(a.description)}</p>
                   <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-forest-900">Read answer <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden /></span>
                 </Link>
               </li>
             ))}
           </ul>
-        </section>
+        </section>}
 
-        <section aria-labelledby="common" className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+        {common.length > 0 && <section aria-labelledby="common" className="grid gap-6 lg:grid-cols-[1fr_2fr]">
           <div>
             <h2 id="common" className="display text-3xl text-forest-900 sm:text-4xl">Common questions</h2>
             <p className="mt-2">Short answers to what buyers ask most. Open one for the details.</p>
           </div>
-          <CommonQuestions ids={commonQuestions} />
-        </section>
+          <CommonQuestions items={common} />
+        </section>}
 
         <section aria-labelledby="contact-h" className="rounded-[2rem] bg-sand-100 p-6 sm:p-8">
           <h2 id="contact-h" className="display text-3xl text-forest-900 sm:text-4xl">Couldn&apos;t find what you&apos;re looking for?</h2>

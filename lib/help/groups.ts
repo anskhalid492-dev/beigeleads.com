@@ -1,4 +1,4 @@
-/** Sub-groups inside each category (article slugs). Articles not listed fall into "More". */
+/** Built-in sub-groups inside each category (article slugs). Used only to seed the CMS and as the code fallback. */
 export const HELP_GROUPS: Record<string, { title: string; slugs: string[] }[]> = {
   "getting-started": [
     { title: "The basics", slugs: ["what-is-beigeleads", "how-beigeleads-works", "do-i-need-an-account"] },
@@ -37,13 +37,3 @@ export const HELP_GROUPS: Record<string, { title: string; slugs: string[] }[]> =
     { title: "Getting help", slugs: ["request-assistance", "contact-support"] },
   ],
 };
-
-export function groupedArticles<T extends { slug: string }>(category: string, list: T[]): { title: string; items: T[] }[] {
-  const groups = HELP_GROUPS[category] ?? [];
-  const used = new Set<string>();
-  const out = groups.map((g) => ({ title: g.title, items: g.slugs.map((s) => list.find((a) => a.slug === s)).filter((a): a is T => !!a) }));
-  out.forEach((g) => g.items.forEach((a) => used.add(a.slug)));
-  const rest = list.filter((a) => !used.has(a.slug));
-  if (rest.length) out.push({ title: "More", items: rest });
-  return out.filter((g) => g.items.length > 0);
-}

@@ -8,28 +8,32 @@ import { Feedback } from "@/components/help/feedback";
 import { Body, slugify } from "@/components/help/rich";
 import { Toc } from "@/components/help/toc";
 import { TopicNav } from "@/components/help/topic-nav";
-import { HELP_UPDATED, articleHref, articleId, faqsOf, getArticle, getCategory, helpArticles, readingMinutes, relatedOf } from "@/lib/help";
+import { ViewPing } from "@/components/help/view-ping";
+import { HELP_UPDATED, faqsOf, readingMinutes } from "@/lib/help";
+import { articleHref, articleId, getArticle, getCategory, relatedOf } from "@/lib/help/data";
+import { getHelp } from "@/lib/help/server";
 import { SITE_URL } from "@/lib/site";
 
-export const dynamicParams = false;
-export const generateStaticParams = () => helpArticles.map((a) => ({ category: a.category, article: a.slug }));
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/help/[category]/[article]">): Promise<Metadata> {
   const { category, article } = await props.params;
-  const a = getArticle(category, article);
+  const a = getArticle(await getHelp(), category, article);
   if (!a) return {};
-  return { title: a.title, description: a.description, alternates: { canonical: articleHref(a) } };
+  // The site-wide noindex stays; a page can only ADD noindex here, never remove it.
+  return { title: a.seoTitle || a.title, description: a.metaDescription || a.description, alternates: { canonical: articleHref(a) }, ...(a.noindex ? { robots: { index: false, follow: true } } : {}) };
 }
 
 const fmt = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 
 export default async function HelpArticlePage(props: PageProps<"/help/[category]/[article]">) {
   const { category, article } = await props.params;
-  const a = getArticle(category, article);
-  const c = getCategory(category);
+  const d = await getHelp();
+  const a = getArticle(d, category, article);
+  const c = getCategory(d, category);
   if (!a || !c) notFound();
   const toc = a.body.filter((b) => b[0] === "h").map((b) => ({ id: slugify(b[1] as string), label: b[1] as string }));
-  const related = relatedOf(a);
+  const related = relatedOf(d, a);
   const faqs = faqsOf(a);
   const updated = a.updated ?? HELP_UPDATED;
   const isPolicy = a.category === "privacy-compliance" || a.category === "troubleshooting";
@@ -41,13 +45,13 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <div className="grid gap-x-10 gap-y-6 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_14rem]">
           <aside aria-label="Topic navigation" className="hidden lg:block">
-            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"><TopicNav category={c.slug} current={a.slug} /></div>
+            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"><TopicNav data={d} category={c.slug} current={a.slug} /></div>
           </aside>
 
           <article className="min-w-0 max-w-3xl">
             <details className="mb-5 rounded-2xl border border-sand-200 bg-white p-4 lg:hidden">
               <summary className="cursor-pointer font-bold text-forest-900">In this topic: {c.name}</summary>
-              <div className="mt-3"><TopicNav category={c.slug} current={a.slug} /></div>
+              <div className="mt-3"><TopicNav data={d} category={c.slug} current={a.slug} /></div>
             </details>
 
             <p className="text-sm font-bold text-forest-500">{c.name}</p>
@@ -73,6 +77,7 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
             )}
 
             <Feedback articleId={articleId(a)} />
+            <ViewPing articleId={articleId(a)} />
 
             {related.length > 0 && (
               <section className="mt-10 xl:hidden" aria-labelledby="rel">

@@ -6,30 +6,31 @@ import { CategoryBrowser } from "@/components/help/category-browser";
 import { CategoryIcon } from "@/components/help/icons";
 import { JsonLd } from "@/components/shared/json-ld";
 import { TopicNav } from "@/components/help/topic-nav";
-import { articleHref, articlesIn, getCategory, helpCategories, readingMinutes } from "@/lib/help";
-import { groupedArticles } from "@/lib/help/groups";
+import { readingMinutes } from "@/lib/help";
+import { articleHref, articlesIn, getCategory, groupedArticles } from "@/lib/help/data";
+import { getHelp } from "@/lib/help/server";
 import { SITE_URL } from "@/lib/site";
 
-export const dynamicParams = false;
-export const generateStaticParams = () => helpCategories.map((c) => ({ category: c.slug }));
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/help/[category]">): Promise<Metadata> {
-  const c = getCategory((await props.params).category);
+  const c = getCategory(await getHelp(), (await props.params).category);
   if (!c) return {};
   return { title: `${c.name} | Help Center`, description: c.description, alternates: { canonical: `/help/${c.slug}` } };
 }
 
 export default async function HelpCategoryPage(props: PageProps<"/help/[category]">) {
-  const c = getCategory((await props.params).category);
+  const d = await getHelp();
+  const c = getCategory(d, (await props.params).category);
   if (!c) notFound();
-  const list = articlesIn(c.slug);
-  const groups = groupedArticles(c.slug, [...list]).map((g) => ({ title: g.title, items: g.items.map((a) => ({ slug: a.slug, title: a.title, description: a.description, href: articleHref(a), minutes: readingMinutes(a) })) }));
+  const list = articlesIn(d, c.slug);
+  const groups = groupedArticles(list).map((g) => ({ title: g.title, items: g.items.map((a) => ({ slug: a.slug, title: a.title, description: a.description, href: articleHref(a), minutes: readingMinutes(a) })) }));
   return (
     <>
       <Breadcrumbs wide items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }]} />
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside aria-label="Help topics" className="hidden lg:block"><div className="sticky top-28"><TopicNav category={c.slug} /></div></aside>
+          <aside aria-label="Help topics" className="hidden lg:block"><div className="sticky top-28"><TopicNav data={d} category={c.slug} /></div></aside>
           <div className="max-w-3xl">
             <div className="flex items-start gap-4">
               <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-forest-100 text-forest-700"><CategoryIcon name={c.icon} className="size-6" /></span>

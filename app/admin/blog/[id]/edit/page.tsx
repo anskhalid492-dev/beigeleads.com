@@ -5,6 +5,7 @@ import { can } from "@/lib/admin/roles";
 import { guardBlog } from "@/lib/admin/guard";
 import { authorOptions } from "@/lib/blog/authors";
 import { internalTargets } from "@/lib/blog/links";
+import { loadHelp } from "@/lib/help/store";
 import { getPostForEdit, postOptions, type PostStatus } from "@/lib/blog/posts";
 import { listCategories, listTags } from "@/lib/blog/taxonomy";
 import { Editor, type EditorPost } from "./editor";
@@ -32,5 +33,5 @@ export default async function EditPage({ params }: PageProps<"/admin/blog/[id]/e
       focusKeyword: r.focusKeyword, secondaryKeywords: r.secondaryKeywords, related: JSON.parse(r.relatedJson || "[]") as number[], tagIds: post.tagIds, scheduledAt: r.scheduledAt?.getTime() ?? null,
     },
   };
-  return <Editor role={user.role} post={initial} authors={authors} cats={cats.map((c) => ({ id: c.id, name: c.name }))} tags={tags.map((t) => ({ id: t.id, name: t.name }))} options={options} targets={internalTargets()} />;
+  return <Editor role={user.role} post={initial} authors={authors} cats={cats.map((c) => ({ id: c.id, name: c.name }))} tags={tags.map((t) => ({ id: t.id, name: t.name }))} options={options} targets={internalTargets((await loadHelp(getCloudflareContext().env)).articles)} />;
 }

@@ -4,6 +4,7 @@
 // @ts-ignore `.open-next/worker.js` is generated at build time
 import { default as handler } from "./.open-next/worker.js";
 import { publishDue } from "./lib/blog/posts";
+import { purgeOldSearches } from "./lib/help/analytics";
 import { applyPageSeo, type PageOverrideMap } from "./lib/seo/page-rewrite";
 import { findRedirect, isProtected, type RedirectMap } from "./lib/seo/redirect-rules";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
@@ -31,14 +32,14 @@ async function managedRedirect(request: Request, env: CloudflareEnv): Promise<Re
 }
 
 /**
- * Public blog pages are rendered from D1 + R2, which costs CPU on every visit. Anonymous GET requests for them are
+ * Public blog and Help Center pages are rendered from D1 (+ R2), which costs CPU on every visit. Anonymous GET requests for them are
  * kept in the Cloudflare edge cache for 60 s, so most visits never reach the Next.js renderer.
  * Consequence: a publish / unpublish / edit can take up to 60 s to show on the public page.
  * Not cached: search results (?q=), pages with cookies, Next.js RSC requests, non-200 responses.
  */
 async function cachedBlog(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
-  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
+  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/") || url.pathname === "/help-center" || url.pathname.startsWith("/help/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
   if (!cacheable) return handler.fetch(request, env, ctx);
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(request);
@@ -85,7 +86,11 @@ export default {
     // Heartbeat so the admin Maintenance page can show when each job last really ran.
     // Written every 5th minute only: KV on the free plan allows 1000 writes a day.
     if (event.cron === "*/15 * * * *" || new Date(event.scheduledTime).getUTCMinutes() % 5 === 0) ctx.waitUntil(env.CACHE.put(event.cron === "*/15 * * * *" ? "health:cron:sweep" : "health:cron:minute", String(Date.now()), { expirationTtl: 86400 }).catch(() => {}));
-    if (event.cron === "*/15 * * * *") ctx.waitUntil(expireStaleAttempts(env));
+    if (event.cron === "*/15 * * * *") {
+      ctx.waitUntil(expireStaleAttempts(env));
+      // Help Center search words are kept 90 days. A missing table (migration 0021 not applied yet) must not matter.
+      ctx.waitUntil(purgeOldSearches(env).catch(() => undefined));
+    }
     else {
       ctx.waitUntil(runPaymentWatcher(env));
       // Scheduled blog articles. Failures (for example the blog migration not applied yet) must never stop payment watching.

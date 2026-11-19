@@ -27,6 +27,18 @@ export function HelpSearch({ docs, categories }: { docs: SearchDoc[]; categories
   const has = q.trim().length > 0;
   const show = open;
 
+  // Anonymous search tracking: the words and how many articles matched. No IP, cookie or identifier is sent.
+  const lastLogged = useRef("");
+  useEffect(() => {
+    const text = q.trim().toLowerCase().replace(/\s+/g, " ");
+    if (text.length < 3 || text === lastLogged.current) return;
+    const t = setTimeout(() => {
+      lastLogged.current = text;
+      fetch("/api/help/search", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q: text, results: results.length }), keepalive: true }).catch(() => {});
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [q, results.length]);
+
   const go = (href: string) => { setOpen(false); router.push(href); };
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, results.length - 1)); }

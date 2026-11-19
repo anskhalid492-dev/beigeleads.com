@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { CategoryIcon } from "@/components/help/icons";
-import { articleHref, articlesIn, helpCategories } from "@/lib/help";
-import { groupedArticles } from "@/lib/help/groups";
+import { articleHref, articlesIn, getCategory, groupedArticles, type HelpData } from "@/lib/help/data";
 
 /** Left navigation of the article page: this topic's articles in groups, then the other topics. */
-export function TopicNav({ category, current }: { category: string; current?: string }) {
-  const c = helpCategories.find((x) => x.slug === category);
+export function TopicNav({ data, category, current }: { data: HelpData; category: string; current?: string }) {
+  const c = getCategory(data, category);
   if (!c) return null;
-  const groups = groupedArticles(category, [...articlesIn(category)]);
+  const groups = groupedArticles(articlesIn(data, category));
   return (
     <nav aria-label="Help topics" className="text-sm">
       <Link href={`/help/${c.slug}`} className="flex items-center gap-2 font-bold text-forest-900 hover:underline">
@@ -30,7 +29,7 @@ export function TopicNav({ category, current }: { category: string; current?: st
       </div>
       <p className="mt-6 px-3 text-xs font-bold text-forest-500">Other topics</p>
       <ul className="mt-1">
-        {helpCategories.filter((x) => x.slug !== category).map((x) => <li key={x.slug}><Link href={`/help/${x.slug}`} className="block rounded-lg px-3 py-1.5 hover:bg-sand-100">{x.name}</Link></li>)}
+        {data.categories.filter((x) => x.slug !== category).map((x) => <li key={x.slug}><Link href={`/help/${x.slug}`} className="block rounded-lg px-3 py-1.5 hover:bg-sand-100">{x.name}</Link></li>)}
       </ul>
     </nav>
   );
