@@ -594,3 +594,11 @@ export const mediaKitFiles = sqliteTable("media_kit_files", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   updatedBy: text("updated_by").notNull().default(""),
 });
+
+/** Anonymous "Was this helpful?" votes on Help Center articles (migration 0019). No IP, email or cookie is stored. */
+export const helpFeedback = sqliteTable("help_feedback", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  articleId: text("article_id").notNull(),
+  helpful: integer("helpful", { mode: "boolean" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+});

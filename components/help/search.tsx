@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { highlight, searchDocs, type SearchDoc } from "@/lib/help/search";
 
@@ -18,6 +18,11 @@ export function HelpSearch({ docs, categories }: { docs: SearchDoc[]; categories
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const id = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const f = (e: KeyboardEvent) => { const t = e.target as HTMLElement | null; if (e.key === "/" && !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable))) { e.preventDefault(); inputRef.current?.focus(); } };
+    window.addEventListener("keydown", f); return () => window.removeEventListener("keydown", f);
+  }, []);
   const results = useMemo(() => searchDocs(docs, q, cat || undefined, 7), [docs, q, cat]);
   const has = q.trim().length > 0;
   const show = open;
@@ -35,11 +40,12 @@ export function HelpSearch({ docs, categories }: { docs: SearchDoc[]; categories
       <div className="flex items-center gap-3 rounded-full border border-sand-300 bg-white px-5 shadow-lg focus-within:outline-2 focus-within:outline-purple-600">
         <Search className="size-5 shrink-0 text-forest-500" aria-hidden />
         <input
+          ref={inputRef}
           role="combobox" aria-expanded={show && has} aria-controls={`${id}-list`} aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? `${id}-${active}` : undefined}
           value={q} onChange={(e) => { setQ(e.target.value); setActive(-1); setOpen(true); }}
           onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} onKeyDown={onKey}
-          placeholder="Search for answers, guides, or topics..." aria-label="Search the help center"
+          placeholder="Search for answers, guides, or topics (press / to focus)" aria-label="Search the help center"
           className="h-14 min-w-0 flex-1 bg-transparent text-lg text-forest-900 outline-none placeholder:text-forest-700/60"
         />
         {q && <button type="button" onClick={() => { setQ(""); setActive(-1); }} aria-label="Clear search" className="rounded-full p-1 hover:bg-sand-100"><X className="size-5" /></button>}

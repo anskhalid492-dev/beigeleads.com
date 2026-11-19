@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { JsonLd } from "@/components/shared/json-ld";
+import { Feedback } from "@/components/help/feedback";
 import { Body, slugify } from "@/components/help/rich";
-import { HELP_UPDATED, articleHref, getArticle, getCategory, helpArticles, relatedOf } from "@/lib/help";
+import { Toc } from "@/components/help/toc";
+import { TopicNav } from "@/components/help/topic-nav";
+import { HELP_UPDATED, articleHref, articleId, faqsOf, getArticle, getCategory, helpArticles, readingMinutes, relatedOf } from "@/lib/help";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamicParams = false;
 export const generateStaticParams = () => helpArticles.map((a) => ({ category: a.category, article: a.slug }));
@@ -25,20 +30,35 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
   if (!a || !c) notFound();
   const toc = a.body.filter((b) => b[0] === "h").map((b) => ({ id: slugify(b[1] as string), label: b[1] as string }));
   const related = relatedOf(a);
+  const faqs = faqsOf(a);
+  const updated = a.updated ?? HELP_UPDATED;
   const isPolicy = a.category === "privacy-compliance" || a.category === "troubleshooting";
+  const url = `${SITE_URL}${articleHref(a)}`;
 
   return (
     <>
-      <Breadcrumbs items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }, { name: a.title, href: articleHref(a) }]} />
-      <div className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[1fr_16rem]">
+      <Breadcrumbs wide items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }, { name: a.title, href: articleHref(a) }]} />
+      <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="grid gap-x-10 gap-y-6 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_14rem]">
+          <aside aria-label="Topic navigation" className="hidden lg:block">
+            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"><TopicNav category={c.slug} current={a.slug} /></div>
+          </aside>
+
           <article className="min-w-0 max-w-3xl">
+            <details className="mb-5 rounded-2xl border border-sand-200 bg-white p-4 lg:hidden">
+              <summary className="cursor-pointer font-bold text-forest-900">In this topic: {c.name}</summary>
+              <div className="mt-3"><TopicNav category={c.slug} current={a.slug} /></div>
+            </details>
+
             <p className="text-sm font-bold text-forest-500">{c.name}</p>
             <h1 className="display mt-2 text-5xl text-forest-900 sm:text-6xl">{a.title}</h1>
             <p className="mt-4 text-xl text-forest-700">{a.description}</p>
-            <p className="mt-3 text-sm">Last updated {fmt(a.updated ?? HELP_UPDATED)}</p>
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span className="inline-flex items-center gap-1.5"><Clock className="size-4" aria-hidden />{readingMinutes(a)} min read</span>
+              <span>Last updated <time dateTime={updated}>{fmt(updated)}</time></span>
+            </p>
             {toc.length > 1 && (
-              <details className="mt-6 rounded-2xl border border-sand-200 bg-white p-4 lg:hidden">
+              <details className="mt-6 rounded-2xl border border-sand-200 bg-white p-4 xl:hidden">
                 <summary className="cursor-pointer font-bold text-forest-900">On this page</summary>
                 <ul className="mt-3 space-y-2 text-sm">{toc.map((t) => <li key={t.id}><a href={`#${t.id}`} className="underline underline-offset-4">{t.label}</a></li>)}</ul>
               </details>
@@ -46,14 +66,16 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
             <div className="mt-8"><Body blocks={a.body} /></div>
 
             {a.cta && !isPolicy && (
-              <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-forest-900 p-6">
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-forest-900 p-6">
                 <p className="max-w-sm text-lg font-semibold text-sand-50">Ready to take the next step?</p>
                 <Link href={a.cta.href} className="inline-flex h-11 items-center gap-2 rounded-full bg-purple-600 px-6 font-semibold text-white hover:bg-purple-700">{a.cta.label} <ArrowRight className="size-4" aria-hidden /></Link>
               </div>
             )}
 
+            <Feedback articleId={articleId(a)} />
+
             {related.length > 0 && (
-              <section className="mt-12" aria-labelledby="rel">
+              <section className="mt-10 xl:hidden" aria-labelledby="rel">
                 <h2 id="rel" className="display text-3xl text-forest-900">Related articles</h2>
                 <ul className="mt-4 divide-y divide-sand-200 rounded-2xl border border-sand-200 bg-white">
                   {related.map((r) => <li key={r.slug}><Link href={articleHref(r)} className="flex items-center justify-between gap-4 px-5 py-4 font-semibold text-forest-900 hover:bg-sand-50">{r.title}<ArrowRight className="size-4 shrink-0" aria-hidden /></Link></li>)}
@@ -61,28 +83,32 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
               </section>
             )}
 
-            <section className="mt-10 rounded-2xl border border-sand-200 bg-sand-100 p-6">
+            <section className="mt-8 rounded-2xl border border-sand-200 bg-sand-100 p-6">
               <p className="font-bold text-forest-900">Still need help?</p>
               <p className="mt-1 text-base">Send us a message and include your order ID if you have one.</p>
               <Link href="/contact" className="mt-4 inline-flex h-10 items-center rounded-full border border-sand-300 bg-white px-5 text-sm font-semibold text-forest-900 hover:bg-sand-50">Contact support</Link>
             </section>
           </article>
 
-          <aside aria-label="Article navigation" className="hidden lg:block">
-            <div className="sticky top-28 space-y-6">
-              {toc.length > 1 && (
-                <nav aria-label="On this page">
-                  <p className="text-sm font-bold text-forest-900">On this page</p>
-                  <ul className="mt-3 space-y-2 border-l border-sand-300 text-sm">{toc.map((t) => <li key={t.id}><a href={`#${t.id}`} className="-ml-px block border-l border-transparent pl-4 hover:border-forest-900 hover:text-forest-900">{t.label}</a></li>)}</ul>
-                </nav>
+          <aside aria-label="Table of contents and related resources" className="hidden xl:block">
+            <div className="sticky top-28 space-y-8">
+              {toc.length > 1 && <Toc items={toc} />}
+              {related.length > 0 && (
+                <div>
+                  <p className="text-sm font-bold text-forest-900">Related articles</p>
+                  <ul className="mt-3 space-y-2 text-sm">{related.map((r) => <li key={r.slug}><Link href={articleHref(r)} className="underline-offset-4 hover:text-forest-900 hover:underline">{r.title}</Link></li>)}</ul>
+                </div>
               )}
-              <nav aria-label="Back to topic">
-                <Link href={`/help/${c.slug}`} className="text-sm font-bold text-forest-900 underline underline-offset-4">All {c.name} articles</Link>
-              </nav>
+              <div className="text-sm">
+                <p className="font-bold text-forest-900">Need a person?</p>
+                <Link href="/contact" className="mt-2 inline-block font-semibold text-forest-900 underline underline-offset-4">Contact support</Link>
+              </div>
             </div>
           </aside>
         </div>
       </div>
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "TechArticle", headline: a.title, description: a.description, url, dateModified: updated, inLanguage: "en", mainEntityOfPage: url, publisher: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL }, articleSection: c.name }} />
+      {faqs.length > 0 && <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, ans]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: ans.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*/g, "") } })) }} />}
     </>
   );
 }

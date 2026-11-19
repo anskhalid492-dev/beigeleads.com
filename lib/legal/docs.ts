@@ -20,6 +20,7 @@ export const legalDocs: LegalDoc[] = [
         "Order email: you give us an email address so we can send your download link. There are no accounts and no passwords.",
         "Payment data: the coin and network you pick, the amount, the receiving address and the transaction hash. We never receive bank card details.",
         "Forms: if you request a sample, send a message or ask for a category, we keep what you type and your email address.",
+        "Help Center feedback: if you tell us an article was or was not helpful, we store that answer together with the article name. We do not store your email, IP address or a cookie with it.",
         "Anti-spam signals: our forms use Cloudflare Turnstile and a rate limit to block bots.",
       ] },
       { h: "What we do not do", p: ["We do not run advertising trackers. Our analytics (Cloudflare Web Analytics) are cookie-free. We do not sell data about our visitors and buyers."] },

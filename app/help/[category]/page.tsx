@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { CategoryBrowser } from "@/components/help/category-browser";
 import { CategoryIcon } from "@/components/help/icons";
-import { articleHref, articlesIn, getCategory, helpCategories } from "@/lib/help";
+import { JsonLd } from "@/components/shared/json-ld";
+import { TopicNav } from "@/components/help/topic-nav";
+import { articleHref, articlesIn, getCategory, helpCategories, readingMinutes } from "@/lib/help";
+import { groupedArticles } from "@/lib/help/groups";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamicParams = false;
 export const generateStaticParams = () => helpCategories.map((c) => ({ category: c.slug }));
@@ -18,34 +23,27 @@ export default async function HelpCategoryPage(props: PageProps<"/help/[category
   const c = getCategory((await props.params).category);
   if (!c) notFound();
   const list = articlesIn(c.slug);
+  const groups = groupedArticles(c.slug, [...list]).map((g) => ({ title: g.title, items: g.items.map((a) => ({ slug: a.slug, title: a.title, description: a.description, href: articleHref(a), minutes: readingMinutes(a) })) }));
   return (
     <>
-      <Breadcrumbs items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }]} />
-      <div className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1fr_16rem]">
-          <div>
-            <span className="grid size-12 place-items-center rounded-xl bg-forest-100 text-forest-700"><CategoryIcon name={c.icon} className="size-6" /></span>
-            <h1 className="display mt-4 text-5xl text-forest-900 sm:text-6xl">{c.name}</h1>
-            <p className="mt-3 max-w-2xl text-lg">{c.description}</p>
-            <ul className="mt-8 divide-y divide-sand-200 rounded-2xl border border-sand-200 bg-white">
-              {list.map((a) => (
-                <li key={a.slug}>
-                  <Link href={articleHref(a)} className="block px-6 py-5 hover:bg-sand-50 focus-visible:outline-2 focus-visible:outline-purple-600">
-                    <span className="block text-lg font-bold text-forest-900">{a.title}</span>
-                    <span className="mt-1 block text-base">{a.description}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      <Breadcrumbs wide items={[{ name: "Help Center", href: "/help-center" }, { name: c.name, href: `/help/${c.slug}` }]} />
+      <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)]">
+          <aside aria-label="Help topics" className="hidden lg:block"><div className="sticky top-28"><TopicNav category={c.slug} /></div></aside>
+          <div className="max-w-3xl">
+            <div className="flex items-start gap-4">
+              <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-forest-100 text-forest-700"><CategoryIcon name={c.icon} className="size-6" /></span>
+              <div>
+                <h1 className="display text-5xl text-forest-900 sm:text-6xl">{c.name}</h1>
+                <p className="mt-2 text-lg">{c.description} <span className="whitespace-nowrap font-semibold text-forest-900">{list.length} articles</span></p>
+              </div>
+            </div>
+            <div className="mt-8"><CategoryBrowser groups={groups} topic={c.name} /></div>
+            <p className="mt-10 rounded-2xl border border-sand-200 bg-sand-100 p-5 text-base">Not here? <Link href="/help-center" className="font-semibold text-forest-900 underline underline-offset-4">Search the whole Help Center</Link> or <Link href="/contact" className="font-semibold text-forest-900 underline underline-offset-4">contact support</Link>.</p>
           </div>
-          <aside aria-label="Other topics" className="lg:pt-24">
-            <p className="text-sm font-bold text-forest-900">Other topics</p>
-            <ul className="mt-3 space-y-1 text-sm">
-              {helpCategories.filter((x) => x.slug !== c.slug).map((x) => <li key={x.slug}><Link href={`/help/${x.slug}`} className="block rounded-lg px-3 py-1.5 hover:bg-sand-100">{x.name}</Link></li>)}
-            </ul>
-          </aside>
         </div>
       </div>
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${c.name} | BeigeLeads Help Center`, url: `${SITE_URL}/help/${c.slug}`, description: c.description, hasPart: list.map((a) => ({ "@type": "TechArticle", headline: a.title, url: `${SITE_URL}${articleHref(a)}` })) }} />
     </>
   );
 }

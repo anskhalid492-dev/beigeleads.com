@@ -92,8 +92,11 @@ export const articlesB: readonly HelpArticle[] = [
       ["p", "When your payment is confirmed, we email a link to your list to the address you entered at checkout. Delivery is mostly instant. In some cases it can take up to 12 hours at most."],
       ["p", "The email also contains your order details, a note on permitted use and links to the refund and opt-out pages. You can download the file as many times as you like."],
       ["p", "Nothing is sent before the payment is confirmed. See the [delivery policy](/legal/delivery)."],
+      ["h", "Quick answers"],
+      ["faq", [["How long does delivery take?", "Delivery is mostly instant. In some cases it can take up to 12 hours at most."], ["How many times can I download my list?", "As many times as you like."], ["Which file formats do you use?", "CSV, Excel or TXT."]]],
     ],
     related: ["delivery/download-your-list", "troubleshooting/no-delivery-email", "pricing/after-payment"],
+    updated: "2026-11-19",
   },
   {
     category: "delivery", slug: "download-your-list",

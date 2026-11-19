@@ -14,9 +14,12 @@ export const articlesA: readonly HelpArticle[] = [
       ["h", "What we sell"],
       ["p", "Ready-made lists of businesses, organised by industry and place. If the list you need is not available, you can [request a custom list](/custom-list)."],
       ["p", "See [where the data comes from](/data-sources) and [how we verify it](/verification)."],
+      ["h", "Quick answers"],
+      ["faq", [["Do I need an account to buy?", "No. You give an email address at checkout so we can send your list."], ["Can I see the data before I pay?", "Yes. Every list page shows its fields and a free masked sample before you pay."], ["What if the list I need is not available?", "You can [request a custom list](/custom-list) and tell us the industry, place and fields you need."]]],
     ],
     related: ["getting-started/how-beigeleads-works", "getting-started/ready-made-vs-custom", "pricing/one-time-purchases"],
     cta: { label: "Explore available lists", href: "/lists" },
+    updated: "2026-11-19",
   },
   {
     category: "getting-started", slug: "how-beigeleads-works",
@@ -187,9 +190,12 @@ export const articlesA: readonly HelpArticle[] = [
     body: [
       ["p", "No. BeigeLeads is not a subscription service. You buy a list once and nothing renews, so there is nothing to cancel and no card on file."],
       ["p", "If you need another list later, you buy it the same way. See the [comparison with subscription tools](/compare/beigeleads-vs-subscription-tools)."],
+      ["h", "Quick answers"],
+      ["faq", [["Is a card kept on file?", "No. Nothing renews, so there is no card on file and nothing to cancel."], ["How do I pay?", "You pay once in crypto at checkout. The checkout page shows the coins that are open."]]],
     ],
     related: ["pricing/one-time-purchases", "getting-started/what-is-beigeleads", "payments/accepted-payment-methods"],
     cta: { label: "Explore available lists", href: "/lists" },
+    updated: "2026-11-19",
   },
   {
     category: "pricing", slug: "why-prices-differ",

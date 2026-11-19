@@ -113,3 +113,7 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [x] Founder photo added (owner-supplied, background recoloured to the brand forest green; `FOUNDER.photo`).
 - Origin moment: owner decided to skip it; the page does not state one.
 - [ ] Optional: last name / full name for the byline and schema (the page uses "Anus" only).
+
+## Help Center
+- [ ] Run `drizzle/0019_help_feedback.sql` in D1 (2 statements) before the feedback buttons work.
+- [ ] Phase B (CMS, analytics, search tracking) is pending; add a privacy-policy line when search text is stored.
