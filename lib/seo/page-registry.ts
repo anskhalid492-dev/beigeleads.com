@@ -1,3 +1,4 @@
+import { TAXONOMY } from "@/lib/taxonomy";
 import { getCategories, getCountries, getProducts } from "@/lib/catalog";
 import { comparisons } from "@/lib/compare-data";
 import { articleHref, helpArticles, helpCategories } from "@/lib/help";
@@ -12,6 +13,7 @@ export function sitePages(): SitePage[] {
   return [
     ...main.map(([path, label]) => ({ path, label, group: "Main pages" })),
     ...getCategories().map((c) => ({ path: `/lists/${c.slug}`, label: c.name, group: "List categories" })),
+    ...TAXONOMY.flatMap((g) => [{ path: `/lists/${g.slug}`, label: g.name, group: "List types" }, ...g.children.map((c) => ({ path: `/lists/${g.slug}/${c.slug}`, label: c.name, group: "List types" }))]),
     ...getCategories().flatMap((c) => getCountries().map((k) => ({ path: `/lists/${c.slug}/${k.slug}`, label: `${c.name} in ${k.name}`, group: "Country pages" }))),
     ...getProducts().map((p) => ({ path: `/product/${p.slug}`, label: p.name ?? p.slug, group: "Products" })),
     ...solutions.map((s) => ({ path: `/solutions/${s.slug}`, label: s.slug, group: "Solutions" })),

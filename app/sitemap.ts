@@ -1,3 +1,4 @@
+import { taxonomyPaths } from "@/lib/taxonomy";
 import { geoSitemapPaths } from "@/lib/geo/store";
 import { getDbFromEnv } from "@/lib/db";
 import type { MetadataRoute } from "next";
@@ -32,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/` },
     { url: `${SITE_URL}/lists` },
     ...getCategories().map((c) => ({ url: `${SITE_URL}/lists/${c.slug}` })),
+    ...taxonomyPaths().map((p) => ({ url: `${SITE_URL}${p}` })),
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     { url: `${SITE_URL}/solutions` },
     ...solutions.map((s) => ({ url: `${SITE_URL}/solutions/${s.slug}` })),

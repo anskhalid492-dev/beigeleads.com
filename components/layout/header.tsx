@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { IndustryIcon } from "@/components/shared/db-icon";
+import { ListsMegaPanel, ListsMobile } from "@/components/layout/lists-mega";
 import { SolutionIcon } from "@/components/solutions/icons";
 import { getSolution } from "@/lib/solutions";
 
@@ -26,18 +26,6 @@ const LINKS = [
 type Key = "lists" | "solutions" | null;
 
 export type ListsMenuData = { industries: { slug: string; name: string }[]; countries: { slug: string; name: string }[] };
-
-const AUDIENCES = [
-  { label: "B2B Databases", href: "/lists" },
-  { label: "B2C Databases", href: "/lists?type=b2c" },
-  { label: "Industry Lists", href: "/lists#industries" },
-  { label: "Custom Lists", href: "/custom-list" },
-] as const;
-const EXPLORE = [
-  { label: "Browse All Lists", href: "/lists" },
-  { label: "Browse Industries", href: "/lists#industries" },
-  { label: "Browse Countries", href: "/lists#locations" },
-] as const;
 
 /** Order the menu by the admin's featured slugs; unknown slugs are ignored, empty = everything. */
 const pick = <T extends { slug: string }>(all: T[], featured: string[] | undefined) => {
@@ -213,39 +201,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
                 </div>
               </div>
             ) : (
-              <div id="menu-lists" className="mega-in ml-24 w-[46rem] max-w-[calc(100vw-3rem)] rounded-3xl border border-sand-200 bg-white p-6 shadow-2xl">
-                <div className="grid grid-cols-4 gap-5">
-                  <div>
-                    <p className="mb-2 text-sm font-bold text-forest-900">Popular Industries</p>
-                    <ul className="space-y-1">
-                      {industries.slice(0, 8).map((c) => (
-                        <li key={c.slug}>
-                          <Link href={`/lists/${c.slug}`} onClick={close} className="flex items-center gap-2 rounded-lg p-1 text-sm text-forest-900 hover:bg-sand-100">
-                            <span className="grid size-6 place-items-center rounded-md bg-forest-900 text-forest-300"><IndustryIcon slug={c.slug} className="size-3.5" /></span>
-                            {c.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-sm font-bold text-forest-900">Popular Countries</p>
-                    <ul className="space-y-1">
-                      {countries.slice(0, 8).map((k) => (
-                        <li key={k.slug}><Link href={`/lists?country=${k.slug}#databases`} onClick={close} className="block rounded-lg p-1.5 text-sm text-forest-900 hover:bg-sand-100">{k.name}</Link></li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-sm font-bold text-forest-900">Audience Types</p>
-                    <ul className="space-y-1">{AUDIENCES.map((a) => <li key={a.href}><Link href={a.href} onClick={close} className="block rounded-lg p-1.5 text-sm text-forest-900 hover:bg-sand-100">{a.label}</Link></li>)}</ul>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-sm font-bold text-forest-900">Explore All</p>
-                    <ul className="space-y-1">{EXPLORE.map((a) => <li key={a.label}><Link href={a.href} onClick={close} className="block rounded-lg p-1.5 text-sm font-semibold text-forest-700 hover:bg-sand-100">{a.label}</Link></li>)}</ul>
-                  </div>
-                </div>
-              </div>
+              <ListsMegaPanel industries={industries} countries={countries} onNavigate={close} />
             )}
           </div>
         )}
@@ -254,8 +210,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
         {mobile && (
           <div id="mobile-menu" className="mega-in absolute inset-x-0 top-full mt-3 max-h-[75vh] overflow-y-auto rounded-3xl border border-sand-200 bg-white p-4 shadow-2xl lg:hidden">
             <ul className="space-y-1 text-base font-medium text-forest-900">
-              <li><Link href="/lists" className="block rounded-xl px-3 py-3 hover:bg-sand-100">Lists</Link></li>
-              <li><Link href="/lists" className="block rounded-xl px-3 py-3 hover:bg-sand-100">Browse all lists</Link></li>
+              <li><ListsMobile industries={industries} onNavigate={() => setMobile(false)} /></li>
               <li><CartHeaderLink withLabel onClick={close} /></li>
               <li>
                 <details className="group">

@@ -11,12 +11,17 @@ import { getCategory, getCountries, getCountry, getProducts } from "@/lib/catalo
 import { sampleSheets } from "@/lib/sample-data";
 import { PlaceDirectory } from "@/components/geo/city-directory";
 import { getDb } from "@/lib/db";
+import { TaxonomyPage } from "@/components/lists/taxonomy-page";
+import { loadListsData } from "@/lib/lists-data";
+import { resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
 import { coverageFor, listAllCities, listAreas, regionTotals } from "@/lib/geo/store";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/lists/[category]">): Promise<Metadata> {
   const { category } = await props.params;
+  const tax = await resolveTax(category);
+  if (tax) return taxMetadata(tax);
   const c = getCategory(category);
   if (!c) return {};
   return {
@@ -28,6 +33,8 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
 
 export default async function CategoryPage(props: PageProps<"/lists/[category]">) {
   const { category } = await props.params;
+  const tax = await resolveTax(category);
+  if (tax) return <TaxonomyPage {...tax} products={(await loadListsData()).products} industries={taxIndustries()} />;
   const c = getCategory(category);
   if (!c) notFound();
 
