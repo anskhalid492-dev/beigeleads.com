@@ -8,6 +8,6 @@ export async function POST(req: Request) {
     await getDb()
       .insert(schema.categoryRequests)
       .values({ email: data.email, requestedCategory: data.requestedCategory, details: data.details ?? null });
-    waitUntil(notifyOwner(env, "New category request", `Category: ${data.requestedCategory}`));
+    waitUntil(notifyOwner(env, "New category request", `Category: ${data.requestedCategory}`, "category"));
   });
 }

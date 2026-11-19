@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/admin/toast";
 import { Button } from "@/components/ui/button";
+import type { SettingType } from "@/lib/settings/registry";
 import { saveSettingsAction } from "@/app/admin/settings/actions";
 
-export type FieldDef = { key: string; label: string; description: string; type: "text" | "longtext" | "boolean" | "url"; max: number; usedBy: string };
+export type FieldDef = { key: string; label: string; description: string; type: SettingType; max: number; usedBy: string };
 const input = "w-full rounded-xl border border-sand-300 bg-white px-3 py-2 text-sm";
 
 /** Generic form for one settings category: validation by the server, unsaved-changes guard, conflict message. */

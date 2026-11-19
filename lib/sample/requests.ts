@@ -97,6 +97,7 @@ export async function submitSample(
     env,
     "New sample request",
     `List: ${product?.slug ?? "(custom)"}\nRequest: ${custom ?? "-"}\nConfirmation email: ${status}\nOpen /admin/sample-requests to fulfil it.`,
+    "sample",
   );
   return { created: true, delivery: status === "pending" ? "received" : status, label };
 }

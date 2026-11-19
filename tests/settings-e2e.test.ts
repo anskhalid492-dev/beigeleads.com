@@ -59,3 +59,43 @@ describe("settings service", () => {
     expect((await listAudit(env, { q: "b@t.dev" })).total).toBe(0);
   });
 });
+
+describe("email settings", () => {
+  it("validates sender name and recipient lists", () => {
+    expect(() => parseValue(defOf("senderName")!, 'Evil <x@y.z>')).toThrow();
+    expect(() => parseValue(defOf("replyTo")!, "not-an-email")).toThrow();
+    expect(parseValue(defOf("replyTo")!, " Help@Test.dev ")).toBe("help@test.dev");
+    expect(parseValue(defOf("extraRecipients")!, "a@t.dev, A@t.dev, b@t.dev")).toBe("a@t.dev, b@t.dev");
+    expect(() => parseValue(defOf("extraRecipients")!, "a@t.dev,b@t.dev,c@t.dev,d@t.dev,e@t.dev,f@t.dev")).toThrow(/at most 5/);
+    expect(() => parseValue(defOf("extraRecipients")!, "bad")).toThrow(/not a valid/);
+  });
+  it("applies toggles and extra recipients, never to payment alerts", async () => {
+    const { ownerRecipients, sendEmailDetailed } = await import("@/lib/forms/email");
+    const e = { DB: env.DB, CACHE: env.CACHE, NOTIFY_EMAIL: "owner@t.dev" } as unknown as CloudflareEnv;
+    expect(await ownerRecipients(e)).toBe("owner@t.dev");
+    expect(await ownerRecipients(e, "sample")).toBe("owner@t.dev");
+    const cur = await loadCategory(env, "email");
+    await saveCategory(env, A, "email", { extraRecipients: "team@t.dev", notifyContact: "false", senderName: "Acme Data" }, cur.stamp);
+    expect(await ownerRecipients(e, "sample")).toBe("owner@t.dev,team@t.dev");
+    expect(await ownerRecipients(e, "custom_list")).toBe("owner@t.dev,team@t.dev");
+    expect(await ownerRecipients(e, "contact")).toBeUndefined(); // switched off
+    expect(await ownerRecipients(e, "delivered")).toBe("owner@t.dev"); // extras never get delivery alerts
+    expect(await ownerRecipients(e)).toBe("owner@t.dev"); // payment-type alerts: owner only, no toggle
+    expect(await sendEmailDetailed(e, { to: "x@t.dev", subject: "s", text: "t" })).toMatchObject({ ok: false, status: 0 });
+    expect(await ownerRecipients({ DB: env.DB, CACHE: env.CACHE } as unknown as CloudflareEnv, "sample")).toBeUndefined();
+  });
+});
+
+describe("health checks", () => {
+  it("really talk to D1 and KV, and report missing tables", async () => {
+    const { runCheck, rememberCheck, lastChecks } = await import("@/lib/settings/health");
+    const d = await runCheck(env, "d1");
+    expect(d.ok).toBe(false); // this test DB only has the 0016 tables
+    expect(d.detail).toMatch(/missing/);
+    const k = await runCheck(env, "kv");
+    expect(k.ok).toBe(true);
+    await rememberCheck(env, k);
+    expect((await lastChecks(env)).kv?.ok).toBe(true);
+    expect((await runCheck({ ...env, RESEND_API_KEY: undefined } as unknown as CloudflareEnv, "resend")).ok).toBe(false);
+  });
+});

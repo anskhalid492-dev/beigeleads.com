@@ -55,7 +55,7 @@ export async function saveCategory(env: Env, actor: string, category: CategoryId
       .onConflictDoUpdate({ target: schema.systemSettings.key, set: { value: v, updatedBy: actor, updatedAt: now } })),
     ...changes.map(([k, v]) => db.insert(schema.settingsAuditLog).values({ actor, category, settingKey: k, oldValue: current.values[k] ?? "", newValue: v, result: "saved" })),
   ] as unknown as Parameters<typeof db.batch>[0]);
-  try { await env.CACHE.delete(PUBLIC_CACHE_KEY); } catch { /* cache entry expires on its own within a minute */ }
+  try { await Promise.all([env.CACHE.delete(PUBLIC_CACHE_KEY), env.CACHE.delete("settings:email:v1")]); } catch { /* cache entry expires on its own within a minute */ }
   return { changed: changes.length };
 }
 

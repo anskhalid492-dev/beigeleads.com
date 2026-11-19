@@ -55,6 +55,9 @@ export default {
 
   async scheduled(event, env, ctx) {
     // Cron expressions are set in wrangler.jsonc: every minute = payment watcher, every 15 min = expiry sweep.
+    // Heartbeat so the admin Maintenance page can show when each job last really ran.
+    // Written every 5th minute only: KV on the free plan allows 1000 writes a day.
+    if (event.cron === "*/15 * * * *" || new Date(event.scheduledTime).getUTCMinutes() % 5 === 0) ctx.waitUntil(env.CACHE.put(event.cron === "*/15 * * * *" ? "health:cron:sweep" : "health:cron:minute", String(Date.now()), { expirationTtl: 86400 }).catch(() => {}));
     if (event.cron === "*/15 * * * *") ctx.waitUntil(expireStaleAttempts(env));
     else {
       ctx.waitUntil(runPaymentWatcher(env));

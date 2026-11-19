@@ -75,7 +75,7 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   });
   if (ok) {
     await db.update(schema.deliveries).set({ status: "sent", sentAt: new Date() }).where(eq(schema.deliveries.orderId, orderId));
-    await notifyOwner(env, "List delivered", `Order ${orderId}: the delivery link was emailed to the buyer.`);
+    await notifyOwner(env, "List delivered", `Order ${orderId}: the delivery link was emailed to the buyer.`, "delivered");
     return "sent";
   }
   await db.update(schema.deliveries).set({ status: "failed" }).where(eq(schema.deliveries.orderId, orderId));
