@@ -513,3 +513,27 @@ export const seoSettings = sqliteTable("seo_settings", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   updatedBy: text("updated_by").notNull().default(""),
 });
+
+/** Redirects managed in /admin/seo/redirects (migration 0015). The Worker reads a KV copy, never this table. */
+export const seoRedirects = sqliteTable(
+  "seo_redirects",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    fromPath: text("from_path").notNull(),
+    toPath: text("to_path").notNull(),
+    status: integer("status").notNull().default(301),
+    enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+    note: text("note").notNull().default(""),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+    updatedBy: text("updated_by").notNull().default(""),
+  },
+  (t) => [uniqueIndex("seo_redirects_from_uq").on(t.fromPath)],
+);
+
+/** Paths removed from sitemap.xml by the admin (migration 0015). */
+export const seoSitemapExclusions = sqliteTable("seo_sitemap_exclusions", {
+  path: text("path").primaryKey(),
+  createdAt: createdAt(),
+  createdBy: text("created_by").notNull().default(""),
+});

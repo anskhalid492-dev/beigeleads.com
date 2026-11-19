@@ -15,6 +15,8 @@ const NAV = [
   ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Blog", "/admin/blog", FileText],
   ["SEO", "/admin/seo", Search],
+  ["Redirects", "/admin/seo/redirects", Search],
+  ["Sitemap", "/admin/seo/sitemap", Search],
   ["Authors", "/admin/blog/authors", Users],
   ["Media", "/admin/media", ImageIcon],
   ["Newsletter", "/admin/newsletter", Mail],

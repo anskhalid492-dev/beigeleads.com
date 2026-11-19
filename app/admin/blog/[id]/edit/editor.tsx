@@ -15,6 +15,7 @@ import { cleanDoc, embedUrl, readingMinutes, slugifyText, wordCount, type DocNod
 import { analyzeSeo, onPageScore, suggestSeoTitle, suggestMeta, suggestSlug, META_RANGE, SEO_TITLE_RANGE, suggestLinks, type InternalTarget } from "@/lib/blog/seo";
 import { saveAction, transitionAction } from "../../actions";
 import { FeaturedImage } from "./featured-image";
+import { saveRedirectAction } from "@/app/admin/seo/actions";
 import { SocialPreviews } from "./social-preview";
 import { MediaPicker, type Picked } from "../../media-picker";
 import { AuthorPicker, type AuthorOption } from "./author-picker";
@@ -46,6 +47,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
   const [conflict, setConflict] = useState(false);
   const [tab, setTab] = useState<"content" | "image" | "seo" | "social" | "publish">("content");
   const [slugTouched, setSlugTouched] = useState(post.status !== "draft");
+  const [redirectMsg, setRedirectMsg] = useState("");
   const [dialog, setDialog] = useState<null | "link" | "video" | "image" | "feature" | "og" | "preview">(null);
   const [recover, setRecover] = useState<null | { at: number; fields: Fields; doc: DocNode }>(null);
   const [analysisDoc, setAnalysisDoc] = useState<DocNode>(post.doc);
@@ -304,7 +306,13 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
               <div>
                 <div className="flex items-center justify-between"><label htmlFor="slug" className={label}>URL slug</label><button type="button" className="text-xs font-semibold underline" onClick={() => suggestInto("slug", suggestSlug(f.title))}>Suggest</button></div>
                 <input id="slug" value={f.slug} onChange={(e) => { setSlugTouched(true); update("slug", slugifyText(e.target.value)); }} className={input} /><p className="mt-1 break-all text-xs">beigeleads.com/blog/{f.slug || "…"}</p>
-                {status === "published" && f.slug !== post.fields.slug && <p role="status" className="mt-1 text-xs font-semibold text-amber-900">This article is live. Changing the slug breaks the old address until a redirect exists. Redirects arrive with the redirect manager; until then, avoid changing live slugs.</p>}
+                {status === "published" && f.slug !== post.fields.slug && (
+                  <div role="status" className="mt-1 text-xs font-semibold text-amber-900">
+                    <p>This article is live. Changing the slug breaks the old address unless a redirect exists.</p>
+                    {role === "admin" && <button type="button" className="mt-1 underline" onClick={async () => { const r = await saveRedirectAction({ from: `/blog/${post.fields.slug}`, to: `/blog/${f.slug}`, status: 301 }); setRedirectMsg(r.ok ? "301 redirect created. Save the article so the new address exists." : r.error); }}>Create a 301 redirect from /blog/{post.fields.slug}</button>}
+                    {redirectMsg && <p className="mt-1">{redirectMsg}</p>}
+                  </div>
+                )}
               </div>
               <div><label htmlFor="kw" className={label}>Focus keyword</label><input id="kw" value={f.focusKeyword} onChange={(e) => update("focusKeyword", e.target.value)} className={input} /></div>
               <div><label htmlFor="kw2" className={label}>Secondary keywords</label><input id="kw2" value={f.secondaryKeywords} onChange={(e) => update("secondaryKeywords", e.target.value)} placeholder="Separate with commas" className={input} maxLength={300} /></div>

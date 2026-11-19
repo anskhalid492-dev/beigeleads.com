@@ -12,7 +12,7 @@ let env: CloudflareEnv;
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ persist: false });
   env = proxy.env;
-  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012|^0013|^0014/.test(f) && f.endsWith(".sql")).sort();
+  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012|^0013|^0014|^0015/.test(f) && f.endsWith(".sql")).sort();
   const sql = files.map((f) => readFileSync(`drizzle/${f}`, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const s of sql.split(";").map((x) => x.trim()).filter(Boolean)) { try { await env.DB.exec(s.replace(/\s+/g, " ") + ";"); } catch { /* table from another migration */ } }
 });
@@ -40,5 +40,29 @@ describe("seo overview", () => {
     expect(o.total).toBe(rows.length);
     expect(o.published).toBe(0);
     expect(o.noMeta).toBe(0); // drafts are not counted
+  });
+});
+
+describe("redirects + sitemap exclusions", () => {
+  it("saves, blocks loops and duplicates, syncs KV, toggles and deletes", async () => {
+    const { saveRedirect, listRedirects, setRedirectEnabled, deleteRedirect, REDIRECT_KV_KEY } = await import("@/lib/seo/redirects");
+    await saveRedirect(env, "a@t.dev", { from: "/blog/old", to: "/blog/new", status: 301 });
+    const kv = await env.CACHE.get(REDIRECT_KV_KEY, "json") as Record<string, [string, number]>;
+    expect(kv["/blog/old"]).toEqual(["/blog/new", 301]);
+    await expect(saveRedirect(env, "a@t.dev", { from: "/blog/new", to: "/blog/old", status: 301 })).rejects.toThrow(/loop/);
+    await expect(saveRedirect(env, "a@t.dev", { from: "/blog/old", to: "/x", status: 301 })).rejects.toThrow(/already exists/);
+    const [r] = await listRedirects(env);
+    await setRedirectEnabled(env, "a@t.dev", r.id, false);
+    expect(((await env.CACHE.get(REDIRECT_KV_KEY, "json")) as Record<string, unknown>)["/blog/old"]).toBeUndefined();
+    await deleteRedirect(env, r.id);
+    expect(await listRedirects(env)).toHaveLength(0);
+  });
+  it("excludes and re-includes sitemap paths", async () => {
+    const { excludePath, includePath, excludedSitemapPaths } = await import("@/lib/seo/sitemap");
+    await excludePath(env, "a@t.dev", "/compare/x/");
+    expect((await excludedSitemapPaths(env)).has("/compare/x")).toBe(true);
+    await expect(excludePath(env, "a@t.dev", "nope")).rejects.toThrow();
+    await includePath(env, "/compare/x");
+    expect((await excludedSitemapPaths(env)).size).toBe(0);
   });
 });

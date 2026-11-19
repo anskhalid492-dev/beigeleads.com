@@ -4,9 +4,30 @@
 // @ts-ignore `.open-next/worker.js` is generated at build time
 import { default as handler } from "./.open-next/worker.js";
 import { publishDue } from "./lib/blog/posts";
+import { findRedirect, isProtected, type RedirectMap } from "./lib/seo/redirect-rules";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
 
 const CACHE_SECONDS = 60;
+const REDIRECT_KV_KEY = "seo:redirects:v1"; // written by lib/seo/redirects.ts
+
+let redirectMap: { at: number; map: RedirectMap | null } | null = null;
+/**
+ * Admin-managed redirects. Reads ONE small KV value (kept in memory for 30 s per isolate), never D1.
+ * A KV failure or a missing key means "no redirects": it can never break normal page serving.
+ */
+async function managedRedirect(request: Request, env: CloudflareEnv): Promise<Response | null> {
+  if (request.method !== "GET" && request.method !== "HEAD") return null;
+  const url = new URL(request.url);
+  if (isProtected(url.pathname) || /\.[a-z0-9]{2,5}$/i.test(url.pathname)) return null;
+  const now = Date.now();
+  if (!redirectMap || now - redirectMap.at > 30_000) {
+    let map: RedirectMap | null = null;
+    try { map = await env.CACHE.get<RedirectMap>(REDIRECT_KV_KEY, "json"); } catch { map = null; }
+    redirectMap = { at: now, map };
+  }
+  const hit = findRedirect(redirectMap.map, url.pathname, url.search);
+  return hit ? new Response(null, { status: hit.status, headers: { location: new URL(hit.location, url).toString(), "cache-control": hit.status === 301 ? "public, max-age=300" : "no-store" } }) : null;
+}
 
 /**
  * Public blog pages are rendered from D1 + R2, which costs CPU on every visit. Anonymous GET requests for them are
@@ -30,7 +51,7 @@ async function cachedBlog(request: Request, env: CloudflareEnv, ctx: ExecutionCo
 }
 
 export default {
-  fetch: (request: Request, env: CloudflareEnv, ctx: ExecutionContext) => cachedBlog(request, env, ctx),
+  fetch: async (request: Request, env: CloudflareEnv, ctx: ExecutionContext) => (await managedRedirect(request, env)) ?? cachedBlog(request, env, ctx),
 
   async scheduled(event, env, ctx) {
     // Cron expressions are set in wrangler.jsonc: every minute = payment watcher, every 15 min = expiry sweep.

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { authorSitemap } from "@/lib/blog/authors";
 import { publishedSitemap } from "@/lib/blog/posts";
+import { excludedSitemapPaths } from "@/lib/seo/sitemap";
 import { SITE_URL } from "@/lib/site";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { solutions } from "@/lib/solutions";
@@ -17,7 +18,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let authors: MetadataRoute.Sitemap = [];
   try { blog = (await publishedSitemap(getCloudflareContext().env)).filter((p) => !p.noindex).map((p) => ({ url: `${SITE_URL}/blog/${p.slug}`, lastModified: p.updatedAt })); } catch { /* blog not set up yet */ }
   try { authors = (await authorSitemap(getCloudflareContext().env)).map((a) => ({ url: `${SITE_URL}/blog/author/${a.slug}`, lastModified: a.updatedAt })); } catch { /* authors not set up yet */ }
-  return [
+  const excluded = await excludedSitemapPaths(getCloudflareContext().env);
+  const all: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/blog` },
     ...blog,
     ...authors,
@@ -33,4 +35,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...helpArticles.map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
     ...getProducts().map((p) => ({ url: `${SITE_URL}/product/${p.slug}` })),
   ];
+  return all.filter((e) => !excluded.has(e.url.replace(SITE_URL, "") || "/"));
 }
