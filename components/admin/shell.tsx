@@ -22,6 +22,7 @@ const NAV = [
   ["Search Console", "/admin/seo/search-console", Search],
   ["Authors", "/admin/blog/authors", Users],
   ["Media", "/admin/media", ImageIcon],
+  ["Media Kit", "/admin/media-kit", ImageIcon],
   ["Newsletter", "/admin/newsletter", Mail],
   ["Settings", "/admin/settings", Settings],
 ] as const;

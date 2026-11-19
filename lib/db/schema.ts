@@ -570,3 +570,27 @@ export const seoPageOverrides = sqliteTable("seo_page_overrides", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   updatedBy: text("updated_by").notNull().default(""),
 });
+
+/** Media Kit page text: a draft and a published value per field (migration 0018). NULL draft = no pending change. */
+export const mediaKitContent = sqliteTable("media_kit_content", {
+  key: text("key").primaryKey(),
+  draft: text("draft"),
+  published: text("published"),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedBy: text("updated_by").notNull().default(""),
+});
+
+/** Extra downloads added by the admin (files live in R2 under media-kit/). Official logo files are NOT here: they are generated in the repo. */
+export const mediaKitFiles = sqliteTable("media_kit_files", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  label: text("label").notNull(),
+  description: text("description").notNull().default(""),
+  r2Key: text("r2_key").notNull(),
+  filename: text("filename").notNull(),
+  contentType: text("content_type").notNull(),
+  bytes: integer("bytes").notNull(),
+  published: integer("published", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedBy: text("updated_by").notNull().default(""),
+});

@@ -1,0 +1,3 @@
+CREATE TABLE `media_kit_content` (`key` text PRIMARY KEY NOT NULL, `draft` text, `published` text, `updated_at` integer NOT NULL DEFAULT (unixepoch()), `updated_by` text NOT NULL DEFAULT '');
+--> statement-breakpoint
+CREATE TABLE `media_kit_files` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `label` text NOT NULL, `description` text NOT NULL DEFAULT '', `r2_key` text NOT NULL, `filename` text NOT NULL, `content_type` text NOT NULL, `bytes` integer NOT NULL, `published` integer NOT NULL DEFAULT 0, `created_at` integer NOT NULL DEFAULT (unixepoch()), `updated_at` integer NOT NULL DEFAULT (unixepoch()), `updated_by` text NOT NULL DEFAULT '');

@@ -12,7 +12,8 @@ export const MEDIA_KIT = {
   contactNote: "Need a different size, format or a brand question answered? Send us a message and we will reply by email.",
 };
 
-export const fmt = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
+import { fmt } from "./format";
+export { fmt };
 export const fileSize = (path: string) => (BRAND_FILES[path] ? fmt(BRAND_FILES[path]) : "");
 
 export type Variant = { id: string; label: string; bg: string; note: string };
