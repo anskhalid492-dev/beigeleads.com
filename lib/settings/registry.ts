@@ -13,7 +13,7 @@ export type SettingDef = {
 export const CATEGORIES = [
   { id: "general", label: "General Settings", text: "Website name and announcement banner.", live: true },
   { id: "branding", label: "Branding & Appearance", text: "Logos, favicon and social image.", live: false },
-  { id: "navigation", label: "Website & Navigation", text: "Header and footer links, CTAs.", live: false },
+  { id: "navigation", label: "Website & Navigation", text: "Featured industries and countries in the Lists menu and on the Shop page.", live: true },
   { id: "business", label: "Business Information", text: "Public business profile.", live: false },
   { id: "email", label: "Email & Notifications", text: "Sender name, reply-to, alerts and test email.", live: true },
   { id: "forms", label: "Forms & Lead Management", text: "Sample, custom list, contact and category forms.", live: false },
@@ -35,6 +35,8 @@ export const SETTINGS: SettingDef[] = [
   { key: "bannerEnabled", category: "general", label: "Show announcement banner", description: "Shows a one-line banner above the header on public pages.", type: "boolean", default: "false", max: 5, usedBy: "Public banner" },
   { key: "bannerText", category: "general", label: "Banner text", description: "One short sentence. Plain text only.", type: "text", default: "", max: 140, usedBy: "Public banner" },
   { key: "bannerLink", category: "general", label: "Banner link (optional)", description: "A path like /sample or an https:// address. Leave empty for no link.", type: "url", default: "", max: 300, usedBy: "Public banner" },
+  { key: "featuredIndustries", category: "navigation", label: "Featured industries", description: "Industry slugs, separated by commas, in the order they should appear (for example: dentists, restaurants). They fill 'Popular Industries' in the Lists menu and 'Popular databases' on the Shop page. Empty = all industries. Unknown slugs are ignored.", type: "text", default: "", max: 400, usedBy: "Lists mega menu, Shop page" },
+  { key: "featuredCountries", category: "navigation", label: "Featured countries", description: "Country slugs, separated by commas (for example: united-states). They fill 'Popular Countries' in the Lists menu. Empty = all countries. Unknown slugs are ignored.", type: "text", default: "", max: 400, usedBy: "Lists mega menu" },
   { key: "senderName", category: "email", label: "Sender display name", description: "The name buyers see on emails from the site. The sending address itself is set by the email service and cannot be changed here.", type: "text", default: "BeigeLeads", max: 60, usedBy: "Every transactional email (delivery, confirmations, alerts)" },
   { key: "replyTo", category: "email", label: "Reply-to email", description: "Where a buyer's reply goes. Leave empty to use the sending address.", type: "email", default: "", max: 120, usedBy: "Every transactional email" },
   { key: "extraRecipients", category: "email", label: "Extra recipients for request alerts", description: "Up to 5 addresses, separated by commas. They also receive alerts for new sample, custom list, contact and category requests. Payment and security alerts never go to them.", type: "emails", default: "", max: 400, usedBy: "Owner alerts for form requests" },

@@ -6,6 +6,7 @@ import { AnnouncementBanner } from "@/components/layout/announcement-banner";
 import { PopupHost } from "@/components/popups/host";
 import { PublicChrome } from "@/components/layout/public-chrome";
 import { JsonLd } from "@/components/shared/json-ld";
+import { getCategories, getCountries } from "@/lib/catalog";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -25,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
-        <PublicChrome><AnnouncementBanner /><Header /></PublicChrome>
+        <PublicChrome><AnnouncementBanner /><Header lists={{ industries: getCategories().map((c) => ({ slug: c.slug, name: c.name })), countries: getCountries().map((k) => ({ slug: k.slug, name: k.name })) }} /></PublicChrome>
         <main className="flex-1">{children}</main>
         <PublicChrome><Footer /></PublicChrome>
         <PopupHost />

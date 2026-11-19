@@ -5,6 +5,7 @@ import { getCategories, getCountries } from "@/lib/catalog";
 import { getDb } from "@/lib/db";
 import { allCoverage } from "@/lib/geo/store";
 import { ImportForm } from "./import-form";
+import { removeCoverageAction, setIndexableAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function GeographyPage() {
         <Panel title={`Places (${g.areas.length})`}>
           {g.areas.length === 0 ? <Empty title="No places yet" text="Import a CSV to add states and cities with real record counts." /> : (
             <div className="max-h-[32rem] overflow-auto"><table className="w-full text-left text-sm">
-              <thead className="sticky top-0 bg-sand-100 text-xs font-bold text-forest-900"><tr><th className="px-4 py-2">Place</th><th className="px-4 py-2">Type</th><th className="px-4 py-2">Records by industry</th><th className="px-4 py-2">Page</th></tr></thead>
+              <thead className="sticky top-0 bg-sand-100 text-xs font-bold text-forest-900"><tr><th className="px-4 py-2">Place</th><th className="px-4 py-2">Type</th><th className="px-4 py-2">Records by industry</th><th className="px-4 py-2">Page</th><th className="px-4 py-2">Indexing</th></tr></thead>
               <tbody className="divide-y divide-sand-200">
                 {g.areas.map((a) => {
                   const rows = byArea.get(a.id) ?? [];
@@ -33,8 +34,11 @@ export default async function GeographyPage() {
                     <tr key={a.id}>
                       <td className="px-4 py-2 font-semibold">{a.name}{par ? <span className="font-normal">, {par.name}</span> : null}</td>
                       <td className="px-4 py-2">{a.level}</td>
-                      <td className="px-4 py-2">{rows.length ? rows.map((r) => `${name.get(r.category) ?? r.category}: ${r.n.toLocaleString("en-US")}`).join(" · ") : <Badge tone="mute">No inventory</Badge>}</td>
+                      <td className="px-4 py-2">{rows.length ? rows.map((r) => (
+                        <form key={r.category} action={removeCoverageAction} className="mb-1 flex items-center gap-2"><input type="hidden" name="id" value={a.id} /><input type="hidden" name="category" value={r.category} /><span>{name.get(r.category) ?? r.category}: {r.n.toLocaleString("en-US")}</span><button type="submit" className="text-xs font-semibold underline" aria-label={`Remove the ${name.get(r.category) ?? r.category} count for ${a.name}`}>Remove count</button></form>
+                      )) : <Badge tone="mute">No inventory</Badge>}</td>
                       <td className="px-4 py-2">{rows.length ? <Link className="underline" href={`/lists/${rows[0].category}/${a.countrySlug}/${par ? `${par.slug}/` : ""}${a.slug}`}>Open</Link> : "—"}</td>
+                      <td className="px-4 py-2"><form action={setIndexableAction}><input type="hidden" name="id" value={a.id} /><input type="hidden" name="on" value={a.indexable ? "0" : "1"} /><button type="submit" className="text-xs font-semibold underline">{a.indexable ? "Allowed. Block" : "Blocked. Allow"}</button></form></td>
                     </tr>
                   );
                 })}

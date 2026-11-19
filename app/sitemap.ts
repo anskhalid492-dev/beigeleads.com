@@ -31,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...authors,
     { url: `${SITE_URL}/` },
     { url: `${SITE_URL}/lists` },
+    { url: `${SITE_URL}/shop` },
     ...getCategories().map((c) => ({ url: `${SITE_URL}/lists/${c.slug}` })),
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     { url: `${SITE_URL}/solutions` },

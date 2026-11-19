@@ -43,7 +43,7 @@ describe("settings service", () => {
     expect(r.changed).toBe(4);
     const after = await loadCategory(env, "general");
     expect(after.values.siteName).toBe("Acme");
-    expect(await getPublicSettings(env)).toEqual({ siteName: "Acme", banner: { text: "Hello", href: "/sample" } });
+    expect(await getPublicSettings(env)).toEqual({ siteName: "Acme", banner: { text: "Hello", href: "/sample" }, featured: { industries: [], countries: [] } });
 
     // A second admin still holding the old stamp must not overwrite.
     await new Promise((r) => setTimeout(r, 1100));

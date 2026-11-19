@@ -59,13 +59,17 @@ export async function saveCategory(env: Env, actor: string, category: CategoryId
   return { changed: changes.length };
 }
 
-export type PublicSettings = { siteName: string; banner: { text: string; href: string } | null };
+export type PublicSettings = { siteName: string; banner: { text: string; href: string } | null; featured?: { industries: string[]; countries: string[] } };
+
+export const parseSlugList = (v: string) => [...new Set(v.split(",").map((x) => x.trim().toLowerCase()).filter((x) => /^[a-z0-9-]{1,60}$/.test(x)))].slice(0, 30);
 
 /** What the public site may know. Read from KV for 60 s, so public pages never wait on D1. */
 export async function getPublicSettings(env: Env): Promise<PublicSettings> {
   try { const hit = await env.CACHE.get<PublicSettings>(PUBLIC_CACHE_KEY, "json"); if (hit) return hit; } catch { /* fall through to D1 */ }
   const g = await loadCategory(env, "general");
+  const nav = await loadCategory(env, "navigation");
   const out: PublicSettings = {
+    featured: { industries: parseSlugList(nav.values.featuredIndustries ?? ""), countries: parseSlugList(nav.values.featuredCountries ?? "") },
     siteName: g.values.siteName || "BeigeLeads",
     banner: g.values.bannerEnabled === "true" && g.values.bannerText ? { text: g.values.bannerText, href: g.values.bannerLink } : null,
   };
