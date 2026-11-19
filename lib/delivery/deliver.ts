@@ -1,6 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { notifyOwner, sendEmail } from "@/lib/forms/email";
+import { systemMail } from "@/lib/system-emails/mail";
 import { findDeliveryLink } from "./links";
 
 const MAX_ATTEMPTS = 5;
@@ -68,11 +69,15 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
 
   const { getProduct } = await import("@/lib/catalog");
   const product = getProduct(item.productSlug);
-  const ok = await sendEmail(env, {
+  const productName = product?.name ?? item.productSlug;
+  const legacy = {
     to: order.email,
-    subject: `Your BeigeLeads list: ${product?.name ?? item.productSlug}`,
-    text: deliveryEmailText({ orderId, packageName: item.packageName, records: item.records, productName: product?.name ?? item.productSlug, url }),
-  });
+    subject: `Your BeigeLeads list: ${productName}`,
+    text: deliveryEmailText({ orderId, packageName: item.packageName, records: item.records, productName, url }),
+  };
+  // The branded template is used when it renders cleanly; otherwise the built-in text above is sent unchanged.
+  const mail = await systemMail(db, "product_delivery", order.email, { order_number: orderId, product_name: productName, package_name: item.packageName, records: item.records.toLocaleString("en-US"), download_url: url }, legacy, { reference: orderId });
+  const ok = await sendEmail(env, mail);
   if (ok) {
     await db.update(schema.deliveries).set({ status: "sent", sentAt: new Date() }).where(eq(schema.deliveries.orderId, orderId));
     await notifyOwner(env, "List delivered", `Order ${orderId}: the delivery link was emailed to the buyer.`, "delivered");

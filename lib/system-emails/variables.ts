@@ -1,0 +1,44 @@
+/** Variable registry. Unknown variables are rejected on publish. Example values are labelled examples, never customer data. */
+export type VarDef = { key: string; label: string; description: string; example: string; /** Shown when the value is missing. */ fallback?: string; /** True = a missing value removes ", {{x}}" instead of printing a fallback. */ personal?: boolean; system?: boolean };
+
+export const VARIABLES: VarDef[] = [
+  { key: "first_name", label: "First name", description: "Customer's first name, only when they gave a name.", example: "Alex", fallback: "there", personal: true },
+  { key: "customer_name", label: "Full name", description: "Customer's full name, only when they gave one.", example: "Alex Morgan", fallback: "there", personal: true },
+  { key: "order_number", label: "Order number", description: "The order reference shown at checkout.", example: "BL-EXAMPLE-1042" },
+  { key: "order_url", label: "Order link", description: "Link to the order status page.", example: "https://beigeleads.com/checkout/BL-EXAMPLE-1042" },
+  { key: "product_name", label: "Product name", description: "The list that was ordered or requested.", example: "Dentists in the United States" },
+  { key: "package_name", label: "Package", description: "The package that was ordered.", example: "Pro" },
+  { key: "order_total", label: "Order total", description: "Amount of the order as shown at checkout.", example: "$249.00" },
+  { key: "payment_status", label: "Payment status", description: "The real payment status of the order.", example: "Confirmed" },
+  { key: "records", label: "Records", description: "Number of records in the ordered package.", example: "10,000" },
+  { key: "download_url", label: "Download link", description: "The authorised https delivery link. Only set once the file is ready.", example: "https://example.com/your-list" },
+  { key: "sample_url", label: "Sample link", description: "The authorised sample link. Only set once the sample is ready.", example: "https://example.com/your-sample" },
+  { key: "request_reference", label: "Request reference", description: "Reference number of a request (CT-, CL-, sample, refund).", example: "CL-EXAMPLE01" },
+  { key: "industry", label: "Industry", description: "Target industry of a request.", example: "Dental clinics" },
+  { key: "country", label: "Country / location", description: "Countries or locations of a request.", example: "United States, Texas" },
+  { key: "quantity", label: "Quantity", description: "Requested number of contacts.", example: "5,000" },
+  { key: "data_fields", label: "Data fields", description: "Fields the customer asked for.", example: "Business name, email, phone" },
+  { key: "requirements", label: "Special requirements", description: "Notes the customer wrote.", example: "Only clinics with a website" },
+  { key: "quote_summary", label: "Approved quotation", description: "Scope, quantity and price of an approved quote.", example: "5,000 contacts, example scope" },
+  { key: "quote_url", label: "Quotation link", description: "Link to the approved quotation.", example: "https://beigeleads.com/contact" },
+  { key: "category_name", label: "Requested category", description: "Business category a customer suggested.", example: "Veterinary clinics" },
+  { key: "inquiry_topic", label: "Inquiry topic", description: "Topic chosen on the contact form.", example: "Order support" },
+  { key: "inquiry_subject", label: "Inquiry subject", description: "Subject typed on the contact form.", example: "Question about my list" },
+  { key: "case_status", label: "Case status", description: "The real status of a refund or replacement case.", example: "Under review" },
+  { key: "case_update", label: "Case update", description: "What happened and what happens next.", example: "We are checking the bounce report." },
+  { key: "delivery_issue", label: "Delivery issue", description: "Verified, customer-safe description of a delivery issue.", example: "The link we sent could not be opened." },
+  { key: "admin_url", label: "Admin link", description: "Secure admin link (admin emails only).", example: "https://beigeleads.com/admin/orders" },
+  { key: "timestamp", label: "Time", description: "When the event happened (UTC).", example: "2026-11-19 10:30 UTC" },
+  { key: "details", label: "Details", description: "Short factual details for admin alerts. Never secrets.", example: "Example details" },
+  // Added by the system on every send.
+  { key: "company_name", label: "Company name", description: "Always supplied by the system.", example: "BeigeLeads", system: true },
+  { key: "website_url", label: "Website", description: "Always supplied by the system.", example: "https://beigeleads.com", system: true },
+  { key: "contact_url", label: "Contact page", description: "Always supplied by the system.", example: "https://beigeleads.com/contact", system: true },
+  { key: "help_url", label: "Help Center", description: "Always supplied by the system.", example: "https://beigeleads.com/help-center", system: true },
+  { key: "lists_url", label: "Lists page", description: "Always supplied by the system.", example: "https://beigeleads.com/lists", system: true },
+  { key: "support_email", label: "Support email", description: "Optional. Only filled when the send provides it.", example: "support@example.com" },
+];
+
+export const VAR_KEYS = new Set(VARIABLES.map((v) => v.key));
+export const SYSTEM_KEYS = VARIABLES.filter((v) => v.system).map((v) => v.key);
+export const getVar = (k: string) => VARIABLES.find((v) => v.key === k);

@@ -2,10 +2,12 @@
 // the outcome of each email is stored so the admin can see it.
 import { eq } from "drizzle-orm";
 import { schema, type getDbFromEnv } from "@/lib/db";
+import type { Mail } from "@/lib/forms/email";
+import { systemMail } from "@/lib/system-emails/mail";
 import { describeLocation, dedupeKey, newReference, type CustomListInput } from "./schema";
 
 type Db = ReturnType<typeof getDbFromEnv>;
-type Mailer = (mail: { to: string; subject: string; text: string }) => Promise<boolean>;
+type Mailer = (mail: Mail) => Promise<boolean>;
 export type SubmitResult = { reference: string; duplicate: boolean; ownerNotify: "sent" | "failed"; customerEmail: "sent" | "failed" };
 
 /** Plain text summary used in both emails. */
@@ -75,7 +77,7 @@ export async function submitCustomList(db: Db, send: Mailer, ownerEmail: string 
   }
   let customerEmail: "sent" | "failed" = "failed";
   try {
-    customerEmail = (await send({
+    const legacy = {
       to: d.email,
       subject: `We received your custom list request (${reference})`,
       text: [
@@ -85,7 +87,13 @@ export async function submitCustomList(db: Db, send: Mailer, ownerEmail: string 
         "What you asked for:", ...lines.map((l) => `- ${l}`), "",
         "To change anything, use https://beigeleads.com/contact and mention your reference.", "", "BeigeLeads",
       ].join("\n"),
-    })) ? "sent" : "failed";
+    };
+    const mail = await systemMail(db, "custom_request_received", d.email, {
+      first_name: d.name.trim().split(/\s+/)[0], request_reference: reference, industry: d.industries.join(", "),
+      country: d.locations.map(describeLocation).join("; "), quantity: d.quantity ? `${d.quantity.toLocaleString("en-US")}${d.quantityPlus ? "+" : ""}` : "",
+      data_fields: [...d.fields, ...d.customFields].join(", "), requirements: [d.jobTitles.length ? `Job titles: ${d.jobTitles.join(", ")}` : "", d.exclusions.length ? `Exclude: ${d.exclusions.join(", ")}` : "", d.instructions].filter(Boolean).join("\n"),
+    }, legacy, { reference });
+    customerEmail = (await send(mail)) ? "sent" : "failed";
   } catch { customerEmail = "failed"; }
 
   await db.update(schema.customListRequests).set({ ownerNotify, customerEmailStatus: customerEmail }).where(eq(schema.customListRequests.id, id));

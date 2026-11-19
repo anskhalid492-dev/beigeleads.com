@@ -689,3 +689,37 @@ export const helpViews = sqliteTable("help_views", {
   day: text("day").notNull(),
   views: integer("views").notNull().default(0),
 });
+
+/** System Emails (migration 0022). Code holds the built-in templates; a row exists only after an admin edits one. */
+export const emailTemplates = sqliteTable("email_templates", {
+  key: text("key").primaryKey(),
+  draftJson: text("draft_json"),
+  publishedJson: text("published_json"),
+  publishedVersion: integer("published_version").notNull().default(0),
+  updatedAt: integer("updated_at"),
+  updatedBy: text("updated_by").notNull().default(""),
+});
+
+export const emailTemplateVersions = sqliteTable("email_template_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  templateKey: text("template_key").notNull(),
+  version: integer("version").notNull(),
+  contentJson: text("content_json").notNull(),
+  note: text("note").notNull().default(""),
+  actor: text("actor").notNull().default(""),
+  createdAt: createdAt(),
+});
+
+/** One row per transactional send that went through a template. Recipient is stored masked. No bodies, no links. */
+export const emailDeliveryLogs = sqliteTable("email_delivery_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  templateKey: text("template_key").notNull(),
+  source: text("source").notNull().default("live"),
+  recipient: text("recipient").notNull().default(""),
+  subject: text("subject").notNull().default(""),
+  reference: text("reference").notNull().default(""),
+  status: text("status").notNull(),
+  providerId: text("provider_id").notNull().default(""),
+  error: text("error").notNull().default(""),
+  createdAt: createdAt(),
+});

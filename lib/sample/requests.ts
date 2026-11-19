@@ -3,7 +3,8 @@
 import { eq } from "drizzle-orm";
 import { getCategory, getProduct } from "@/lib/catalog";
 import { schema, type getDbFromEnv } from "@/lib/db";
-import { notifyOwner } from "@/lib/forms/email";
+import { notifyOwner, type Mail } from "@/lib/forms/email";
+import { systemMail } from "@/lib/system-emails/mail";
 
 export type EmailStatus = "pending" | "sent" | "failed" | "not_configured";
 export type SampleOutcome = { delivery: "sent" | "failed" | "not_configured" | "received"; label: string };
@@ -19,7 +20,7 @@ export function requestLabel(productSlug: string | null, custom: string | null):
 }
 
 export type Db = ReturnType<typeof getDbFromEnv>;
-type Mailer = (mail: { to: string; subject: string; text: string }) => Promise<boolean>;
+type Mailer = (mail: Mail) => Promise<boolean>;
 
 export function confirmationMail(email: string, label: string) {
   return {
@@ -44,7 +45,7 @@ export async function sendConfirmation(
     status = "not_configured";
     error = "Email service is not configured.";
   } else {
-    const ok = await send(confirmationMail(email, label));
+    const ok = await send(await systemMail(db, "sample_request_received", email, { product_name: label }, confirmationMail(email, label)));
     status = ok ? "sent" : "failed";
     if (!ok) error = "The email service did not accept the message.";
   }

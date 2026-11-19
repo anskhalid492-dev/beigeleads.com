@@ -1,7 +1,22 @@
 import { getEmailSettings, type EmailEvent } from "@/lib/settings/email";
 
-type Mail = { to: string; subject: string; text: string };
-export type SendDetail = { ok: boolean; status: number; error?: string };
+/** `html` + `templateKey` come from System Emails; plain callers keep sending text only. */
+export type Mail = { to: string; subject: string; text: string; html?: string; templateKey?: string; reference?: string; source?: "live" | "test" };
+export type SendDetail = { ok: boolean; status: number; error?: string; id?: string };
+
+/** "alex@example.com" -> "a***@example.com". Logs never keep a full address. */
+export function maskEmail(a: string): string {
+  const [u = "", d = ""] = a.split("@");
+  return `${u.slice(0, 1)}***@${d}`;
+}
+
+async function logSend(env: CloudflareEnv, mail: Mail, r: SendDetail): Promise<void> {
+  if (!mail.templateKey) return;
+  try {
+    await env.DB.prepare("INSERT INTO email_delivery_logs (template_key, source, recipient, subject, reference, status, provider_id, error) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(mail.templateKey, mail.source ?? "live", mail.to.split(",").map((x) => maskEmail(x.trim())).join(", ").slice(0, 300), mail.subject.slice(0, 200), (mail.reference ?? "").slice(0, 60), r.ok ? "sent" : "failed", r.id ?? "", (r.error ?? "").slice(0, 300)).run();
+  } catch { /* the log table may not exist yet; sending must never depend on it */ }
+}
 
 const DEFAULT_FROM = "BeigeLeads <noreply@mail.beigeleads.com>";
 /** The address comes from the EMAIL_FROM variable (a verified domain); only the display name is editable in settings. */
@@ -13,15 +28,25 @@ function fromAddress(env: CloudflareEnv, name: string): string {
 
 /** Like sendEmail but says what Resend answered. Never includes the API key. Used by the admin test email. */
 export async function sendEmailDetailed(env: CloudflareEnv, mail: Mail): Promise<SendDetail> {
+  const r = await sendRaw(env, mail);
+  await logSend(env, mail, r);
+  return r;
+}
+
+async function sendRaw(env: CloudflareEnv, mail: Mail): Promise<SendDetail> {
   if (!env.RESEND_API_KEY) return { ok: false, status: 0, error: "RESEND_API_KEY is not set in Cloudflare." };
   const s = await getEmailSettings(env);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: fromAddress(env, s.senderName), to: mail.to.split(",").map((x) => x.trim()).filter(Boolean), subject: mail.subject, text: mail.text, ...(s.replyTo ? { reply_to: s.replyTo } : {}) }),
+      body: JSON.stringify({ from: fromAddress(env, s.senderName), to: mail.to.split(",").map((x) => x.trim()).filter(Boolean), subject: mail.subject, text: mail.text, ...(mail.html ? { html: mail.html } : {}), ...(s.replyTo ? { reply_to: s.replyTo } : {}) }),
     });
-    if (res.ok) return { ok: true, status: res.status };
+    if (res.ok) {
+      let id: string | undefined;
+      try { id = ((await res.json()) as { id?: string }).id; } catch { /* id is optional */ }
+      return { ok: true, status: res.status, id };
+    }
     let error = `Resend answered HTTP ${res.status}.`;
     try { const j = (await res.json()) as { message?: string }; if (j.message) error = `Resend: ${String(j.message).slice(0, 200)}`; } catch { /* keep generic text */ }
     return { ok: false, status: res.status, error };

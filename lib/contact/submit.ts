@@ -2,10 +2,12 @@
 // the real result of each email is stored so the admin can see it.
 import { eq } from "drizzle-orm";
 import { schema, type getDbFromEnv } from "@/lib/db";
+import type { Mail } from "@/lib/forms/email";
+import { systemMail } from "@/lib/system-emails/mail";
 import { inquiryLabel, isOrderType, type ContactInquiryInput } from "./types";
 
 type Db = ReturnType<typeof getDbFromEnv>;
-type Mailer = (mail: { to: string; subject: string; text: string }) => Promise<boolean>;
+type Mailer = (mail: Mail) => Promise<boolean>;
 export type EmailStatus = "pending" | "sent" | "failed" | "not_configured";
 export type ContactOutcome = { reference: string; duplicate: boolean; delivery: "sent" | "failed" | "not_configured" | "received" };
 
@@ -49,7 +51,7 @@ export async function sendContactConfirmation(
     error = "Email service is not configured.";
   } else {
     let ok = false;
-    try { ok = await send(confirmationMail(row, row.reference)); } catch { ok = false; }
+    try { ok = await send(await systemMail(db, "contact_received", row.email, { first_name: row.name.trim().split(/\s+/)[0], request_reference: row.reference, inquiry_topic: inquiryLabel(row.inquiryType), inquiry_subject: row.subject }, confirmationMail(row, row.reference), { reference: row.reference })); } catch { ok = false; }
     status = ok ? "sent" : "failed";
     if (!ok) error = "The email service did not accept the message.";
   }
