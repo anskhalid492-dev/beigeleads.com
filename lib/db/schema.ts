@@ -385,6 +385,7 @@ export const blogCategories = sqliteTable(
     description: text("description").notNull().default(""),
     seoTitle: text("seo_title").notNull().default(""),
     metaDescription: text("meta_description").notNull().default(""),
+    kind: text("kind").notNull().default("blog"),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("blog_categories_slug_uq").on(t.slug)],
@@ -408,6 +409,8 @@ export const blogPosts = sqliteTable(
     author: text("author").notNull().default(""),
     /** Link to blog_authors (migration 0010). `author` keeps the display name text for cards and legacy posts. */
     authorId: integer("author_id"),
+    /** "blog" or "guide" (migration 0026). Guides use the same CMS but have their own public section. */
+    kind: text("kind").notNull().default("blog"),
     featuredImage: text("featured_image"),
     featuredAlt: text("featured_alt").notNull().default(""),
     featuredCaption: text("featured_caption").notNull().default(""),

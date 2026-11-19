@@ -1,3 +1,4 @@
+import type { Kind } from "./kind";
 import { asc, eq, sql } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { slugifyText } from "./doc";
@@ -8,14 +9,14 @@ export class BlogError extends Error {}
 
 const clean = (s: unknown, max: number) => String(s ?? "").trim().slice(0, max);
 
-export async function listCategories(env: Env) {
+export async function listCategories(env: Env, kind: Kind = "blog") {
   const db = getDbFromEnv(env);
-  const rows = await db.select().from(schema.blogCategories).orderBy(asc(schema.blogCategories.name));
+  const rows = await db.select().from(schema.blogCategories).where(eq(schema.blogCategories.kind, kind)).orderBy(asc(schema.blogCategories.name));
   const counts = await db.select({ id: schema.blogPosts.categoryId, n: sql<number>`count(*)` }).from(schema.blogPosts).groupBy(schema.blogPosts.categoryId);
   return rows.map((c) => ({ ...c, posts: counts.find((x) => x.id === c.id)?.n ?? 0 }));
 }
 
-export async function saveCategory(env: Env, input: { id?: number; name: string; slug?: string; description?: string; seoTitle?: string; metaDescription?: string }) {
+export async function saveCategory(env: Env, input: { kind?: Kind; id?: number; name: string; slug?: string; description?: string; seoTitle?: string; metaDescription?: string }) {
   const db = getDbFromEnv(env);
   const name = clean(input.name, 80);
   if (!name) throw new BlogError("Give the category a name.");
@@ -25,7 +26,7 @@ export async function saveCategory(env: Env, input: { id?: number; name: string;
   if (dup[0] && dup[0].id !== input.id) throw new BlogError("Another category already uses that slug.");
   const values = { name, slug, description: clean(input.description, 500), seoTitle: clean(input.seoTitle, 120), metaDescription: clean(input.metaDescription, 320) };
   if (input.id) await db.update(schema.blogCategories).set(values).where(eq(schema.blogCategories.id, input.id));
-  else await db.insert(schema.blogCategories).values(values);
+  else await db.insert(schema.blogCategories).values({ ...values, kind: input.kind ?? "blog" });
 }
 
 export async function deleteCategory(env: Env, id: number) {

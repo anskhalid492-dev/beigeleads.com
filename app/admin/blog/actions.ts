@@ -11,11 +11,15 @@ import { deleteMedia, listMedia, mediaByUrl, mediaUsage, originalUrlOf, setAlt, 
 
 export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string; conflict?: boolean };
 
+/** Articles and guides share this CMS; refresh both sections' pages after any change. */
+const revalidateAll = () => { for (const p of ["/admin/blog", "/blog", "/admin/guides", "/guides"]) revalidatePath(p); };
+
 const need = (ok: boolean) => { if (!ok) throw new BlogError("Only an admin can do this."); };
 /** Editors may only change drafts. Admins may change anything. */
 async function mayEdit(u: BlogUser, id: number) {
   const post = await getPost(getCloudflareContext().env, id);
   if (!post) throw new BlogError("Article not found.");
+  if (post.kind === "guide") need(u.role === "admin"); // guides are admin-managed
   need(can.editPost(u.role, post.status));
 }
 
@@ -51,7 +55,7 @@ export async function transitionAction(id: number, action: Action, at?: number |
     need(can.publish(admin.role));
     z.enum(["publish", "schedule", "unpublish", "archive", "restore"]).parse(action);
     await transition(getCloudflareContext().env, admin.email, id, action, at);
-    revalidatePath("/admin/blog"); revalidatePath("/blog");
+    revalidateAll();
     return { ok: true };
   } catch (e) { return fail(e); }
 }
@@ -62,11 +66,20 @@ export async function createAction(): Promise<void> {
   redirect(`/admin/blog/${id}/edit`);
 }
 
+export async function createGuideAction(): Promise<void> {
+  const admin = await requireBlogUser();
+  need(can.publish(admin.role)); // guides are admin-managed; editors work on blog drafts only
+  const id = await createPost(getCloudflareContext().env, admin.email, "Untitled guide", "guide");
+  redirect(`/admin/guides/${id}/edit`);
+}
+
 export async function duplicateAction(id: number): Promise<Result<{ id: number }>> {
   try {
     const admin = await requireBlogUser();
+    const src = await getPost(getCloudflareContext().env, id);
+    if (src?.kind === "guide") need(admin.role === "admin");
     const nid = await duplicatePost(getCloudflareContext().env, admin.email, id);
-    revalidatePath("/admin/blog");
+    revalidateAll();
     return { ok: true, id: nid };
   } catch (e) { return fail(e); }
 }
@@ -84,7 +97,7 @@ export async function bulkAction(ids: number[], action: "publish" | "archive" | 
         done++;
       } catch (e) { failed.push(`#${id}: ${e instanceof BlogError ? e.message : "failed"}`); }
     }
-    revalidatePath("/admin/blog"); revalidatePath("/blog");
+    revalidateAll();
     return { ok: true, done, failed };
   } catch (e) { return fail(e); }
 }
@@ -94,7 +107,7 @@ export async function deleteAction(id: number): Promise<Result> {
     const admin = await requireBlogUser();
     need(can.delete(admin.role));
     await deletePost(getCloudflareContext().env, admin.email, id);
-    revalidatePath("/admin/blog"); revalidatePath("/blog");
+    revalidateAll();
     return { ok: true };
   } catch (e) { return fail(e); }
 }
@@ -104,7 +117,7 @@ export async function restoreRevisionAction(postId: number, revisionId: number, 
     const admin = await requireBlogUser();
     await mayEdit(admin, postId);
     const r = await restoreRevision(getCloudflareContext().env, admin.email, postId, revisionId, expectedVersion);
-    revalidatePath(`/admin/blog/${postId}/edit`); revalidatePath("/blog");
+    revalidateAll();
     return { ok: true, version: r.version };
   } catch (e) { return fail(e); }
 }
@@ -116,8 +129,8 @@ export async function categoryAction(form: FormData): Promise<Result> {
     const env = getCloudflareContext().env;
     const id = Number(form.get("id")) || undefined;
     if (String(form.get("intent")) === "delete" && id) await deleteCategory(env, id);
-    else await saveCategory(env, { id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? ""), description: String(form.get("description") ?? ""), seoTitle: String(form.get("seoTitle") ?? ""), metaDescription: String(form.get("metaDescription") ?? "") });
-    revalidatePath("/admin/blog/taxonomy"); revalidatePath("/blog");
+    else await saveCategory(env, { kind: String(form.get("kind")) === "guide" ? "guide" : "blog", id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? ""), description: String(form.get("description") ?? ""), seoTitle: String(form.get("seoTitle") ?? ""), metaDescription: String(form.get("metaDescription") ?? "") });
+    revalidateAll();
     return { ok: true };
   } catch (e) { return fail(e); }
 }
@@ -129,7 +142,7 @@ export async function tagAction(form: FormData): Promise<Result> {
     const id = Number(form.get("id")) || undefined;
     if (String(form.get("intent")) === "delete" && id) await deleteTag(env, id);
     else await saveTag(env, { id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? "") });
-    revalidatePath("/admin/blog/taxonomy");
+    revalidateAll();
     return { ok: true };
   } catch (e) { return fail(e); }
 }

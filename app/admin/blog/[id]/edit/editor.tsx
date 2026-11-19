@@ -26,7 +26,7 @@ export type Fields = {
   seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean; ogTitle: string; ogDescription: string; ogImage: string | null;
   focusKeyword: string; secondaryKeywords: string; related: number[]; tagIds: number[]; scheduledAt: number | null;
 };
-export type EditorPost = { id: number; version: number; status: Status; updatedAt: number; publishedAt: number | null; doc: DocNode; fields: Fields };
+export type EditorPost = { kind?: "blog" | "guide"; id: number; version: number; status: Status; updatedAt: number; publishedAt: number | null; doc: DocNode; fields: Fields };
 type Save = "saved" | "dirty" | "saving" | "failed";
 
 const input = "h-10 w-full rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900";
@@ -39,6 +39,8 @@ const tzLabel = () => { try { const o = -new Date().getTimezoneOffset(); const s
 export function Editor({ role, post, authors, cats, tags, options, targets }: { role: "admin" | "editor"; post: EditorPost; authors: AuthorOption[]; cats: { id: number; name: string }[]; tags: { id: number; name: string }[]; options: { id: number; title: string }[]; targets: InternalTarget[] }) {
   const router = useRouter();
   const toast = useToast();
+  const A = post.kind === "guide" ? "/admin/guides" : "/admin/blog";
+  const P = post.kind === "guide" ? "/guides" : "/blog";
   const [f, setF] = useState<Fields>(post.fields);
   const [status, setStatus] = useState<Status>(post.status);
   const [save, setSave] = useState<Save>("saved");
@@ -227,7 +229,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
   return (
     <div className="-mx-1">
       <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 border-b border-sand-200 bg-sand-50/95 px-1 py-3 backdrop-blur">
-        <Link href="/admin/blog" className="text-sm font-semibold underline">All articles</Link>
+        <Link href={A} className="text-sm font-semibold underline">All {post.kind === "guide" ? "guides" : "articles"}</Link>
         <Badge tone={TONE[status]}>{status[0].toUpperCase() + status.slice(1)}</Badge>
         <span role="status" aria-live="polite" className={`text-sm ${save === "failed" ? "font-semibold text-red-700" : ""}`}>{statusText}</span>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -309,7 +311,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
                 {status === "published" && f.slug !== post.fields.slug && (
                   <div role="status" className="mt-1 text-xs font-semibold text-amber-900">
                     <p>This article is live. Changing the slug breaks the old address unless a redirect exists.</p>
-                    {role === "admin" && <button type="button" className="mt-1 underline" onClick={async () => { const r = await saveRedirectAction({ from: `/blog/${post.fields.slug}`, to: `/blog/${f.slug}`, status: 301 }); setRedirectMsg(r.ok ? "301 redirect created. Save the article so the new address exists." : r.error); }}>Create a 301 redirect from /blog/{post.fields.slug}</button>}
+                    {role === "admin" && <button type="button" className="mt-1 underline" onClick={async () => { const r = await saveRedirectAction({ from: `${P}/${post.fields.slug}`, to: `${P}/${f.slug}`, status: 301 }); setRedirectMsg(r.ok ? "301 redirect created. Save the article so the new address exists." : r.error); }}>Create a 301 redirect from /blog/{post.fields.slug}</button>}
                     {redirectMsg && <p className="mt-1">{redirectMsg}</p>}
                   </div>
                 )}
@@ -352,9 +354,9 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
               <AuthorPicker authors={authors} authorId={f.authorId} legacyName={f.author} canCreate={role === "admin"}
                 onPick={(a) => { setF((p) => ({ ...p, authorId: a?.id ?? null, author: a ? a.name : "" })); touch(); }}
                 onLegacy={(n) => update("author", n)} />
-              <div><label htmlFor="cat" className={label}>Category</label><select id="cat" value={f.categoryId ?? ""} onChange={(e) => update("categoryId", e.target.value ? Number(e.target.value) : null)} className={input}><option value="">No category</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>{cats.length === 0 && <p className="mt-1 text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create a category</Link> first.</p>}</div>
+              <div><label htmlFor="cat" className={label}>Category</label><select id="cat" value={f.categoryId ?? ""} onChange={(e) => update("categoryId", e.target.value ? Number(e.target.value) : null)} className={input}><option value="">No category</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>{cats.length === 0 && <p className="mt-1 text-xs"><Link className="underline" href={`${A}/taxonomy`}>Create a category</Link> first.</p>}</div>
               <fieldset><legend className={label}>Tags</legend>
-                {tags.length === 0 ? <p className="text-xs"><Link className="underline" href="/admin/blog/taxonomy">Create tags</Link> to use them here.</p> : (
+                {tags.length === 0 ? <p className="text-xs"><Link className="underline" href={`${A}/taxonomy`}>Create tags</Link> to use them here.</p> : (
                   <div className="flex flex-wrap gap-2">{tags.map((t) => { const on = f.tagIds.includes(t.id); return <button key={t.id} type="button" aria-pressed={on} onClick={() => update("tagIds", on ? f.tagIds.filter((x) => x !== t.id) : [...f.tagIds, t.id])} className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? "border-forest-700 bg-forest-100 text-forest-900" : "border-sand-300"}`}>{t.name}</button>; })}</div>
                 )}
               </fieldset>
@@ -374,11 +376,11 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
                 {status !== "published" && status !== "archived" && <Button variant="secondary" disabled={busy || conflict || !f.scheduledAt} onClick={() => ask(`Schedule this article for ${f.scheduledAt ? new Date(f.scheduledAt).toLocaleString() : ""}?`, () => void act("schedule"))}>{status === "scheduled" ? "Update schedule" : "Schedule"}</Button>}
                 {(status === "published" || status === "scheduled") && <Button variant="secondary" disabled={busy} onClick={() => ask("Unpublish this article? It leaves the public blog and returns to draft.", () => void act("unpublish"))}>Unpublish</Button>}
                 {status !== "archived" ? <Button variant="secondary" disabled={busy} onClick={() => ask("Archive this article? It is hidden from the public blog.", () => void act("archive"))}>Archive</Button> : <Button variant="secondary" disabled={busy} onClick={() => void act("restore")}>Restore to draft</Button>}
-                {status === "published" && <Button asChild variant="secondary"><Link href={`/blog/${f.slug}`} target="_blank">View live</Link></Button>}
+                {status === "published" && <Button asChild variant="secondary"><Link href={`${P}/${f.slug}`} target="_blank">View live</Link></Button>}
               </div>
               <p className="text-xs">Scheduled articles are published by a job that runs every minute. They are shown from the scheduled time even if the job is late.</p>
               </>}
-              <Link href={`/admin/blog/${post.id}/revisions`} className="text-sm font-semibold underline">Revision history</Link>
+              <Link href={`${A}/${post.id}/revisions`} className="text-sm font-semibold underline">Revision history</Link>
                         </section>
           )}
         </aside>

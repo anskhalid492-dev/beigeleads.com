@@ -1,9 +1,15 @@
+import { GUIDE_STARTERS } from "./guide-starters";
+import type { Kind } from "./kind";
 import { mdToDoc } from "./markdown";
 
 /** Ready-written articles an admin can add as a DRAFT from /admin/blog/starters. They go through the normal CMS save path; nothing is published automatically. */
 export type StarterArticle = {
   slug: string; title: string; excerpt: string; seoTitle: string; metaDescription: string; focusKeyword: string; featuredAlt: string;
   category: string; tags: string[]; markdown: string;
+  /** "guide" starters become guides (/guides/<slug>); default is a blog article. */
+  kind?: Kind;
+  /** Approved brand image under /public (for example /brand/social/...png), copied into the media library when the draft is created. */
+  brandImage?: string;
 };
 
 export const STARTERS: StarterArticle[] = [
@@ -202,3 +208,6 @@ When you are ready to start, [browse the ready-made lists](/lists) or [request a
 ];
 
 export const starterDoc = (s: StarterArticle) => mdToDoc(s.markdown);
+
+// Guides come after the articles so existing article lookups by position keep working.
+STARTERS.push(...GUIDE_STARTERS);

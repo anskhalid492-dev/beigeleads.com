@@ -50,6 +50,7 @@ const columns: Column[] = [
       ["Request a Sample", "/sample"],
       ["Case Studies", "/case-studies"],
       ["Blog", "/blog"],
+      ["Guides", "/guides"],
       ["Media Kit", "/media-kit"],
       ["Help Center", "/help-center"],
     ],

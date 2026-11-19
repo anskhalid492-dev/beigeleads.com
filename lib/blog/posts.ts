@@ -1,3 +1,4 @@
+import type { Kind } from "./kind";
 import { and, asc, desc, eq, inArray, like, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { cleanDoc, imagesOf, plainText, readingMinutes, slugifyText, type DocNode } from "./doc";
@@ -40,10 +41,10 @@ export async function uniqueSlug(env: Env, wanted: string, exceptId?: number): P
   return `${base}-${Date.now()}`;
 }
 
-export async function createPost(env: Env, actor: string, title = "Untitled article") {
+export async function createPost(env: Env, actor: string, title = "Untitled article", kind: Kind = "blog") {
   const db = getDbFromEnv(env);
   const slug = await uniqueSlug(env, title);
-  const [row] = await db.insert(t).values({ title: s(title, 200) || "Untitled article", slug, updatedBy: actor, author: "" }).returning({ id: t.id });
+  const [row] = await db.insert(t).values({ title: s(title, 200) || "Untitled article", slug, updatedBy: actor, author: "", kind }).returning({ id: t.id });
   await writeBody(env, row.id, cleanDoc(null));
   await audit(env, row.id, actor, "created");
   return row.id;
@@ -213,7 +214,7 @@ export async function duplicatePost(env: Env, actor: string, id: number) {
   const slug = await uniqueSlug(env, `${src.row.slug}-copy`);
   const r = src.row;
   const [row] = await db.insert(t).values({
-    slug, title: `${r.title} (copy)`, excerpt: r.excerpt, status: "draft", categoryId: r.categoryId, author: r.author, authorId: r.authorId, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt,
+    kind: r.kind, slug, title: `${r.title} (copy)`, excerpt: r.excerpt, status: "draft", categoryId: r.categoryId, author: r.author, authorId: r.authorId, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt,
     readingMinutes: r.readingMinutes, searchText: r.searchText, seoTitle: r.seoTitle, metaDescription: r.metaDescription, noindex: r.noindex, ogTitle: r.ogTitle, ogDescription: r.ogDescription,
     ogImage: r.ogImage, focusKeyword: r.focusKeyword, relatedJson: r.relatedJson, updatedBy: actor,
   }).returning({ id: t.id });
@@ -236,13 +237,13 @@ export async function deletePost(env: Env, actor: string, id: number) {
 
 // ---------- admin list ----------
 
-export type ListFilter = { q?: string; status?: PostStatus | ""; categoryId?: number; author?: string; sort?: "updated" | "title" | "published"; page?: number; perPage?: number };
+export type ListFilter = { kind?: Kind; q?: string; status?: PostStatus | ""; categoryId?: number; author?: string; sort?: "updated" | "title" | "published"; page?: number; perPage?: number };
 
 export async function listPosts(env: Env, f: ListFilter) {
   const db = getDbFromEnv(env);
   const per = f.perPage ?? 15;
   const page = Math.max(1, f.page ?? 1);
-  const where: SQL[] = [];
+  const where: SQL[] = [eq(t.kind, f.kind ?? "blog")];
   if (f.status) where.push(eq(t.status, f.status));
   if (f.categoryId) where.push(eq(t.categoryId, f.categoryId));
   if (f.author) where.push(eq(t.author, f.author));
@@ -257,19 +258,19 @@ export async function listPosts(env: Env, f: ListFilter) {
   return { rows, total: total[0]?.n ?? 0, per, page };
 }
 
-export async function blogStats(env: Env) {
+export async function blogStats(env: Env, kind: Kind = "blog") {
   const db = getDbFromEnv(env);
   const [byStatus, recent, authors] = await Promise.all([
-    db.select({ status: t.status, n: sql<number>`count(*)` }).from(t).groupBy(t.status),
-    db.select({ id: t.id, title: t.title, status: t.status, updatedAt: t.updatedAt, updatedBy: t.updatedBy }).from(t).orderBy(desc(t.updatedAt)).limit(5),
-    db.select({ author: t.author }).from(t).groupBy(t.author),
+    db.select({ status: t.status, n: sql<number>`count(*)` }).from(t).where(eq(t.kind, kind)).groupBy(t.status),
+    db.select({ id: t.id, title: t.title, status: t.status, updatedAt: t.updatedAt, updatedBy: t.updatedBy }).from(t).where(eq(t.kind, kind)).orderBy(desc(t.updatedAt)).limit(5),
+    db.select({ author: t.author }).from(t).where(eq(t.kind, kind)).groupBy(t.author),
   ]);
   const n = (s: string) => byStatus.find((x) => x.status === s)?.n ?? 0;
   return { total: byStatus.reduce((a, b) => a + b.n, 0), published: n("published"), draft: n("draft"), scheduled: n("scheduled"), archived: n("archived"), recent, authors: authors.map((a) => a.author).filter(Boolean) };
 }
 
-export async function postOptions(env: Env, exceptId?: number) {
-  const rows = await getDbFromEnv(env).select({ id: t.id, title: t.title, slug: t.slug }).from(t).orderBy(desc(t.updatedAt)).limit(200);
+export async function postOptions(env: Env, exceptId?: number, kind?: Kind) {
+  const rows = await getDbFromEnv(env).select({ id: t.id, title: t.title, slug: t.slug }).from(t).where(kind ? eq(t.kind, kind) : undefined).orderBy(desc(t.updatedAt)).limit(200);
   return rows.filter((r) => r.id !== exceptId);
 }
 
@@ -291,11 +292,11 @@ const cardSelect = (db: ReturnType<typeof getDbFromEnv>) => db.select(cardCols).
   .leftJoin(schema.blogCategories, eq(schema.blogCategories.id, t.categoryId))
   .leftJoin(schema.blogAuthors, and(eq(schema.blogAuthors.id, t.authorId), eq(schema.blogAuthors.status, "published")));
 
-export async function listPublished(env: Env, o: { q?: string; categoryId?: number; tagId?: number; authorId?: number; page?: number; per?: number }) {
+export async function listPublished(env: Env, o: { kind?: Kind; q?: string; categoryId?: number; tagId?: number; authorId?: number; page?: number; per?: number }) {
   const db = getDbFromEnv(env);
   const per = o.per ?? 9;
   const page = Math.max(1, o.page ?? 1);
-  const where: SQL[] = [live()];
+  const where: SQL[] = [live(), eq(t.kind, o.kind ?? "blog")];
   if (o.categoryId) where.push(eq(t.categoryId, o.categoryId));
   if (o.authorId) where.push(eq(t.authorId, o.authorId));
   if (o.tagId) where.push(sql`${t.id} in (select post_id from blog_post_tags where tag_id = ${o.tagId})`);
@@ -307,9 +308,9 @@ export async function listPublished(env: Env, o: { q?: string; categoryId?: numb
   return { cards: rows.map((r) => toCard(r)), total: total[0]?.n ?? 0, per, page };
 }
 
-export async function getPublishedBySlug(env: Env, slug: string) {
+export async function getPublishedBySlug(env: Env, slug: string, kind: Kind = "blog") {
   const db = getDbFromEnv(env);
-  const rows = await db.select().from(t).where(and(eq(t.slug, slug), live())).limit(1);
+  const rows = await db.select().from(t).where(and(eq(t.slug, slug), eq(t.kind, kind), live())).limit(1);
   const row = rows[0];
   if (!row) return null;
   const [doc, cat, tags] = await Promise.all([
@@ -324,22 +325,22 @@ export async function relatedPublished(env: Env, row: Post, limit = 3): Promise<
   const db = getDbFromEnv(env);
   const picked: number[] = (() => { try { return JSON.parse(row.relatedJson); } catch { return []; } })();
   const sel = cardSelect(db);
-  const manual = picked.length ? await sel.where(and(live(), inArray(t.id, picked))).limit(limit) : [];
+  const manual = picked.length ? await sel.where(and(live(), eq(t.kind, row.kind), inArray(t.id, picked))).limit(limit) : [];
   if (manual.length >= limit) return manual.map((r) => toCard(r));
   const more = await cardSelect(db)
-    .where(and(live(), ne(t.id, row.id), row.categoryId ? eq(t.categoryId, row.categoryId) : undefined)).orderBy(desc(sql`coalesce(${t.publishedAt}, ${t.scheduledAt})`)).limit(limit);
+    .where(and(live(), eq(t.kind, row.kind), ne(t.id, row.id), row.categoryId ? eq(t.categoryId, row.categoryId) : undefined)).orderBy(desc(sql`coalesce(${t.publishedAt}, ${t.scheduledAt})`)).limit(limit);
   const seen = new Set(manual.map((m) => m.id));
   return [...manual, ...more.filter((m) => !seen.has(m.id))].slice(0, limit).map((r) => toCard(r));
 }
 
-export async function publishedCategories(env: Env) {
+export async function publishedCategories(env: Env, kind: Kind = "blog") {
   const db = getDbFromEnv(env);
-  const cats = await db.select().from(schema.blogCategories).orderBy(asc(schema.blogCategories.name));
-  const counts = await db.select({ id: t.categoryId, n: sql<number>`count(*)` }).from(t).where(live()).groupBy(t.categoryId);
+  const cats = await db.select().from(schema.blogCategories).where(eq(schema.blogCategories.kind, kind)).orderBy(asc(schema.blogCategories.name));
+  const counts = await db.select({ id: t.categoryId, n: sql<number>`count(*)` }).from(t).where(and(live(), eq(t.kind, kind))).groupBy(t.categoryId);
   return cats.map((c) => ({ ...c, posts: counts.find((x) => x.id === c.id)?.n ?? 0 })).filter((c) => c.posts > 0);
 }
 
 export async function publishedSitemap(env: { DB: D1Database }) {
   const db = getDbFromEnv(env);
-  return db.select({ slug: t.slug, updatedAt: t.updatedAt, noindex: t.noindex, canonicalUrl: t.canonicalUrl }).from(t).where(live());
+  return db.select({ kind: t.kind, slug: t.slug, updatedAt: t.updatedAt, noindex: t.noindex, canonicalUrl: t.canonicalUrl }).from(t).where(live());
 }

@@ -12,7 +12,7 @@ let env: CloudflareEnv;
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ persist: false });
   env = proxy.env;
-  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012|^0013|^0014|^0015|^0017/.test(f) && f.endsWith(".sql")).sort();
+  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012|^0013|^0014|^0015|^0017|^0026/.test(f) && f.endsWith(".sql")).sort();
   const sql = files.map((f) => readFileSync(`drizzle/${f}`, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const s of sql.split(";").map((x) => x.trim()).filter(Boolean)) { try { await env.DB.exec(s.replace(/\s+/g, " ") + ";"); } catch { /* table from another migration */ } }
 });

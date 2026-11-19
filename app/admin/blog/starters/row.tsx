@@ -6,7 +6,7 @@ import { useToast } from "@/components/admin/toast";
 import { Button } from "@/components/ui/button";
 import { createStarterAction } from "./actions";
 
-export function StarterRow(p: { slug: string; title: string; excerpt: string; category: string; existingId: number | null; authors: { id: number; name: string; title: string }[] }) {
+export function StarterRow(p: { kind: "blog" | "guide"; slug: string; title: string; excerpt: string; category: string; existingId: number | null; authors: { id: number; name: string; title: string }[] }) {
   const [author, setAuthor] = useState("");
   const [pending, start] = useTransition();
   const toast = useToast();
@@ -15,13 +15,13 @@ export function StarterRow(p: { slug: string; title: string; excerpt: string; ca
     const r = await createStarterAction(p.slug, author ? Number(author) : null);
     if (!r.ok) return toast(false, r.error);
     toast(true, "Draft created.");
-    router.push(`/admin/blog/${r.id}/edit`);
+    router.push(`/admin/${p.kind === "guide" ? "guides" : "blog"}/${r.id}/edit`);
   });
   return (
     <div className="space-y-3 p-5">
-      <div><p className="text-lg font-bold text-forest-900">{p.title}</p><p className="text-xs">/blog/{p.slug} · {p.category}</p><p className="mt-2 text-sm">{p.excerpt}</p></div>
+      <div><p className="text-lg font-bold text-forest-900">{p.title}</p><p className="text-xs">/{p.kind === "guide" ? "guides" : "blog"}/{p.slug} · {p.category}</p><p className="mt-2 text-sm">{p.excerpt}</p></div>
       {p.existingId ? (
-        <p className="text-sm">Already added. <Link className="font-semibold underline" href={`/admin/blog/${p.existingId}/edit`}>Open it in the editor</Link>.</p>
+        <p className="text-sm">Already added. <Link className="font-semibold underline" href={`/admin/${p.kind === "guide" ? "guides" : "blog"}/${p.existingId}/edit`}>Open it in the editor</Link>.</p>
       ) : (
         <div className="flex flex-wrap items-end gap-3">
           <div>

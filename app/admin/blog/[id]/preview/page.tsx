@@ -12,11 +12,11 @@ export const metadata: Metadata = { title: "Article preview", robots: { index: f
 
 /** Draft preview: admin only (Access + app login), never indexed, shows the last SAVED version. */
 export default async function Preview({ params }: { params: Promise<{ id: string }> }) {
-  await guardBlog();
+  const user = await guardBlog();
   const id = Number((await params).id);
   const env = getCloudflareContext().env;
   const p = Number.isInteger(id) ? await getPostForEdit(env, id) : null;
-  if (!p) notFound();
+  if (!p || (p.row.kind === "guide" && user.role !== "admin")) notFound();
   const cats = await listCategories(env);
   const c = cats.find((x) => x.id === p.row.categoryId);
   const r = p.row;

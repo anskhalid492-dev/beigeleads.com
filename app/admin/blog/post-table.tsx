@@ -12,13 +12,16 @@ export type PostRow = { id: number; title: string; slug: string; status: Status;
 const TONE = { draft: "mute", scheduled: "info", published: "good", archived: "warn" } as const;
 const field = "h-10 rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900";
 
-export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total: number; page: number; per: number; cats: { id: number; name: string }[]; authors: string[]; q: string; status: string; category: string; author: string; sort: string }) {
+export function PostTable(p: { kind?: "blog" | "guide"; role: "admin" | "editor"; rows: PostRow[]; total: number; page: number; per: number; cats: { id: number; name: string }[]; authors: string[]; q: string; status: string; category: string; author: string; sort: string }) {
   const router = useRouter();
   const toast = useToast();
   const [pending, start] = useTransition();
   const [sel, setSel] = useState<number[]>([]);
   const [confirm, setConfirm] = useState<null | { text: string; run: () => Promise<void> }>(null);
   const admin = p.role === "admin";
+  const A = p.kind === "guide" ? "/admin/guides" : "/admin/blog";
+  const P = p.kind === "guide" ? "/guides" : "/blog";
+  const N = p.kind === "guide" ? "guide" : "article";
   const pages = Math.max(1, Math.ceil(p.total / p.per));
   const qs = (n: number) => { const u = new URLSearchParams(); if (p.q) u.set("q", p.q); if (p.status) u.set("status", p.status); if (p.category) u.set("category", p.category); if (p.author) u.set("author", p.author); if (p.sort !== "updated") u.set("sort", p.sort); if (n > 1) u.set("page", String(n)); const s = u.toString(); return s ? `?${s}` : "?"; };
 
@@ -30,7 +33,7 @@ export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total:
   const allOn = p.rows.length > 0 && p.rows.every((r) => sel.includes(r.id));
 
   const bulk = (action: "publish" | "archive" | "delete", label: string) => ask(
-    `${label} ${sel.length} article${sel.length === 1 ? "" : "s"}?${action === "delete" ? " This also deletes their bodies and revisions and cannot be undone." : ""}`,
+    `${label} ${sel.length} ${N}${sel.length === 1 ? "" : "s"}?${action === "delete" ? " This also deletes their bodies and revisions and cannot be undone." : ""}`,
     async () => { const r = await bulkAction(sel, action); if (r.ok && r.failed.length) return { ok: false, error: `${r.done} done. ${r.failed.join("; ")}` }; return r; },
     `${label} done.`,
   );
@@ -38,7 +41,7 @@ export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total:
   return (
     <Panel>
       <form method="get" className="flex flex-wrap items-center gap-2 border-b border-sand-200 p-4">
-        <input name="q" defaultValue={p.q} placeholder="Search title, slug or excerpt" aria-label="Search articles" className={`${field} min-w-52 flex-1`} />
+        <input name="q" defaultValue={p.q} placeholder="Search title, slug or excerpt" aria-label={`Search ${N}s`} className={`${field} min-w-52 flex-1`} />
         <select name="status" defaultValue={p.status} aria-label="Status" className={field}><option value="">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="published">Published</option><option value="archived">Archived</option></select>
         <select name="category" defaultValue={p.category} aria-label="Category" className={field}><option value="">All categories</option>{p.cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
         <select name="author" defaultValue={p.author} aria-label="Author" className={field}><option value="">All authors</option>{p.authors.map((a) => <option key={a}>{a}</option>)}</select>
@@ -56,7 +59,7 @@ export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total:
         </div>
       )}
 
-      {p.rows.length === 0 ? <Empty title="No articles found" text="Change the filters or create a new article." /> : (
+      {p.rows.length === 0 ? <Empty title={`No ${N}s found`} text={`Change the filters or create a new ${N}.`} /> : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-sm">
             <thead className="border-b border-sand-200 text-xs text-forest-700">
@@ -73,8 +76,8 @@ export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total:
                     <div className="flex items-start gap-3">
                       {r.image ?   <img src={r.image} alt="" className="h-12 w-16 shrink-0 rounded-lg object-cover" /> : <div className="h-12 w-16 shrink-0 rounded-lg bg-sand-100" aria-hidden />}
                       <div className="min-w-0">
-                        <Link href={`/admin/blog/${r.id}/edit`} className="font-semibold text-forest-900 hover:underline">{r.title || "Untitled"}</Link>
-                        <p className="truncate text-xs">/blog/{r.slug}</p>
+                        <Link href={`${A}/${r.id}/edit`} className="font-semibold text-forest-900 hover:underline">{r.title || "Untitled"}</Link>
+                        <p className="truncate text-xs">{P}/{r.slug}</p>
                       </div>
                     </div>
                   </td>
@@ -88,9 +91,9 @@ export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total:
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap justify-end gap-1.5">
-                      <Button asChild size="sm" variant="secondary"><Link href={`/admin/blog/${r.id}/edit`}>Edit</Link></Button>
-                      <Button asChild size="sm" variant="secondary"><Link href={r.status === "published" ? `/blog/${r.slug}` : `/admin/blog/${r.id}/preview`} target="_blank">{r.status === "published" ? "View" : "Preview"}</Link></Button>
-                      <Button size="sm" variant="secondary" disabled={pending} onClick={() => start(async () => { const x = await duplicateAction(r.id); if (x.ok) { toast(true, "Duplicated as a draft."); router.push(`/admin/blog/${x.id}/edit`); } else toast(false, x.error); })}>Duplicate</Button>
+                      <Button asChild size="sm" variant="secondary"><Link href={`${A}/${r.id}/edit`}>Edit</Link></Button>
+                      <Button asChild size="sm" variant="secondary"><Link href={r.status === "published" ? `${P}/${r.slug}` : `${A}/${r.id}/preview`} target="_blank">{r.status === "published" ? "View" : "Preview"}</Link></Button>
+                      <Button size="sm" variant="secondary" disabled={pending} onClick={() => start(async () => { const x = await duplicateAction(r.id); if (x.ok) { toast(true, "Duplicated as a draft."); router.push(`${A}/${x.id}/edit`); } else toast(false, x.error); })}>Duplicate</Button>
                       {admin && (<>
                       {r.status === "published" || r.status === "scheduled"
                         ? <Button size="sm" variant="secondary" disabled={pending} onClick={() => ask(`Unpublish “${r.title}”? It disappears from the public blog and returns to draft.`, () => transitionAction(r.id, "unpublish"), "Unpublished.")}>Unpublish</Button>
@@ -109,7 +112,7 @@ export function PostTable(p: { role: "admin" | "editor"; rows: PostRow[]; total:
       )}
 
       <div className="flex items-center justify-between border-t border-sand-200 px-4 py-3 text-sm">
-        <span>{p.total} article{p.total === 1 ? "" : "s"} · page {p.page} of {pages}</span>
+        <span>{p.total} {N}{p.total === 1 ? "" : "s"} · page {p.page} of {pages}</span>
         <div className="flex gap-2">
           {p.page > 1 && <Button asChild size="sm" variant="secondary"><Link href={qs(p.page - 1)}>Previous</Link></Button>}
           {p.page < pages && <Button asChild size="sm" variant="secondary"><Link href={qs(p.page + 1)}>Next</Link></Button>}

@@ -21,18 +21,20 @@ export type ArticleData = {
 };
 
 /** The article page, shared by the public route and the admin preview so what you preview is what is published. */
-export function ArticleView({ a, related, preview = false, newsletter = false }: { a: ArticleData; related: PublicCard[]; preview?: boolean; newsletter?: boolean }) {
+export function ArticleView({ a, related, preview = false, newsletter = false, guide = false, faq = [] }: { a: ArticleData; related: PublicCard[]; preview?: boolean; newsletter?: boolean; guide?: boolean; faq?: { q: string; a: string }[] }) {
+  const base = guide ? "/guides" : "/blog";
+  const catHref = (slug: string) => (guide ? `/guides?category=${slug}` : `/blog/category/${slug}`);
   const toc = headingsOf(a.doc).filter((h) => h.level <= 3);
-  const url = `${SITE_URL}/blog/${a.slug}`;
+  const url = `${SITE_URL}${base}/${a.slug}`;
   const img = a.ogImage ?? a.featuredImage;
   return (
     <>
       {!preview && <ReadingProgress />}
-      {preview && <p role="status" className="bg-purple-100 px-4 py-2 text-center text-sm font-semibold text-forest-900">Preview. This is how the article looks once it is published.</p>}
-      <Breadcrumbs wide items={[{ name: "Blog", href: "/blog" }, ...(a.category ? [{ name: a.category.name, href: `/blog/category/${a.category.slug}` }] : []), { name: a.title, href: `/blog/${a.slug}` }]} />
+      {preview && <p role="status" className="bg-purple-100 px-4 py-2 text-center text-sm font-semibold text-forest-900">Preview. This is how the {guide ? "guide" : "article"} looks once it is published.</p>}
+      <Breadcrumbs wide items={[{ name: guide ? "Guides" : "Blog", href: base }, ...(a.category ? [{ name: a.category.name, href: catHref(a.category.slug) }] : []), { name: a.title, href: `${base}/${a.slug}` }]} />
       {!preview && (
         <JsonLd data={{
-          "@context": "https://schema.org", "@type": "BlogPosting", headline: a.title, description: a.excerpt || undefined,
+          "@context": "https://schema.org", "@type": guide ? "Article" : "BlogPosting", headline: a.title, description: a.excerpt || undefined,
           datePublished: a.publishedAt.toISOString(), dateModified: a.updatedAt.toISOString(),
           author: (() => {
             const pa = a.authorProfile;
@@ -44,9 +46,10 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
           mainEntityOfPage: url, image: img ? [img.startsWith("http") ? img : `${SITE_URL}${img}`] : undefined,
         }} />
       )}
+      {!preview && guide && faq.length >= 2 && <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />}
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-4xl">
-          {a.category && <Link href={`/blog/category/${a.category.slug}`} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}
+          {a.category && <Link href={catHref(a.category.slug)} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}
           <h1 className="display mt-2 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{a.title}</h1>
           {a.excerpt && <p className="mt-4 max-w-3xl text-lg sm:text-xl">{a.excerpt}</p>}
           <Byline author={a.authorProfile ?? null} plainName={a.author} date={a.publishedAt} />
@@ -68,7 +71,7 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
             <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-sand-200 pt-6 lg:hidden"><span className="text-sm font-semibold text-forest-900">Share</span><Share url={url} title={a.title} /></div>
             <InlineCta cta={ctaFor(a)} />
             {a.authorProfile && <AboutAuthor author={a.authorProfile} />}
-            <p className="mt-8"><Link href="/blog" className="text-sm font-semibold text-forest-900 underline underline-offset-4">← Back to all articles</Link></p>
+            <p className="mt-8"><Link href={base} className="text-sm font-semibold text-forest-900 underline underline-offset-4">← Back to all {guide ? "guides" : "articles"}</Link></p>
           </div>
           <aside className="hidden lg:col-start-3 lg:row-start-1 lg:block">
             <div className="sticky top-32 space-y-6">
@@ -86,8 +89,8 @@ export function ArticleView({ a, related, preview = false, newsletter = false }:
 
         {related.length > 0 && (
           <section className="mx-auto mt-16 max-w-6xl" aria-labelledby="rel">
-            <h2 id="rel" className="display text-4xl text-forest-900">Continue reading</h2>
-            <ul className="mt-6 grid gap-5 md:grid-cols-3">{related.map((p) => <li key={p.id}><PostCard p={p} /></li>)}</ul>
+            <h2 id="rel" className="display text-4xl text-forest-900">{guide ? "Related guides" : "Continue reading"}</h2>
+            <ul className="mt-6 grid gap-5 md:grid-cols-3">{related.map((p) => <li key={p.id}><PostCard p={p} guide={guide} /></li>)}</ul>
           </section>
         )}
       </div>

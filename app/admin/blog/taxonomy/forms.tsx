@@ -10,7 +10,8 @@ const input = "h-10 w-full rounded-xl border border-sand-300 bg-white px-3 text-
 type Cat = { id: number; name: string; slug: string; description: string; seoTitle: string; metaDescription: string; posts: number };
 type Tag = { id: number; name: string; slug: string; posts: number };
 
-export function CategoryManager({ cats }: { cats: Cat[] }) {
+export function CategoryManager({ cats, kind = "blog" }: { cats: Cat[]; kind?: "blog" | "guide" }) {
+  const base = kind === "guide" ? "/guides?category=" : "/blog/category/";
   const [edit, setEdit] = useState<Cat | null>(null);
   const [pending, start] = useTransition();
   const toast = useToast();
@@ -26,7 +27,7 @@ export function CategoryManager({ cats }: { cats: Cat[] }) {
         {cats.length === 0 && <li className="p-6 text-center">No categories yet. Add the first one.</li>}
         {cats.map((c) => (
           <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-            <div className="min-w-0"><p className="font-semibold text-forest-900">{c.name}</p><p className="text-xs">/blog/category/{c.slug} · {c.posts} article{c.posts === 1 ? "" : "s"}</p></div>
+            <div className="min-w-0"><p className="font-semibold text-forest-900">{c.name}</p><p className="text-xs">{base}{c.slug} · {c.posts} {kind === "guide" ? "guide" : "article"}{c.posts === 1 ? "" : "s"}</p></div>
             <div className="flex gap-2">
               <Button size="sm" variant="secondary" onClick={() => setEdit(c)}>Edit</Button>
               <Button size="sm" variant="secondary" disabled={pending} onClick={() => { if (confirm(`Delete the category “${c.name}”?`)) { const fd = new FormData(); fd.set("intent", "delete"); fd.set("id", String(c.id)); run(fd, "Category deleted."); } }}>Delete</Button>
@@ -36,6 +37,7 @@ export function CategoryManager({ cats }: { cats: Cat[] }) {
       </ul>
       <form key={edit?.id ?? "new"} ref={ref} action={(fd) => run(fd, edit ? "Category saved." : "Category added.")} className="space-y-3 rounded-2xl border border-sand-200 bg-white p-4">
         <h2 className="font-bold text-forest-900">{edit ? "Edit category" : "Add a category"}</h2>
+        <input type="hidden" name="kind" value={kind} />
         {edit && <input type="hidden" name="id" value={edit.id} />}
         <div><label htmlFor="cn" className="mb-1 block text-sm font-semibold">Name</label><input id="cn" name="name" required defaultValue={edit?.name} className={input} /></div>
         <div><label htmlFor="cs" className="mb-1 block text-sm font-semibold">Slug</label><input id="cs" name="slug" defaultValue={edit?.slug} placeholder="Made from the name if empty" className={input} /></div>

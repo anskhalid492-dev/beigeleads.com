@@ -17,17 +17,19 @@ export function CardMeta({ p, size = 28 }: { p: PublicCard; size?: number }) {
   );
 }
 
-export function PostCard({ p, priority = false }: { p: PublicCard; priority?: boolean }) {
+export function PostCard({ p, priority = false, guide = false }: { p: PublicCard; priority?: boolean; guide?: boolean }) {
+  const base = guide ? "/guides" : "/blog";
+  const catHref = guide ? `/guides?category=${p.categorySlug}` : `/blog/category/${p.categorySlug}`;
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-sand-200 bg-white transition-shadow hover:shadow-md">
-      <Link href={`/blog/${p.slug}`} tabIndex={-1} aria-hidden className="block overflow-hidden">
+      <Link href={`${base}/${p.slug}`} tabIndex={-1} aria-hidden className="block overflow-hidden">
         {p.featuredImage ? (
           <img src={p.featuredImage} alt="" loading={priority ? "eager" : "lazy"} decoding="async" style={{ objectPosition: `${p.focalX}% ${p.focalY}%` }} className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
         ) : <div className="aspect-[16/9] w-full bg-gradient-to-br from-forest-100 to-sand-200" />}
       </Link>
       <div className="flex flex-1 flex-col p-5">
-        {p.categoryName && p.categorySlug && <Link href={`/blog/category/${p.categorySlug}`} className="self-start text-xs font-bold text-forest-500 hover:underline">{p.categoryName}</Link>}
-        <h3 className="mt-1.5 text-xl font-bold leading-snug text-forest-900"><Link href={`/blog/${p.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{p.title}</Link></h3>
+        {p.categoryName && p.categorySlug && <Link href={catHref} className="self-start text-xs font-bold text-forest-500 hover:underline">{p.categoryName}</Link>}
+        <h3 className="mt-1.5 text-xl font-bold leading-snug text-forest-900"><Link href={`${base}/${p.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{p.title}</Link></h3>
         {p.excerpt && <p className="mt-2 line-clamp-3 text-sm">{p.excerpt}</p>}
         <div className="mt-auto pt-5"><CardMeta p={p} /></div>
       </div>

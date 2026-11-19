@@ -28,7 +28,7 @@ export default async function Starters() {
       <div className="space-y-4">
         {STARTERS.map((s) => (
           <Panel key={s.slug}>
-            <StarterRow slug={s.slug} title={s.title} excerpt={s.excerpt} category={s.category} existingId={existing.get(s.slug) ?? null} authors={authors.map((a) => ({ id: a.id, name: a.name, title: a.title }))} />
+            <StarterRow kind={s.kind ?? "blog"} slug={s.slug} title={s.title} excerpt={s.excerpt} category={s.category} existingId={existing.get(s.slug) ?? null} authors={authors.map((a) => ({ id: a.id, name: a.name, title: a.title }))} />
           </Panel>
         ))}
       </div>
