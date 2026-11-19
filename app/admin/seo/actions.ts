@@ -64,3 +64,44 @@ export async function auditBatchAction(offset: number): Promise<{ ok: true; tota
     return { ok: true, total: paths.length, next, pages };
   } catch { return { ok: false, error: "The audit could not run. Sign in again and retry." }; }
 }
+
+import { PageSeoError, resetPageOverride, savePageOverride } from "@/lib/seo/page-overrides";
+import { isSitePage } from "@/lib/seo/page-registry";
+
+export type PageSeoValues = { seoTitle: string; metaDescription: string; ogTitle: string; ogDescription: string; ogImage: string; canonicalUrl: string };
+
+export async function savePageSeoAction(path: string, v: PageSeoValues): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const admin = await requireAdmin();
+    await savePageOverride(getCloudflareContext().env, admin.email, path, v);
+    revalidatePath("/admin/seo/site-pages");
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof PageSeoError) return { ok: false, error: e.message };
+    return { ok: false, error: "Could not save. Check that migration 0017 has been run, then try again." };
+  }
+}
+
+export async function resetPageSeoAction(path: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const admin = await requireAdmin();
+    if (!isSitePage(path)) return { ok: false, error: "That page is not in the site page list." };
+    await resetPageOverride(getCloudflareContext().env, admin.email, path);
+    revalidatePath("/admin/seo/site-pages");
+    return { ok: true };
+  } catch { return { ok: false, error: "Could not reset. Try again." }; }
+}
+
+const grab = (html: string, re: RegExp) => (re.exec(html)?.[1] ?? "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").trim();
+
+/** Reads what the page serves right now (title and description). The path must be one of OUR pages: no other URL can be fetched. */
+export async function liveSeoAction(path: string): Promise<{ ok: true; title: string; description: string } | { ok: false; error: string }> {
+  try {
+    await requireAdmin();
+    if (!isSitePage(path)) return { ok: false, error: "That page is not in the site page list." };
+    const res = await fetch(`${SITE_URL}${path}`, { redirect: "manual", signal: AbortSignal.timeout(8000), headers: { "user-agent": "BeigeLeads-SEO-admin", accept: "text/html" } });
+    if (res.status !== 200) return { ok: false, error: `The page answered HTTP ${res.status}.` };
+    const html = (await res.text()).slice(0, 1_000_000);
+    return { ok: true, title: grab(html, /<title[^>]*>([\s\S]*?)<\/title>/i), description: grab(html, /<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i) || grab(html, /<meta\b[^>]*\bcontent=["']([^"']*)["'][^>]*\bname=["']description["']/i) };
+  } catch { return { ok: false, error: "Could not read the live page." }; }
+}

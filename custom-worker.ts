@@ -4,6 +4,7 @@
 // @ts-ignore `.open-next/worker.js` is generated at build time
 import { default as handler } from "./.open-next/worker.js";
 import { publishDue } from "./lib/blog/posts";
+import { applyPageSeo, type PageOverrideMap } from "./lib/seo/page-rewrite";
 import { findRedirect, isProtected, type RedirectMap } from "./lib/seo/redirect-rules";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
 
@@ -50,8 +51,34 @@ async function cachedBlog(request: Request, env: CloudflareEnv, ctx: ExecutionCo
   return out;
 }
 
+let pageSeo: { at: number; map: PageOverrideMap | null } | null = null;
+/**
+ * Admin page-SEO overrides (title, description, social tags, canonical). Pages stay static: the stored override is
+ * applied to the HTML head on the way out, read from ONE KV value (30 s in-isolate memo). Any failure serves the page
+ * untouched. Robots/noindex are never changed here.
+ */
+async function withPageSeo(request: Request, env: CloudflareEnv, res: Response): Promise<Response> {
+  try {
+    if (request.method !== "GET" || res.status !== 200 || !(res.headers.get("content-type") ?? "").includes("text/html")) return res;
+    const url = new URL(request.url);
+    if (isProtected(url.pathname) || url.pathname.startsWith("/blog/") || request.headers.has("rsc") || url.searchParams.has("_rsc")) return res;
+    const now = Date.now();
+    if (!pageSeo || now - pageSeo.at > 30_000) {
+      let map: PageOverrideMap | null = null;
+      try { map = await env.CACHE.get<PageOverrideMap>("seo:pages:v1", "json"); } catch { map = null; }
+      pageSeo = { at: now, map };
+    }
+    const o = pageSeo.map?.[url.pathname.length > 1 ? url.pathname.replace(/\/+$/, "") : url.pathname];
+    if (!o) return res;
+    const html = applyPageSeo(await res.clone().text(), o, url.origin);
+    const headers = new Headers(res.headers);
+    headers.delete("content-length"); headers.delete("etag");
+    return new Response(html, { status: res.status, headers });
+  } catch { return res; }
+}
+
 export default {
-  fetch: async (request: Request, env: CloudflareEnv, ctx: ExecutionContext) => (await managedRedirect(request, env)) ?? cachedBlog(request, env, ctx),
+  fetch: async (request: Request, env: CloudflareEnv, ctx: ExecutionContext) => (await managedRedirect(request, env)) ?? withPageSeo(request, env, await cachedBlog(request, env, ctx)),
 
   async scheduled(event, env, ctx) {
     // Cron expressions are set in wrangler.jsonc: every minute = payment watcher, every 15 min = expiry sweep.

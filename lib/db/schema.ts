@@ -557,3 +557,16 @@ export const settingsAuditLog = sqliteTable("settings_audit_log", {
   result: text("result").notNull().default("saved"),
   createdAt: createdAt(),
 });
+
+/** Admin SEO overrides for code-built pages (migration 0017). Applied at the edge from a KV copy; never touches robots/noindex. */
+export const seoPageOverrides = sqliteTable("seo_page_overrides", {
+  path: text("path").primaryKey(),
+  seoTitle: text("seo_title").notNull().default(""),
+  metaDescription: text("meta_description").notNull().default(""),
+  ogTitle: text("og_title").notNull().default(""),
+  ogDescription: text("og_description").notNull().default(""),
+  ogImage: text("og_image").notNull().default(""),
+  canonicalUrl: text("canonical_url").notNull().default(""),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedBy: text("updated_by").notNull().default(""),
+});

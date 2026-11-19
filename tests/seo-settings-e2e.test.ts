@@ -12,7 +12,7 @@ let env: CloudflareEnv;
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ persist: false });
   env = proxy.env;
-  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012|^0013|^0014|^0015/.test(f) && f.endsWith(".sql")).sort();
+  const files = readdirSync("drizzle").filter((f) => /^000[78]|^0010|^0012|^0013|^0014|^0015|^0017/.test(f) && f.endsWith(".sql")).sort();
   const sql = files.map((f) => readFileSync(`drizzle/${f}`, "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const s of sql.split(";").map((x) => x.trim()).filter(Boolean)) { try { await env.DB.exec(s.replace(/\s+/g, " ") + ";"); } catch { /* table from another migration */ } }
 });
@@ -64,5 +64,20 @@ describe("redirects + sitemap exclusions", () => {
     await expect(excludePath(env, "a@t.dev", "nope")).rejects.toThrow();
     await includePath(env, "/compare/x");
     expect((await excludedSitemapPaths(env)).size).toBe(0);
+  });
+});
+
+describe("page SEO overrides", () => {
+  it("validates, saves, syncs KV, rejects unknown pages, resets", async () => {
+    const { savePageOverride, resetPageOverride, PAGE_SEO_KV_KEY, PageSeoError } = await import("@/lib/seo/page-overrides");
+    const v = { seoTitle: "A new home title", metaDescription: "Desc", ogTitle: "", ogDescription: "", ogImage: "", canonicalUrl: "" };
+    await savePageOverride(env, "a@t.dev", "/", v);
+    const kv = await env.CACHE.get(PAGE_SEO_KV_KEY, "json") as Record<string, { t: string; d: string }>;
+    expect(kv["/"]).toMatchObject({ t: "A new home title", d: "Desc" });
+    await expect(savePageOverride(env, "a@t.dev", "/not-a-page", v)).rejects.toThrow(PageSeoError);
+    await expect(savePageOverride(env, "a@t.dev", "/", { ...v, ogImage: "javascript:x" })).rejects.toThrow(PageSeoError);
+    await expect(savePageOverride(env, "a@t.dev", "/", { ...v, seoTitle: "x".repeat(71) })).rejects.toThrow(/70/);
+    await resetPageOverride(env, "a@t.dev", "/");
+    expect(((await env.CACHE.get(PAGE_SEO_KV_KEY, "json")) as Record<string, unknown>)["/"]).toBeUndefined();
   });
 });
