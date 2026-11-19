@@ -17,7 +17,7 @@ const fallback = { to: "a@b.co", subject: "legacy", text: "legacy text" };
 beforeAll(async () => {
   proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "sysmail-e2e-")) } });
   env = { ...proxy.env, RESEND_API_KEY: "test-key" } as CloudflareEnv;
-  const files = readdirSync("drizzle").filter((f) => /^00(0[0-9]|1[0-9]|2[0-2])_.*\.sql$/.test(f)).sort();
+  const files = readdirSync("drizzle").filter((f) => /^00(0[0-9]|1[0-9]|2[0-3])_.*\.sql$/.test(f)).sort();
   const sql = files.map((f) => readFileSync(join("drizzle", f), "utf8")).join("\n").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
   for (const stmt of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(stmt).run();
 }, 60_000);
@@ -98,4 +98,36 @@ describe("delivery logs", () => {
     expect(body.text).toBe("t");
   });
   it("masks addresses", () => { expect(maskEmail("alex@example.com")).toBe("a***@example.com"); });
+});
+
+describe("copies and branding", () => {
+  const db = () => getDbFromEnv(env);
+  it("duplicates into an editable, never-connected copy and deletes it", async () => {
+    const { duplicateTemplate, deleteCopy, listEditable } = await import("@/lib/system-emails/store");
+    const key = await duplicateTemplate(db(), "admin@x.co", "contact_received", "My contact copy");
+    expect(key).toMatch(/^custom_/);
+    const t = await getEditable(db(), key);
+    expect(t?.copy).toBe(true);
+    expect(t?.def.connection).toBe("not_connected");
+    expect(t?.def.required).toEqual([]);
+    expect(t?.def.name).toBe("My contact copy");
+    expect(t?.draft?.subject).toContain("received your message");
+    await saveDraft(db(), "admin@x.co", key, { ...t!.draft!, subject: "Copy subject" });
+    expect((await publish(db(), "admin@x.co", key, { ...t!.draft!, subject: "Copy subject" }))).toBe(1);
+    expect((await listEditable(db())).get(key)?.published.subject).toBe("Copy subject");
+    // the original is untouched and still the live contact email
+    expect((await getEditable(db(), "contact_received"))?.version).toBe(0);
+    await expect(deleteCopy(db(), "contact_received")).rejects.toThrow(/own copies/);
+    await deleteCopy(db(), key);
+    expect(await getEditable(db(), key)).toBeNull();
+  });
+  it("saves branding and uses it in sent emails", async () => {
+    const { saveBranding, getBranding, DEFAULT_BRANDING } = await import("@/lib/system-emails/branding");
+    expect(await getBranding(db())).toEqual(DEFAULT_BRANDING);
+    await expect(saveBranding(db(), "a@x.co", { ...DEFAULT_BRANDING, supportEmail: "bad" })).rejects.toThrow();
+    await saveBranding(db(), "a@x.co", { ...DEFAULT_BRANDING, supportEmail: "help@example.com", footerNote: "Hello footer" });
+    const m = await systemMail(db(), "contact_received", "a@b.co", { request_reference: "CT-1" }, fallback);
+    expect(m.html).toContain("Hello footer");
+    expect(m.html).toContain("help@example.com");
+  });
 });

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/admin/ui";
 
-export type Row = { key: string; name: string; audience: "customer" | "admin"; connection: "connected" | "not_connected"; subject: string; state: "built-in" | "published" | "draft"; version: number; updatedAt: number | null; event: string };
+export type Row = { key: string; name: string; audience: "customer" | "admin"; connection: "connected" | "not_connected"; subject: string; state: "built-in" | "published" | "draft"; version: number; updatedAt: number | null; event: string; copy: boolean };
 const sel = "rounded-xl border border-sand-300 bg-white px-3 py-2 text-sm";
 
 export function TemplatesTable({ rows, initialState }: { rows: Row[]; initialState?: "draft" | "published" }) {
@@ -34,10 +34,11 @@ export function TemplatesTable({ rows, initialState }: { rows: Row[]; initialSta
                 <p className="truncate text-sm">{r.subject}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone={r.audience === "customer" ? "info" : "mute"}>{r.audience === "customer" ? "Customer" : "Admin alert"}</Badge>
+                {r.copy && <Badge tone="mute">Your copy</Badge>}<Badge tone={r.audience === "customer" ? "info" : "mute"}>{r.audience === "customer" ? "Customer" : "Admin alert"}</Badge>
                 <Badge tone={r.connection === "connected" ? "good" : "warn"}>{r.connection === "connected" ? "Connected" : "Not connected"}</Badge>
                 <Badge tone={r.state === "draft" ? "warn" : r.state === "published" ? "good" : "mute"}>{r.state === "published" ? `Published v${r.version}` : r.state === "draft" ? "Draft waiting" : "Built-in"}</Badge>
                 <Link href={`/admin/system-emails/${r.key}`} className="inline-flex h-8 items-center rounded-full border border-sand-300 bg-white px-3 text-xs font-semibold text-forest-900 hover:bg-sand-100">Edit and preview</Link>
+                <Link href={`/admin/system-emails/${r.key}/design`} className="inline-flex h-8 items-center rounded-full border border-sand-300 bg-white px-3 text-xs font-semibold text-forest-900 hover:bg-sand-100">Designer</Link>
               </div>
             </li>
           ))}

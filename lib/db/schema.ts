@@ -698,6 +698,17 @@ export const emailTemplates = sqliteTable("email_templates", {
   publishedVersion: integer("published_version").notNull().default(0),
   updatedAt: integer("updated_at"),
   updatedBy: text("updated_by").notNull().default(""),
+  /** Migration 0023: set only for duplicated (custom) templates. */
+  name: text("name").notNull().default(""),
+  baseKey: text("base_key").notNull().default(""),
+});
+
+/** Shared email branding (migration 0023): one JSON row under key "main". */
+export const emailBranding = sqliteTable("email_branding", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull().default(""),
+  updatedAt: integer("updated_at"),
+  updatedBy: text("updated_by").notNull().default(""),
 });
 
 export const emailTemplateVersions = sqliteTable("email_template_versions", {

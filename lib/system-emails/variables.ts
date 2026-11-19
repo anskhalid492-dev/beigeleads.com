@@ -36,7 +36,7 @@ export const VARIABLES: VarDef[] = [
   { key: "contact_url", label: "Contact page", description: "Always supplied by the system.", example: "https://beigeleads.com/contact", system: true },
   { key: "help_url", label: "Help Center", description: "Always supplied by the system.", example: "https://beigeleads.com/help-center", system: true },
   { key: "lists_url", label: "Lists page", description: "Always supplied by the system.", example: "https://beigeleads.com/lists", system: true },
-  { key: "support_email", label: "Support email", description: "Optional. Only filled when the send provides it.", example: "support@example.com" },
+  { key: "support_email", label: "Support email", description: "The support address from Email branding. Empty when none is set.", example: "support@example.com", system: true },
 ];
 
 export const VAR_KEYS = new Set(VARIABLES.map((v) => v.key));

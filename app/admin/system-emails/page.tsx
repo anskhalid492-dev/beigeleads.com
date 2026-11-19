@@ -4,8 +4,10 @@ import { Badge, Empty, PageHeader, Panel, StatCard } from "@/components/admin/ui
 import { guardAdmin } from "@/lib/admin/guard";
 import { getDbFromEnv } from "@/lib/db";
 import { BRAND } from "@/lib/system-emails/brand";
+import { getBranding } from "@/lib/system-emails/branding";
 import { TEMPLATES } from "@/lib/system-emails/defaults";
 import { listEditable } from "@/lib/system-emails/store";
+import { BrandingForm } from "./branding-form";
 import { TemplatesTable, type Row } from "./dashboard-tables";
 import { TestSend } from "./test-send";
 
@@ -36,22 +38,22 @@ export default async function SystemEmails({ searchParams }: { searchParams: Pro
       total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM email_delivery_logs WHERE ${where}`).first<{ n: number }>())?.n ?? 0;
       logs = (await env.DB.prepare(`SELECT * FROM email_delivery_logs WHERE ${where} ORDER BY id DESC LIMIT ${PAGE} OFFSET ${(page - 1) * PAGE}`).all<LogRow>()).results;
     }
-    await env.DB.prepare("SELECT 1 FROM email_templates LIMIT 1").first();
+    await env.DB.prepare("SELECT name FROM email_templates LIMIT 1").first();
+    await env.DB.prepare("SELECT 1 FROM email_branding LIMIT 1").first();
   } catch { ready = false; }
 
-  const rows: Row[] = TEMPLATES.map((d) => {
-    const e = map.get(d.key)!;
-    return { key: d.key, name: d.name, audience: d.audience, connection: d.connection, subject: (e.draft ?? e.published).subject, state: e.draft ? "draft" : e.custom ? "published" : "built-in", version: e.version, updatedAt: e.updatedAt, event: d.event };
-  });
+  const all = [...map.values()];
+  const rows: Row[] = all.map((e) => ({ key: e.def.key, name: e.def.name, audience: e.def.audience, connection: e.def.connection, subject: (e.draft ?? e.published).subject, state: e.draft ? "draft" : e.custom ? "published" : "built-in", version: e.version, updatedAt: e.updatedAt, event: e.def.event, copy: e.copy }));
+  const branding = await getBranding(db);
   const connected = TEMPLATES.filter((t) => t.connection === "connected").length;
-  const name = (k: string) => TEMPLATES.find((t) => t.key === k)?.name ?? k;
+  const name = (k: string) => map.get(k)?.def.name ?? k;
   const pages = Math.max(1, Math.ceil(total / PAGE));
   const href = (extra: Record<string, string>) => `?${new URLSearchParams({ tab, ...(sp.status ? { status: sp.status } : {}), ...extra })}`;
 
   return (
     <>
       <PageHeader title="System Emails" text="Every automatic email BeigeLeads sends, in one place: wording, preview, test and delivery results. Customer emails are branded; sending logic is unchanged." />
-      {!ready && <p className="mb-5 max-w-3xl rounded-xl bg-amber-100 px-4 py-3 text-sm text-amber-900">Editing, versions and delivery logs need migration 0022_system_emails.sql in D1. Until then every email uses its built-in version and nothing is logged. Sending is not affected.</p>}
+      {!ready && <p className="mb-5 max-w-3xl rounded-xl bg-amber-100 px-4 py-3 text-sm text-amber-900">Editing, versions, delivery logs, branding and copies need migrations 0022 and 0023 in D1. Until then every email uses its built-in version and nothing is logged. Sending is not affected.</p>}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Templates" value={TEMPLATES.length} hint={`${TEMPLATES.filter((t) => t.audience === "customer").length} customer, ${TEMPLATES.filter((t) => t.audience === "admin").length} admin alerts`} />
         <StatCard label="Connected to a real event" value={connected} hint="The rest are written but not sent yet." />
@@ -68,7 +70,7 @@ export default async function SystemEmails({ searchParams }: { searchParams: Pro
 
       {(tab === "activity" || tab === "tests") && (
         <>
-          {tab === "tests" && <Panel title="Send a test email" className="mb-5"><TestSend options={TEMPLATES.map((t) => ({ key: t.key, name: t.name, content: map.get(t.key)!.published }))} /></Panel>}
+          {tab === "tests" && <Panel title="Send a test email" className="mb-5"><TestSend options={all.map((e) => ({ key: e.def.key, name: e.def.name, content: e.published }))} /></Panel>}
           <Panel title={tab === "tests" ? "Recent test emails" : "Delivery log"}>
             {tab === "activity" && <form className="flex gap-2 border-b border-sand-200 p-4 text-sm"><input type="hidden" name="tab" value="activity" /><select name="status" defaultValue={sp.status ?? ""} aria-label="Result" className="rounded-xl border border-sand-300 bg-white px-3 py-2"><option value="">All results</option><option value="sent">Accepted by the email service</option><option value="failed">Not accepted</option></select><button className="rounded-full border border-sand-300 bg-white px-4 font-semibold">Filter</button></form>}
             {logs.length === 0 ? <Empty title={ready ? "Nothing logged yet" : "Delivery logs are not available yet"} text={ready ? "Emails sent through a template appear here with the real answer from the email service. Nothing on this page is simulated." : "Run migration 0022 in D1 first."} /> : (
@@ -97,19 +99,8 @@ export default async function SystemEmails({ searchParams }: { searchParams: Pro
       )}
 
       {tab === "branding" && (
-        <Panel title="Email branding">
-          <div className="grid gap-6 p-5 md:grid-cols-2">
-            <div><p className="mb-2 text-sm font-semibold text-forest-900">Official logo</p>
-              <div className="flex flex-col gap-3">
-                <div className="rounded-xl border border-sand-200 p-4" style={{ background: BRAND.sand50 }}><img src="/brand/png/beigeleads-horizontal-light.png" alt="BeigeLeads logo for light backgrounds" height={34} className="h-8 w-auto" /></div>
-                <div className="rounded-xl border border-sand-200 p-4" style={{ background: BRAND.forest900 }}><img src="/brand/png/beigeleads-horizontal-dark.png" alt="BeigeLeads logo for dark backgrounds" height={34} className="h-8 w-auto" /></div>
-              </div>
-              <p className="mt-2 text-xs">Emails load these approved files from beigeleads.com/brand, so a logo update in the brand folder reaches every template at once.</p></div>
-            <div><p className="mb-2 text-sm font-semibold text-forest-900">Colours used in emails</p>
-              <ul className="grid grid-cols-2 gap-2 text-xs">{([["Page background", BRAND.sand50], ["Cards", BRAND.sand100], ["Borders", BRAND.sand200], ["Notes", BRAND.forest100], ["Secondary text", BRAND.forest500], ["Body text", BRAND.forest700], ["Headings, dark mode", BRAND.forest900], ["Button", BRAND.purple600]] as const).map(([n, c]) => <li key={n} className="flex items-center gap-2"><span className="size-6 rounded-md border border-sand-300" style={{ background: c }} /><span>{n}<br /><code>{c}</code></span></li>)}</ul>
-              <p className="mt-3 text-xs">Typography: Bricolage Grotesque where the email app supports it, otherwise Segoe UI, Helvetica or Arial. Footer: website, Help Center and Contact links, the company address and a transactional-email notice. No new colours are added.</p>
-              <p className="mt-2 text-xs">Editable branding settings come with the visual designer in the next phase.</p></div>
-          </div>
+        <Panel title="Shared email branding">
+          <BrandingForm initial={branding} colors={[["Page background", BRAND.sand50], ["Cards", BRAND.sand100], ["Borders", BRAND.sand200], ["Notes", BRAND.forest100], ["Secondary text", BRAND.forest500], ["Body text", BRAND.forest700], ["Headings, dark mode", BRAND.forest900], ["Button", BRAND.purple600]]} ready={ready} />
         </Panel>
       )}
     </>
