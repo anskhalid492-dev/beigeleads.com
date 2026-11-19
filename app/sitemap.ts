@@ -1,4 +1,5 @@
 import { taxonomyPaths } from "@/lib/taxonomy";
+import { getTax } from "@/lib/taxonomy-route";
 import { geoSitemapPaths } from "@/lib/geo/store";
 import { getDbFromEnv } from "@/lib/db";
 import type { MetadataRoute } from "next";
@@ -25,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const excluded = await excludedSitemapPaths(getCloudflareContext().env);
   const geoPaths = await geoSitemapPaths(getDbFromEnv(getCloudflareContext().env));
   const help = await loadHelp(getCloudflareContext().env);
+  const tax = await getTax();
   const all: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/blog` },
     { url: `${SITE_URL}/guides` },
@@ -33,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/` },
     { url: `${SITE_URL}/lists` },
     ...getCategories().map((c) => ({ url: `${SITE_URL}/lists/${c.slug}` })),
-    ...taxonomyPaths().map((p) => ({ url: `${SITE_URL}${p}` })),
+    ...taxonomyPaths(tax).map((p) => ({ url: `${SITE_URL}${p}` })),
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     { url: `${SITE_URL}/solutions` },
     ...solutions.map((s) => ({ url: `${SITE_URL}/solutions/${s.slug}` })),

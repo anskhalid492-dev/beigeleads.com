@@ -852,3 +852,25 @@ export const catalogConsumerCategories = sqliteTable("catalog_consumer_categorie
   enabled: integer("enabled").notNull().default(0),
   createdAt: createdAt(),
 });
+
+export const taxonomyNodes = sqliteTable("taxonomy_nodes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  parentSlug: text("parent_slug").notNull().default(""),
+  slug: text("slug").notNull(),
+  name: text("name").notNull(),
+  menuName: text("menu_name").notNull().default(""),
+  icon: text("icon").notNull().default("mail"),
+  short: text("short").notNull().default(""),
+  blurb: text("blurb").notNull().default(""),
+  status: text("status").notNull().default("upcoming"),
+  compliance: text("compliance").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  featured: integer("featured").notNull().default(0),
+  menuVisible: integer("menu_visible").notNull().default(1),
+  published: integer("published").notNull().default(1),
+  seoTitle: text("seo_title").notNull().default(""),
+  metaDescription: text("meta_description").notNull().default(""),
+  content: text("content").notNull().default(""),
+  productSlugs: text("product_slugs").notNull().default("[]"),
+  updatedAt: integer("updated_at").notNull().default(0),
+});

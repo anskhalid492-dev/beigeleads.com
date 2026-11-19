@@ -5,16 +5,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaxIconSvg } from "@/components/lists/tax-icon";
-import { TAXONOMY, childHref, industryChildren, STATUS_LABEL, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
+import { childHref, industryChildren, STATUS_LABEL, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 
 type Named = { slug: string; name: string };
 type MenuGeo = { slug: string; name: string; code: string; regions: { slug: string; name: string; cat: string }[]; cities: { slug: string; name: string; region: string | null; cat: string }[] };
-type Props = { industries: Named[]; countries: Named[]; onNavigate: () => void };
+type Props = { tax: TaxGroup[]; industries: Named[]; countries: Named[]; onNavigate: () => void };
 
 const chip = (c: TaxChild) => (
   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${c.status === "available" ? "bg-forest-100 text-forest-900" : "bg-purple-100 text-forest-900"}`}>{STATUS_LABEL[c.status]}</span>
 );
-const kidsOf = (g: TaxGroup, industries: Named[]) => (g.slug === "industry-databases" ? industryChildren(industries) : g.children);
+const kidsOf = (g: TaxGroup, industries: Named[], tax: TaxGroup[]) => (g.slug === "industry-databases" ? industryChildren(industries, tax) : g.children);
 
 /** Compact country > state > city explorer. Data comes from /api/menu/geo (real places only). */
 function GeoMenu({ countries, onNavigate }: { countries: Named[]; onNavigate: () => void }) {
@@ -59,12 +59,12 @@ function GeoMenu({ countries, onNavigate }: { countries: Named[]; onNavigate: ()
 }
 
 /** Desktop two-level panel: category rail, subcategory panel (or place explorer), featured card. */
-export function ListsMegaPanel({ industries, countries, onNavigate }: Props) {
+export function ListsMegaPanel({ tax: TAXONOMY, industries, countries, onNavigate }: Props) {
   const [active, setActive] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const g = TAXONOMY[active];
-  const kids = kidsOf(g, industries);
+  const g = TAXONOMY[Math.min(active, TAXONOMY.length - 1)];
+  const kids = kidsOf(g, industries, TAXONOMY);
   const hoverSelect = (i: number) => { clearTimeout(timer.current); timer.current = setTimeout(() => setActive(i), 90); }; // small delay: a diagonal move across the rail does not flip the panel
   useEffect(() => () => clearTimeout(timer.current), []);
   const key = (e: React.KeyboardEvent, i: number) => {
@@ -127,16 +127,16 @@ export function ListsMegaPanel({ industries, countries, onNavigate }: Props) {
 }
 
 /** Mobile: searchable accordion of the same tree. Native <details> for smooth, accessible expand/collapse. */
-export function ListsMobile({ industries, onNavigate }: Omit<Props, "countries">) {
+export function ListsMobile({ tax: TAXONOMY, industries, onNavigate }: Omit<Props, "countries">) {
   const [q, setQ] = useState("");
   const needle = q.trim().toLowerCase();
   const results = useMemo(() => {
     if (!needle) return [];
     return TAXONOMY.flatMap((g) => [
       ...(g.name.toLowerCase().includes(needle) ? [{ key: g.slug, name: g.name, href: `/lists/${g.slug}`, status: g.status, sub: "Category" }] : []),
-      ...kidsOf(g, industries).filter((c) => c.name.toLowerCase().includes(needle)).map((c) => ({ key: `${g.slug}/${c.slug}`, name: c.name, href: childHref(g, c), status: c.status, sub: g.name })),
+      ...kidsOf(g, industries, TAXONOMY).filter((c) => c.name.toLowerCase().includes(needle)).map((c) => ({ key: `${g.slug}/${c.slug}`, name: c.name, href: childHref(g, c), status: c.status, sub: g.name })),
     ]).slice(0, 12);
-  }, [needle, industries]);
+  }, [needle, industries, TAXONOMY]);
   return (
     <details className="group/lists">
       <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-sand-100">Lists <ChevronDown className="size-4 transition-transform group-open/lists:rotate-180" aria-hidden /></summary>
@@ -161,7 +161,7 @@ export function ListsMobile({ industries, onNavigate }: Omit<Props, "countries">
                     <ChevronDown className="size-4 shrink-0 transition-transform group-open/g:rotate-180" aria-hidden />
                   </summary>
                   <ul className="ml-6 border-l border-sand-200 pb-1 pl-2">
-                    {kidsOf(g, industries).slice(0, 10).map((c) => <li key={c.slug}><Link href={childHref(g, c)} onClick={onNavigate} className="flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sand-100"><span>{c.name}</span>{chip(c)}</Link></li>)}
+                    {kidsOf(g, industries, TAXONOMY).slice(0, 10).map((c) => <li key={c.slug}><Link href={childHref(g, c)} onClick={onNavigate} className="flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sand-100"><span>{c.name}</span>{chip(c)}</Link></li>)}
                     <li><Link href={`/lists/${g.slug}`} onClick={onNavigate} className="block min-h-11 rounded-lg px-3 py-2.5 text-sm font-semibold text-forest-700">View all {g.name}</Link></li>
                   </ul>
                 </details>

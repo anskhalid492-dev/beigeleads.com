@@ -10,6 +10,7 @@ import { ListsHero } from "@/components/lists/lists-hero";
 import { Button } from "@/components/ui/button";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { relatedGuides } from "@/lib/lists-guides";
+import { getTax } from "@/lib/taxonomy-route";
 import { loadListsData } from "@/lib/lists-data";
 import { parseSlugList, getPublicSettings } from "@/lib/settings/service";
 import { isFiltered, listsHref, parseFilters } from "@/lib/shop";
@@ -54,7 +55,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
       <ListsHero audience={f.type} industries={data.industries} countries={data.countries} tree={data.tree} niches={data.niches.map((n) => ({ name: n.name }))} />
       <ul className="mx-auto mt-5 flex max-w-7xl flex-wrap justify-center gap-x-8 gap-y-2 px-4 text-sm font-semibold text-forest-900">{TRUST.map((t) => <li key={t} className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-forest-500" aria-hidden />{t}</li>)}</ul>
 
-      <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} products={data.products} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
+      <ListsDirectory tax={await getTax()} industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} products={data.products} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
 
       {f.type === "b2c" ? (
         <section id="databases" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-14">

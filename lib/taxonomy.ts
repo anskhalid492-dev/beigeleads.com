@@ -9,8 +9,10 @@ export type TaxStatus = "available" | "upcoming";
 export type Compliance = "consumer" | "whatsapp" | "phone";
 export type TaxIcon = "mail" | "phone" | "message" | "briefcase" | "users" | "building" | "globe";
 
-export type TaxChild = { slug: string; name: string; short: string; blurb: string; status: TaxStatus; compliance?: Compliance };
-export type TaxGroup = { slug: string; name: string; menuName: string; icon: TaxIcon; short: string; blurb: string; status: TaxStatus; compliance?: Compliance; children: TaxChild[] };
+/** Fields only the admin editor (D1) sets; the built-in code tree leaves them out. */
+export type TaxExtra = { id?: number; seoTitle?: string; metaDescription?: string; content?: string; productSlugs?: string[]; featured?: boolean; menuVisible?: boolean; published?: boolean };
+export type TaxChild = { slug: string; name: string; short: string; blurb: string; status: TaxStatus; compliance?: Compliance } & TaxExtra;
+export type TaxGroup = { slug: string; name: string; menuName: string; icon: TaxIcon; short: string; blurb: string; status: TaxStatus; compliance?: Compliance; children: TaxChild[] } & TaxExtra;
 
 const up = (slug: string, name: string, short: string, blurb: string, compliance?: Compliance): TaxChild => ({ slug, name, short, blurb, status: "upcoming", ...(compliance ? { compliance } : {}) });
 const live = (slug: string, name: string, short: string, blurb: string): TaxChild => ({ slug, name, short, blurb, status: "available" });
@@ -108,12 +110,13 @@ export const TAXONOMY: TaxGroup[] = [
   },
 ];
 
-export const getGroup = (slug: string) => TAXONOMY.find((g) => g.slug === slug);
+export const getGroup = (slug: string, tax: TaxGroup[] = TAXONOMY) => tax.find((g) => g.slug === slug);
 export const getChild = (g: TaxGroup, slug: string) => g.children.find((c) => c.slug === slug);
 
 /** Industry Databases lists real catalog industries first (they link to their own page), then the upcoming ones that have no product yet. */
-export function industryChildren(industries: { slug: string; name: string }[]): TaxChild[] {
-  const g = getGroup("industry-databases")!;
+export function industryChildren(industries: { slug: string; name: string }[], tax: TaxGroup[] = TAXONOMY): TaxChild[] {
+  const g = getGroup("industry-databases", tax);
+  if (!g) return industries.map((i) => live(i.slug, i.name, "Ready-made list", `${i.name} business lists.`));
   const have = new Set(industries.map((i) => i.slug));
   const real = industries.map((i) => live(i.slug, i.name, "Ready-made list", `${i.name} business lists.`));
   return [...real, ...g.children.filter((c) => !have.has(c.slug))];
@@ -121,7 +124,7 @@ export function industryChildren(industries: { slug: string; name: string }[]): 
 export const childHref = (g: TaxGroup, c: TaxChild) => (g.slug === "industry-databases" && c.status === "available" ? `/lists/${c.slug}` : `/lists/${g.slug}/${c.slug}`);
 
 /** Sitemap paths: only categories that have real products behind them (upcoming ones are thin, noindex pages). */
-export const taxonomyPaths = () => TAXONOMY.flatMap((g) => [...(g.status === "available" || g.children.some((c) => c.status === "available") ? [`/lists/${g.slug}`] : []), ...g.children.filter((c) => c.status === "available" && g.slug !== "industry-databases").map((c) => `/lists/${g.slug}/${c.slug}`)]);
+export const taxonomyPaths = (tax: TaxGroup[] = TAXONOMY) => tax.filter((g) => g.published !== false).flatMap((g) => [...(g.status === "available" || g.children.some((c) => c.status === "available" && c.published !== false) ? [`/lists/${g.slug}`] : []), ...g.children.filter((c) => c.published !== false && c.status === "available" && g.slug !== "industry-databases").map((c) => `/lists/${g.slug}/${c.slug}`)]);
 
 export const STATUS_LABEL: Record<TaxStatus, string> = { available: "Available", upcoming: "Upcoming" };
 

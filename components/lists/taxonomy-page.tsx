@@ -7,19 +7,24 @@ import { RelatedGuides } from "@/components/lists/related-guides";
 import { TaxIconSvg } from "@/components/lists/tax-icon";
 import { COMPLIANCE_NOTE, STATUS_LABEL, childHref, industryChildren, nodeFaqs, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 import type { ShopProduct } from "@/lib/shop";
+import type { TaxGroup as TG } from "@/lib/taxonomy";
 
 const badge = (s: "available" | "upcoming") => (
   <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${s === "available" ? "bg-forest-100 text-forest-900" : "bg-purple-100 text-forest-900"}`}>{STATUS_LABEL[s]}</span>
 );
 
-type Props = { group: TaxGroup; child?: TaxChild; country?: { slug: string; name: string }; products: ShopProduct[]; industries: { slug: string; name: string }[] };
+type Props = { group: TaxGroup; child?: TaxChild; country?: { slug: string; name: string }; tax: TG[]; products: ShopProduct[]; industries: { slug: string; name: string }[] };
 
 /** One template for a list-type group (/lists/<group>), a subcategory and a subcategory scoped to a country. */
-export function TaxonomyPage({ group, child, country, products, industries }: Props) {
+export function TaxonomyPage({ group, child, country, tax, products: allProducts, industries }: Props) {
   const node = child ?? group;
   const status = node.status;
   const compliance = child?.compliance ?? group.compliance;
-  const kids = group.slug === "industry-databases" ? industryChildren(industries) : group.children;
+  const kids = group.slug === "industry-databases" ? industryChildren(industries, tax) : group.children;
+  // An admin-mapped product list wins; with no mapping (built-in tree) every real product is shown.
+  const mapped = node.productSlugs ?? [];
+  const products = mapped.length ? allProducts.filter((p) => mapped.includes(p.slug)) : allProducts;
+  const paragraphs = (node.content ?? "").split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
   const base = `/lists/${group.slug}`;
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: group.name, href: base }, ...(child ? [{ name: child.name, href: `${base}/${child.slug}` }] : []), ...(country ? [{ name: country.name, href: `${base}/${child!.slug}/${country.slug}` }] : [])];
   const title = country ? `${child!.name} in ${country.name}` : node.name;
@@ -47,6 +52,10 @@ export function TaxonomyPage({ group, child, country, products, industries }: Pr
           <Button asChild size="lg" variant="secondary"><Link href="/sample">Request a free sample</Link></Button>
         </div>
       </section>
+
+      {paragraphs.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pb-10"><div className="max-w-3xl space-y-4">{paragraphs.map((x, i) => <p key={i} className="text-base">{x}</p>)}</div></section>
+      )}
 
       {compliance && (
         <section className="mx-auto max-w-6xl px-4 pb-10"><div role="note" className="rounded-2xl border border-sand-300 bg-sand-100 p-5">

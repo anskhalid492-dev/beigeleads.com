@@ -12,6 +12,7 @@ const NAV = [
   ["Orders", "/admin/orders", ShoppingCart],
   ["Cart funnel", "/admin/cart", ShoppingCart],
   ["Catalog setup", "/admin/catalog", Package],
+  ["List categories", "/admin/categories", Package],
   ["Geography", "/admin/geography", Globe],
   ["Geography pages SEO", "/admin/geography/pages", Globe],
   ["Keywords", "/admin/seo/keywords", Search],

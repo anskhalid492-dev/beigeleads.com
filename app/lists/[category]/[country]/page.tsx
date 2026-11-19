@@ -4,14 +4,13 @@ import { GeoPage } from "@/components/geo/geo-page";
 import { loadGeoPage } from "@/lib/geo/page-data";
 import { TaxonomyPage } from "@/components/lists/taxonomy-page";
 import { loadListsData } from "@/lib/lists-data";
-import { getGroup } from "@/lib/taxonomy";
-import { resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
+import { isTaxGroup, resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/lists/[category]/[country]">): Promise<Metadata> {
   const { category, country } = await props.params;
-  if (getGroup(category)) { const t = await resolveTax(category, country); return t ? taxMetadata(t) : {}; }
+  if (await isTaxGroup(category)) { const t = await resolveTax(category, country); return t ? taxMetadata(t) : {}; }
   const d = await loadGeoPage(category, country, []);
   if (!d) return {};
   // Indexable pages inherit the site-wide setting (noindex until launch); thin pages are always noindex.
@@ -20,7 +19,7 @@ export async function generateMetadata(props: PageProps<"/lists/[category]/[coun
 
 export default async function CountryPage(props: PageProps<"/lists/[category]/[country]">) {
   const { category, country } = await props.params;
-  if (getGroup(category)) {
+  if (await isTaxGroup(category)) {
     const t = await resolveTax(category, country);
     if (!t) notFound();
     return <TaxonomyPage {...t} products={(await loadListsData()).products} industries={taxIndustries()} />;

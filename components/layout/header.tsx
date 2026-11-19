@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ListsMegaPanel, ListsMobile } from "@/components/layout/lists-mega";
 import { SolutionIcon } from "@/components/solutions/icons";
 import { getSolution } from "@/lib/solutions";
+import { TAXONOMY, type TaxGroup } from "@/lib/taxonomy";
 
 const GROUPS = [
   { heading: "By use case", slugs: ["b2b-lead-generation", "cold-email-marketing", "sales-prospecting", "market-research"] },
@@ -36,9 +37,11 @@ const pick = <T extends { slug: string }>(all: T[], featured: string[] | undefin
 
 export function Header({ lists }: { lists: ListsMenuData }) {
   const [featured, setFeatured] = useState<{ industries: string[]; countries: string[] } | null>(null);
+  const [tax, setTax] = useState<TaxGroup[]>(TAXONOMY);
   const pathname = usePathname();
   useEffect(() => {
     let live = true;
+    fetch("/api/menu/taxonomy").then((r) => (r.ok ? (r.json() as Promise<{ tax?: TaxGroup[] }>) : null)).then((x) => { if (live && x?.tax?.length) setTax(x.tax); }).catch(() => {});
     fetch("/api/public-settings").then((r) => (r.ok ? (r.json() as Promise<{ featured?: { industries: string[]; countries: string[] } }>) : null)).then((x) => { if (live && x?.featured) setFeatured(x.featured); }).catch(() => {});
     return () => { live = false; };
   }, []);
@@ -201,7 +204,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
                 </div>
               </div>
             ) : (
-              <ListsMegaPanel industries={industries} countries={countries} onNavigate={close} />
+              <ListsMegaPanel tax={tax} industries={industries} countries={countries} onNavigate={close} />
             )}
           </div>
         )}
@@ -210,7 +213,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
         {mobile && (
           <div id="mobile-menu" className="mega-in absolute inset-x-0 top-full mt-3 max-h-[75vh] overflow-y-auto rounded-3xl border border-sand-200 bg-white p-4 shadow-2xl lg:hidden">
             <ul className="space-y-1 text-base font-medium text-forest-900">
-              <li><ListsMobile industries={industries} onNavigate={() => setMobile(false)} /></li>
+              <li><ListsMobile tax={tax} industries={industries} onNavigate={() => setMobile(false)} /></li>
               <li><CartHeaderLink withLabel onClick={close} /></li>
               <li>
                 <details className="group">

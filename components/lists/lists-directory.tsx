@@ -6,15 +6,15 @@ import { DbBadge, Flag } from "@/components/shared/db-icon";
 import type { GeoTree, ShopProduct } from "@/lib/shop";
 import { GeoExplorer } from "./geo-explorer";
 import { TaxIconSvg } from "./tax-icon";
-import { TAXONOMY, STATUS_LABEL } from "@/lib/taxonomy";
+import { STATUS_LABEL, type TaxGroup } from "@/lib/taxonomy";
 
 type Industry = { slug: string; name: string; blurb: string };
-type Props = { industries: Industry[]; tree: GeoTree; products: ShopProduct[]; niches: { category: string; name: string }[]; productCats: Record<string, string[]> };
+type Props = { tax: TaxGroup[]; industries: Industry[]; tree: GeoTree; products: ShopProduct[]; niches: { category: string; name: string }[]; productCats: Record<string, string[]> };
 const TABS = [["industries", "Industries", Building2], ["types", "List types", Layers], ["locations", "Locations", Globe2], ["audience", "Audience", Layers]] as const;
 type Tab = (typeof TABS)[number][0];
 
 /** The directory: every industry, a country -> state -> city explorer, and audience types. Real data only. */
-export function ListsDirectory({ industries, tree, products, niches, productCats }: Props) {
+export function ListsDirectory({ tax, industries, tree, products, niches, productCats }: Props) {
   const [tab, setTab] = useState<Tab>("industries");
   useEffect(() => {
     const on = () => { const h = window.location.hash.slice(1); if (h === "industries" || h === "types" || h === "locations" || h === "audience") setTab(h); };
@@ -59,7 +59,7 @@ export function ListsDirectory({ industries, tree, products, niches, productCats
 
         <div id="panel-types" role="tabpanel" aria-labelledby="tab-types" hidden={tab !== "types"}>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {TAXONOMY.map((g) => (
+            {tax.filter((g) => g.menuVisible !== false).map((g) => (
               <li key={g.slug} className="rounded-[1.3rem] border border-sand-300 bg-sand-50 p-5">
                 <div className="flex items-center justify-between gap-2"><span className="grid size-10 place-items-center rounded-xl bg-forest-900 text-forest-300"><TaxIconSvg name={g.icon} className="size-5" /></span><span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${g.status === "available" ? "bg-forest-100 text-forest-900" : "bg-purple-100 text-forest-900"}`}>{STATUS_LABEL[g.status]}</span></div>
                 <h3 className="display mt-3 text-2xl text-forest-900"><Link href={`/lists/${g.slug}`} className="hover:underline">{g.name}</Link></h3>
