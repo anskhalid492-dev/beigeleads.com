@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   title: { default: "BeigeLeads: pay once, own the list", template: "%s | BeigeLeads" },
   description:
     "Verified business contact lists by category, country and city. One-time purchase, no subscription.",
+  openGraph: { siteName: "BeigeLeads", type: "website", images: [{ url: "/brand/social/beigeleads-og-1200x630.png", width: 1200, height: 630, alt: "BeigeLeads: Pay once. Own the list." }] },
+  twitter: { card: "summary_large_image", images: ["/brand/social/beigeleads-og-1200x630.png"] },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -25,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PublicChrome><AnnouncementBanner /><Header /></PublicChrome>
         <main className="flex-1">{children}</main>
         <PublicChrome><Footer /></PublicChrome>
-        <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL }} />
+        <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/brand/png/beigeleads-symbol-light.png` }} />
       </body>
     </html>
   );

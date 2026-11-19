@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "@/components/shared/brand-logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -99,13 +100,7 @@ export function Header() {
           className={`flex items-center justify-between gap-3 rounded-full border border-sand-200 bg-sand-50/90 px-3 shadow-[0_8px_30px_rgba(15,42,29,0.08)] backdrop-blur transition-all duration-300 sm:px-4 ${scrolled ? "h-14" : "h-[4.25rem]"}`}
         >
           <Link href="/" aria-label="BeigeLeads home" className="flex items-center gap-2 rounded-full pl-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
-            <svg viewBox="0 0 24 24" className="size-8" aria-hidden>
-              <rect width="24" height="24" rx="6" fill="#0f2a1d" />
-              <rect x="5" y="6" width="14" height="2.5" rx="1.25" fill="#fbf8f1" />
-              <rect x="5" y="10.75" width="14" height="2.5" rx="1.25" fill="#fbf8f1" />
-              <rect x="5" y="15.5" width="8" height="2.5" rx="1.25" fill="#d8c9a3" />
-            </svg>
-            <span className="display text-2xl text-forest-900">BeigeLeads</span>
+            <BrandLogo className="h-9 w-auto" />
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-0.5 lg:flex">

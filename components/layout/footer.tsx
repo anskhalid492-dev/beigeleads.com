@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/shared/brand-logo";
 import Link from "next/link";
 import { FooterCta } from "./footer-cta";
 import { competitors, compareHref } from "@/lib/compare";
@@ -49,6 +50,7 @@ const columns: Column[] = [
       ["Request a Sample", "/sample"],
       ["Case Studies", "/case-studies"],
       ["Blog", "/blog"],
+      ["Media Kit", "/media-kit"],
       ["FAQ", "/help-center"],
     ],
   },
@@ -124,13 +126,7 @@ export function Footer() {
       <div className="border-t border-forest-700">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-sand-300 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
-              <rect width="24" height="24" rx="5" fill="#fbf8f1" />
-              <rect x="5" y="6" width="14" height="2.5" rx="1.25" fill="#0f2a1d" />
-              <rect x="5" y="10.75" width="14" height="2.5" rx="1.25" fill="#0f2a1d" />
-              <rect x="5" y="15.5" width="8" height="2.5" rx="1.25" fill="#2d6a4f" />
-            </svg>
-            <span className="display text-xl text-sand-50">BeigeLeads</span>
+            <BrandLogo variant="dark" className="h-8 w-auto" />
             <span className="hidden sm:inline">Pay once. Own the list.</span>
           </div>
           <p>&copy; {new Date().getFullYear()} BeigeLeads. All rights reserved.</p>
