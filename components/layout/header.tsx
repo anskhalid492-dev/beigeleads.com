@@ -77,7 +77,7 @@ export function Header() {
   }
 
   const linkClass = (href: string) =>
-    `relative rounded-full px-4 py-2 text-sm font-medium text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${
+    `relative rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${
       pathname === href || pathname.startsWith(`${href}/`) ? "bg-sand-100 after:absolute after:inset-x-4 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-forest-900" : ""
     }`;
   const trigger = (k: Exclude<Key, null>, label: string, active: boolean) => (
@@ -87,7 +87,7 @@ export function Header() {
       aria-haspopup="true"
       aria-controls={`menu-${k}`}
       onClick={() => setOpen((v) => (v === k ? null : k))}
-      className={`flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${open === k || active ? "bg-sand-100" : ""}`}
+      className={`flex items-center gap-1 rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${open === k || active ? "bg-sand-100" : ""}`}
     >
       {label} <ChevronDown className={`size-4 transition-transform ${open === k ? "rotate-180" : ""}`} aria-hidden />
     </button>
