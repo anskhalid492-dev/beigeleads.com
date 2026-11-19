@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
       { source: "/use-cases", destination: "/solutions", permanent: true },
       { source: "/custom-list-builder", destination: "/custom-list", permanent: true },
       { source: "/faq", destination: "/help-center", permanent: true },
+      // Country slug is now the full name (CLAUDE.md section 71); old short URLs keep working.
+      { source: "/lists/:category/us", destination: "/lists/:category/united-states", permanent: true },
+      { source: "/lists/:category/us/:path*", destination: "/lists/:category/united-states/:path*", permanent: true },
       { source: "/help", destination: "/help-center", permanent: false },
     ];
   },

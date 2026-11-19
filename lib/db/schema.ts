@@ -776,3 +776,26 @@ export const cartEvents = sqliteTable("cart_events", {
   items: integer("items").notNull().default(0),
   createdAt: createdAt(),
 });
+
+// Geography catalog (migration 0028). A page for a place is a VIEW of an existing product, never a copy of it.
+export const geoAreas = sqliteTable("geo_areas", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  countrySlug: text("country_slug").notNull(),
+  parentId: integer("parent_id"),
+  /** parent id, or 0 for none: lets one unique index cover "slug is unique among siblings". */
+  parentKey: integer("parent_key").notNull().default(0),
+  level: text("level", { enum: ["region", "city"] }).notNull(),
+  slug: text("slug").notNull(),
+  name: text("name").notNull(),
+  indexable: integer("indexable").notNull().default(1),
+  createdAt: createdAt(),
+});
+
+export const geoCoverage = sqliteTable("geo_coverage", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  categorySlug: text("category_slug").notNull(),
+  areaId: integer("area_id").notNull(),
+  /** REAL number of records in that place, entered by the owner. Never an estimate. */
+  recordCount: integer("record_count").notNull(),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
+});

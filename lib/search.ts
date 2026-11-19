@@ -15,7 +15,7 @@ export type ParsedQuery = {
 };
 
 const COUNTRY_ALIASES: Record<string, string> = {
-  us: "us", usa: "us", "u.s.": "us", "u.s.a.": "us", america: "us", "united states": "us", "united states of america": "us",
+  us: "united-states", usa: "united-states", "u.s.": "united-states", "u.s.a.": "united-states", america: "united-states", "united states": "united-states", "united states of america": "united-states", "united-states": "united-states",
 };
 // Words people use for a category, beyond its own name.
 const CATEGORY_HINTS: Record<string, string[]> = {

@@ -13,7 +13,7 @@ describe("parseQuery", () => {
     const p = parseQuery("5k restaurants in usa");
     expect(p.quantity).toBe(5000);
     expect(p.category?.slug).toBe("restaurants");
-    expect(p.countrySlug).toBe("us");
+    expect(p.countrySlug).toBe("united-states");
   });
 });
 
@@ -32,7 +32,7 @@ describe("searchCatalog", () => {
   });
   it('treats "in the US" like "in US"', () => {
     const r = searchCatalog("dentists in the US");
-    expect(r.parsed.countrySlug).toBe("us");
+    expect(r.parsed.countrySlug).toBe("united-states");
     expect(r.parsed.region).toBe("");
     expect(r.exact).toHaveLength(1);
   });

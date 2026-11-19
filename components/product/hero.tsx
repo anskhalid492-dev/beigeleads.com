@@ -105,7 +105,7 @@ export function ProductHero({
               <Link href={`/sample?product=${product.slug}`}>Get a free sample</Link>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <a href="#pricing">Explore pricing</a>
+              <a href="#pricing">Get This List</a>
             </Button>
           </div>
           <p className="mt-4 text-sm">One-time payment. No subscription. No account.</p>

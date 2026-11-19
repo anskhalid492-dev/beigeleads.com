@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SampleTable } from "@/components/shared/sample-table";
 import { Faq } from "@/components/shared/faq";
-import { getCategories, getCategory, getCountries, getCountry, getProducts } from "@/lib/catalog";
+import { getCategory, getCountries, getCountry, getProducts } from "@/lib/catalog";
 import { sampleSheets } from "@/lib/sample-data";
+import { PlaceDirectory } from "@/components/geo/city-directory";
+import { getDb } from "@/lib/db";
+import { coverageFor, listAllCities, listAreas, regionTotals } from "@/lib/geo/store";
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return getCategories().map((c) => ({ category: c.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/lists/[category]">): Promise<Metadata> {
   const { category } = await props.params;
@@ -34,6 +33,21 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
   const products = getProducts(c.slug);
   const countries = getCountries();
   const sheet = sampleSheets[c.slug];
+
+  // Real places per country (empty until the owner imports geography). Only the first country is expanded to keep the page light.
+  const db = getDb();
+  const geo = await Promise.all(countries.map(async (k) => {
+    const regions = (await listAreas(db, k.slug, null)).filter((a) => a.level === "region");
+    const tot = await regionTotals(db, c.slug, regions);
+    const cities = await listAllCities(db, k.slug, 60);
+    const cov = await coverageFor(db, c.slug, cities.map((a) => a.id));
+    const base = `/lists/${c.slug}/${k.slug}`;
+    return {
+      k,
+      regions: regions.map((a) => ({ name: a.name, href: `${base}/${a.slug}`, records: tot.get(a.id) ?? null })),
+      cities: cities.map((a) => ({ name: a.name, href: `${base}${a.regionSlug ? `/${a.regionSlug}` : ""}/${a.slug}`, records: cov.get(a.id) ?? null })),
+    };
+  }));
 
   return (
     <>
@@ -95,6 +109,16 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
           ))}
         </ul>
       </section>
+
+      {geo.map((g) => (g.regions.length || g.cities.length) ? (
+        <section key={g.k.slug} className="border-t border-sand-200 py-16">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="display text-4xl text-forest-900 sm:text-5xl">{c.name} in {g.k.name}, by place</h2>
+            {g.regions.length > 0 && (<><h3 className="mt-8 text-xl font-bold text-forest-900">By state or region</h3><div className="mt-4"><PlaceDirectory places={g.regions} label="Search states or regions" empty="No state or region matches." /></div></>)}
+            {g.cities.length > 0 && (<><h3 className="mt-10 text-xl font-bold text-forest-900">By city</h3><div className="mt-4"><PlaceDirectory places={g.cities} label="Search cities" empty="No city matches." /></div></>)}
+          </div>
+        </section>
+      ) : null)}
 
       <section className="border-t border-sand-200 bg-sand-100 py-16">
         <div className="mx-auto max-w-6xl px-4">

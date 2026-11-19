@@ -10,7 +10,7 @@ export function prefillFromSearch(p: Initial, categories: readonly { slug: strin
   const out: Partial<WizardState> = {};
   const cat = categories.find((c) => c.slug === p.category)?.name ?? (p.categoryText ? titleCase(p.categoryText) : "");
   if (cat) out.industries = [cat];
-  const raw = (p.countryText || (p.country === "us" ? "us" : "")).trim().toLowerCase();
+  const raw = (p.countryText || (p.country === "united-states" || p.country === "us" ? "us" : "")).trim().toLowerCase().replace(/-/g, " ");
   const country = COUNTRY_ALIASES[raw] ?? COUNTRIES.find((c) => c.toLowerCase() === raw) ?? "";
   if (country) out.locations = [{ country, whole: !p.region, regions: p.region && (REGIONS[country] ?? []).some((r) => r.toLowerCase() === p.region.toLowerCase()) ? [titleCase(p.region)] : [], cities: p.region && !(REGIONS[country] ?? []).some((r) => r.toLowerCase() === p.region.toLowerCase()) ? [p.region] : [] }];
   else if (p.region) out.locations = [];

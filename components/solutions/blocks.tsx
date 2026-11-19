@@ -162,7 +162,7 @@ export function StepsPanel({ s }: { s: Solution }) {
 export function ListsPanel({ s }: { s: Solution }) {
   const prods = s.productSlugs.flatMap((x) => { const p = getProduct(x); return p ? [p] : []; });
   const { focus } = getFocus(s.slug);
-  const country = getCountry("us");
+  const country = getCountry("united-states");
   const cities = country ? getCities(country.slug) : [];
   const first = prods[0];
   const catName = first ? getCategory(first.categorySlug)?.name ?? "" : "";

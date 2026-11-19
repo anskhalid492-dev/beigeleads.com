@@ -45,7 +45,7 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />CSV, Excel or TXT file</li>
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />Download link by email, unlimited downloads</li>
                 </ul>
-                <AddToCartButton slug={product.slug} pkg={pk.name} variant={dark ? "primary" : "secondary"} className="mt-8" label={`Add ${pk.name} to cart`} />
+                <AddToCartButton slug={product.slug} pkg={pk.name} variant={dark ? "primary" : "secondary"} className="mt-8" label="Get This Package" />
               </div>
             );
           })}

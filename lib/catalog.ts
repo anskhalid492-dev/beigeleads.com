@@ -110,11 +110,11 @@ const categories: readonly Category[] = [
   },
 ];
 
-const countries: readonly Country[] = [{ slug: "us", code: "US", name: "United States" }];
+const countries: readonly Country[] = [{ slug: "united-states", code: "US", name: "United States" }];
 
 const cities: readonly City[] = [
-  { slug: "denver", name: "Denver", countrySlug: "us" },
-  { slug: "chicago", name: "Chicago", countrySlug: "us" },
+  { slug: "denver", name: "Denver", countrySlug: "united-states" },
+  { slug: "chicago", name: "Chicago", countrySlug: "united-states" },
 ];
 
 // PLACEHOLDER DATA (owner-approved for development, Nov 2026): 100,000 records, accuracy 95%,
@@ -130,7 +130,7 @@ const PLACEHOLDER_PACKAGES: readonly Package[] = [
 const products: readonly Product[] = categories.map((c) => ({
   slug: `${c.slug}-us`,
   categorySlug: c.slug,
-  countrySlug: "us",
+  countrySlug: "united-states",
   title: `${c.name} in the United States`,
   name: `${c.singular} Email List`,
   description: `Business contact details for ${c.reachLabel} in the United States: name, address, phone, email and website, with a masked sample you can inspect before you pay.`,

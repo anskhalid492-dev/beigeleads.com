@@ -42,7 +42,7 @@ async function managedRedirect(request: Request, env: CloudflareEnv): Promise<Re
  */
 async function cachedBlog(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
-  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/") || url.pathname === "/guides" || url.pathname.startsWith("/guides/") || url.pathname === "/help-center" || url.pathname.startsWith("/help/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
+  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/") || url.pathname === "/guides" || url.pathname.startsWith("/guides/") || url.pathname === "/help-center" || url.pathname.startsWith("/help/") || url.pathname.startsWith("/lists/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
   if (!cacheable) return handler.fetch(request, env, ctx);
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(request);
