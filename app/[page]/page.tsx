@@ -7,7 +7,6 @@ import { ComingSoon } from "@/components/shared/coming-soon";
 const pages: Record<string, { title: string; note: string }> = {
   pricing: { title: "Pricing", note: "Pricing is published when the first lists go on sale." },
   compare: { title: "Compare", note: "Honest comparisons with other list providers are being written." },
-  about: { title: "About", note: "This page is being written." },
   bundles: { title: "Bundles", note: "Bundles are on the way." },
   creators: { title: "Creators", note: "Creator and influencer lists are on the way." },
   "case-studies": { title: "Case studies", note: "Case studies will appear here once we have real ones." },

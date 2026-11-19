@@ -106,3 +106,11 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Editors: set `BLOG_EDITOR_EMAILS` and add those emails to the Cloudflare Access policy for /admin.
 - [ ] After 60 s caching: check Workers CPU/errors in the Cloudflare dashboard; decide on the Paid plan.
 - /sample: run drizzle/0009_sample_requests.sql in D1; samples are sent manually from /admin/sample-requests; example rows are fictional placeholders.
+
+## About page (19 Nov 2026)
+- [ ] CONFIRM the founder's name spelling: the owner wrote "Anus", his own MunchReach story says "Anas Khalid" (used on the page; one constant, `FOUNDER` in `lib/about-content.ts`).
+- [ ] Add an approved founder photograph (set `FOUNDER.photo`, file under /public). Until then an initials-free logo card is shown, never a stock face.
+- [ ] CONFIRM the "30M+ cold emails" figure (from the owner's MunchReach page) may be repeated on BeigeLeads.
+- [ ] CONFIRM the origin link: the page says sourcing leads was "the same fragmentation, one step earlier". The founder's text does not say when or how the BeigeLeads idea began. Provide the real moment (date, trigger, first list) to replace that sentence.
+- [ ] Decide whether MunchReach may be mentioned (it is deliberately NOT named on the page).
+- [ ] No quotations from the founder are used; add real ones only if he supplies them.
