@@ -28,13 +28,6 @@ export const categoryRequestSchema = z.object({
   details: z.string().trim().max(1000).optional(),
 });
 
-export const contactSchema = z.object({
-  ...base,
-  name: z.string().trim().max(120).optional(),
-  email,
-  message: z.string().trim().min(5, "Write a short message.").max(3000),
-});
-
 export const optOutSchema = z.object({
   ...base,
   email,
@@ -42,7 +35,6 @@ export const optOutSchema = z.object({
 
 export type SampleInput = z.infer<typeof sampleSchema>;
 export type CategoryRequestInput = z.infer<typeof categoryRequestSchema>;
-export type ContactInput = z.infer<typeof contactSchema>;
 export type OptOutInput = z.infer<typeof optOutSchema>;
 
 export const newsletterSchema = z.object({ ...base, email });

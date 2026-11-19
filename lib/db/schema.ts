@@ -231,6 +231,35 @@ export const contactMessages = sqliteTable("contact_messages", {
   createdAt: createdAt(),
 });
 
+// Contact page inquiries (migration 0020). The older contact_messages table is kept read-only for history.
+export const contactInquiries = sqliteTable(
+  "contact_inquiries",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    reference: text("reference").notNull(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    inquiryType: text("inquiry_type").notNull(),
+    orderNumber: text("order_number"),
+    subject: text("subject").notNull(),
+    message: text("message").notNull(),
+    /** email + type + subject + start of message. Unique, so double clicks and retries never create a second row or email. */
+    dedupeKey: text("dedupe_key").notNull(),
+    status: text("status", { enum: ["new", "in_progress", "resolved", "closed"] }).notNull().default("new"),
+    /** Internal only; never shown to the customer. */
+    internalNote: text("internal_note"),
+    /** Real result of handing the confirmation email to Resend. */
+    emailStatus: text("email_status", { enum: ["pending", "sent", "failed", "not_configured"] }).notNull().default("pending"),
+    emailError: text("email_error"),
+    attempts: integer("attempts").notNull().default(0),
+    /** Whether the owner alert was accepted (sent), failed, or switched off / no address (skipped). */
+    ownerNotify: text("owner_notify", { enum: ["pending", "sent", "failed", "skipped"] }).notNull().default("pending"),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => [uniqueIndex("contact_inquiries_dedupe_uq").on(t.dedupeKey), uniqueIndex("contact_inquiries_reference_uq").on(t.reference)],
+);
+
 export const categoryRequests = sqliteTable("category_requests", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull(),
