@@ -65,6 +65,7 @@ export default async function SystemEmails({ searchParams }: { searchParams: Pro
     <>
       <PageHeader title="System Emails" text="Every automatic email BeigeLeads sends, in one place: wording, preview, test and delivery results. Customer emails are branded; sending logic is unchanged." />
       {!ready && <p className="mb-5 max-w-3xl rounded-xl bg-amber-100 px-4 py-3 text-sm text-amber-900">Editing, versions, delivery logs, branding and copies need migrations 0022 and 0023 in D1. Until then every email uses its built-in version and nothing is logged. Sending is not affected.</p>}
+      <p className="mb-4"><Link href="/admin/system-emails/send" className="inline-flex h-9 items-center rounded-full bg-forest-900 px-5 text-sm font-semibold text-white">Send an email by hand</Link> <span className="ml-2 text-sm">For orders you fulfil manually.</span></p>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Templates" value={TEMPLATES.length} hint={`${TEMPLATES.filter((t) => t.audience === "customer").length} customer, ${TEMPLATES.filter((t) => t.audience === "admin").length} admin alerts`} />
         <StatCard label="Connected to a real event" value={connected} hint="The rest are written but not sent yet." />

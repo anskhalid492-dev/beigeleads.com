@@ -1,4 +1,5 @@
 import { desc, eq, inArray } from "drizzle-orm";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, Empty, PageHeader, Panel, fmtDate } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ export default async function DeliveryPage() {
                 <div className="flex items-center gap-3">
                   {o.dStatus === "sent" ? <Badge tone="good">Delivered</Badge> : o.dStatus === "failed" ? <Badge tone="bad">Email failed ({o.dAttempts} tries)</Badge> : o.dStatus === "sending" ? <Badge tone="info">Sending</Badge> : <Badge tone="warn">Waiting for a link</Badge>}
                   <form action={resendAction}><input type="hidden" name="orderId" value={o.id} /><Button type="submit" variant="secondary" size="sm">Send again</Button></form>
+                  <Link href={`/admin/system-emails/send?order=${o.id}`} className="inline-flex h-8 items-center rounded-full border border-sand-300 px-3 text-xs font-semibold">Send by hand</Link>
                 </div>
               </li>
             ))}
