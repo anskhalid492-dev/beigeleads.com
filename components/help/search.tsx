@@ -57,9 +57,10 @@ export function HelpSearch({ docs, categories }: { docs: SearchDoc[]; categories
           aria-activedescendant={active >= 0 ? `${id}-${active}` : undefined}
           value={q} onChange={(e) => { setQ(e.target.value); setActive(-1); setOpen(true); }}
           onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} onKeyDown={onKey}
-          placeholder="Search for answers, guides, or topics (press / to focus)" aria-label="Search the help center"
+          placeholder="Search for answers..." aria-label="Search the help center"
           className="h-14 min-w-0 flex-1 bg-transparent text-lg text-forest-900 outline-none placeholder:text-forest-700/60"
         />
+        {!q && <kbd aria-hidden className="hidden shrink-0 rounded-md border border-sand-300 bg-sand-50 px-2 py-0.5 font-mono text-xs font-semibold text-forest-700 sm:inline-block" title="Press / to focus the search">/</kbd>}
         {q && <button type="button" onClick={() => { setQ(""); setActive(-1); }} aria-label="Clear search" className="rounded-full p-1 hover:bg-sand-100"><X className="size-5" /></button>}
       </div>
 

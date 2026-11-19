@@ -41,10 +41,14 @@ export default async function HelpCenterPage() {
     <>
       <Breadcrumbs items={[{ name: "Help Center", href: "/help-center" }]} wide />
       <section className="px-2 sm:px-4" aria-labelledby="hc-h1">
-        <div className="mx-auto max-w-7xl rounded-[2rem] bg-gradient-to-br from-forest-900 via-forest-700 to-forest-500 px-4 pb-14 pt-12 text-center sm:px-8">
-          <h1 id="hc-h1" className="display text-5xl !text-sand-50 sm:text-7xl">How can we help you?</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-sand-200">Answers about buying lists, payments, delivery, data verification and custom requests. {helpArticles.length} articles, searchable as you type.</p>
-          <div className="mt-7"><HelpSearch docs={docs} categories={helpCategories.map((c) => ({ slug: c.slug, name: c.name }))} /></div>
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-forest-900 via-forest-700 to-forest-500 px-5 pb-16 pt-14 text-center sm:px-8 sm:pb-20 sm:pt-20">
+          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-[26rem] rounded-full bg-forest-300/10 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-20 size-[22rem] rounded-full bg-sand-50/5 blur-3xl" />
+          <div className="relative">
+            <h1 id="hc-h1" className="display mx-auto max-w-4xl text-balance text-[2.75rem] leading-[0.98] !text-sand-50 sm:text-7xl lg:text-[5.25rem]">Everything You Need to Know. All in One Place.</h1>
+            <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-sand-200 sm:mt-6 sm:text-xl">Find clear answers, helpful guides, and step-by-step instructions to make the most of BeigeLeads.</p>
+            <div className="mt-9 sm:mt-11"><HelpSearch docs={docs} categories={helpCategories.map((c) => ({ slug: c.slug, name: c.name }))} /></div>
+          </div>
         </div>
       </section>
 
