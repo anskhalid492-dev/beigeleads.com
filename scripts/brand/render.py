@@ -14,8 +14,8 @@ h1{{font-size:112px;line-height:.95}}p{{font-size:34px;font-weight:500}}</style>
 <img src="{img('horizontal-light')}" height="84" style="align-self:flex-start">
 <div><h1 class="d">Pay once.<br>Own the list.</h1></div><p>B2B data provider &middot; beigeleads.com</p></body></html>"""
 
-sw = [("Forest 900","#0f2a1d","Headings, nav, footer, logo tile"),("Forest 700","#1b4332","Body text"),("Forest 500","#2d6a4f","Secondary accents, wordmark 'Leads'"),
- ("Forest 300","#8fd0a9","'Leads' on dark backgrounds"),("Sand 50","#fbf8f1","Page background"),("Sand 200","#e8dec6","Borders, dividers"),
+sw = [("Forest 900","#0f2a1d","Headings, nav, footer, logo tile"),("Forest 700","#1b4332","Body text"),("Forest 500","#2d6a4f","Secondary accents and icons"),
+ ("Forest 300","#8fd0a9","Highlights on dark backgrounds"),("Sand 50","#fbf8f1","Page background"),("Sand 200","#e8dec6","Borders, dividers"),
  ("Purple 600","#7c3aed","Primary action buttons only")]
 chips = "".join(f'<div class="sw"><i style="background:{h}"></i><b>{n}</b><span>{h}</span><em>{u}</em></div>' for n,h,u in sw)
 bad = [("Do not stretch or squash","transform:scaleX(1.5)"),("Do not rotate","transform:rotate(-12deg)"),("Do not recolor","filter:hue-rotate(200deg) saturate(3)"),("Do not add shadows","filter:drop-shadow(6px 6px 4px rgba(0,0,0,.5))")]

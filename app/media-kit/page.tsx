@@ -96,7 +96,7 @@ export default function MediaKitPage() {
               <ul className="mt-3 list-disc space-y-2 pl-5">
                 <li>Use the files as supplied.</li>
                 <li>Keep clear space around the logo equal to half the height of the symbol tile.</li>
-                <li>Use the reversed logo on dark backgrounds and the full-color logo on light ones.</li>
+                <li>Use the reversed logo on dark backgrounds and the primary logo on light ones.</li>
                 <li>Keep the horizontal logo at least 100 px wide on screen. Use the symbol at 16 px or larger.</li>
               </ul>
               <div className="mt-5 flex items-center gap-4 rounded-2xl border border-sand-200 p-4">

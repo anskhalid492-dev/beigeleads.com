@@ -31,7 +31,8 @@ def favicon_inner(full_bleed=False, scale=1.2):
 
 WA, WB, WW, CAP, _ = wordmark()
 S = 30 / CAP; GAP = 15; W = round(WW * S, 2)
-COLORS = {"light": (T["f9"], T["f5"]), "dark": (T["s50"], T["f3"]), "mono": (T["f9"], T["f9"]), "mono-white": (T["s50"], T["s50"])}
+COLORS = {"light": (T["f9"], T["f9"]), "dark": (T["s50"], T["s50"]),  # owner choice: single-colour wordmark is primary
+           "mono": (T["f9"], T["f9"]), "mono-white": (T["s50"], T["s50"])}
 
 def svg(inner, w, h, title):
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{title}"><title>{title}</title>{inner}</svg>'

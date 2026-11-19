@@ -17,7 +17,7 @@ export const fileSize = (path: string) => (BRAND_FILES[path] ? fmt(BRAND_FILES[p
 
 export type Variant = { id: string; label: string; bg: string; note: string };
 export const VARIANTS: Variant[] = [
-  { id: "light", label: "Full color", bg: "bg-white", note: "Default. For light backgrounds." },
+  { id: "light", label: "Primary", bg: "bg-white", note: "Default. For light backgrounds." },
   { id: "dark", label: "Reversed", bg: "bg-forest-900", note: "For dark green or dark backgrounds." },
   { id: "mono", label: "One color, dark", bg: "bg-white", note: "Single ink, for print or stamps." },
   { id: "mono-white", label: "One color, white", bg: "bg-forest-900", note: "Single white ink on dark." },
@@ -31,8 +31,8 @@ export const KINDS = [
 export const COLORS = [
   { name: "Forest 900", hex: "#0f2a1d", use: "Headings, navigation, logo tile" },
   { name: "Forest 700", hex: "#1b4332", use: "Body text" },
-  { name: "Forest 500", hex: "#2d6a4f", use: "Secondary accents, “Leads” in the wordmark" },
-  { name: "Forest 300", hex: "#8fd0a9", use: "“Leads” on dark backgrounds" },
+  { name: "Forest 500", hex: "#2d6a4f", use: "Secondary accents and icons" },
+  { name: "Forest 300", hex: "#8fd0a9", use: "Verified badges and highlights on dark backgrounds" },
   { name: "Sand 50", hex: "#fbf8f1", use: "Page background" },
   { name: "Sand 200", hex: "#e8dec6", use: "Borders and dividers" },
   { name: "Purple 600", hex: "#7c3aed", use: "Primary action buttons only. Not part of the logo." },
