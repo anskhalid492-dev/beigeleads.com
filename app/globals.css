@@ -611,3 +611,12 @@ summary::-webkit-details-marker {
   .cart-skel { background: #f4eedf; }
 }
 @media (max-width: 480px) { .cart-card { --s: 0.62; } }
+
+/* BeigePilot chat widget */
+@keyframes bp-open { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes bp-msg { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes bp-dot { 0%, 60%, 100% { opacity: .25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+.bp-open { animation: bp-open 180ms ease-out both; }
+.bp-msg { animation: bp-msg 160ms ease-out both; }
+.bp-dot { display: block; width: 7px; height: 7px; border-radius: 9999px; background: var(--forest-700); animation: bp-dot 1s infinite; }
+@media (prefers-reduced-motion: reduce) { .bp-open, .bp-msg, .bp-dot { animation: none; } }

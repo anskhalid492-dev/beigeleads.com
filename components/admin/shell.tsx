@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
+import { Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
@@ -24,6 +24,7 @@ const NAV = [
   ["Help Center", "/admin/help", LifeBuoy],
   ["System Emails", "/admin/system-emails", MailCheck],
   ["Popups", "/admin/popups", MessageSquare],
+  ["BeigePilot AI", "/admin/beigepilot", Bot],
   ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Blog", "/admin/blog", FileText],
   ["Guides", "/admin/guides", BookOpen],

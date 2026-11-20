@@ -1,0 +1,4 @@
+-- BeigePilot AI assistant (Phase 1). Run ONE statement at a time in D1 Studio.
+CREATE TABLE IF NOT EXISTS beigepilot_providers (id TEXT PRIMARY KEY, enc_key TEXT NOT NULL DEFAULT '', key_hint TEXT NOT NULL DEFAULT '', model TEXT NOT NULL DEFAULT '', temperature REAL NOT NULL DEFAULT 0.3, max_tokens INTEGER NOT NULL DEFAULT 700, price_in REAL, price_out REAL, updated_at INTEGER NOT NULL DEFAULT (unixepoch()));
+CREATE TABLE IF NOT EXISTS beigepilot_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '', updated_at INTEGER NOT NULL DEFAULT (unixepoch()));
+CREATE TABLE IF NOT EXISTS beigepilot_usage (day TEXT NOT NULL, provider TEXT NOT NULL, model TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0, tokens_in INTEGER NOT NULL DEFAULT 0, tokens_out INTEGER NOT NULL DEFAULT 0, errors INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, provider, model));

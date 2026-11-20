@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AnnouncementBanner } from "@/components/layout/announcement-banner";
 import { PopupHost } from "@/components/popups/host";
+import { BeigePilot } from "@/components/beigepilot/widget";
 import { PublicChrome } from "@/components/layout/public-chrome";
 import { JsonLd } from "@/components/shared/json-ld";
 import { getCategories, getCountries } from "@/lib/catalog";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex-1">{children}</main>
         <PublicChrome><Footer /></PublicChrome>
         <PopupHost />
+        <BeigePilot />
         <JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/brand/png/beigeleads-symbol-light.png` }} />
       </body>
     </html>

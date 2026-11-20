@@ -27,5 +27,6 @@ interface CloudflareEnv {
   BLOG_EDITOR_EMAILS?: string; // var (optional): comma-separated emails that may write blog drafts (Access only, no publish/delete)
   NEWSLETTER_ENABLED?: string; // var: "true" shows the blog newsletter signup. Anything else = hidden.
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
+  BEIGEPILOT_KEY_SECRET?: string; // secret: 32+ random chars, encrypts the AI provider API keys stored in D1 (AES-GCM). Losing it means re-entering the keys.
   RESEND_WEBHOOK_SECRET?: string; // secret: Svix signing secret (whsec_...) of the Resend webhook
 }
