@@ -50,17 +50,17 @@ describe("catalog import", () => {
     expect(sep.items.every((i) => i.action === "skip")).toBe(true); // same WordPress id is never imported twice
     await finishImport(db, id);
   });
-  it("publish gate: restricted and link-less products are refused, complete one goes live and is buyable", async () => {
+  it("publish gate: restricted-flagged products can be published (owner decision), complete one is buyable", async () => {
     const db = getDbFromEnv(env);
     const list = (await listProducts(db, {}, 1)).rows;
     const clean = list.find((r) => r.sourceId === "20")!, consumer = list.find((r) => r.sourceId === "30")!;
     const r = await setStatus(db, [clean.id, consumer.id], "published");
-    expect(r.changed).toBe(1); expect(r.refused.map((x) => x.slug)).toEqual([consumer.slug]); expect(Array.isArray(r.noLink)).toBe(true);
+    expect(r.changed).toBe(2); expect(r.refused).toEqual([]); expect(Array.isArray(r.noLink)).toBe(true);
     await env.CACHE.delete("catalog:imp:v2");
     await hydrateCatalog(env, true);
     const p = getProduct(clean.slug)!;
     expect(p).toBeTruthy(); expect(p.imported).toBe(true);
-    expect(getProduct(consumer.slug)).toBeUndefined();
+    expect(getProduct(consumer.slug)).toBeTruthy();
     const priced = priceCart([{ slug: clean.slug, pkg: "Complete" }], { checkoutOpen: true, allowPlaceholder: false });
     expect(priced.lines[0].purchasable).toBe(true);
     expect(priced.lines[0].priceCents).toBe(9900);
@@ -81,7 +81,7 @@ describe("catalog import", () => {
   });
   it("edits name, packages and SEO text, keeps the source download link, and guards published prices", async () => {
     const db = getDbFromEnv(env);
-    const pub = (await listProducts(db, { status: "published" }, 1)).rows[0];
+    const pub = (await listProducts(db, { status: "published" }, 1)).rows.find((r) => r.sourceId === "20")!;
     const before = (await getProductRow(db, pub.id))!;
     const pk = JSON.parse(before.packagesJson) as { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; link?: string }[];
     const edit = { name: "Renamed list", title: "", description: "Edited.", seoTitle: "Custom SEO title", metaDescription: "", recordCount: 4321, dataFields: ["Email", "Phone"], fileFormats: "CSV", coverage: "Everywhere", lastUpdated: "2026-11-01", placeholder: false, forSale: true, packages: pk.map((k) => ({ name: k.name, records: k.records, priceUsdCents: 1234 })) };
@@ -174,6 +174,6 @@ describe("catalog import", () => {
     const db = getDbFromEnv(env);
     const [imp] = await db.select().from(schema.catalogImports);
     const r = await rollbackImport(db, imp.id);
-    expect(r.kept).toBe(1); expect(r.removed).toBe(3);
+    expect(r.kept).toBe(2); expect(r.removed).toBe(2);
   });
 });

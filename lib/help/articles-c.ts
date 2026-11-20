@@ -93,10 +93,10 @@ export const articlesC: readonly HelpArticle[] = [
   {
     category: "privacy-compliance", slug: "gdpr-considerations",
     title: "GDPR considerations",
-    description: "Our lists currently cover United States businesses only. People can ask to be removed.",
+    description: "Yes, we sell lists for the US, EU and UK. People can ask to be removed.",
     keywords: ["gdpr", "eu", "uk", "europe", "data protection", "legitimate interest"],
     body: [
-      ["p", "Our current lists cover businesses in the United States. Yes, we sell lists of EU and UK businesses too. Request the country you need."],
+      ["p", "Yes, we sell business lists for the United States, the EU and the UK. If you email EU or UK contacts, GDPR applies to you as the sender."],
       ["p", "People can ask to see, correct or delete data about them, or to stop us using it. The quickest way is the [opt-out page](/opt-out). Read the [GDPR page](/legal/gdpr) for the details."],
       ["note", "This is a summary, not legal advice. Check the rules that apply to your own outreach with a lawyer."],
     ],

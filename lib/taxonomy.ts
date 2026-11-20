@@ -117,7 +117,7 @@ export const TAXONOMY: TaxGroup[] = [
       live("browse-by-country", "Browse by Country", "Countries we cover", "Countries with recorded inventory."),
       live("browse-by-state-region", "Browse by State / Region", "States and regions", "States and regions with recorded inventory."),
       live("browse-by-city", "Browse by City", "Cities", "Cities with recorded inventory."),
-      up("international-business-databases", "International Business Databases", "Outside the United States", "Business databases outside the United States. Our data is United States only today; other countries are added only when they can be sourced lawfully."),
+      up("international-business-databases", "International Business Databases", "Outside the United States", "Business databases outside the United States. Yes, we sell databases for many countries; browse them or request yours."),
     ],
   },
   {

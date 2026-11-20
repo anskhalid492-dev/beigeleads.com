@@ -380,7 +380,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       heading: "Expansion plans fail on assumptions nobody checked",
       paragraphs: [
         "A company picks a city because it looks right on a map, then discovers the local market is thin or crowded. A real count of businesses, plus a few conversations, is cheaper than finding out after opening.",
-        "Today our lists cover the United States only. Other countries need lawful sourcing and country-specific rules, and we will say honestly whether we can serve a request.",
+        "Yes, we sell lists for many countries. Tell us the country you are expanding into and we will build the list.",
       ],
     },
     pains: [

@@ -60,7 +60,7 @@ export const comparisons: Comparison[] = [
     ],
     chooseThem: ["You need a country or niche we do not cover yet.", "You want a much larger catalog today.", "You want custom databases for a wider set of markets.", "You want a ready-made list from $49 with no sign-up.", "You want instant delivery as a CSV or Excel file."],
     chooseUs: ["Your target is US local businesses and you want a list you can inspect first.", "You want the replacement rule written down in a policy you can read before buying.", "You want data we re-verify every 60 days (they state 90).", "You want to pay once in crypto and get your list link by email after confirmation.", "You want to request a custom US list when the niche you need is not on the shelf."],
-    verdict: "LeadsMunch and BeigeLeads sell the same way: buy a list once, pay in crypto, no account. LeadsMunch has a far bigger catalog today. We are smaller and US-only for now, so choose us only if our lists match your target.",
+    verdict: "LeadsMunch and BeigeLeads sell the same way: buy a list once, pay in crypto, no account. LeadsMunch has a far bigger catalog today. We are smaller, so choose us if our lists match your target.",
     sources: [{ label: "LeadsMunch home page", url: "https://leadsmunch.com/" }],
     faqs: common(),
   },

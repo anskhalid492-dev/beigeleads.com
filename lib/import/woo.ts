@@ -202,7 +202,7 @@ export function buildProduct(src: SourceProduct, reserved: ReadonlySet<string> =
 /** Blocking reasons: the bulk "publish" action refuses these (the owner can still fix them and try again). */
 export function publishBlockers(p: { restricted: string[]; packages: { priceUsdCents: number; link?: string }[]; flags?: string[] }, hasLink: boolean[] = []): string[] {
   const out: string[] = [];
-  if (p.restricted.length) out.push(`restricted category (${p.restricted.join(", ")}): needs your legal decision`);
+  // Owner decision (20 Nov 2026): restricted-flagged products (consumer, phone, WhatsApp, EU/UK) can be published; the flag stays as information.
   if (!p.packages.length || p.packages.some((k) => !k.priceUsdCents)) out.push("price missing");
   if (hasLink.length ? hasLink.some((x) => !x) : p.packages.some((k) => !k.link)) out.push("download link missing");
   return out;

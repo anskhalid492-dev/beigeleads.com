@@ -35,7 +35,7 @@ describe("WooCommerce import (pure rules)", () => {
     const p = by("30");
     expect(p.restricted).toContain("consumer data");
     expect(p.flags.some((f) => /download link missing/.test(f))).toBe(true);
-    expect(publishBlockers(p).length).toBeGreaterThan(1);
+    expect(publishBlockers(p)).not.toContain(expect.stringMatching(/restricted/));
   });
   it("never publishes a clean product's blockers away: complete product has none", () => {
     expect(publishBlockers(by("20"))).toEqual([]);
