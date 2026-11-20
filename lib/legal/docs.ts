@@ -2,7 +2,7 @@
 // assistant. Wording is written from how BeigeLeads operates (CLAUDE.md) and is NOT lawyer-reviewed.
 
 /** Date the current wording was published. Update whenever any legal text or the verification page changes. */
-export const LEGAL_UPDATED = "2026-11-19";
+export const LEGAL_UPDATED = "2026-11-20";
 export const formatLegalDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -22,6 +22,7 @@ export const legalDocs: LegalDoc[] = [
         "Forms: if you request a sample, send a message or ask for a category, we keep what you type and your email address.",
         "Help Center feedback: if you tell us an article was or was not helpful, we store that answer together with the article name. We do not store your email, IP address or a cookie with it.",
         "Help Center searches and views: when you search the Help Center we store the words you typed and how many articles matched, for up to 90 days, to find missing answers. We also count article views per day. This is stored without your IP address, email, account or a cookie. We ignore searches that look like an email address or a long number, so please do not type personal details into the search box.",
+        "Data Reseller Partner applications: if you apply on the partner page we keep your full name, business name, business email, website, country, business type, how you plan to resell our data, the optional monthly volume and notes you add, the time you accepted the Partner Program Terms, and a reference number. We also keep our internal notes and decision (pending, under review, approved or declined). We use this only to review your application, to email you the decision, and to prevent duplicate applications. If you are approved we also keep your personal discount code, tied to your email address, and record the code and discount on any order you place with it. Applications are kept for 12 months after the decision; the code and discount on an order are kept with the order for 7 years.",
         "Anti-spam signals: our forms use Cloudflare Turnstile and a rate limit to block bots.",
         "Shopping cart: the lists you add to your cart are kept only in your own browser (local storage on your device), as a list name and package. We do not create an account or a server-side cart for you, and the browser never stores prices. Clearing your browser data empties the cart.",
         "Anonymous cart counters: when you add or remove a list, open the cart or start checkout, we count that event (the event type and the number of items) to understand where visitors drop out. The count is stored without your email, IP address, account or a cookie and is deleted after 90 days. We do not send these counters if your browser sends Do Not Track or Global Privacy Control.",

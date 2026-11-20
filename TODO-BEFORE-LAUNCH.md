@@ -118,4 +118,4 @@ Placeholders that must be replaced with real content/data (CLAUDE.md section 15,
 - [ ] Run `drizzle/0019_help_feedback.sql` in D1 (2 statements) before the feedback buttons work.
 - [ ] Phase B (CMS, analytics, search tracking) is pending; add a privacy-policy line when search text is stored.
 
-- Partners: owner/lawyer must confirm the Partner Program Terms and the resale permission wording (lib/partners/content.ts); add partner applications to the privacy policy.
+- Partners: owner/lawyer must confirm the Partner Program Terms and the resale permission wording (lib/partners/content.ts); privacy policy now covers partner applications (20 Nov 2026).
