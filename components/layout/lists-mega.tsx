@@ -17,19 +17,19 @@ type Props = { tax: TaxGroup[]; industries: Named[]; onNavigate: () => void };
 type Item = { key: string; title: string; desc: string; icon: LucideIcon; href: string; group: string; kids?: string[] };
 const COLUMNS: Item[][] = [
   [
-    { key: "email", title: "Email Lists", desc: "Targeted business email contacts", icon: Mail, href: "/lists/email-lists", group: "email-lists" },
-    { key: "phone", title: "Phone Number Lists", desc: "Business and mobile contact data", icon: Phone, href: "/lists/phone-number-lists", group: "phone-number-lists" },
-    { key: "whatsapp", title: "WhatsApp Lists", desc: "Eligible WhatsApp business contacts", icon: WhatsApp as unknown as LucideIcon, href: "/lists/whatsapp-number-lists", group: "whatsapp-number-lists" },
+    { key: "email", title: "Email Lists", desc: "Targeted business emails", icon: Mail, href: "/lists/email-lists", group: "email-lists" },
+    { key: "phone", title: "Phone Number Lists", desc: "Business phone numbers", icon: Phone, href: "/lists/phone-number-lists", group: "phone-number-lists" },
+    { key: "whatsapp", title: "WhatsApp Lists", desc: "WhatsApp business contacts", icon: WhatsApp as unknown as LucideIcon, href: "/lists/whatsapp-number-lists", group: "whatsapp-number-lists" },
   ],
   [
-    { key: "titles", title: "Job Titles", desc: "Reach decision-makers by role", icon: Briefcase, href: "/lists/job-title-lists", group: "job-title-lists" },
-    { key: "functions", title: "Job Functions", desc: "Target teams by department", icon: Network, href: "/lists/job-function-lists", group: "job-function-lists" },
-    { key: "levels", title: "Management Levels", desc: "C-suite, directors and managers", icon: Users, href: "/lists/management-levels", group: "management-levels" },
+    { key: "titles", title: "Job Titles", desc: "Decision-makers by role", icon: Briefcase, href: "/lists/job-title-lists", group: "job-title-lists" },
+    { key: "functions", title: "Job Functions", desc: "Teams by department", icon: Network, href: "/lists/job-function-lists", group: "job-function-lists" },
+    { key: "levels", title: "Management Levels", desc: "Executives to managers", icon: Users, href: "/lists/management-levels", group: "management-levels" },
   ],
   [
-    { key: "industries", title: "Industry Databases", desc: "Explore contacts by industry", icon: Building2, href: "/lists/industry-databases", group: "industry-databases" },
-    { key: "international", title: "International Databases", desc: "Browse business data by country", icon: Globe2, href: "/lists/geographic-databases/international-business-databases", group: "geographic-databases", kids: ["international-business-databases", "browse-by-country"] },
-    { key: "places", title: "States & Cities", desc: "Discover location-specific lists", icon: MapPin, href: "/lists/geographic-databases/browse-by-state-region", group: "geographic-databases", kids: ["browse-by-state-region", "browse-by-city"] },
+    { key: "industries", title: "Industry Databases", desc: "Contacts by industry", icon: Building2, href: "/lists/industry-databases", group: "industry-databases" },
+    { key: "international", title: "International Databases", desc: "Business data by country", icon: Globe2, href: "/lists/geographic-databases/international-business-databases", group: "geographic-databases", kids: ["international-business-databases", "browse-by-country"] },
+    { key: "places", title: "States & Cities", desc: "Location-specific lists", icon: MapPin, href: "/lists/geographic-databases/browse-by-state-region", group: "geographic-databases", kids: ["browse-by-state-region", "browse-by-city"] },
   ],
 ];
 const ring = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
@@ -81,7 +81,7 @@ export function ListsMegaPanel({ tax, onNavigate }: Props) {
 
       <div className="grid grid-cols-3">
         {COLUMNS.map((col, c) => (
-          <ul key={c} className="space-y-5 py-7 pl-6 pr-3">
+          <ul key={c} className="flex flex-col justify-center gap-5 py-7 pl-6 pr-3">
             {col.filter((i) => visible(tax, i)).map((i) => (
               <li key={i.key}>
                 <Link href={i.href} onClick={onNavigate} className={`group flex gap-3.5 rounded-xl ${ring}`}>
@@ -93,7 +93,7 @@ export function ListsMegaPanel({ tax, onNavigate }: Props) {
                       <span className="whitespace-nowrap">{i.title}</span>
                       <ArrowRight className="ml-1.5 size-4 w-0 -translate-x-1 overflow-visible opacity-0 transition duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100" aria-hidden />
                     </span>
-                    <span className="mt-0.5 block text-[0.84rem] leading-5 text-forest-700/80">{i.desc}</span>
+                    <span className="mt-0.5 block truncate text-[0.84rem] leading-5 text-forest-700/80">{i.desc}</span>
                   </span>
                 </Link>
               </li>
