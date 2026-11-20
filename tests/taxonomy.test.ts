@@ -3,10 +3,10 @@ import { COMPLIANCE_NOTE, TAXONOMY, childHref, getChild, getGroup, industryChild
 import { getCategories } from "@/lib/catalog";
 
 describe("list-type taxonomy", () => {
-  it("has the eight groups with unique slugs that never collide with catalog industries", () => {
-    expect(TAXONOMY.map((g) => g.slug)).toEqual(["email-lists", "phone-number-lists", "whatsapp-number-lists", "job-title-lists", "job-function-lists", "management-levels", "industry-databases", "geographic-databases"]);
+  it("has the eleven groups with unique slugs that never collide with catalog industries", () => {
+    expect(TAXONOMY.map((g) => g.slug)).toEqual(["email-lists", "phone-number-lists", "whatsapp-number-lists", "job-title-lists", "job-function-lists", "management-levels", "industry-databases", "geographic-databases", "business-email-lists", "consumer-email-lists", "healthcare-lists"]);
     const slugs = new Set(TAXONOMY.map((g) => g.slug));
-    expect(slugs.size).toBe(8);
+    expect(slugs.size).toBe(11);
     for (const c of getCategories()) expect(slugs.has(c.slug)).toBe(false);
     for (const g of TAXONOMY) expect(new Set(g.children.map((c) => c.slug)).size).toBe(g.children.length);
   });

@@ -1,7 +1,9 @@
 import { usState } from "@/lib/us-states";
+import { FLAG_ALIAS, FLAG_FILES } from "@/lib/flag-codes";
 import {
   Car, Coffee, Croissant, Dumbbell, Factory, Fan, GraduationCap, Globe, Hammer, Hotel, Building2, Landmark, Cpu, Scissors, ShoppingBag,
   Snowflake, Stethoscope, Utensils, Wrench, Zap, Briefcase, type LucideIcon,
+  Home, Bitcoin, TrendingUp, PawPrint, Film, Scale, Truck, Plane, Wine, Sprout, HeartHandshake, Gamepad2, Church, Palette, Code2, Rocket, Crown, Shirt, Phone, MessageCircle, ShoppingCart, Pill, Baby, Users, Eye, Brain, Bone, Heart, HardHat, Radio, Megaphone, Cigarette, Cannabis, Dices, Wallet, Laptop, Wifi, ClipboardList, Microscope, Bed, Package, Handshake,
 } from "lucide-react";
 
 /**
@@ -49,8 +51,23 @@ const industry: Record<string, { Icon: IconCmp; label: string }> = {
   retail: { Icon: ShoppingBag, label: "Retail" },
 };
 
+/** Most related icon for categories that have no entry above: first keyword rule that matches the category slug wins. */
+const KEYWORD_ICONS: [RegExp, IconCmp][] = [
+  [/dentist|dental|orthodont/, Tooth], [/dermat|cosmetic|beauty|salon|spa|skin/, Scissors], [/ophthalm|optom|eye/, Eye], [/psycholog|psychiat|therap|mental|social-worker|counsel/, Brain],
+  [/cardio|heart/, Heart], [/orthop|chiropract|physical|physio|bone/, Bone], [/pediatric|obstet|gyneco|midwi|maternity|baby/, Baby], [/pharma|drug/, Pill], [/surgeon|surgery|urolog|endocrin|acupunct|medical|clinic|doctor|physician|nurs|health|hospital|veterinar|vet/, Stethoscope],
+  [/lab|biotech|research|scien/, Microscope], [/real-estate|realtor|property|mortgage|housing|home/, Home], [/construction|contractor|roof|remodel|builder|engineer/, HardHat], [/hvac|plumb|electric|repair|restoration|maintenance/, Wrench],
+  [/crypto|blockchain|bitcoin|nft/, Bitcoin], [/forex|trading|stock|invest|crowdfund|wealth/, TrendingUp], [/bank|loan|credit|debt|financ|insur|account/, Landmark], [/payment|debit|wallet/, Wallet], [/ecom|e-com|shopify|woocommerce|store|retail|wholesale|shop/, ShoppingCart],
+  [/pet|animal|dog|cat/, PawPrint], [/media|film|video|production|news|publish/, Film], [/legal|law|attorney|lawyer|court/, Scale], [/transport|logistic|freight|truck|shipping|courier/, Truck], [/travel|tour|airline|flight|aviation/, Plane],
+  [/hotel|hospitality|resort|lodging/, Bed], [/restaurant|food|beverage|pizza|catering|cafe|coffee|bakery|kitchen/, Utensils], [/alcohol|wine|beer|brewer|liquor|bar/, Wine], [/farm|agri|garden|crop|landscap/, Sprout],
+  [/ngo|charity|nonprofit|non-profit|donor|volunteer|foundation/, HeartHandshake], [/gambl|bett|casino|lotter/, Dices], [/game|gaming|esport/, Gamepad2], [/religio|church|faith|mosque/, Church], [/design|art|creative|tattoo|photograph/, Palette],
+  [/saas|software|app|developer|tech|it-|cloud|microsoft|office|google|adobe|salesforce|hubspot|aws/, Code2], [/startup|founder|entrepreneur|owner|small-business/, Rocket], [/ceo|cxo|chief|executive|president|c-level|director|vp|vice/, Crown],
+  [/fashion|cloth|apparel|jewel|garment/, Shirt], [/phone|mobile|telecom|sms/, Phone], [/whatsapp|messag|chat/, MessageCircle], [/consumer|customer|b2c|households/, Users], [/fitness|gym|yoga|sport|wellness|coach|training/, Dumbbell],
+  [/tobacco|vape|smok/, Cigarette], [/weed|marijuana|cannabis|cbd/, Cannabis], [/mlm|network-marketing|money-making|affiliate|marketing|advertis|seo|agenc/, Megaphone], [/dating|love|wedding/, Heart], [/school|universit|college|education|teacher|student|training/, GraduationCap],
+  [/manufactur|factory|industrial|machin|steel|chemical|plastic/, Factory], [/automobile|automotive|car|auto|dealer|vehicle/, Car], [/energy|solar|oil|gas|power|utilit/, Zap], [/recruit|talent|hr|human-resource|staffing|job/, ClipboardList], [/package|packag|supplier|distribut/, Package], [/partner|b2b|business/, Handshake], [/radio|broadcast|telecom/, Radio], [/internet|isp|wifi|broadband/, Wifi], [/laptop|computer|hardware/, Laptop],
+];
 export function IndustryIcon({ slug, className = "size-5" }: { slug: string; className?: string }) {
-  const { Icon } = industry[slug] ?? { Icon: Briefcase };
+  const hit = industry[slug]?.Icon ?? KEYWORD_ICONS.find(([re]) => re.test(slug))?.[1];
+  const Icon = hit ?? Briefcase;
   return <Icon className={className} aria-hidden />;
 }
 
@@ -130,8 +147,8 @@ const flags: Record<string, () => React.ReactNode> = {
 export function Flag({ code, className = "h-4 w-6" }: { code: string; className?: string }) {
   const f = flags[code.toUpperCase()];
   if (!f) {
-    const c = code.trim().toLowerCase();
-    if (!/^[a-z]{2}$/.test(c)) return <Globe className={className} aria-hidden />;
+    const c = FLAG_ALIAS[code.trim().toUpperCase()] ?? code.trim().toLowerCase();
+    if (!FLAG_FILES.has(c)) return <Globe className={className} aria-hidden />;
     // Every other country: its own flag file (flag-icons, MIT), static in /public/flags/c.
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={`/flags/c/${c}.svg`} alt={`${code.toUpperCase()} flag`} loading="lazy" className={`${className} inline-block shrink-0 rounded-[2px] object-cover`} />;
@@ -148,9 +165,11 @@ export function DbBadge({
   country,
   size = "md",
   tone = "light",
+  region,
 }: {
   category: string;
   country?: string;
+  region?: string;
   size?: "sm" | "md" | "lg";
   tone?: "light" | "dark";
 }) {
@@ -163,7 +182,7 @@ export function DbBadge({
       <IndustryIcon slug={category} className={icon} />
       {country && (
         <span className="absolute -bottom-1 -right-1.5 rounded-[3px] bg-white p-px shadow-sm ring-1 ring-sand-300">
-          <Flag code={country} className={flag} />
+          {region && country?.toUpperCase() === "US" && usState(region) ? <StateFlag name={region} className={flag} /> : <Flag code={country} className={flag} />}
         </span>
       )}
     </span>

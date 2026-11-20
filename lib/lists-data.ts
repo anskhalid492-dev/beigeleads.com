@@ -20,13 +20,15 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
     const k = cname.get(p.countrySlug) ?? getCountry(p.countrySlug);
     const from = startingPriceCents(p);
     const real = !p.placeholderData; // placeholder counts and prices never reach the browser
-    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, description: p.imported ? p.description.slice(0, 160) : p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
+    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, channel: p.channel ?? "", region: p.region ?? "", description: p.imported ? p.description.slice(0, 160) : p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
   });
 
   // Geography with REAL inventory only (count above zero, place allowed to be shown).
   const g = await allCoverage(db);
   const byId = new Map(g.areas.map((a) => [a.id, a]));
-  const tree: GeoTree = countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code, regions: [], cities: [] }));
+  const treeCountries = [...countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code }))];
+  for (const p of products) if (!treeCountries.some((c) => c.slug === p.countrySlug)) treeCountries.push({ slug: p.countrySlug, name: p.countryName, code: p.countryCode });
+  const tree: GeoTree = treeCountries.map((c) => ({ slug: c.slug, name: c.name, code: c.code, regions: [], cities: [] }));
   const touch = (arr: string[], cat: string) => { if (!arr.includes(cat)) arr.push(cat); };
   for (const cv of g.coverage) {
     const a = byId.get(cv.areaId);

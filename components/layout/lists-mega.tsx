@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Briefcase, Building2, ChevronDown, ChevronLeft, Globe2, Mail, MapPin, Network, Phone, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Briefcase, Building2, ChevronDown, ChevronLeft, Crown, Mail, MapPin, Network, Phone, Stethoscope, Users, type LucideIcon } from "lucide-react";
 import { WhatsApp } from "@/components/lists/tax-icon";
 import { childHref, industryChildren, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 
@@ -17,21 +17,22 @@ type Props = { tax: TaxGroup[]; industries: Named[]; onNavigate: () => void };
 type Item = { key: string; title: string; desc: string; icon: LucideIcon; href: string; group: string; kids?: string[] };
 const COLUMNS: Item[][] = [
   [
-    { key: "email", title: "Email Lists", desc: "Targeted business emails", icon: Mail, href: "/lists/email-lists", group: "email-lists" },
+    { key: "business", title: "Business Email Lists", desc: "Verified business emails", icon: Mail, href: "/lists/business-email-lists", group: "business-email-lists" },
+    { key: "consumer", title: "Consumer Email Lists", desc: "Consumer emails by country", icon: Users, href: "/lists/consumer-email-lists", group: "consumer-email-lists" },
     { key: "phone", title: "Phone Number Lists", desc: "Business phone numbers", icon: Phone, href: "/lists/phone-number-lists", group: "phone-number-lists" },
-    { key: "whatsapp", title: "WhatsApp Lists", desc: "WhatsApp business contacts", icon: WhatsApp as unknown as LucideIcon, href: "/lists/whatsapp-number-lists", group: "whatsapp-number-lists" },
   ],
   [
-    { key: "titles", title: "Job Titles", desc: "Decision-makers by role", icon: Briefcase, href: "/lists/job-title-lists", group: "job-title-lists" },
+    { key: "titles", title: "Job Title Lists", desc: "Decision-makers by role", icon: Briefcase, href: "/lists/job-title-lists", group: "job-title-lists" },
+    { key: "whatsapp", title: "WhatsApp Numbers List", desc: "WhatsApp business contacts", icon: WhatsApp as unknown as LucideIcon, href: "/lists/whatsapp-number-lists", group: "whatsapp-number-lists" },
+    { key: "levels", title: "Management Levels", desc: "Executives to managers", icon: Crown, href: "/lists/management-levels", group: "management-levels" },
+  ],
+  [
+    { key: "places", title: "State & Cities", desc: "Location-specific lists", icon: MapPin, href: "/lists/geographic-databases/browse-by-state-region", group: "geographic-databases", kids: ["browse-by-state-region", "browse-by-city"] },
     { key: "functions", title: "Job Functions", desc: "Teams by department", icon: Network, href: "/lists/job-function-lists", group: "job-function-lists" },
-    { key: "levels", title: "Management Levels", desc: "Executives to managers", icon: Users, href: "/lists/management-levels", group: "management-levels" },
-  ],
-  [
-    { key: "industries", title: "Industry Databases", desc: "Contacts by industry", icon: Building2, href: "/lists/industry-databases", group: "industry-databases" },
-    { key: "international", title: "International Databases", desc: "Business data by country", icon: Globe2, href: "/lists/geographic-databases/international-business-databases", group: "geographic-databases", kids: ["international-business-databases", "browse-by-country"] },
-    { key: "places", title: "States & Cities", desc: "Location-specific lists", icon: MapPin, href: "/lists/geographic-databases/browse-by-state-region", group: "geographic-databases", kids: ["browse-by-state-region", "browse-by-city"] },
+    { key: "health", title: "Healthcare Lists", desc: "Doctors, dentists and clinics", icon: Stethoscope, href: "/lists/healthcare-lists", group: "healthcare-lists" },
   ],
 ];
+
 const ring = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 const visible = (tax: TaxGroup[], i: Item) => tax.some((g) => g.slug === i.group && g.menuVisible !== false && g.published !== false);
 

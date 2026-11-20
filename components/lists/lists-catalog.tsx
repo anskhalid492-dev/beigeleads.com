@@ -51,7 +51,7 @@ export function ListsCatalog({ items, page, pages, fac, active, readsAs, industr
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><h2 className="display text-[2rem] leading-none text-forest-900 sm:text-[2.6rem]">Shop ready-made databases</h2><p className="mt-2 max-w-xl text-sm">Each database has its own page with a masked sample, packages and a one-time price. Delivery by email.</p></div>
         <div role="tablist" aria-label="Database type" className="inline-flex max-w-full overflow-x-auto rounded-full border border-sand-300 bg-sand-100 p-1">
-          {([["", "All"], ["country", "Country"], ["city", "City"], ["industry", "Industry"]] as const).map(([k, label]) => (
+          {([["", "All"], ["country", "Country"], ["city", "State & City"], ["industry", "Industry"]] as const).map(([k, label]) => (
             <button key={k} role="tab" type="button" aria-selected={f.kind === k} onClick={() => set({ kind: k })} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${f.kind === k ? "bg-forest-900 text-sand-50" : "text-forest-900 hover:bg-white"}`}>{label}</button>
           ))}
         </div>

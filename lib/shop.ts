@@ -14,6 +14,7 @@ export type ShopProduct = {
   fields: string[]; status: "draft" | "live";
   recordCount: number | null; fromCents: number | null;
   scope?: "country" | "city"; citySlug?: string | null; description?: string;
+  channel?: string; region?: string;
 };
 export type GeoCityNode = { slug: string; name: string; regionSlug: string | null; cats: string[] };
 export type GeoRegionNode = { slug: string; name: string; cats: string[] };
@@ -23,7 +24,7 @@ export type GeoTree = GeoCountryNode[];
 /** What kind of database a product is: a whole country, one city, or one industry. */
 export type Kind = "" | "country" | "city" | "industry";
 export const KINDS: readonly Kind[] = ["country", "city", "industry"];
-export const productKind = (p: Pick<ShopProduct, "scope" | "categorySlug">): Exclude<Kind, ""> => (p.scope === "city" ? "city" : p.categorySlug === "business" ? "country" : "industry");
+export const productKind = (p: Pick<ShopProduct, "scope" | "categorySlug" | "region">): Exclude<Kind, ""> => (p.scope === "city" || !!p.region ? "city" : p.categorySlug === "business" ? "country" : "industry");
 
 export type Filters = {
   type: "b2b" | "b2c";
@@ -226,7 +227,7 @@ export type Chip = { key: string; label: string; remove: Partial<Filters> };
 export function chips(f: Filters, data: ShopData): Chip[] {
   const out: Chip[] = [];
   if (f.q) out.push({ key: "q", label: `Search: ${f.q}`, remove: { q: "" } });
-  if (f.kind) out.push({ key: "kind", label: { country: "Country databases", city: "City databases", industry: "Industry databases" }[f.kind], remove: { kind: "" } });
+  if (f.kind) out.push({ key: "kind", label: { country: "Country databases", city: "State & city databases", industry: "Industry databases" }[f.kind], remove: { kind: "" } });
   for (const s of f.industries) out.push({ key: `i-${s}`, label: data.industries.find((i) => i.slug === s)?.name ?? s, remove: { industries: f.industries.filter((x) => x !== s) } });
   for (const s of f.countries) out.push({ key: `c-${s}`, label: data.countries.find((i) => i.slug === s)?.name ?? s, remove: { countries: f.countries.filter((x) => x !== s), state: "", city: "" } });
   if (f.state) out.push({ key: "st", label: stateOptions(data.tree, { countries: [] }).find((x) => x.slug === f.state)?.name ?? f.state, remove: { state: "", city: "" } });

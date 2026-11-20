@@ -1,3 +1,4 @@
+import { poolFor } from "@/lib/taxonomy-products";
 import Link from "next/link";
 import { Check, ShieldCheck } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -36,7 +37,8 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
   const copy = GROUP_COPY[group.slug] ?? fallbackCopy(group.name);
   const mapped = node.productSlugs ?? [];
   const mappedPool = mapped.length ? allProducts.filter((p) => mapped.includes(p.slug)) : [];
-  const pool = mappedPool.length ? mappedPool : allProducts; // stale mapping (renamed slugs) falls back to every real product
+  const ruled = poolFor(group.slug, allProducts);
+  const pool = ruled?.length ? ruled : mappedPool.length ? mappedPool : allProducts; // stale mapping (renamed slugs) falls back to every real product
   const scoped = country ? pool.filter((p) => p.countrySlug === country.slug) : pool;
   const rank = (p: ShopProduct) => Number(p.status === "live") * 2 + Number(p.recordCount != null);
   const products = [...scoped].sort((a, b) => rank(b) - rank(a)).slice(0, 12); // the full catalog lives on /lists
@@ -99,8 +101,8 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
       <section id="databases" className="scroll-mt-28 py-12 sm:py-14"><div className={wrap}>
         {products.length > 0 ? (
           <>
-            <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{status === "upcoming" ? "Ready-Made Databases You Can Buy Today" : `${node.name}: Ready-Made Databases`}</h2>
-            <p className="mt-3 max-w-[60ch]">{status === "upcoming" ? `${title} is not on sale yet. These are the real ready-made business databases available now.` : "Each database has its own page with a masked sample, the fields it includes and packages."}{!live && " Some are previews that are not for sale yet."}</p>
+            <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{status === "upcoming" && !ruled?.length ? "Ready-Made Databases You Can Buy Today" : `${node.name}: Ready-Made Databases`}</h2>
+            <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} is not on sale yet. These are the real ready-made business databases available now.` : "Each database has its own page with a masked sample, the fields it includes and packages."}{!live && " Some are previews that are not for sale yet."}</p>
             <div className="mt-8 space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
             {scoped.length > products.length && <p className="mt-6"><Link href="/lists#databases" className={ghost}>Browse every ready-made list</Link></p>}
           </>

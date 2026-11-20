@@ -120,6 +120,27 @@ export const TAXONOMY: TaxGroup[] = [
       up("international-business-databases", "International Business Databases", "Outside the United States", "Business databases outside the United States. Our data is United States only today; other countries are added only when they can be sourced lawfully."),
     ],
   },
+  {
+    slug: "business-email-lists", name: "Business Email Lists", menuName: "Business Email Lists", icon: "mail", status: "available",
+    short: "Verified business email databases by country and industry.",
+    blurb: "Ready-made business email databases. Each one is checked with in-house SMTP tests and re-verified every 60 days, with a masked sample on the page before you pay.",
+    children: [
+      live("by-country", "Business Emails by Country", "A whole country", "Business email databases that cover a whole country."),
+      live("by-industry", "Business Emails by Industry", "One industry", "Business email databases scoped to a single industry."),
+    ],
+  },
+  {
+    slug: "consumer-email-lists", name: "Consumer Email Lists", menuName: "Consumer Email Lists", icon: "mail", status: "upcoming", compliance: "consumer",
+    short: "Consumer email databases by country.",
+    blurb: "Consumer data needs a lawful basis and consent rules that differ by country. Lists that can be sold lawfully appear here as they are cleared.",
+    children: [],
+  },
+  {
+    slug: "healthcare-lists", name: "Healthcare Lists", menuName: "Healthcare Lists", icon: "building", status: "available",
+    short: "Dentists, doctors, nurses and other care providers.",
+    blurb: "Email databases of healthcare businesses and professionals. Open a list to see its masked sample, fields and packages.",
+    children: [],
+  },
 ];
 
 export const getGroup = (slug: string, tax: TaxGroup[] = TAXONOMY) => tax.find((g) => g.slug === slug);

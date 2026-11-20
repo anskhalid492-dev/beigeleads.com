@@ -52,7 +52,7 @@ describe("taxonomy store (local D1)", () => {
     expect(await importBuiltIn(db)).toBe(0);
     const { rows } = await loadTaxonomyAdmin(db);
     const tree = buildTree(rows);
-    expect(tree).toHaveLength(8);
+    expect(tree).toHaveLength(11);
     expect(tree[0].slug).toBe("email-lists");
     expect(tree[0].children.find((c) => c.slug === "b2c-email-lists")?.status).toBe("upcoming");
     expect(taxonomyPaths(tree)).toContain("/lists/email-lists/b2b-email-lists");
