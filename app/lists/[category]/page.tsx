@@ -5,6 +5,7 @@ import { getCategory, getCountries, getProduct } from "@/lib/catalog";
 import { ProductPageView, productMetadata } from "@/components/product/product-page";
 import { getDb } from "@/lib/db";
 import { IndustryPage } from "@/components/category/pages";
+import { ImportedCategoryPage } from "@/components/category/imported-page";
 import { GeoShopPage } from "@/components/category/geo-shop";
 import { countryFromFlat, geoShopMetadata } from "@/lib/geo-shop";
 import { TaxonomyPage } from "@/components/lists/taxonomy-page";
@@ -23,10 +24,10 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
   const tax = await resolveTax(category);
   if (tax) return taxMetadata(tax);
   const c = getCategory(category);
-  if (!c || c.imported) return {};
+  if (!c) return {};
   return {
-    title: `${c.name} contact lists`,
-    description: `${c.description} See a masked sample first, then pay once and download the file.`,
+    title: c.imported ? `${c.name} Lists` : `${c.name} contact lists`,
+    description: c.imported ? `Ready-made ${c.name.toLowerCase()} lists. See a masked sample first, then pay once and download the file.` : `${c.description} See a masked sample first, then pay once and download the file.`,
     alternates: { canonical: `/lists/${c.slug}` },
   };
 }
@@ -40,7 +41,12 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
   const tax = await resolveTax(category);
   if (tax) return <TaxonomyPage {...tax} products={(await loadListsData()).products} industries={taxIndustries()} />;
   const c = getCategory(category);
-  if (!c || c.imported) notFound(); // imported categories get their own pages in a later phase
+  if (!c) notFound();
+  if (c.imported) {
+    const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug);
+    if (!rows.length) notFound();
+    return <ImportedCategoryPage c={c} products={rows} />;
+  }
 
   const countries = getCountries();
 

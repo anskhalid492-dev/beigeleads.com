@@ -45,11 +45,19 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
   }
   for (const c of tree) { c.regions.sort((a, b) => a.name.localeCompare(b.name)); c.cities.sort((a, b) => a.name.localeCompare(b.name)); }
 
+  // Imported industries and countries (section 91): only those that have at least one published product.
+  const extraInd = new Map<string, { slug: string; name: string; blurb: string; hints: string[] }>();
+  const extraCty = new Map<string, { slug: string; name: string; code: string }>();
+  for (const p of products) {
+    if (!cats.some((c) => c.slug === p.categorySlug) && !extraInd.has(p.categorySlug)) extraInd.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, hints: [p.categoryName] });
+    if (!countries.some((c) => c.slug === p.countrySlug) && !extraCty.has(p.countrySlug)) extraCty.set(p.countrySlug, { slug: p.countrySlug, name: p.countryName, code: p.countryCode });
+  }
+  const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
   const subs = await loadSubindustries(db);
   return {
     products, tree,
-    industries: cats.map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })),
-    countries: countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code })),
+    industries: [...cats.map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })), ...[...extraInd.values()].sort(byName)],
+    countries: [...countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code })), ...[...extraCty.values()].sort(byName)],
     niches: subs.rows.map((s) => ({ category: s.categorySlug, categoryName: catName.get(s.categorySlug) ?? "", name: s.name })),
   };
 }

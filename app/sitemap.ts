@@ -10,6 +10,7 @@ import { publishedSitemap } from "@/lib/blog/posts";
 import { excludedSitemapPaths } from "@/lib/seo/sitemap";
 import { SITE_URL } from "@/lib/site";
 import { getCategories, getProducts } from "@/lib/catalog";
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { solutions } from "@/lib/solutions";
 import { articleHref } from "@/lib/help/data";
 import { loadHelp } from "@/lib/help/store";
@@ -25,6 +26,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let authors: MetadataRoute.Sitemap = [];
   try { blog = (await publishedSitemap(getCloudflareContext().env)).filter((p) => !p.noindex).map((p) => ({ url: `${SITE_URL}${KINDS[asKind(p.kind)].pub}/${p.slug}`, lastModified: p.updatedAt })); } catch { /* blog not set up yet */ }
   try { authors = (await authorSitemap(getCloudflareContext().env)).map((a) => ({ url: `${SITE_URL}/blog/author/${a.slug}`, lastModified: a.updatedAt })); } catch { /* authors not set up yet */ }
+  await hydrateCatalog(getCloudflareContext().env);
+  const importedCats = [...new Set(getProducts().filter((p) => p.imported).map((p) => p.categorySlug))];
+  const importedCountryPaths = [...new Set(getProducts().filter((p) => p.imported).map((p) => `/lists/${p.categorySlug}/${p.countrySlug}`))];
   const excluded = await excludedSitemapPaths(getCloudflareContext().env);
   const geoPaths = await geoSitemapPaths(getDbFromEnv(getCloudflareContext().env));
   const help = await loadHelp(getCloudflareContext().env);
@@ -41,6 +45,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/` },
     { url: `${SITE_URL}/lists` },
     ...getCategories().map((c) => ({ url: `${SITE_URL}/lists/${c.slug}` })),
+    ...importedCats.map((c) => ({ url: `${SITE_URL}/lists/${c}` })),
+    ...importedCountryPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     ...taxonomyPaths(tax).map((p) => ({ url: `${SITE_URL}${p}` })),
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     { url: `${SITE_URL}/partners` },
