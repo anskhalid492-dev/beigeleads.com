@@ -98,7 +98,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "industry-databases", name: "Industry Databases", menuName: "Industry Lists", icon: "building", status: "available",
     short: "Dentists, restaurants and more.",
-    blurb: "Pick the type of business you sell to. Industries with a ready-made list link straight to it; the others are open for custom requests.",
+    blurb: "Pick the type of business you sell to. Industries with a ready-made list link straight to it. For any other, request a custom list.",
     // Industries that have a real product come from the catalog (see groupChildren); these are the ones without one yet.
     children: [
       up("healthcare", "Healthcare", "Clinics and care providers", "Healthcare businesses and providers."),

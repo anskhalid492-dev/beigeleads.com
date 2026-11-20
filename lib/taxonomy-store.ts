@@ -28,6 +28,24 @@ export function buildTree(rows: Row[]): TaxGroup[] {
   return tops.map((g) => ({ ...toNode(g), menuName: g.menuName || g.name, icon: (ICONS.includes(g.icon as TaxIcon) ? g.icon : "mail") as TaxIcon, children: rows.filter((r) => r.parentSlug === g.slug).sort(order).map(toNode) }));
 }
 
+/** Wording the owner removed (Nov 2026): categories are never described as "not on sale". Old copies of it can still sit in D1 from an earlier import. */
+const STALE = /not on sale|open for custom requests|stand-alone [^.]*not on sale|we do not sell|do not sell|not available yet/i;
+const FALLBACK_BLURB = "Browse the ready-made databases below, or request a custom list built around your prospects.";
+
+/** Replaces stale wording in stored text with the built-in text of the same category (or a neutral line). Pure. */
+export function freshenStaleText(tree: TaxGroup[], builtin: TaxGroup[] = TAXONOMY): TaxGroup[] {
+  const fix = <T extends { slug: string; short: string; blurb: string; content?: string }>(n: T, ref: { short: string; blurb: string } | undefined): T => ({
+    ...n,
+    short: STALE.test(n.short) ? (ref?.short && !STALE.test(ref.short) ? ref.short : "") : n.short,
+    blurb: STALE.test(n.blurb) ? (ref?.blurb && !STALE.test(ref.blurb) ? ref.blurb : FALLBACK_BLURB) : n.blurb,
+    ...(n.content !== undefined ? { content: STALE.test(n.content) ? "" : n.content } : {}),
+  });
+  return tree.map((g) => {
+    const bg = builtin.find((x) => x.slug === g.slug);
+    return { ...fix(g, bg), children: g.children.map((c) => fix(c, bg?.children.find((x) => x.slug === c.slug))) };
+  });
+}
+
 /** Public tree: published only (menu visibility is applied by the menu, pages still render). Never throws. */
 export async function loadTaxonomy(env: { DB: D1Database; CACHE: KVNamespace }, db: Db): Promise<TaxGroup[]> {
   try {
@@ -39,7 +57,7 @@ export async function loadTaxonomy(env: { DB: D1Database; CACHE: KVNamespace }, 
     const rows = await db.select().from(schema.taxonomyNodes).limit(500);
     if (rows.length > 0) {
       const known = new Set(rows.filter((r) => r.parentSlug === "").map((r) => r.slug));
-      out = buildTree(rows).filter((g) => g.published).map((g) => ({ ...g, children: g.children.filter((c) => c.published) }));
+      out = freshenStaleText(buildTree(rows).filter((g) => g.published).map((g) => ({ ...g, children: g.children.filter((c) => c.published) })));
       // Built-in groups the database has no row for (added to the code after the admin import) stay available, so the menu and their pages never go missing.
       out = [...out, ...TAXONOMY.filter((g) => !known.has(g.slug))];
     }

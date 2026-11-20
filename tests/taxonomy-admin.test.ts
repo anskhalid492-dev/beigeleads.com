@@ -90,3 +90,23 @@ describe("taxonomy store (local D1)", () => {
     expect(await deleteNode(db, child.id)).toBe(true);
   });
 });
+
+import { freshenStaleText } from "@/lib/taxonomy-store";
+import { TAXONOMY as BUILTIN } from "@/lib/taxonomy";
+
+describe("stale 'not on sale' wording from an old import", () => {
+  it("replaces it with the built-in text and leaves good text alone", () => {
+    const stale = "Phone is one of the fields in our ready-made business lists. Stand-alone phone lists are not on sale yet, so these categories are open for custom requests.";
+    const tree = BUILTIN.map((g) => (g.slug === "phone-number-lists" ? { ...g, blurb: stale, children: g.children.map((c, i) => (i === 0 ? { ...c, short: "Not on sale yet" } : c)) } : { ...g }));
+    const out = freshenStaleText(tree);
+    const phone = out.find((g) => g.slug === "phone-number-lists")!;
+    expect(phone.blurb).not.toMatch(/not on sale|open for custom/i);
+    expect(phone.blurb).toBe(BUILTIN.find((g) => g.slug === "phone-number-lists")!.blurb);
+    expect(phone.children[0].short).not.toMatch(/not on sale/i);
+    expect(out.find((g) => g.slug === "email-lists")?.blurb ?? "").toBe(BUILTIN.find((g) => g.slug === "email-lists")?.blurb ?? "");
+  });
+  it("no built-in text uses the removed wording", () => {
+    const all = BUILTIN.flatMap((g) => [g.blurb, g.short, ...g.children.flatMap((c) => [c.blurb, c.short])]);
+    for (const t of all) expect(t).not.toMatch(/not on sale|open for custom requests|we do not sell/i);
+  });
+});
