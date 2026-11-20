@@ -1,3 +1,4 @@
+import { questionHeading } from "@/lib/glossary/clean";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, Lightbulb } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -26,7 +27,7 @@ export function TermPage({ v, preview = false }: { v: TermView; preview?: boolea
       <Breadcrumbs wide items={[{ name: "Glossary", href: "/glossary" }, { name: e.term, href: `/glossary/${e.slug}` }]} />
       <header className={`${wrap} pb-10 pt-2 sm:pb-12`}>
         {v.category && <Link href={`/glossary?category=${v.category.slug}`} className="inline-flex items-center gap-2 rounded-full bg-forest-100 px-3 py-1 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50"><BookOpen className="size-3.5" aria-hidden />{v.category.name}</Link>}
-        <h1 className="display mt-4 max-w-4xl text-[3rem] leading-[0.95] text-forest-900 sm:text-[4.6rem]">{e.term}</h1>
+        <h1 className="display mt-4 max-w-4xl text-[3rem] leading-[0.95] text-forest-900 sm:text-[4.6rem]">{questionHeading(e.term)}</h1>
         <p className="mt-5 max-w-[46rem] border-l-4 border-forest-500 pl-5 text-[1.3rem] leading-snug text-forest-900 sm:text-[1.5rem]">{e.shortDefinition}</p>
       </header>
 

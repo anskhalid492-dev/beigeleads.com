@@ -4,7 +4,7 @@ import { getProduct, getProducts, type Product } from "@/lib/catalog";
 import type { getDbFromEnv } from "@/lib/db";
 import { schema } from "@/lib/db";
 import { live } from "@/lib/blog/posts";
-import { autoMeta, autoTitle, MIN_PUBLISH } from "./clean";
+import { autoMeta, autoTitle, MIN_PUBLISH, startsWithQuestion } from "./clean";
 import { getCategories, publishedCards, resolveRelated, rowEntry, type Card, type Term } from "./store";
 import type { GCategory } from "./categories";
 
@@ -14,7 +14,7 @@ export type TermView = { entry: ReturnType<typeof rowEntry>; id: number; categor
 
 /** A page is indexable only when it carries real substance. Thin pages stay noindex. */
 export const isThin = (t: { shortDefinition: string; content: string }) => t.shortDefinition.length < MIN_PUBLISH.short || t.content.length < MIN_PUBLISH.content;
-export const seoOf = (t: Term) => ({ title: t.seoTitle || autoTitle(t.term), description: t.metaDescription || autoMeta(t.shortDefinition) });
+export const seoOf = (t: Term) => ({ title: t.seoTitle && startsWithQuestion(t.seoTitle) ? t.seoTitle : autoTitle(t.term), description: t.metaDescription || autoMeta(t.shortDefinition) });
 
 export async function guideLinks(db: Db, refs: string[]): Promise<GuideLink[]> {
   const wanted = refs.map((r) => r.trim().replace(/^\/?(guides|blog)\//, "").replace(/^\/+|\/+$/g, "")).filter(Boolean).slice(0, 12);

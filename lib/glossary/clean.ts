@@ -124,5 +124,17 @@ export function validate(e: Entry, o: { badStatus?: string | null; slugWasGiven?
 }
 
 /** Search-result text used when the editor leaves the SEO fields empty. */
-export const autoTitle = (term: string) => { const t = `What Is ${term}? Definition and Examples`; return t.length <= 60 ? t : `${term}: Definition`.slice(0, 60); };
+const WHO = /\b(maker|representative|broker|reseller|owner|founder|manager|executive|officer|recruiter|sdr|bdr|champion|buyer|prospect|influencer|stakeholder|user)$/i;
+const HOW = /\b(verification|enrichment|deduplication|segmentation|scoring|prospecting|outreach|warm-?up|validation|scraping|cleansing|hygiene|targeting|personalization|personalisation|generation|nurturing|qualification|appending|profiling|matching)$/i;
+const art = (t: string) => (/^(an?|the)\s/i.test(t) ? "" : /^[aeiou]/i.test(t) ? "an " : "a ");
+const plural = (t: string) => { const w = t.split(/\s+/).pop() ?? ""; return w.length > 3 && /s$/i.test(w) && !/(ss|us|is)$/i.test(w); };
+/** Every glossary page opens with a question: Who (roles), How (processes) or What (everything else). */
+export function questionHeading(term: string): string {
+  const t = term.trim();
+  if (WHO.test(t)) return `Who Is ${art(t)}${t}?`;
+  if (HOW.test(t)) return `How Does ${t} Work?`;
+  return plural(t) ? `What Are ${t}?` : `What Is ${t}?`;
+}
+export const startsWithQuestion = (s: string) => /^(what|how|who|why|when)\b/i.test(s.trim());
+export const autoTitle = (term: string) => { const t = `${questionHeading(term).replace(/\?$/, "")}? Definition and Examples`; return t.length <= 60 ? t : questionHeading(term).slice(0, 60); };
 export const autoMeta = (short: string) => (short.length <= 158 ? short : short.slice(0, 157).replace(/\s+\S*$/, "") + "…");
