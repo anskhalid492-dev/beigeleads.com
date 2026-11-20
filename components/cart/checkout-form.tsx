@@ -5,6 +5,7 @@ import { ApiForm } from "@/components/forms/api-form";
 import { Button } from "@/components/ui/button";
 import { useCart, useMounted } from "@/lib/cart/client";
 import type { CartPricing } from "@/lib/cart/model";
+import { readPartner, writePartner } from "@/lib/cart/partner";
 import { formatUsd } from "@/lib/catalog";
 
 type Option = { value: string; label: string };
@@ -21,6 +22,13 @@ export function CartCheckout({ options }: { options: Option[] }) {
   const [last, setLast] = useState<CartPricing | null>(null);
   const key = JSON.stringify([cart, applied]);
 
+  // A code applied in the cart carries over (same tab). The server checks it again.
+  useEffect(() => {
+    const saved = readPartner();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of sessionStorage after mount
+    if (saved) { setApplied(saved); setDraft(saved); }
+  }, []);
+
   useEffect(() => {
     if (!mounted || cart.length === 0) return;
     const ac = new AbortController();
@@ -29,7 +37,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
       .then((j) => {
         setResult({ key, pricing: j.pricing, error: false, discountError: j.discountError ?? "" });
         setLast(j.pricing);
-        if (applied) { if (j.discountError) { setCodeMsg(j.discountError); setApplied(null); } else setCodeMsg(`Partner code applied: ${j.pricing.discountPercent}% off.`); }
+        if (applied) { if (j.discountError) { setCodeMsg(j.discountError); setApplied(null); writePartner(null); } else { setCodeMsg(`Partner code applied: ${j.pricing.discountPercent}% off.`); writePartner(applied); } }
       })
       .catch((e: Error) => { if (e.name !== "AbortError") setResult({ key, pricing: null, error: true, discountError: "" }); if (e.message === "limit") { setCodeMsg("Too many code attempts. Try again in an hour."); setApplied(null); } });
     return () => ac.abort();
@@ -69,7 +77,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
         <p className="mt-4 flex items-end justify-between border-t border-sand-200 pt-4"><span className="font-bold text-forest-900">Total</span><span className="display text-4xl leading-none text-forest-900">{formatUsd(pricing.totalCents)}</span></p>
         <p className="mt-2 text-xs"><Link href="/cart" className="underline">Change your cart</Link></p>
       </section>
-      <PartnerCode applied={applied} draft={draft} setDraft={setDraft} msg={codeMsg} onApply={() => { setCodeMsg(""); setApplied({ code: draft.code.trim(), email: draft.email.trim().toLowerCase() }); }} onRemove={() => { setApplied(null); setCodeMsg(""); }} />
+      <PartnerCode applied={applied} draft={draft} setDraft={setDraft} msg={codeMsg} onApply={() => { setCodeMsg(""); setApplied({ code: draft.code.trim(), email: draft.email.trim().toLowerCase() }); }} onRemove={() => { setApplied(null); setCodeMsg(""); writePartner(null); }} />
       <ApiForm
         key={applied?.code ?? "none"}
         endpoint="/api/checkout"

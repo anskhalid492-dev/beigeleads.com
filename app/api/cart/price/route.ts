@@ -36,5 +36,5 @@ export async function POST(req: Request) {
   }
   const pricing = priceCart(items, { checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount }, (c) => (productSamples[c]?.length ?? 0) > 0);
   const kept = new Set(pricing.lines.map((l) => l.slug));
-  return json(200, { ok: true, pricing, discountError, suggestions: suggestFor(items.filter((i) => kept.has(i.slug))) });
+  return json(200, { ok: true, pricing, discountError, suggestions: suggestFor(items.filter((i) => kept.has(i.slug)), items.length === 0 ? 4 : 3) });
 }

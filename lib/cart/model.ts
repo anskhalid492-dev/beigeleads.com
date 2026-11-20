@@ -81,23 +81,43 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
   return { lines, subtotalCents, discountPercent: pct, discountCents: subtotalCents - totalCents, discountCode: pct > 0 ? (ctx.discount?.code ?? "") : "", totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length > 0 && lines.every((l) => l.purchasable), dropped, placeholderPrices: lines.some((l) => l.placeholder) };
 }
 
-export type Suggestion = { slug: string; name: string; categoryName: string; coverage: string; packageName: string; records: number; priceCents: number; reason: string };
+export type Suggestion = {
+  slug: string; name: string; categoryName: string; categorySlug: string; coverage: string; countryCode: string;
+  packageName: string; records: number; priceCents: number;
+  /** total records of the list, only when it is a real, verified figure (never a placeholder) */
+  recordCount: number | null;
+  /** price of the smallest package offered */
+  startPriceCents: number;
+  reason: string;
+};
 
-/** Complementary REAL products: not already in the cart, same country first, then other niches. Never more than `limit`. */
+/** A product that is really on sale: live and not running on placeholder figures. */
+export const isRealProduct = (p: Product) => p.status === "live" && !p.placeholderData;
+
+/**
+ * Complementary REAL products (live, no placeholder data), never ones already in the cart. Same country first, then other niches.
+ * Placeholder lists are never suggested: a suggestion is an invitation to buy.
+ */
 export function suggestFor(items: CartItem[], limit = 3): Suggestion[] {
   const inCart = new Set(items.map((i) => i.slug));
   const owned = items.map((i) => getProduct(i.slug)).filter((p): p is Product => !!p);
   const countries = new Set(owned.map((p) => p.countrySlug));
   const cats = new Set(owned.map((p) => p.categorySlug));
   return getProducts()
-    .filter((p) => !inCart.has(p.slug) && offeredPackages(p).length > 0)
+    .filter((p) => !inCart.has(p.slug) && isRealProduct(p) && offeredPackages(p).length > 0)
     .map((p) => {
-      const pk = offeredPackages(p).find((x) => x.highlighted) ?? offeredPackages(p)[0];
+      const pks = offeredPackages(p);
+      const pk = pks.find((x) => x.highlighted) ?? pks[0];
       const sameCountry = countries.has(p.countrySlug);
       const sameCat = cats.has(p.categorySlug);
+      const k = getCountry(p.countrySlug);
+      const reason = owned.length === 0 ? "" : sameCat ? "Same industry, another market" : sameCountry ? `Same market (${k?.name ?? ""}), another audience` : "Another market you can reach";
       return {
-        score: Number(sameCountry) * 2 + Number(!sameCat),
-        s: { slug: p.slug, name: p.name, categoryName: getCategory(p.categorySlug)?.name ?? "", coverage: getCountry(p.countrySlug)?.name ?? "", packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, reason: sameCountry ? `Same coverage as your cart (${getCountry(p.countrySlug)?.name ?? ""})` : "Another audience you can reach" },
+        score: Number(sameCat) * 3 + Number(sameCountry) * 2,
+        s: {
+          slug: p.slug, name: p.name, categoryName: getCategory(p.categorySlug)?.name ?? "", categorySlug: p.categorySlug, coverage: k?.name ?? "", countryCode: k?.code ?? "",
+          packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, recordCount: p.recordCount, startPriceCents: Math.min(...pks.map((x) => x.priceUsdCents)), reason,
+        },
       };
     })
     .sort((a, b) => b.score - a.score)

@@ -53,12 +53,22 @@ describe("server pricing", () => {
 describe("cross-sell", () => {
   it("suggests only real products that are not in the cart", () => {
     const s = suggestFor([{ slug: a.slug, pkg: a.packages[0].name }]);
-    expect(s.length).toBeGreaterThan(0);
     for (const x of s) {
       expect(x.slug).not.toBe(a.slug);
       const real = P.find((p) => p.slug === x.slug)!;
       expect(real.packages.some((pk) => pk.name === x.packageName && pk.priceUsdCents === x.priceCents)).toBe(true);
     }
+  });
+  it("never suggests placeholder or draft products, and carries only real figures", () => {
+    for (const x of suggestFor([])) {
+      const real = P.find((p) => p.slug === x.slug)!;
+      expect(real.status).toBe("live");
+      expect(real.placeholderData).toBe(false);
+      expect(x.recordCount).toBe(real.recordCount);
+      expect(x.startPriceCents).toBeLessThanOrEqual(x.priceCents);
+    }
+    expect(suggestFor([]).length).toBeLessThanOrEqual(3);
+    expect(suggestFor([], 4).length).toBeLessThanOrEqual(4);
   });
   it("suggests nothing when everything is already in the cart", () => {
     expect(suggestFor(P.map((p) => ({ slug: p.slug, pkg: p.packages[0].name })))).toEqual([]);
