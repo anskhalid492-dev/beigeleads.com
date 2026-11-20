@@ -189,7 +189,7 @@ export function buildProduct(src: SourceProduct, reserved: ReadonlySet<string> =
   const geo = region ? `${region}, United States` : country.code === "WW" ? "" : country.name;
   const description = sentence(`${name}: a ready-made list of ${where}${geo ? ` for ${geo}` : ""}.${recordCount ? ` The largest package holds ${recordCount.toLocaleString("en-US")} records.` : ""} You pay once and receive the file as CSV, Excel or TXT.`);
   return {
-    sourceId: src.wpId, slug, name, title: name, description, originalDescription: src.description, shortDescription: src.shortDescription,
+    sourceId: src.wpId, slug, name, title: name, description, originalDescription: src.description.slice(0, 19000), shortDescription: src.shortDescription,
     categorySlug: slugify(info.categoryName), categoryName: info.categoryName, channel: info.channel, group: info.group,
     jobTitle: info.group === "job-title" ? name.replace(/\b(email|mailing|database|list|leads)\b.*$/i, "").trim() : "",
     countrySlug: country.slug, countryCode: country.code, countryName: country.name, region, city: "",

@@ -21,7 +21,7 @@ const refresh = async () => { await clearImportedCache(env()); revalidatePath("/
 export async function planAction(rowsIn: unknown, pol: unknown): Promise<{ ok: boolean; message?: string; items?: PlanItem[]; ready?: boolean }> {
   if (!(await admin())) return { ok: false, message: "Your session ended. Sign in again." };
   const r = rows.safeParse(rowsIn), p = policy.safeParse(pol);
-  if (!r.success || !p.success) return { ok: false, message: "The batch was not valid." };
+  if (!r.success || !p.success) return { ok: false, message: `The batch was not valid: ${r.success ? "option" : r.error.issues[0].path.join(".") + " " + r.error.issues[0].message}.` };
   if (!(await importReady(db()))) return { ok: false, ready: false, message: NOT_READY };
   const { items } = await planBatch(db(), r.data, p.data as DupPolicy, reservedSlugs());
   return { ok: true, ready: true, items };
@@ -38,7 +38,7 @@ export async function startImportAction(filename: string, total: number): Promis
 export async function importBatchAction(importId: number, rowsIn: unknown, pol: unknown): Promise<{ ok: boolean; message?: string; created?: number; updated?: number; skipped?: number; failed?: number; errors?: { sourceId: string; message: string }[] }> {
   const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
   const r = rows.safeParse(rowsIn), p = policy.safeParse(pol);
-  if (!r.success || !p.success || !Number.isInteger(importId)) return { ok: false, message: "The batch was not valid." };
+  if (!r.success || !p.success || !Number.isInteger(importId)) return { ok: false, message: `The batch was not valid: ${r.success ? "option" : r.error.issues[0].path.join(".") + " " + r.error.issues[0].message}.` };
   try {
     const res = await applyBatch(db(), importId, r.data, p.data as DupPolicy, reservedSlugs(), a.email);
     return { ok: true, created: res.created, updated: res.updated, skipped: res.skipped, failed: res.failed, errors: res.errors };
