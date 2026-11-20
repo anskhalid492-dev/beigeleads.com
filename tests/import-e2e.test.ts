@@ -12,6 +12,8 @@ import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
 import { createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
+import { maskRows } from "@/lib/product-samples";
+import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { getStaticProducts } from "@/lib/catalog";
 import { applyBatch, finishImport, listProducts, planBatch, rollbackImport, setStatus, startImport, type ImportRow } from "@/lib/import/store";
 import { reservedSlugs } from "@/lib/import/reserved";
@@ -121,6 +123,20 @@ describe("catalog import", () => {
     const n = await setLastUpdated(db, [c.id!, d1.id!, d2.id!], "2026-11-20");
     expect(n).toBe(3); expect((await getProductRow(db, d2.id!))!.lastUpdated).toBe("2026-11-20");
     await expect(setLastUpdated(db, [c.id!], "yesterday")).rejects.toThrow();
+  });
+  it("stores only MASKED sample rows and shows them on the hydrated product; unknown slugs are reported", async () => {
+    const db = getDbFromEnv(env);
+    const pub = (await listProducts(db, { status: "published" }, 1)).rows.find((r) => r.origin !== "builtin")!;
+    const rows = maskRows([{ business: "Acme Dental", email: "owner@acme.com", phone: "(205) 555-0142", address: "12 Main St", city: "Mobile", website: "https://acme.com/x" }]);
+    expect(await saveSamples(db, pub.id, rows)).toBe(true);
+    const stored = (await getProductRow(db, pub.id))!.sampleJson!;
+    expect(stored).not.toContain("owner@"); expect(stored).not.toContain("0142"); expect(stored).toContain("o***@acme.com");
+    await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
+    expect(getProduct(pub.slug)!.samples?.[0]).toMatchObject({ business: "Acme Dental", phone: "(205) 555-****", website: "acme.com" });
+    const r = await saveSamplesBySlug(db, [{ slug: pub.slug, rows: [] }, { slug: "no-such-product", rows }]);
+    expect(r).toEqual({ saved: 1, unknown: ["no-such-product"] });
+    await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
+    expect(getProduct(pub.slug)!.samples).toBeUndefined();
   });
   it("rollback removes only unpublished, never-ordered imports", async () => {
     const db = getDbFromEnv(env);

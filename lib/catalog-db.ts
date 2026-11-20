@@ -3,6 +3,7 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { and, eq, ne } from "drizzle-orm";
+import { cleanStored, type SampleRowData } from "@/lib/product-samples";
 import { registerImported, type Category, type Country, type Product } from "@/lib/catalog";
 
 const KEY = "catalog:imp:v2";
@@ -17,7 +18,7 @@ export type PubProduct = {
   seoTitle?: string; metaDescription?: string;
   // Section 96 (migration 0036). Missing on payloads read before the migration.
   dataFields?: string[]; fileFormats?: string; coverage?: string; lastUpdated?: string; placeholder?: boolean; forSale?: boolean; accuracyPct?: number | null;
-  scope?: "country" | "city" | null; citySlug?: string; samples?: { business: string; email: string; phone: string; city?: string }[];
+  scope?: "country" | "city" | null; citySlug?: string; samples?: SampleRowData[];
 };
 type Payload = { products: PubProduct[]; hidden: string[] };
 
@@ -51,7 +52,7 @@ async function read(env: CloudflareEnv): Promise<Payload | null> {
       const parse = <T,>(v: string | null, d: T): T => { try { return v ? (JSON.parse(v) as T) : d; } catch { return d; } };
       return {
         ...clean(r), dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
-        accuracyPct: r.accuracyPct, scope: r.scope === "city" || r.scope === "country" ? r.scope : null, citySlug: r.scope === "city" ? r.city ?? "" : "", samples: parse(r.sampleJson, []),
+        accuracyPct: r.accuracyPct, scope: r.scope === "city" || r.scope === "country" ? r.scope : null, citySlug: r.scope === "city" ? r.city ?? "" : "", samples: cleanStored(parse<unknown>(r.sampleJson, [])),
       };
     });
     const hidden = (await db.select({ slug: schema.catalogProducts.slug }).from(schema.catalogProducts).where(and(eq(schema.catalogProducts.origin, "builtin"), ne(schema.catalogProducts.status, "published")))).map((r) => r.slug);

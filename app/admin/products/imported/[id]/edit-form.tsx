@@ -1,15 +1,18 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { duplicateProductAction, saveProductAction } from "../../import/actions";
+import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
+import { maskRows, type SampleRowData } from "@/lib/product-samples";
+import { duplicateProductAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
 type Init = { recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
 
-export function EditForm({ id, origin, status, slug, restricted, flags, initial }: { origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
+export function EditForm({ samples, id, origin, status, slug, restricted, flags, initial }: { samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
   const [f, setF] = useState(initial); const [price, setPrice] = useState(initial.packages.map((k) => (k.priceUsdCents / 100).toString()));
-  const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter();
+  const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter(); const [csv, setCsv] = useState(""); const [saved, setSaved] = useState(samples);
+  const preview = csv.trim() ? maskRows(tableFromGrid(parseCsv(csv)).rows) : [];
   const set = <K extends keyof Init>(k: K, v: Init[K]) => setF((x) => ({ ...x, [k]: v }));
   const setPk = (i: number, p: Partial<Pk>) => setF((x) => ({ ...x, packages: x.packages.map((k, j) => (j === i ? { ...k, ...p } : k)) }));
 
@@ -21,6 +24,11 @@ export function EditForm({ id, origin, status, slug, restricted, flags, initial 
       const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: f.dataFields.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean), packages });
       setMsg(r.ok ? "Saved. A published product shows the change within about a minute." : r.message);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
+    setBusy(false);
+  }
+  async function saveSample(remove = false) {
+    setBusy(true); setMsg("Saving sample...");
+    try { const r = await saveSampleAction(id, remove ? "" : csv); setMsg(r.message); if (r.ok) { setSaved(remove ? [] : preview); setCsv(""); } } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
   }
   async function copy() {
@@ -59,6 +67,15 @@ export function EditForm({ id, origin, status, slug, restricted, flags, initial 
             <label className="flex items-center gap-2 py-2"><input type="checkbox" checked={k.highlighted} onChange={(e) => setPk(i, { highlighted: e.target.checked })} /> Recommended</label>
           </div>))}</div>
         {status === "published" && <p className="mt-3 text-xs">This product is published: every package needs a price above 0.</p>}
+      </fieldset>
+      <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
+        <legend className="px-1 font-semibold">Real sample rows (shown masked)</legend>
+        <p className="text-xs">Paste up to 10 rows from the real file as CSV with a header line (business, address, city, phone, email, website). Emails, phone numbers and house numbers are masked before anything is saved; the originals are never stored. With no sample, the product page shows a request-a-free-sample panel instead of a table.</p>
+        {saved.length > 0 && <p className="mt-2 text-xs font-semibold">Saved sample: {saved.length} masked rows ({saved.slice(0, 3).map((r) => r.business).join(", ")}{saved.length > 3 ? "..." : ""}).</p>}
+        <textarea className={`${box} mt-2 h-28 font-mono text-xs`} value={csv} onChange={(e) => setCsv(e.target.value)} placeholder={"business,address,city,phone,email,website\nAcme Dental,123 Main St,Mobile,(205) 555-0142,owner@acme.com,https://acme.com"} aria-label="Sample rows as CSV" />
+        {preview.length > 0 && <div className="mt-2 overflow-x-auto rounded-lg border border-sand-200"><table className="w-full text-left text-xs"><thead className="bg-sand-100"><tr><th className="p-2">Business</th><th>Address</th><th>City</th><th>Phone</th><th>Email</th><th>Website</th></tr></thead><tbody>{preview.map((r) => <tr key={r.business} className="border-t border-sand-200"><td className="p-2">{r.business}</td><td>{r.address}</td><td>{r.city}</td><td className="font-mono">{r.phone}</td><td className="font-mono">{r.email}</td><td>{r.website}</td></tr>)}</tbody></table><p className="p-2 text-xs">This is exactly what visitors will see ({preview.length} rows).</p></div>}
+        {csv.trim() && preview.length === 0 && <p className="mt-2 text-xs text-red-800">No usable rows yet: the first line must be a header with a business name column.</p>}
+        <div className="mt-2 flex gap-2"><button type="button" disabled={busy || !preview.length} onClick={() => saveSample(false)} className="rounded-full border border-forest-900 px-4 py-1.5 font-semibold disabled:opacity-40">Save masked sample</button>{saved.length > 0 && <button type="button" disabled={busy} onClick={() => saveSample(true)} className="underline">Remove saved sample</button>}</div>
       </fieldset>
       <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
         <legend className="px-1 font-semibold">Search results (optional)</legend>

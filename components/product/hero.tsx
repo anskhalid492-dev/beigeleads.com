@@ -9,6 +9,15 @@ import { fmtDate, fmtNum } from "./meta";
 import { withThe } from "@/lib/product-seo";
 
 function DbWindow({ product, rows }: { product: Product; rows: readonly ProductSampleRow[] }) {
+  if (!rows.length) {
+    return (
+      <div className="w-full overflow-hidden rounded-2xl border border-forest-700 bg-forest-900 p-8 text-sand-100 shadow-[0_30px_70px_-25px_rgba(15,42,29,0.7)]">
+        <p className="display text-4xl text-sand-50">See real rows before you pay.</p>
+        <p className="mt-3 max-w-md text-sand-200">Request a free sample of the {product.name}: a masked set of real records, with emails and phone numbers hidden.</p>
+        <Button asChild size="lg" className="mt-6"><Link href={`/sample?product=${product.slug}`}>Request a free sample</Link></Button>
+      </div>
+    );
+  }
   const file = `${product.slug.replace(/-us$/, "").replace(/-email-(list|database)$/, "")}-email-list`;
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-forest-700 bg-forest-900 shadow-[0_30px_70px_-25px_rgba(15,42,29,0.7)]">

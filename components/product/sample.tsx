@@ -17,7 +17,7 @@ const columns: { field: string; label: string; key: keyof ProductSampleRow }[] =
 const masked = new Set(["address", "phone", "email"]);
 
 export function ProductSample({ product, rows }: { product: Product; rows: readonly ProductSampleRow[] }) {
-  const cols = columns.filter((c) => product.fields.includes(c.field)); // only fields this list really has
+  const cols = columns.filter((c) => rows.some((r) => String(r[c.key] ?? "").trim() !== "")); // only columns the real sample rows actually have
   return (
     <section id="sample" className="scroll-mt-20 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -64,14 +64,13 @@ export function ProductSample({ product, rows }: { product: Product; rows: reado
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-sand-200 bg-forest-900 px-5 py-4 text-sm text-sand-100">
             <span className="flex items-center gap-2">
-              <Lock className="size-4" aria-hidden /> Contact details stay masked until you buy. The full file has every row, unmasked.
+              <Lock className="size-4" aria-hidden /> These are real rows from the list with emails, phone numbers and house numbers masked. The full file has every row, unmasked.
             </span>
             <span>
               {rows.length} of {fmtNum(product.recordCount) ?? "all"} records shown
             </span>
           </div>
         </div>
-        <p className="mt-3 text-sm">Layout preview with placeholder rows. These are not real businesses.</p>
       </div>
     </section>
   );

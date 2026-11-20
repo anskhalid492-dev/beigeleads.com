@@ -8,7 +8,7 @@ import { Block, SalesHero, Steps, UseCases, Why, WHY_BEIGE } from "@/components/
 import { DatabaseRow } from "@/components/category/parts";
 import { industryView, STANDARD_FIELDS } from "@/lib/category-view";
 import { formatUsd, getProduct, type Category } from "@/lib/catalog";
-import { sampleSheets } from "@/lib/sample-data";
+import { sheetRows } from "@/lib/real-sheet";
 import type { ShopProduct } from "@/lib/shop";
 
 const collection = (name: string, path: string, description: string) => ({ "@context": "https://schema.org", "@type": "CollectionPage", name, description, url: `https://beigeleads.com${path}` });
@@ -17,7 +17,7 @@ const collection = (name: string, path: string, description: string) => ({ "@con
 export function IndustryPage({ c, products, geo }: { c: Category; products: ShopProduct[]; geo: { name: string; regions: PlaceItem[]; cities: PlaceItem[] }[] }) {
   const main = products[0];
   const live = main?.status === "live";
-  const sheet = sampleSheets[c.slug];
+  const sheet = sheetRows(products.map((p) => p.slug));
   const path = `/lists/${c.slug}`;
   const places = ["Nationwide (United States)", ...geo.flatMap((g) => g.regions.map((r) => r.name))];
   const full = main ? getProduct(main.slug) : undefined;
@@ -50,7 +50,7 @@ export function IndustryPage({ c, products, geo }: { c: Category; products: Shop
         {full && !full.placeholderData && <ul className="mt-5 flex flex-wrap gap-2">{full.packages.map((k) => <li key={k.name} className="rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900">{k.name}: {k.records.toLocaleString("en-US")} records, {formatUsd(k.priceUsdCents)}</li>)}</ul>}
         {full?.placeholderData && <p className="mt-4 text-sm">Package sizes and prices appear here once this list goes on sale.</p>}
       </Block>
-      {sheet && <Block title="What's Inside the Data" lead="A masked example. Real files hold full contact details." tone="sand"><SampleTable rows={sheet.rows} /></Block>}
+      {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}
       <Block title={`About ${c.name} Email Lists`}><div className="max-w-[68ch] space-y-4 text-[1.05rem] leading-relaxed">{view.whatIs.map((x, i) => <p key={i}>{x}</p>)}</div></Block>
       <Block title={`Who Uses ${c.singular} Data`} tone="sand"><UseCases items={c.useCases.map((u) => [u.name, u.text] as const)} /></Block>
       <Block title="How to Choose"><Why items={view.choose} /></Block>

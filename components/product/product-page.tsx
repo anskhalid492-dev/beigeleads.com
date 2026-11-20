@@ -14,7 +14,6 @@ import { ProductHowItWorks } from "@/components/product/how-it-works";
 import { ProductQuality } from "@/components/product/quality";
 import { RelatedProducts } from "@/components/product/related";
 import { getCategory, getCities, getCountry, getProduct, getProductFaqs, getRelatedProducts } from "@/lib/catalog";
-import { productSamples } from "@/lib/sample-data";
 
 // One reusable template (served at /lists/<product-slug>) for every list. Nothing here is specific to one product: name, stats, fields,
 // sample, packages, use cases, FAQs and related lists all come from the catalog.
@@ -42,7 +41,7 @@ export function ProductPageView({ slug }: { slug: string }) {
   const k = getCountry(p.countrySlug);
   if (!c || !k) notFound();
 
-  const rows = productSamples[c.slug] ?? [];
+  const rows = p.samples ?? []; // real, masked rows entered by the owner; none = no table
   const forSale = p.status === "live";
 
   return (

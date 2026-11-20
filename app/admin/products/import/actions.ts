@@ -6,6 +6,9 @@ import { requireAdmin } from "@/lib/admin/require-admin";
 import { clearImportedCache } from "@/lib/catalog-db";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { reservedSlugs } from "@/lib/import/reserved";
+import { maskRows } from "@/lib/product-samples";
+import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
+import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
@@ -141,4 +144,28 @@ export async function bulkLastUpdatedAction(target: unknown, dateIn: unknown): P
     await audit(a.email, `Last updated set to ${date.data || "(empty)"} for ${n} product(s)`); await refresh();
     return { ok: true, message: `Last updated set to ${date.data || "empty"} on ${n} product(s). Published pages show it within about a minute.` };
   } catch (e) { return { ok: false, message: e instanceof Error ? e.message : "Could not save." }; }
+}
+
+/** Paste real rows from the list file (CSV with a header). They are MASKED here; the original emails and phone numbers are never stored. */
+export async function saveSampleAction(id: unknown, csv: unknown): Promise<{ ok: boolean; message: string; count?: number }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const i = z.number().int().safeParse(id), t = z.string().max(200_000).safeParse(csv);
+  if (!i.success || !t.success) return { ok: false, message: "Bad request." };
+  const rows = t.data.trim() ? maskRows(tableFromGrid(parseCsv(t.data)).rows) : [];
+  if (t.data.trim() && !rows.length) return { ok: false, message: "No usable rows. The first line must be a header with a business name column (business, name or company)." };
+  const ok = await saveSamples(db(), i.data, rows);
+  if (!ok) return { ok: false, message: "That product no longer exists." };
+  await audit(a.email, `Sample for product #${i.data}: ${rows.length} masked row(s)`); await refresh();
+  return { ok: true, count: rows.length, message: rows.length ? `Saved ${rows.length} masked rows.` : "Sample removed." };
+}
+
+const bulkSchema = z.array(z.object({ slug: z.string().max(160), rows: z.array(z.record(z.string(), z.string().max(400))).max(60) })).max(50);
+/** Bulk samples: groups of raw rows per product slug. Masked on the server. */
+export async function saveSamplesBulkAction(groupsIn: unknown): Promise<{ ok: boolean; message: string; saved?: number; unknown?: string[] }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const g = bulkSchema.safeParse(groupsIn);
+  if (!g.success) return { ok: false, message: "The batch was not valid." };
+  const r = await saveSamplesBySlug(db(), g.data.map((x) => ({ slug: x.slug, rows: maskRows(x.rows) })).filter((x) => x.rows.length));
+  await audit(a.email, `Bulk samples: ${r.saved} product(s) saved, ${r.unknown.length} unknown slug(s)`); await refresh();
+  return { ok: true, message: `${r.saved} saved.`, saved: r.saved, unknown: r.unknown };
 }

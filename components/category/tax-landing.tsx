@@ -9,7 +9,7 @@ import { SolutionFaq } from "@/components/solutions/sections";
 import { Block, Steps, UseCases, Why, WHY_BEIGE } from "@/components/category/blocks";
 import { DatabaseRow, StatusPanel, wrap } from "@/components/category/parts";
 import { fallbackCopy, GROUP_COPY, SHOP_STEPS } from "@/lib/category-copy";
-import { productSamples, sampleSheets } from "@/lib/sample-data";
+import { realSamples, sheetRows } from "@/lib/real-sheet";
 import { COMPLIANCE_NOTE, STATUS_LABEL, childHref, industryChildren, nodeFaqs, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 import type { ShopProduct } from "@/lib/shop";
 
@@ -46,8 +46,9 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
   const custom = `/custom-list?categoryText=${encodeURIComponent(title)}`;
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: group.name, href: base }, ...(child ? [{ name: child.name, href: `${base}/${child.slug}` }] : []), ...(country ? [{ name: country.name, href: path }] : [])];
 
-  const rows = (productSamples.business ?? []).slice(0, 5);
-  const sheet = sampleSheets[products[0]?.categorySlug ?? ""] ?? sampleSheets.dentists;
+  const slugs = products.map((p) => p.slug);
+  const rows = (realSamples(slugs)?.rows ?? []).slice(0, 5); // real, masked rows only
+  const sheet = sheetRows(slugs);
   const countries = [...new Map(products.map((p) => [p.countrySlug, p])).values()];
   const inds = [...new Map(products.filter((p) => p.scope !== "city" && p.categorySlug !== "business").map((p) => [p.categorySlug, p])).values()];
   const cities = products.filter((p) => p.scope === "city");
@@ -76,12 +77,12 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
             </div>
             <ul className="mt-6 space-y-2">{["Preview a masked sample first", "Pay once, no subscription", "CSV, Excel or TXT by email"].map((x) => <li key={x} className="flex items-center gap-2.5 font-semibold text-forest-900"><span className="grid size-5 place-items-center rounded-full bg-forest-100"><Check className="size-3" aria-hidden /></span>{x}</li>)}</ul>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-forest-700 bg-forest-900 shadow-[0_30px_70px_-30px_rgba(15,42,29,0.7)]" aria-label="Masked sample preview">
+          {rows.length > 0 && <div className="overflow-hidden rounded-2xl border border-forest-700 bg-forest-900 shadow-[0_30px_70px_-30px_rgba(15,42,29,0.7)]" aria-label="Masked sample preview">
             <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3"><span className="truncate font-mono text-xs text-sand-300">{products[0]?.slug ?? "ready-made-list"}</span><span className="rounded-full bg-forest-100 px-2.5 py-0.5 text-[0.7rem] font-semibold text-forest-900">Masked sample</span></div>
             <div className="overflow-x-auto"><table className="w-full min-w-[24rem] text-left text-[0.8rem]"><thead><tr className="text-forest-300">{["Business", "City", "Email"].map((h) => <th key={h} scope="col" className="px-4 py-2.5 font-semibold">{h}</th>)}</tr></thead>
               <tbody>{rows.map((r) => <tr key={r.business} className="border-t border-white/10 text-sand-100"><td className="whitespace-nowrap px-4 py-2.5 font-medium text-sand-50">{r.business}</td><td className="whitespace-nowrap px-4 py-2.5">{r.city}</td><td className="whitespace-nowrap px-4 py-2.5 font-mono">{r.email}</td></tr>)}</tbody></table></div>
-            <p className="border-t border-white/10 bg-black/20 px-4 py-2.5 text-xs text-sand-300">Fictional example rows. Real files hold full details.</p>
-          </div>
+            <p className="border-t border-white/10 bg-black/20 px-4 py-2.5 text-xs text-sand-300">Real rows with emails and phone numbers masked. Real files hold full details.</p>
+          </div>}
         </div>
       </section>
 
@@ -129,7 +130,7 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
         </Block>
       )}
 
-      {sheet && <Block title="What's Inside the Data" lead="A masked example. Real files hold full contact details." tone="sand"><SampleTable rows={sheet.rows} /></Block>}
+      {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}
 
       <Block title={`About ${title}`}>
         <div className="max-w-[68ch] space-y-4 text-[1.05rem] leading-relaxed">

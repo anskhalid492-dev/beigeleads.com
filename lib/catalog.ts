@@ -57,7 +57,7 @@ export type Product = {
   fileFormats?: string;
   coverage?: string;
   /** Real masked sample rows entered by the owner (section 97). */
-  samples?: readonly { business: string; email: string; phone: string; city?: string }[];
+  samples?: readonly { business: string; address: string; city: string; phone: string; email: string; website: string }[];
 };
 
 export type Package = {

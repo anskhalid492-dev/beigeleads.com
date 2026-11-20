@@ -2,6 +2,7 @@
 import { and, count, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getCategories, getCategory, getCountries, getCountry, getStaticProducts } from "@/lib/catalog";
+import { cleanStored, type SampleRowData } from "@/lib/product-samples";
 import { schema } from "@/lib/db";
 import { reservedSlugs } from "./reserved";
 import { publishBlockers } from "./woo";
@@ -295,4 +296,22 @@ export async function setLastUpdated(db: Db, ids: number[], date: string): Promi
   if (date !== "" && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Use the format YYYY-MM-DD");
   for (let i = 0; i < ids.length; i += 40) await db.update(schema.catalogProducts).set({ lastUpdated: date || null, updatedAt: Math.floor(Date.now() / 1000) }).where(inArray(schema.catalogProducts.id, ids.slice(i, i + 40)));
   return ids.length;
+}
+
+export const rowSamples = (r: Pick<Row, "sampleJson">): SampleRowData[] => cleanStored(parse<unknown>(r.sampleJson, []));
+
+/** Store ALREADY MASKED sample rows (empty array removes the sample). */
+export async function saveSamples(db: Db, id: number, rows: SampleRowData[]): Promise<boolean> {
+  const r = await db.update(schema.catalogProducts).set({ sampleJson: rows.length ? j(cleanStored(rows)) : null, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.catalogProducts.id, id)).returning({ id: schema.catalogProducts.id });
+  return r.length > 0;
+}
+
+/** Bulk: rows grouped by product slug. Unknown slugs are reported, never created. */
+export async function saveSamplesBySlug(db: Db, groups: { slug: string; rows: SampleRowData[] }[]): Promise<{ saved: number; unknown: string[] }> {
+  let saved = 0; const unknown: string[] = [];
+  for (const g of groups) {
+    const r = await db.update(schema.catalogProducts).set({ sampleJson: g.rows.length ? j(cleanStored(g.rows)) : null, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.catalogProducts.slug, g.slug)).returning({ id: schema.catalogProducts.id });
+    if (r.length) saved++; else unknown.push(g.slug);
+  }
+  return { saved, unknown };
 }
