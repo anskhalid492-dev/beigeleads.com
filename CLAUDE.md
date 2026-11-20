@@ -1026,3 +1026,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Categories: `/admin/products/seo` has a "Move products from catch-all categories" option (`applySeo` `categories`): products in "General Targeted Lists" / "Job Titles" move to a category named after the list's subject (singular/plural merged, new category created when needed, reserved slugs avoided). Imported categories appear at `/lists/<category>` and in the /lists directory.
 - Built-in products (Dentists, Restaurants, Ski shops, Germany): the SEO regeneration now copies them into the database first (`importBuiltin`) and can rename them like any product; old slugs redirect through aliases.
 - Tests: `tests/discover.test.ts`, default-sample + recategorize case in `tests/import-e2e.test.ts`.
+
+## 100. /lists server-side paging (Nov 2026) — amends sections 75 and 85
+
+- `/lists` no longer ships the catalog to the browser. `app/lists/page.tsx` runs `applyFilters`, `paginate`, `facets`, `chips` and `interpret` (pure `lib/shop.ts`) on the server and passes `ListsCatalog` only the current page (12 `ShopProduct`s), facets, chips, "reads as" text and compact industry/country lists. Every filter, sort, tab and page change is a normal URL change (`router.push` in a transition; the page dims while loading); the search box is debounced 350 ms; numeric ranges commit on blur. Pagination links are real `<a>` links. The old `history.replaceState` sync is gone.
+- `ListsDirectory` receives a precomputed `industryCountries` map instead of all products. `ListsHero` already took only compact lists. Canonical / noindex rules are unchanged. The page stays `force-dynamic` and is edge-cached 60 s per URL.
+- Tests: pure engine tests in `tests/shop.test.ts` are unchanged. NOT browser-checked after this change.

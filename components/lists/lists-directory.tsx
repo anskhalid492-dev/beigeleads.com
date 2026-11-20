@@ -3,17 +3,17 @@ import { ArrowUpRight, Building2, Globe2, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DbBadge } from "@/components/shared/db-icon";
-import type { GeoTree, ShopProduct } from "@/lib/shop";
+import type { GeoTree } from "@/lib/shop";
 import { GeoExplorer } from "./geo-explorer";
 
 
 type Industry = { slug: string; name: string; blurb: string };
-type Props = { industries: Industry[]; tree: GeoTree; products: ShopProduct[]; niches: { category: string; name: string }[]; productCats: Record<string, string[]> };
+type Props = { industries: Industry[]; tree: GeoTree; industryCountries: Record<string, [string, string][]>; niches: { category: string; name: string }[]; productCats: Record<string, string[]> };
 const TABS = [["industries", "By industry", Building2], ["locations", "By location", Globe2]] as const;
 type Tab = (typeof TABS)[number][0];
 
 /** The directory: every industry, a country -> state -> city explorer, and prospect types. Real data only. */
-export function ListsDirectory({ industries, tree, products, niches, productCats }: Props) {
+export function ListsDirectory({ industries, tree, industryCountries, niches, productCats }: Props) {
   const [tab, setTab] = useState<Tab>("industries");
   useEffect(() => {
     const on = () => { const h = window.location.hash.slice(1); if (h === "industries" || h === "locations") setTab(h); };
@@ -52,7 +52,7 @@ export function ListsDirectory({ industries, tree, products, niches, productCats
             )}
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((i) => {
-                const where = [...new Map(products.filter((p) => p.categorySlug === i.slug).map((p) => [p.countryCode, p.countryName])).entries()];
+                const where = industryCountries[i.slug] ?? [];
                 const sub = niches.filter((n) => n.category === i.slug);
                 const places = tree.flatMap((c) => [...c.regions, ...c.cities].filter((x) => x.cats.includes(i.slug)).map((x) => x.name));
                 return (

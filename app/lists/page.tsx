@@ -12,7 +12,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getTax } from "@/lib/taxonomy-route";
 import { loadListsData } from "@/lib/lists-data";
 import { parseSlugList, getPublicSettings } from "@/lib/settings/service";
-import { isFiltered, listsHref, parseFilters } from "@/lib/shop";
+import { applyFilters, chips, facets, interpret, isFiltered, listsHref, paginate, parseFilters } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
 type SP = Promise<Record<string, string | string[] | undefined>>;
@@ -37,9 +37,15 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
   const featured = parseSlugList((await getPublicSettings(env)).featured?.industries.join(",") ?? "");
   const data = await loadListsData();
   const productCats: Record<string, string[]> = {};
+  const industryCountries: Record<string, [string, string][]> = {};
+  for (const p of data.products) { const l = (industryCountries[p.categorySlug] ??= []); if (!l.some((x) => x[0] === p.countryCode)) l.push([p.countryCode, p.countryName]); }
   for (const p of data.products) { const l = (productCats[p.countrySlug] ??= []); if (!l.includes(p.categorySlug)) l.push(p.categorySlug); }
 
   const tax = await getTax();
+  // Filter, sort and page on the server: the browser only receives one page of products.
+  const page = f.type === "b2c" ? null : paginate(applyFilters(data, f, featured), f.page);
+  const it = f.q ? interpret(f.q, data.industries, data.tree) : {};
+  const readsAs = [it.industry && `Industry: ${it.industry.name}`, it.country && `Country: ${it.country.name}`, it.state && `State: ${it.state.name}`, it.city && `City: ${it.city.name}`].filter(Boolean) as string[];
 
   return (
     <>
@@ -55,10 +61,10 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
           <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button><Button asChild variant="secondary" size="lg"><Link href="/lists">Browse B2B Lists</Link></Button></div>
         </section>
       ) : (
-        <ListsCatalog key={listsHref(f)} data={data} initial={f} featured={featured} />
+        page && <ListsCatalog items={page.items} page={page.page} pages={page.pages} fac={facets(data, f)} active={chips(f, data)} readsAs={readsAs} industries={data.industries.map((i) => ({ slug: i.slug, name: i.name }))} countries={data.countries.map((c) => ({ slug: c.slug, name: c.name }))} initial={f} />
       )}
 
-      <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} products={data.products} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
+      <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} industryCountries={industryCountries} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
 
       <section className="border-t border-sand-200 bg-forest-900 py-14 text-sand-50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4">
         <div><h2 className="display text-3xl !text-sand-50">Can&apos;t find your list?</h2><p className="mt-1 text-sand-200">Describe the industry, place and size you need.</p></div>
