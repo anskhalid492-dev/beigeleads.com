@@ -1,16 +1,18 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getSettings } from "@/lib/beigepilot/store";
+import { getSettings, listProviders, type Humor, type Motion } from "@/lib/beigepilot/store";
 
-const KEY = "beigepilot:config:v1";
+const KEY = "beigepilot:config:v2";
+type Cfg = { enabled: boolean; greeting: string; saving: boolean; name: string; humor: Humor; motion: Motion; launcher: "right" | "left"; suggestions: string[] };
 
-/** Public, cached 60 s. The widget shows only when this says enabled AND a provider is active. */
+/** Public, cached 60 s. The widget shows only when it is switched on AND the active provider really has a key and a model. */
 export async function GET() {
   const { env } = getCloudflareContext();
-  let cfg: { enabled: boolean; greeting: string; saving: boolean } | null = null;
+  let cfg: Cfg | null = null;
   try { cfg = await env.CACHE.get(KEY, "json"); } catch { /* go to D1 */ }
   if (!cfg) {
-    const { s } = await getSettings(env);
-    cfg = { enabled: s.enabled && !!s.active, greeting: s.greeting, saving: s.saveChats };
+    const [{ s }, provs] = await Promise.all([getSettings(env), listProviders(env)]);
+    const p = provs.find((x) => x.id === s.active);
+    cfg = { enabled: s.enabled && !!p?.hasKey && !!p.model, greeting: s.greeting, saving: s.saveChats, name: s.name, humor: s.humor, motion: s.motion, launcher: s.launcher, suggestions: s.suggestions };
     try { await env.CACHE.put(KEY, JSON.stringify(cfg), { expirationTtl: 60 }); } catch { /* optional */ }
   }
   return Response.json(cfg, { headers: { "cache-control": "public, max-age=30" } });

@@ -2,14 +2,24 @@
 import { decryptKey, encryptKey, keyHint } from "./secret";
 import { isProviderId, PROVIDER_IDS, type ProviderId } from "./providers";
 
+export type Humor = "professional" | "friendly" | "playful";
+export type Motion = "calm" | "balanced" | "lively";
+export const HUMORS: Humor[] = ["professional", "friendly", "playful"];
+export const MOTIONS: Motion[] = ["calm", "balanced", "lively"];
+const OLD_GREETING = "Hi, I'm BeigePilot. Tell me who you want to reach and I'll find the right database.";
+/** One suggested question per line, at most 4, each at most 60 characters. */
+export const parseSuggestions = (raw: string | undefined): string[] => (raw ?? "").split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 4);
+
 export type Settings = {
   enabled: boolean; active: ProviderId | ""; fallback: ProviderId | "";
   greeting: string; instructions: string; saveChats: boolean; retentionDays: number;
+  name: string; humor: Humor; motion: Motion; launcher: "right" | "left"; suggestions: string[];
   dailyRequestLimit: number; dailyTokenLimit: number; monthlySpendUsd: number | null;
 };
 export const DEFAULT_SETTINGS: Settings = {
   enabled: false, active: "", fallback: "",
-  greeting: "Hi, I'm BeigePilot. Tell me who you want to reach and I'll find the right database.",
+  greeting: "Tell me who you'd like to reach, and I'll help you find the right database.",
+  name: "Pilo", humor: "friendly", motion: "balanced", launcher: "right", suggestions: [],
   instructions: "", saveChats: false, retentionDays: 90, dailyRequestLimit: 500, dailyTokenLimit: 500_000, monthlySpendUsd: null,
 };
 
@@ -23,7 +33,9 @@ export async function getSettings(env: Env): Promise<{ ready: boolean; s: Settin
     const spend = m.monthlySpendUsd ? Number(m.monthlySpendUsd) : NaN;
     return { ready: true, s: {
       enabled: m.enabled === "1", active: isProviderId(m.active) ? m.active : "", fallback: isProviderId(m.fallback) ? m.fallback : "",
-      greeting: (m.greeting ?? "").slice(0, 300) || DEFAULT_SETTINGS.greeting, instructions: (m.instructions ?? "").slice(0, 1500), saveChats: m.saveChats === "1", retentionDays: [30, 90, 180, 365].includes(Number(m.retentionDays)) ? Number(m.retentionDays) : 90,
+      greeting: (m.greeting && m.greeting !== OLD_GREETING ? m.greeting : "").slice(0, 300) || DEFAULT_SETTINGS.greeting,
+      name: (m.name ?? "").trim().slice(0, 24) || DEFAULT_SETTINGS.name, humor: HUMORS.includes(m.humor as Humor) ? (m.humor as Humor) : DEFAULT_SETTINGS.humor,
+      motion: MOTIONS.includes(m.motion as Motion) ? (m.motion as Motion) : DEFAULT_SETTINGS.motion, launcher: m.launcher === "left" ? "left" : "right", suggestions: parseSuggestions(m.suggestions), instructions: (m.instructions ?? "").slice(0, 1500), saveChats: m.saveChats === "1", retentionDays: [30, 90, 180, 365].includes(Number(m.retentionDays)) ? Number(m.retentionDays) : 90,
       dailyRequestLimit: num(m.dailyRequestLimit, DEFAULT_SETTINGS.dailyRequestLimit, 1, 1_000_000), dailyTokenLimit: num(m.dailyTokenLimit, DEFAULT_SETTINGS.dailyTokenLimit, 1000, 1_000_000_000),
       monthlySpendUsd: Number.isFinite(spend) && spend > 0 ? spend : null,
     } };
@@ -33,7 +45,7 @@ export async function getSettings(env: Env): Promise<{ ready: boolean; s: Settin
 export async function saveSettings(env: Env, patch: Partial<Record<keyof Settings, string>>): Promise<void> {
   const st = env.DB.prepare("INSERT INTO beigepilot_settings (key, value, updated_at) VALUES (?1, ?2, unixepoch()) ON CONFLICT(key) DO UPDATE SET value = ?2, updated_at = unixepoch()");
   await env.DB.batch(Object.entries(patch).map(([k, v]) => st.bind(k, v ?? "")));
-  try { await env.CACHE.delete("beigepilot:config:v1"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v2"); } catch { /* optional */ }
 }
 
 export type ProviderRow = { id: ProviderId; hasKey: boolean; hint: string; model: string; temperature: number; maxTokens: number; priceIn: number | null; priceOut: number | null };
@@ -53,10 +65,12 @@ export async function saveProvider(env: Env, id: ProviderId, v: { apiKey?: strin
   await env.DB.prepare(`INSERT INTO beigepilot_providers (id, enc_key, key_hint, model, temperature, max_tokens, price_in, price_out, updated_at) VALUES (?1, COALESCE(?2, ''), ?3, ?4, ?5, ?6, ?7, ?8, unixepoch())
     ON CONFLICT(id) DO UPDATE SET enc_key = COALESCE(?2, enc_key), key_hint = ?3, model = ?4, temperature = ?5, max_tokens = ?6, price_in = ?7, price_out = ?8, updated_at = unixepoch()`)
     .bind(id, enc, hint, v.model, v.temperature, v.maxTokens, v.priceIn, v.priceOut).run();
+  try { await env.CACHE.delete("beigepilot:config:v2"); } catch { /* optional */ }
 }
 
 export async function removeProviderKey(env: Env, id: ProviderId): Promise<void> {
   await env.DB.prepare("UPDATE beigepilot_providers SET enc_key = '', key_hint = '', updated_at = unixepoch() WHERE id = ?1").bind(id).run();
+  try { await env.CACHE.delete("beigepilot:config:v2"); } catch { /* optional */ }
 }
 
 /** The decrypted key, server-side only. null = no key saved, or the secret changed so it cannot be read. */

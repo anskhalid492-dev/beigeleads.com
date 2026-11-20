@@ -13,7 +13,7 @@ import { publishedEntries, searchEntries } from "./knowledge";
 import type { ToolDef } from "./providers";
 
 export type Card = {
-  slug: string; name: string; url: string; sampleUrl: string; country: string; region: string; forSale: boolean;
+  slug: string; name: string; url: string; sampleUrl: string; country: string; countryCode: string; category: string; region: string; forSale: boolean;
   records: number | null; startingPrice: string | null; lastUpdated: string | null; hasSample: boolean;
   packages: { name: string; records: number; price: string; priceCents: number; highlighted: boolean }[];
 };
@@ -44,7 +44,7 @@ function summary(p: Product) {
 function card(p: Product): Card {
   const s = summary(p);
   return {
-    slug: p.slug, name: p.name, url: url(p), sampleUrl: s.sampleRequestUrl, country: s.country, region: s.region ?? "", forSale: forSale(p),
+    slug: p.slug, name: p.name, url: url(p), sampleUrl: s.sampleRequestUrl, country: s.country, countryCode: getCountry(p.countrySlug)?.code ?? "", category: p.categorySlug, region: s.region ?? "", forSale: forSale(p),
     records: s.recordCount, startingPrice: s.startingPriceUsd, lastUpdated: p.lastVerified ?? null, hasSample: s.maskedSampleOnPage,
     packages: forSale(p) ? offeredPackages(p).map((k) => ({ name: k.name, records: k.records, price: formatUsd(k.priceUsdCents), priceCents: k.priceUsdCents, highlighted: !!k.highlighted })) : [],
   };

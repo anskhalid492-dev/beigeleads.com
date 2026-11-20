@@ -25,12 +25,33 @@ export async function POST(req: Request) {
   if (!p.success || p.data.messages[p.data.messages.length - 1].role !== "user") { await noteError(env.CACHE, `Invalid chat request: ${p.success ? "last message is not from the visitor" : p.error.issues.map((i) => i.path.join(".")).join(", ")}`); return json(400, { ok: false, error: "Invalid message." }); }
   const who = await sha256Hex(`${env.HASH_SALT ?? ""}:ip:${req.headers.get("cf-connecting-ip") ?? "x"}`);
   if (await isRateLimited(env.CACHE, "bp-chat-min", who, 6, 60) || await isRateLimited(env.CACHE, "bp-chat", who, 40, 3600)) return json(429, { ok: false, error: "You are sending messages very quickly. Please wait a moment." });
-  const r = await chat(env, { history: p.data.messages, path: p.data.path, cart: p.data.cart });
-  if (!r.ok || !r.text) { await noteError(env.CACHE, r.error ?? "The assistant returned no text."); return json(503, { ok: false, unavailable: true }); }
-  if (validCid(p.data.cid)) {
-    const cid = p.data.cid;
-    const user = p.data.messages[p.data.messages.length - 1].text;
-    ctx.waitUntil((async () => { if ((await getSettings(env)).s.saveChats) await recordTurn(env, cid, p.data.path, user, { text: r.text, tools: r.trace.map((t) => t.name), provider: r.provider ?? "", tokens: (r.tokensIn ?? 0) + (r.tokensOut ?? 0), handoff: !!r.handoff }); })());
+  const input = { history: p.data.messages, path: p.data.path, cart: p.data.cart };
+  const finish = async (r: Awaited<ReturnType<typeof chat>>) => {
+    if (!r.ok || !r.text) { await noteError(env.CACHE, r.error ?? "The assistant returned no text."); return null; }
+    if (validCid(p.data.cid)) {
+      const cid = p.data.cid;
+      const user = p.data.messages[p.data.messages.length - 1].text;
+      ctx.waitUntil((async () => { if ((await getSettings(env)).s.saveChats) await recordTurn(env, cid, p.data.path, user, { text: r.text, tools: r.trace.map((t) => t.name), provider: r.provider ?? "", tokens: (r.tokensIn ?? 0) + (r.tokensOut ?? 0), handoff: !!r.handoff }); })());
+    }
+    return { ok: true, text: r.text, cards: r.cards, sources: r.sources, handoff: r.handoff, miss: !!r.miss, tools: r.tools ?? [] };
+  };
+
+  // Live status for the widget: one JSON line per step (tool started), then the final answer or a failure.
+  if ((req.headers.get("accept") ?? "").includes("x-ndjson")) {
+    const enc = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(c) {
+        const line = (o: unknown) => { try { c.enqueue(enc.encode(`${JSON.stringify(o)}\n`)); } catch { /* client left */ } };
+        try {
+          const done = await finish(await chat(env, { ...input, onTool: (name) => line({ t: "tool", name }) }));
+          line(done ? { t: "done", ...done } : { t: "fail" });
+        } catch { await noteError(env.CACHE, "Unexpected error while answering."); line({ t: "fail" }); }
+        try { c.close(); } catch { /* closed */ }
+      },
+    });
+    return new Response(stream, { headers: { "content-type": "application/x-ndjson", "cache-control": "no-store" } });
   }
-  return json(200, { ok: true, text: r.text, cards: r.cards, sources: r.sources, handoff: r.handoff });
+
+  const done = await finish(await chat(env, input));
+  return done ? json(200, done) : json(503, { ok: false, unavailable: true });
 }

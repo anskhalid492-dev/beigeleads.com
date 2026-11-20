@@ -1,148 +1,61 @@
 "use client";
-import Link from "next/link";
+// BeigePilot launcher. Only this small shell ships with every page; the chat panel is fetched the first time it is opened.
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Compass, Minus, Send, ThumbsDown, ThumbsUp, X } from "lucide-react";
-import { useCart } from "@/lib/cart/client";
-import type { Card, Source } from "@/lib/beigepilot/tools";
-import { Markup } from "./markup";
-import { ChatProductCard } from "./product-card";
-import { ApiForm } from "@/components/forms/api-form";
+import { useEffect, useRef, useState } from "react";
+import { Pilo } from "./pilo";
+import type { Cfg } from "./panel";
 
-type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; sources?: Source[]; handoff?: boolean; error?: boolean };
-const KEY = "bp-chat-v1";
-const CID = "bp-cid-v1";
-function chatId(): string { try { let c = sessionStorage.getItem(CID); if (!c) { c = crypto.randomUUID().replace(/-/g, "").slice(0, 24); sessionStorage.setItem(CID, c); } return c; } catch { return "nostorage" + Math.random().toString(36).slice(2, 12); } }
-const SUGGESTED = ["Find a database for my business", "Compare available packages", "How fresh is your data?", "How does delivery work?", "What guarantees do you offer?"];
-
-/** Page-aware opening question (public page path only). */
-function hint(path: string): string {
-  if (/^\/lists\/[^/]+\/?$/.test(path) && !path.startsWith("/lists/email") ) return "Need help choosing a package?";
-  if (path.startsWith("/lists")) return "Looking for a specific industry or city?";
-  if (path.startsWith("/cart")) return "Questions about your selected databases?";
-  return "Not sure which database fits? Ask me.";
-}
+const Panel = dynamic(() => import("./panel").then((m) => m.BeigePilotPanel), { ssr: false });
+const TIP = "bp-tip-v1";
 
 export function BeigePilot() {
   const path = usePathname();
-  const cart = useCart();
-  const [cfg, setCfg] = useState<{ enabled: boolean; greeting: string; saving?: boolean } | null>(null);
+  const [cfg, setCfg] = useState<Cfg | null>(null);
   const [open, setOpen] = useState(false);
-  const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState<number | null>(null);
-  const end = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLTextAreaElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [tip, setTip] = useState(false);
+  const launcher = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let live = true;
     const t = setTimeout(() => {
-      fetch("/api/beigepilot/config").then((r) => r.json() as Promise<{ enabled: boolean; greeting: string; saving?: boolean }>).then((c) => { if (live) setCfg(c); }).catch(() => {});
-      try { const s = sessionStorage.getItem(KEY); if (s) setMsgs(JSON.parse(s) as Msg[]); } catch { /* storage blocked */ }
+      fetch("/api/beigepilot/config").then((r) => r.json() as Promise<Cfg>).then((c) => { if (live) setCfg(c); }).catch(() => {});
     }, 1800);
     return () => { live = false; clearTimeout(t); };
   }, []);
-  useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify(msgs.slice(-30))); } catch { /* ignore */ } }, [msgs]);
-  useEffect(() => { end.current?.scrollIntoView({ block: "end", behavior: "smooth" }); }, [msgs, busy, open]);
-  useEffect(() => { if (open) input.current?.focus(); }, [open]);
 
-  const send = useCallback(async (raw: string) => {
-    const t = raw.trim();
-    if (!t || busy) return;
-    const next: Msg[] = [...msgs, { role: "user", text: t }];
-    setMsgs(next); setText(""); setBusy(true);
-    try {
-      const res = await fetch("/api/beigepilot/chat", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cid: chatId(), messages: next.filter((m) => !m.error).slice(-12).map((m) => ({ role: m.role, text: m.text.slice(0, 1500) })), path, cart: cart.slice(0, 10) }),
-      });
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; text?: string; cards?: Card[]; sources?: Source[]; handoff?: string | null; error?: string };
-      if (res.ok && j.ok && j.text) setMsgs([...next, { role: "assistant", text: j.text, cards: j.cards, sources: j.sources, handoff: !!j.handoff }]);
-      else setMsgs([...next, { role: "assistant", error: true, handoff: true, text: res.status === 429 ? (j.error ?? "Please wait a moment before sending more messages.") : "BeigePilot is not available right now. Our team can help you directly." }]);
-    } catch { setMsgs([...next, { role: "assistant", error: true, handoff: true, text: "I could not reach the server. Please try again, or contact our team." }]); }
-    setBusy(false);
-  }, [busy, msgs, path, cart]);
-
-  const rate = (i: number, rating: 1 | -1) => {
-    setMsgs((m) => m.map((x, j) => (j === i ? { ...x, rated: rating } : x)));
-    void fetch("/api/beigepilot/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ cid: chatId(), idx: i, rating }) }).catch(() => {});
-  };
+  // A short welcome tooltip, once per browser session.
+  useEffect(() => {
+    if (!cfg?.enabled) return;
+    let seen = false; try { seen = !!sessionStorage.getItem(TIP); } catch { /* ignore */ }
+    if (seen) return;
+    const a = setTimeout(() => { setTip(true); try { sessionStorage.setItem(TIP, "1"); } catch { /* ignore */ } }, 4500);
+    const b = setTimeout(() => setTip(false), 12500);
+    return () => { clearTimeout(a); clearTimeout(b); };
+  }, [cfg?.enabled]);
 
   if (!cfg?.enabled || path.startsWith("/admin") || path.startsWith("/checkout")) return null;
+  const name = cfg.name || "Pilo";
   const onCart = path.startsWith("/cart");
+  const side = cfg.launcher === "left" ? "left-4" : "right-4";
+  const openIt = () => { setMounted(true); setOpen(true); setTip(false); };
 
   return (
     <>
+      {mounted && <Panel cfg={cfg} path={path} open={open} onClosed={() => { setOpen(false); setTimeout(() => launcher.current?.focus(), 0); }} />}
       {!open && (
-        <button type="button" onClick={() => setOpen(true)} aria-label="Open BeigePilot, the AI assistant"
-          className={`fixed right-4 z-40 flex items-center gap-2.5 rounded-full border border-sand-300 bg-sand-50 py-1.5 pl-1.5 pr-1.5 shadow-[0_6px_20px_-8px_rgba(15,42,29,.35)] transition-colors hover:border-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 sm:pr-4 ${onCart ? "bottom-24 lg:bottom-5" : "bottom-5"}`}>
-          <span className="grid size-10 place-items-center rounded-full bg-forest-900 text-sand-50"><Compass className="size-5" aria-hidden /></span>
-          <span className="hidden text-sm font-bold text-forest-900 sm:block">Ask BeigePilot</span>
-        </button>
-      )}
-      {open && (
-        <section role="dialog" aria-label="BeigePilot AI assistant" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-          className="bp-open fixed inset-0 z-50 flex flex-col bg-sand-50 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(640px,calc(100vh-2.5rem))] sm:w-[400px] sm:rounded-2xl sm:border sm:border-sand-300 sm:shadow-[0_20px_50px_-20px_rgba(15,42,29,.45)]">
-          <header className="flex items-center gap-3 border-b border-sand-200 bg-sand-100 px-4 py-3 sm:rounded-t-2xl">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-forest-900 text-sand-50"><Compass className="size-5" aria-hidden /></span>
-            <div className="min-w-0 flex-1"><p className="display text-lg leading-none text-forest-900">BeigePilot</p><p className="truncate text-xs">Your AI Data &amp; Audience Specialist</p></div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Minimize chat" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-200"><Minus className="size-4" aria-hidden /></button>
-            <button type="button" onClick={() => { setMsgs([]); setOpen(false); }} aria-label="Close and clear chat" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-200"><X className="size-4" aria-hidden /></button>
-          </header>
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4 text-[0.93rem] leading-relaxed" aria-live="polite">
-            <div className="bp-msg max-w-[88%] rounded-2xl rounded-tl-sm bg-sand-100 px-3.5 py-2.5 text-forest-900">{cfg.greeting}</div>
-            {msgs.length === 0 && (
-              <div className="space-y-2 pt-1">
-                <button type="button" onClick={() => send(hint(path))} className="block w-full rounded-xl border border-purple-600/30 bg-purple-100 px-3.5 py-2 text-left text-sm font-semibold text-forest-900 hover:border-purple-600">{hint(path)}</button>
-                <div className="flex flex-wrap gap-2">{SUGGESTED.map((q) => <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-sand-300 bg-white px-3 py-1.5 text-xs font-semibold text-forest-900 hover:border-forest-900">{q}</button>)}</div>
-              </div>
-            )}
-            {msgs.map((m, i) => m.role === "user" ? (
-              <div key={i} className="bp-msg ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-forest-900 px-3.5 py-2.5 text-sand-50">{m.text}</div>
-            ) : (
-              <div key={i} className="bp-msg space-y-2.5">
-                <div className={`max-w-[92%] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-forest-900 ${m.error ? "bg-amber-100" : "bg-sand-100"}`}><Markup text={m.text} /></div>
-                {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} />)}
-                {!m.error && (
-                  <div className="flex items-center gap-1 text-xs" role="group" aria-label="Rate this answer">
-                    <span className="mr-1">{m.rated ? "Thanks for the feedback." : "Was this helpful?"}</span>
-                    {!m.rated && <>
-                      <button type="button" onClick={() => rate(i, 1)} aria-label="Helpful" className="grid size-7 place-items-center rounded-full hover:bg-sand-200"><ThumbsUp className="size-3.5" aria-hidden /></button>
-                      <button type="button" onClick={() => rate(i, -1)} aria-label="Not helpful" className="grid size-7 place-items-center rounded-full hover:bg-sand-200"><ThumbsDown className="size-3.5" aria-hidden /></button></>}
-                  </div>
-                )}
-                {m.handoff && form !== i && <button type="button" onClick={() => setForm(i)} className="inline-flex rounded-full border border-forest-900 px-4 py-2 text-xs font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50">Contact Our Team</button>}
-                {m.handoff && form === i && (
-                  <div className="rounded-xl border border-sand-300 bg-white p-3.5">
-                    <p className="mb-2 text-sm font-bold text-forest-900">Leave your details and our team will read your message.</p>
-                    <ApiForm endpoint="/api/beigepilot/handoff" submitLabel="Send to our team" successTitle="Message sent" successText="Thanks. Our team has your message. We sent a confirmation to your email."
-                      hidden={{ page: path.slice(0, 80) }}
-                      fields={[
-                        { name: "name", label: "Your name", type: "text", required: true, autoComplete: "name" },
-                        { name: "email", label: "Email", type: "email", required: true },
-                        { name: "message", label: "What do you need?", type: "textarea", required: true },
-                        { name: "consent", label: "I agree that BeigeLeads may contact me by email about this request.", type: "checkbox", required: true },
-                      ]} />
-                    <p className="mt-2 text-xs">Or write to us on the <Link href="/contact" className="font-semibold text-purple-700 underline">contact page</Link>.</p>
-                  </div>
-                )}
-                {!!m.sources?.length && <p className="text-xs">Sources: {m.sources.map((s, j) => <span key={s.url}>{j > 0 && " · "}<Link href={s.url} className="font-semibold text-purple-700 underline underline-offset-2">{s.title}</Link></span>)}</p>}
-              </div>
-            ))}
-            {busy && <div className="flex w-fit gap-1 rounded-2xl rounded-tl-sm bg-sand-100 px-4 py-3" role="status" aria-label="BeigePilot is typing"><i className="bp-dot" /><i className="bp-dot" style={{ animationDelay: ".15s" }} /><i className="bp-dot" style={{ animationDelay: ".3s" }} /></div>}
-            <div ref={end} />
-          </div>
-          <form className="border-t border-sand-200 px-3 pb-3 pt-2.5 sm:rounded-b-2xl" onSubmit={(e) => { e.preventDefault(); void send(text); }}>
-            <div className="flex items-end gap-2">
-              <textarea ref={input} value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={1500} placeholder="Ask about a list, price or policy" aria-label="Your message"
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(text); } }}
-                className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-sand-300 bg-white px-3 py-2.5 text-[0.93rem] text-forest-900 placeholder:text-forest-700/60 focus-visible:outline-2 focus-visible:outline-purple-600" />
-              <button type="submit" disabled={busy || !text.trim()} aria-label="Send message" className="grid size-11 shrink-0 place-items-center rounded-xl bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-40"><Send className="size-4" aria-hidden /></button>
+        <div className={`fixed z-40 ${side} ${onCart ? "bottom-24 lg:bottom-5" : "bottom-5"}`}>
+          {tip && (
+            <div role="status" className={`bp-tip pointer-events-none absolute bottom-[4.1rem] w-52 rounded-2xl border border-sand-300 bg-white px-3 py-2 text-xs font-semibold leading-snug text-forest-900 shadow-lg ${cfg.launcher === "left" ? "left-0 rounded-bl-md" : "right-0 rounded-br-md"}`}>
+              Hi, I&apos;m {name}. Ask me which database fits.
             </div>
-            <p className="mt-2 text-[0.7rem] leading-snug">AI assistant: check details on the product page. Please do not share personal or payment information.{cfg.saving && " Conversations may be stored to improve the service."}</p>
-          </form>
-        </section>
+          )}
+          <button ref={launcher} type="button" onClick={openIt} aria-label={`Open ${name}, the BeigeLeads assistant`}
+            className="pilo-host group relative grid size-[3.6rem] place-items-center rounded-full border border-sand-300 bg-sand-50 shadow-[0_8px_22px_-10px_rgba(15,42,29,.5)] transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            <Pilo mood="idle" size={46} intensity={cfg.motion} />
+          </button>
+        </div>
       )}
     </>
   );

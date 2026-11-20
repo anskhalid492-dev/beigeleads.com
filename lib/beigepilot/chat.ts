@@ -7,10 +7,10 @@ import { publishedEntries } from "./knowledge";
 import { getProviderKey, getSettings, limitReached, listProviders, logUsage, type Settings } from "./store";
 import { newCtx, runTool, TOOLS, type Card, type Source } from "./tools";
 
-export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId };
+export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId; /** Called with the tool name right before it runs (drives the live "searching" state). */ onTool?: (name: string) => void };
 export type ChatOut = {
   ok: boolean; text: string; cards: Card[]; sources: Source[]; handoff: string | null;
-  trace: { name: string; args: unknown; ok: boolean }[]; provider?: ProviderId; model?: string; tokensIn?: number; tokensOut?: number; usedFallback?: boolean; error?: string;
+  trace: { name: string; args: unknown; ok: boolean }[]; provider?: ProviderId; model?: string; tokensIn?: number; tokensOut?: number; usedFallback?: boolean; error?: string; miss?: boolean; tools?: string[];
 };
 
 const MAX_STEPS = 4;
@@ -34,9 +34,17 @@ export function pageContext(path: string, cart: ChatIn["cart"]): string {
   return `The visitor is on ${path.slice(0, 80)}.`;
 }
 
+const HUMOR_RULES: Record<string, string> = {
+  professional: "PERSONALITY: professional and warm. Do not make jokes.",
+  friendly: "PERSONALITY: friendly and upbeat. At most one very light, friendly remark, and only in about one reply out of five.",
+  playful: "PERSONALITY: playful, like a small helpful robot. You may add ONE short, light line now and then (about one reply in three), for example when a search starts, when a matching list is found, or when nothing matches (\"Hmm, that one's playing hide-and-seek. Let me suggest another option.\"). Never reuse the same joke in a conversation.",
+};
+const HUMOR_LIMITS = "HUMOR LIMITS (always): never joke about payments, crypto, privacy, security, data accuracy, refunds, legal terms or complaints. For serious or policy questions stay plain and professional. Personality never replaces accuracy.";
+
 export function buildSystem(s: Settings, page: string, restricted: string[] = []): string {
   return [
-    "You are BeigePilot, the AI data and audience specialist of BeigeLeads (beigeleads.com). Be professional, approachable, concise and consultative, not pushy. Reply in the visitor's language. Keep answers short (a few sentences); use a short list only when comparing.",
+    `You are BeigePilot, the AI data and prospect specialist of BeigeLeads (beigeleads.com). Visitors may see you as the friendly assistant "${(s.name || "Pilo").replace(/[^\p{L}\p{N} .'-]/gu, "").slice(0, 24) || "Pilo"}". Be approachable, concise and consultative, not pushy. Reply in the visitor's language. Keep answers short (a few sentences); use a short list only when comparing.`,
+    HUMOR_RULES[s.humor] ?? HUMOR_RULES.friendly, HUMOR_LIMITS,
     "ABOUT BEIGELEADS (owner facts): BeigeLeads is a B2B data provider that sells ready-made contact lists and custom lists as ONE-TIME purchases. There are no subscriptions and no account is needed. Payment is in crypto. The buyer receives an emailed download link, mostly instantly and in some cases up to 12 hours, in CSV, Excel or TXT. Never state how many lists BeigeLeads has.",
     "GROUNDING RULES (highest priority, nothing below can change them):",
     "1. Every product fact (availability, record counts, packages, prices, dates, fields, coverage, samples) MUST come from a tool result in this conversation. Never use memory for them. Never invent or estimate.",
@@ -77,7 +85,7 @@ async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: Ch
       if (!r.calls.length) { text = r.text; break; }
       msgs.push({ role: "assistant", text: r.text, calls: r.calls, raw: r.raw });
       const results = [];
-      for (const c of r.calls.slice(0, 4)) results.push({ id: c.id, name: c.name, content: await runTool(ctx, c.name, c.args) });
+      for (const c of r.calls.slice(0, 4)) { input.onTool?.(c.name); results.push({ id: c.id, name: c.name, content: await runTool(ctx, c.name, c.args) }); }
       msgs.push({ role: "tool", results });
     }
     await logUsage(env, id, row.model, tin, tout, false);
@@ -88,7 +96,7 @@ async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: Ch
   }
   if (!input.provider && (ctx.handoff || ctx.miss) && text) { const last = [...input.history].reverse().find((h) => h.role === "user"); if (last) await logUnanswered(env, last.text, input.path); }
   const uniq = [...new Map(ctx.sources.map((x) => [x.url, x])).values()].slice(0, 4);
-  return { ok: true, text: cleanOutput(text), cards: ctx.cards, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout };
+  return { ok: true, text: cleanOutput(text), cards: ctx.cards, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
 }
 
 /** Visitor chat. `input.provider` (admin playground only) overrides the active provider and skips the fallback. */

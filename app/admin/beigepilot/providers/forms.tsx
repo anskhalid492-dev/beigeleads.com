@@ -64,17 +64,36 @@ export function RoutingForm({ active, fallback, ids, daily, tokens, spend }: { a
   );
 }
 
-export function BehaviorForm({ enabled, greeting, instructions, saveChats, retentionDays }: { enabled: boolean; greeting: string; instructions: string; saveChats: boolean; retentionDays: number }) {
+export function BehaviorForm({ enabled, name, humor, motion, launcher, suggestions, greeting, instructions, saveChats, retentionDays }: { enabled: boolean; name: string; humor: string; motion: string; launcher: string; suggestions: string; greeting: string; instructions: string; saveChats: boolean; retentionDays: number }) {
   const [r, act, pending] = useActionState(saveSettingsAction, null);
   const [on, setOn] = useState(enabled);
   const [g, setG] = useState(greeting);
+  const [nm, setNm] = useState(name);
+  const [hu, setHu] = useState(humor);
+  const [mo, setMo] = useState(motion);
+  const [la, setLa] = useState(launcher);
+  const [sg, setSg] = useState(suggestions);
   const [ins, setIns] = useState(instructions);
   const [save, setSave] = useState(saveChats);
   const [ret, setRet] = useState(String(retentionDays));
   return (
     <form action={act} className="grid gap-4 rounded-2xl border border-sand-200 bg-white p-5">
       <label className="flex items-center gap-3 text-sm font-semibold text-forest-900"><input type="hidden" name="enabled" value="0" /><input type="checkbox" name="enabled" value="1" checked={on} onChange={(e) => setOn(e.target.checked)} className="size-4" />Show BeigePilot to visitors</label>
-      <label className="text-sm font-semibold text-forest-900">Greeting (max 300)<textarea name="greeting" rows={2} maxLength={300} value={g} onChange={(e) => setG(e.target.value)} className={inp} /></label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="text-sm font-semibold text-forest-900">Assistant display name (max 24)<input name="name" maxLength={24} value={nm} onChange={(e) => setNm(e.target.value)} className={inp} /></label>
+        <label className="text-sm font-semibold text-forest-900">Launcher position
+          <select name="launcher" value={la} onChange={(e) => setLa(e.target.value)} className={inp}><option value="right">Bottom right</option><option value="left">Bottom left</option></select></label>
+        <label className="text-sm font-semibold text-forest-900">Humor level
+          <select name="humor" value={hu} onChange={(e) => setHu(e.target.value)} className={inp}><option value="professional">Professional (no jokes)</option><option value="friendly">Friendly (rare light remark)</option><option value="playful">Playful (occasional short joke)</option></select>
+          <span className="mt-1 block text-xs font-normal">Never applies to payments, privacy, security or data accuracy.</span></label>
+        <label className="text-sm font-semibold text-forest-900">Mascot animation intensity
+          <select name="motion" value={mo} onChange={(e) => setMo(e.target.value)} className={inp}><option value="calm">Calm</option><option value="balanced">Balanced</option><option value="lively">Lively</option></select>
+          <span className="mt-1 block text-xs font-normal">Visitors who prefer reduced motion always see a still mascot.</span></label>
+      </div>
+      <label className="text-sm font-semibold text-forest-900">Welcome message (max 300)<textarea name="greeting" rows={2} maxLength={300} value={g} onChange={(e) => setG(e.target.value)} className={inp} /></label>
+      <label className="text-sm font-semibold text-forest-900">Suggested questions (one per line, up to 4, max 60 characters each)
+        <textarea name="suggestions" rows={4} value={sg} onChange={(e) => setSg(e.target.value)} className={inp} placeholder={"Find my ideal database\nExplore countries\nBrowse industries\nHow does BeigeLeads work?"} />
+        <span className="mt-1 block text-xs font-normal">Shown on pages without their own questions (product and cart pages keep theirs). Each one is sent as a normal message, so keep them answerable. Empty = built-in questions.</span></label>
       <label className="text-sm font-semibold text-forest-900">Style notes for the assistant (max 1,500)
         <textarea name="instructions" rows={5} maxLength={1500} value={ins} onChange={(e) => setIns(e.target.value)} className={inp} />
         <span className="mt-1 block text-xs font-normal">Tone and wording only. These notes can never override the safety rules (no invented prices, counts or claims) and are lower priority than them.</span></label>

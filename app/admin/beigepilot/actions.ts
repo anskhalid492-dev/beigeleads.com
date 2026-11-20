@@ -64,6 +64,11 @@ export async function saveSettingsAction(_: Result | null, form: FormData): Prom
   if (form.has("enabled")) patch.enabled = form.getAll("enabled").pop() === "1" ? "1" : "0";
   if (form.has("greeting")) patch.greeting = String(form.get("greeting")).trim().slice(0, 300);
   if (form.has("retentionDays")) { patch.saveChats = form.getAll("saveChats").pop() === "1" ? "1" : "0"; const d = Number(form.get("retentionDays")); patch.retentionDays = String([30, 90, 180, 365].includes(d) ? d : 90); }
+  if (form.has("name")) patch.name = String(form.get("name")).trim().slice(0, 24) || "Pilo";
+  if (form.has("humor")) { const h = String(form.get("humor")); patch.humor = ["professional", "friendly", "playful"].includes(h) ? h : "friendly"; }
+  if (form.has("motion")) { const m = String(form.get("motion")); patch.motion = ["calm", "balanced", "lively"].includes(m) ? m : "balanced"; }
+  if (form.has("launcher")) patch.launcher = String(form.get("launcher")) === "left" ? "left" : "right";
+  if (form.has("suggestions")) patch.suggestions = String(form.get("suggestions")).split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 4).join("\n");
   if (form.has("instructions")) patch.instructions = String(form.get("instructions")).trim().slice(0, 1500);
   if (form.has("dailyRequestLimit")) { patch.dailyRequestLimit = String(Math.round(numOr(form.get("dailyRequestLimit"), 500, 1, 1_000_000))); patch.dailyTokenLimit = String(Math.round(numOr(form.get("dailyTokenLimit"), 500000, 1000, 1_000_000_000))); const m = optNum(form.get("monthlySpendUsd")); patch.monthlySpendUsd = m ? String(m) : ""; }
   if (patch.enabled === "1") {
