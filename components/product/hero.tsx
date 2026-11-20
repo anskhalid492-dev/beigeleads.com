@@ -45,7 +45,7 @@ function DbWindow({ product, rows }: { product: Product; rows: readonly ProductS
         <span>
           Showing {Math.min(rows.length, 6)} of {fmtNum(product.recordCount) ?? "an uncounted number of"} records
         </span>
-        <span>CSV · Excel · TXT</span>
+        <span>{product.fileFormats?.trim() || "CSV · Excel · TXT"}</span>
       </div>
     </div>
   );
@@ -56,13 +56,13 @@ export function ProductHero({
 }: { product: Product; category: Category; country: Country; rows: readonly ProductSampleRow[]; forSale: boolean }) {
   const hasEmail = product.fields.includes("Email");
   const cityName = product.citySlug ? getCity(country.slug, product.citySlug)?.name : undefined;
-  const coverage = cityName ? `${cityName}, ${country.name}` : product.scope === "country" ? `All of ${country.name}` : country.name;
+  const coverage = product.coverage?.trim() || (cityName ? `${cityName}, ${country.name}` : product.scope === "country" ? `All of ${country.name}` : country.name);
   const sub = cityName ? `in ${cityName}, ${country.name}` : product.scope === "country" ? "Full country coverage" : `for ${withThe(country)}`;
   const general = category.kind === "general";
   const stats = [
     { label: "Records", value: fmtNum(product.recordCount) ?? "Count to be confirmed" },
     ...(product.fields.length ? [{ label: "Data fields", value: String(product.fields.length) }] : []),
-    { label: "File formats", value: "CSV, Excel, TXT", one: true },
+    { label: "File formats", value: product.fileFormats?.trim() || "CSV, Excel, TXT", one: true },
   ];
   const facts = [
     { icon: Globe2, label: "Coverage", value: coverage },

@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { bulkStatusAction, bulkStatusByFilterAction } from "../import/actions";
+import { bulkLastUpdatedAction, bulkStatusAction, bulkStatusByFilterAction } from "../import/actions";
 
 type R = { id: number; slug: string; name: string; status: string; category: string; country: string; channel: string; packages: string; restricted: string[]; flags: number };
 
 export type F = { q?: string; status?: string; channel?: string; restricted?: "yes" | "no"; flag?: string; importId?: number };
 export function Table({ rows, total, filters }: { rows: R[]; total: number; filters: F }) {
-  const [all, setAll] = useState(false);
+  const [all, setAll] = useState(false); const [date, setDate] = useState(""); const [dateAsk, setDateAsk] = useState(false);
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [msg, setMsg] = useState(""); const [refused, setRefused] = useState<{ slug: string; reasons: string[] }[]>([]); const [busy, setBusy] = useState(false); const [askPub, setAskPub] = useState(false); const [override, setOverride] = useState(false);
   const toggle = (id: number) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -20,8 +20,22 @@ export function Table({ rows, total, filters }: { rows: R[]; total: number; filt
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
   }
+  async function setDates() {
+    setDateAsk(false); setMsg("Working..."); setRefused([]); setBusy(true);
+    try {
+      const r = await bulkLastUpdatedAction(all ? { filters } : { ids: [...sel] }, date);
+      setMsg(r.message); if (r.ok) { setSel(new Set()); setAll(false); setTimeout(() => location.reload(), 1200); }
+    } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
+    setBusy(false);
+  }
   return (
     <div>
+      <div className="flex flex-wrap items-center gap-2 border-b border-sand-200 bg-sand-50 p-3 text-sm">
+        <label className="flex items-center gap-2 font-semibold">Last updated <input type="date" value={date} onChange={(e) => { setDate(e.target.value); setDateAsk(false); }} className="rounded-lg border border-sand-300 px-2 py-1 font-normal" /></label>
+        <button type="button" disabled={busy || !date || (!sel.size && !all)} onClick={() => setDateAsk(true)} className="rounded-full border border-forest-900 px-3 py-1 font-semibold disabled:opacity-40">Set for {all ? `all ${total} matching` : `${sel.size} selected`}</button>
+        {total > 0 && !all && <button type="button" className="underline" onClick={() => setAll(true)}>Select all {total} (every page)</button>}
+        {dateAsk && <span className="flex items-center gap-2 rounded-lg bg-sand-100 px-3 py-1">Set last updated to {date} on {all ? total : sel.size} product(s)? <button type="button" onClick={setDates} className="rounded-full bg-forest-900 px-3 py-1 font-semibold text-sand-50">Yes, set it</button><button type="button" onClick={() => setDateAsk(false)} className="underline">Cancel</button></span>}
+      </div>
       <div className="flex flex-wrap items-center gap-2 border-b border-sand-200 p-3 text-sm">
         <span>{all ? `All ${total} matching selected` : `${sel.size} selected`}</span>
         {!all && total > rows.length && <button onClick={() => setAll(true)} className="underline">Select all {total} matching the filter (all pages)</button>}

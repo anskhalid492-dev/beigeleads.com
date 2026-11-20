@@ -53,6 +53,11 @@ export type Product = {
   /** Admin-edited SEO text for imported lists (section 95). */
   seoTitle?: string;
   metaDescription?: string;
+  /** Admin-edited display texts (section 96). Empty = automatic. */
+  fileFormats?: string;
+  coverage?: string;
+  /** Real masked sample rows entered by the owner (section 97). */
+  samples?: readonly { business: string; email: string; phone: string; city?: string }[];
 };
 
 export type Package = {
@@ -212,13 +217,22 @@ const products = staticProducts;
 let importedProducts: readonly Product[] = [];
 const importedCategories = new Map<string, Category>();
 const importedCountries = new Map<string, Country>();
-export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[] }) {
+let hiddenStatic: ReadonlySet<string> = new Set();
+export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[]; hidden?: readonly string[] }) {
   importedProducts = x.products;
+  hiddenStatic = new Set(x.hidden ?? []);
   importedCategories.clear(); importedCountries.clear();
   for (const c of x.categories) importedCategories.set(c.slug, c);
   for (const c of x.countries) importedCountries.set(c.slug, c);
 }
-const allProducts = () => (importedProducts.length ? [...staticProducts, ...importedProducts] : staticProducts);
+// A database row with the same slug REPLACES the built-in product (built-ins edited in the admin); an unpublished built-in is hidden.
+const allProducts = (): readonly Product[] => {
+  if (!importedProducts.length && !hiddenStatic.size) return staticProducts;
+  const over = new Set(importedProducts.map((p) => p.slug));
+  return [...staticProducts.filter((p) => !over.has(p.slug) && !hiddenStatic.has(p.slug)), ...importedProducts];
+};
+/** The products defined in code (used to copy them into the database). */
+export const getStaticProducts = () => staticProducts;
 
 /** Packages a buyer may be offered. A package larger than the list's real record count is never offered.
  *  While a list is still placeholder data the count is unknown, so every configured package is shown (the page says so). */

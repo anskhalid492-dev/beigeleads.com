@@ -1,4 +1,5 @@
 // Import end to end against a LOCAL D1 + KV: plan, apply (idempotent), duplicates, publish gate, hydrate, pricing, rollback.
+import { eq } from "drizzle-orm";
 import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,7 +11,8 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
-import { getProductRow, updateProduct } from "@/lib/import/store";
+import { createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
+import { getStaticProducts } from "@/lib/catalog";
 import { applyBatch, finishImport, listProducts, planBatch, rollbackImport, setStatus, startImport, type ImportRow } from "@/lib/import/store";
 import { reservedSlugs } from "@/lib/import/reserved";
 import { buildProduct, parseWoo } from "@/lib/import/woo";
@@ -52,7 +54,7 @@ describe("catalog import", () => {
     const clean = list.find((r) => r.sourceId === "20")!, consumer = list.find((r) => r.sourceId === "30")!;
     const r = await setStatus(db, [clean.id, consumer.id], "published");
     expect(r.changed).toBe(1); expect(r.refused.map((x) => x.slug)).toEqual([consumer.slug]); expect(Array.isArray(r.noLink)).toBe(true);
-    await env.CACHE.delete("catalog:imp:v1");
+    await env.CACHE.delete("catalog:imp:v2");
     await hydrateCatalog(env, true);
     const p = getProduct(clean.slug)!;
     expect(p).toBeTruthy(); expect(p.imported).toBe(true);
@@ -80,15 +82,45 @@ describe("catalog import", () => {
     const pub = (await listProducts(db, { status: "published" }, 1)).rows[0];
     const before = (await getProductRow(db, pub.id))!;
     const pk = JSON.parse(before.packagesJson) as { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; link?: string }[];
-    const edit = { name: "Renamed list", title: "", description: "Edited.", seoTitle: "Custom SEO title", metaDescription: "", packages: pk.map((k) => ({ name: k.name, records: k.records, priceUsdCents: 1234 })) };
+    const edit = { name: "Renamed list", title: "", description: "Edited.", seoTitle: "Custom SEO title", metaDescription: "", recordCount: 4321, dataFields: ["Email", "Phone"], fileFormats: "CSV", coverage: "Everywhere", lastUpdated: "2026-11-01", placeholder: false, forSale: true, packages: pk.map((k) => ({ name: k.name, records: k.records, priceUsdCents: 1234 })) };
     expect((await updateProduct(db, pub.id, edit)).ok).toBe(true);
     const after = (await getProductRow(db, pub.id))!;
-    expect(after.name).toBe("Renamed list"); expect(after.title).toBe("Renamed list"); expect(after.seoTitle).toBe("Custom SEO title"); expect(after.metaDescription).toBeNull();
+    expect(after.recordCount).toBe(4321); expect(after.lastUpdated).toBe("2026-11-01"); expect(JSON.parse(after.dataFieldsJson)).toEqual(["Email", "Phone"]); expect(after.name).toBe("Renamed list"); expect(after.title).toBe("Renamed list"); expect(after.seoTitle).toBe("Custom SEO title"); expect(after.metaDescription).toBeNull();
     const links = (JSON.parse(after.packagesJson) as { link?: string }[]).map((k) => k.link);
     expect(links).toEqual(pk.map((k) => k.link));
     const zero = await updateProduct(db, pub.id, { ...edit, packages: edit.packages.map((k) => ({ ...k, priceUsdCents: 0 })) });
     expect(zero.ok).toBe(false);
     expect((await updateProduct(db, pub.id, { ...edit, packages: [edit.packages[0], edit.packages[0]] })).ok).toBe(false);
+  });
+  it("built-in products become editable rows that replace the code version, and unpublishing hides them", async () => {
+    const db = getDbFromEnv(env);
+    const a = await importBuiltin(db);
+    expect(a.added).toBe(getStaticProducts().length);
+    expect((await importBuiltin(db)).added).toBe(0);
+    const row = (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.slug, "dentists-us")))[0];
+    expect(row.origin).toBe("builtin"); expect(row.forSale).toBe(0); expect(row.placeholder).toBe(1);
+    const pk = JSON.parse(row.packagesJson) as { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number }[];
+    await setStatus(db, [row.id], "published");
+    expect((await updateProduct(db, row.id, { name: "Dentist Email List", title: "", description: "Real.", seoTitle: "", metaDescription: "", recordCount: 777, dataFields: ["Email"], fileFormats: "CSV", coverage: "", lastUpdated: "2026-11-02", placeholder: false, forSale: true, packages: pk })).ok).toBe(true);
+    await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
+    const live = getProduct("dentists-us")!;
+    expect(live.recordCount).toBe(777); expect(live.status).toBe("live"); expect(live.placeholderData).toBe(false); expect(live.lastVerified).toBe("2026-11-02"); expect(live.fileFormats).toBe("CSV");
+    await setStatus(db, [row.id], "draft");
+    await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
+    expect(getProduct("dentists-us")).toBeUndefined(); // unpublished built-in is hidden, not shown from code
+    await setStatus(db, [row.id], "published");
+  });
+  it("creates a draft by hand, duplicates it with a free slug and no link, and bulk-sets last updated", async () => {
+    const db = getDbFromEnv(env);
+    const c = await createProduct(db, { name: "Hand Made List", title: "", description: "", seoTitle: "", metaDescription: "", recordCount: 10, dataFields: [], fileFormats: "", coverage: "", lastUpdated: "", placeholder: false, forSale: true, packages: [{ name: "Starter", records: 10, priceUsdCents: 500 }], categoryName: "Lawyers", countryName: "Canada", countryCode: "ca", region: "", channel: "business-email" });
+    expect(c.ok).toBe(true); expect(c.slug).toBe("hand-made-list");
+    const row = (await getProductRow(db, c.id!))!;
+    expect(row.status).toBe("draft"); expect(row.origin).toBe("manual"); expect(row.countryCode).toBe("CA");
+    const d1 = await duplicateProduct(db, c.id!), d2 = await duplicateProduct(db, c.id!);
+    expect(d1.slug).toBe("hand-made-list-copy"); expect(d2.slug).toBe("hand-made-list-copy-2");
+    const n = await setLastUpdated(db, [c.id!, d1.id!, d2.id!], "2026-11-20");
+    expect(n).toBe(3); expect((await getProductRow(db, d2.id!))!.lastUpdated).toBe("2026-11-20");
+    await expect(setLastUpdated(db, [c.id!], "yesterday")).rejects.toThrow();
   });
   it("rollback removes only unpublished, never-ordered imports", async () => {
     const db = getDbFromEnv(env);

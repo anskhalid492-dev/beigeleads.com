@@ -1,7 +1,9 @@
 // Imported catalog: plan / apply / roll back an import batch, review and publish. Uses D1 only. Never throws before migration 0035 (callers check `ready`).
 import { and, count, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
+import { getCategories, getCategory, getCountries, getCountry, getStaticProducts } from "@/lib/catalog";
 import { schema } from "@/lib/db";
+import { reservedSlugs } from "./reserved";
 import { publishBlockers } from "./woo";
 
 type Db = ReturnType<typeof import("@/lib/db").getDbFromEnv>;
@@ -27,7 +29,7 @@ const parse = <T,>(s: string | null | undefined, d: T): T => { try { return s ? 
 
 /** Is the import schema applied? */
 export async function importReady(db: Db): Promise<boolean> {
-  try { await db.select({ n: count() }).from(schema.catalogProducts); return true; } catch { return false; }
+  try { await db.select({ n: count(), o: schema.catalogProducts.origin }).from(schema.catalogProducts).limit(1); return true; } catch { return false; }
 }
 
 export type Existing = { id: number; sourceId: string | null; slug: string; name: string; status: string };
@@ -190,9 +192,12 @@ export async function setStatus(db: Db, ids: number[], status: "draft" | "publis
   return { changed: ok.length, refused, noLink };
 }
 
+const isoDate = z.string().refine((v) => v === "" || (/^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`))), "Use the format YYYY-MM-DD");
 export const productEditSchema = z.object({
   name: z.string().trim().min(1).max(200), title: z.string().trim().max(200), description: z.string().max(2000),
   seoTitle: z.string().trim().max(200), metaDescription: z.string().trim().max(400),
+  recordCount: z.number().int().min(0).max(5_000_000_000).nullable(), dataFields: z.array(z.string().trim().min(1).max(60)).max(40),
+  fileFormats: z.string().trim().max(80), coverage: z.string().trim().max(160), lastUpdated: isoDate, placeholder: z.boolean(), forSale: z.boolean(),
   packages: z.array(z.object({ name: z.enum(["Starter", "Professional", "Complete"]), records: z.number().int().min(0).max(5_000_000_000), priceUsdCents: z.number().int().min(0).max(100_000_00), highlighted: z.boolean().optional() })).min(1).max(3),
 });
 export type ProductEdit = z.infer<typeof productEditSchema>;
@@ -200,8 +205,9 @@ export type ProductEdit = z.infer<typeof productEditSchema>;
 export async function getProductRow(db: Db, id: number) {
   return (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.id, id)).limit(1))[0] ?? null;
 }
+export const rowFields = (r: Pick<Row, "dataFieldsJson">) => parse<string[]>(r.dataFieldsJson, []);
 
-/** Edit the sellable text and packages. Slug, category, country and restricted flags are fixed here. A PUBLISHED product cannot be saved with a package price of 0. Source download links stay on their package. */
+/** Edit the sellable text, figures and packages. Slug, category, country and restricted flags are fixed here. A PUBLISHED product cannot be saved with a package price of 0. Source download links stay on their package. */
 export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise<{ ok: boolean; message: string }> {
   const row = await getProductRow(db, id);
   if (!row) return { ok: false, message: "That product no longer exists." };
@@ -211,7 +217,82 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
   const packages = e.packages.map((k) => ({ ...k, ...(old.find((o) => o.name === k.name)?.link ? { link: old.find((o) => o.name === k.name)!.link } : {}) }));
   await db.update(schema.catalogProducts).set({
     name: e.name, title: e.title || e.name, description: e.description, seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null,
+    recordCount: e.recordCount, dataFieldsJson: j([...new Set(e.dataFields)]), fileFormats: e.fileFormats || null, coverage: e.coverage || null, lastUpdated: e.lastUpdated || null,
+    placeholder: e.placeholder ? 1 : 0, forSale: e.forSale ? 1 : 0,
     packagesJson: j(packages), updatedAt: Math.floor(Date.now() / 1000),
   }).where(eq(schema.catalogProducts.id, id));
   return { ok: true, message: "Saved." };
+}
+
+/** A free slug: base, base-2, base-3 ... (checks products AND old-slug aliases). */
+export async function uniqueSlug(db: Db, base: string): Promise<string> {
+  const root = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 140) || "product";
+  const taken = new Set<string>();
+  const like_ = `${root}%`;
+  for (const r of await db.select({ s: schema.catalogProducts.slug }).from(schema.catalogProducts).where(like(schema.catalogProducts.slug, like_))) taken.add(r.s);
+  try { for (const r of await db.select({ s: schema.slugAliases.oldSlug }).from(schema.slugAliases).where(like(schema.slugAliases.oldSlug, like_))) taken.add(r.s); } catch { /* migration 0036 not applied */ }
+  const reserved = reservedSlugs();
+  const free = (x: string) => !taken.has(x) && !reserved.has(x);
+  if (free(root)) return root;
+  for (let i = 2; i < 1000; i++) if (free(`${root}-${i}`)) return `${root}-${i}`;
+  return `${root}-${Date.now()}`;
+}
+
+export const newProductSchema = productEditSchema.extend({
+  categoryName: z.string().trim().min(1).max(120), countryName: z.string().trim().min(1).max(80), countryCode: z.string().trim().min(2).max(8),
+  region: z.string().trim().max(80), channel: z.enum(["business-email", "consumer-email", "phone", "email"]),
+});
+export type NewProduct = z.infer<typeof newProductSchema>;
+const slugify = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+/** Create a DRAFT product by hand. Category and country reuse an existing slug when the name matches one. */
+export async function createProduct(db: Db, e: NewProduct): Promise<{ ok: boolean; message: string; id?: number; slug?: string }> {
+  if (new Set(e.packages.map((k) => k.name)).size !== e.packages.length) return { ok: false, message: "Each package name can be used once." };
+  const cat = getCategories().find((c) => c.name.toLowerCase() === e.categoryName.toLowerCase());
+  const known = await db.select({ s: schema.catalogProducts.categorySlug, n: schema.catalogProducts.categoryName }).from(schema.catalogProducts).where(eq(schema.catalogProducts.categoryName, e.categoryName)).limit(1);
+  const categorySlug = cat?.slug ?? known[0]?.s ?? slugify(e.categoryName);
+  const countrySlug = getCountries().find((c) => c.name.toLowerCase() === e.countryName.toLowerCase())?.slug ?? slugify(e.countryName);
+  const slug = await uniqueSlug(db, slugify(e.name) || `${countrySlug}-${categorySlug}`);
+  const [r] = await db.insert(schema.catalogProducts).values({
+    slug, status: "draft", name: e.name, title: e.title || e.name, description: e.description, categorySlug, categoryName: e.categoryName, channel: e.channel, grp: "general",
+    countrySlug, countryCode: e.countryCode.toUpperCase(), countryName: e.countryName, region: e.region || null, recordCount: e.recordCount, packagesJson: j(e.packages),
+    seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null, dataFieldsJson: j(e.dataFields), fileFormats: e.fileFormats || null, coverage: e.coverage || null,
+    lastUpdated: e.lastUpdated || null, origin: "manual", placeholder: e.placeholder ? 1 : 0, forSale: e.forSale ? 1 : 0, updatedAt: Math.floor(Date.now() / 1000),
+  }).returning({ id: schema.catalogProducts.id });
+  return { ok: true, message: "Created as a draft.", id: r.id, slug };
+}
+
+/** Copy a product into a new DRAFT (own slug, no delivery link, no source id, no restricted override). */
+export async function duplicateProduct(db: Db, id: number): Promise<{ ok: boolean; message: string; id?: number; slug?: string }> {
+  const row = await getProductRow(db, id);
+  if (!row) return { ok: false, message: "That product no longer exists." };
+  const slug = await uniqueSlug(db, `${row.slug}-copy`);
+  const { id: _id, createdAt: _c, sourceId: _s, importId: _i, ...rest } = row; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const packages = rowPackages(row).map(({ link: _l, ...k }) => k); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [r] = await db.insert(schema.catalogProducts).values({ ...rest, slug, name: `${row.name} (copy)`, status: "draft", origin: "manual", packagesJson: j(packages), updatedAt: Math.floor(Date.now() / 1000) }).returning({ id: schema.catalogProducts.id });
+  return { ok: true, message: "Copied as a draft.", id: r.id, slug };
+}
+
+/** Copy the products defined in code into the database so the admin can edit them. Idempotent: existing slugs are left alone. */
+export async function importBuiltin(db: Db): Promise<{ added: number; existing: number }> {
+  let added = 0, existing = 0;
+  for (const p of getStaticProducts()) {
+    if ((await db.select({ id: schema.catalogProducts.id }).from(schema.catalogProducts).where(eq(schema.catalogProducts.slug, p.slug)).limit(1)).length) { existing++; continue; }
+    const c = getCategory(p.categorySlug), k = getCountry(p.countrySlug);
+    await db.insert(schema.catalogProducts).values({
+      slug: p.slug, status: "published", name: p.name, title: p.title, description: p.description, categorySlug: p.categorySlug, categoryName: c?.name ?? p.categorySlug, channel: "business-email",
+      grp: c?.kind === "general" ? "geographic" : "industry", countrySlug: p.countrySlug, countryCode: k?.code ?? "", countryName: k?.name ?? p.countrySlug, recordCount: p.recordCount,
+      packagesJson: j(p.packages), dataFieldsJson: j(p.fields), lastUpdated: p.lastVerified, origin: "builtin", placeholder: p.placeholderData ? 1 : 0, forSale: p.status === "live" ? 1 : 0,
+      accuracyPct: p.accuracyPct, scope: p.scope ?? "country", city: p.citySlug ?? null, updatedAt: Math.floor(Date.now() / 1000),
+    });
+    added++;
+  }
+  return { added, existing };
+}
+
+/** Set "Last updated" on many products at once (ids). */
+export async function setLastUpdated(db: Db, ids: number[], date: string): Promise<number> {
+  if (date !== "" && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Use the format YYYY-MM-DD");
+  for (let i = 0; i < ids.length; i += 40) await db.update(schema.catalogProducts).set({ lastUpdated: date || null, updatedAt: Math.floor(Date.now() / 1000) }).where(inArray(schema.catalogProducts.id, ids.slice(i, i + 40)));
+  return ids.length;
 }

@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin/require-admin";
 import { clearImportedCache } from "@/lib/catalog-db";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { reservedSlugs } from "@/lib/import/reserved";
-import { applyBatch, finishImport, listIds, productEditSchema, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -100,4 +100,45 @@ export async function saveProductAction(id: unknown, dataIn: unknown): Promise<{
   const r = await updateProduct(db(), i.data, d.data);
   if (r.ok) { await audit(a.email, `Edited product #${i.data} (${d.data.name})`); await refresh(); }
   return r;
+}
+
+export async function createProductAction(dataIn: unknown): Promise<{ ok: boolean; message: string; id?: number }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const d = newProductSchema.safeParse(dataIn);
+  if (!d.success) return { ok: false, message: `Not saved: ${d.error.issues[0].path.join(".")} ${d.error.issues[0].message}.` };
+  const r = await createProduct(db(), d.data);
+  if (r.ok) { await audit(a.email, `Created product ${r.slug} (draft)`); await refresh(); }
+  return r;
+}
+
+export async function duplicateProductAction(id: unknown): Promise<{ ok: boolean; message: string; id?: number }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const i = z.number().int().safeParse(id); if (!i.success) return { ok: false, message: "Bad product id." };
+  const r = await duplicateProduct(db(), i.data);
+  if (r.ok) { await audit(a.email, `Duplicated product #${i.data} as ${r.slug} (draft)`); await refresh(); }
+  return r;
+}
+
+export async function importBuiltinAction(): Promise<{ ok: boolean; message: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  try {
+    const r = await importBuiltin(db());
+    await audit(a.email, `Built-in products copied into the database: ${r.added} added, ${r.existing} already there`); await refresh();
+    return { ok: true, message: `${r.added} built-in products added, ${r.existing} were already there.` };
+  } catch { return { ok: false, message: "Could not copy. Run migration 0036 in D1 first (one statement at a time)." }; }
+}
+
+/** Set "Last updated" for the selected products, or for EVERY product matching the filters (all pages). Empty date clears it. */
+export async function bulkLastUpdatedAction(target: unknown, dateIn: unknown): Promise<{ ok: boolean; message: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const date = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use the format YYYY-MM-DD").safeParse(dateIn);
+  const t = z.union([z.object({ ids: z.array(z.number().int()).max(200) }), z.object({ filters: z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), importId: z.number().int().optional() }) })]).safeParse(target);
+  if (!date.success || !t.success) return { ok: false, message: "Enter the date as YYYY-MM-DD." };
+  const ids = "ids" in t.data ? t.data.ids : await listIds(db(), t.data.filters, 5000);
+  if (!ids.length) return { ok: false, message: "No products selected." };
+  try {
+    const n = await setLastUpdated(db(), ids, date.data);
+    await audit(a.email, `Last updated set to ${date.data || "(empty)"} for ${n} product(s)`); await refresh();
+    return { ok: true, message: `Last updated set to ${date.data || "empty"} on ${n} product(s). Published pages show it within about a minute.` };
+  } catch (e) { return { ok: false, message: e instanceof Error ? e.message : "Could not save." }; }
 }

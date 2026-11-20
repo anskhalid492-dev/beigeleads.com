@@ -1060,9 +1060,26 @@ export const catalogProducts = sqliteTable(
     note: text("note"),
     createdAt: createdAt(),
     updatedAt: integer("updated_at"),
+    // Migration 0036 (section 96)
+    dataFieldsJson: text("data_fields_json").notNull().default("[]"),
+    fileFormats: text("file_formats"),
+    coverage: text("coverage"),
+    lastUpdated: text("last_updated"),
+    origin: text("origin").notNull().default("import"),
+    placeholder: integer("placeholder").notNull().default(0),
+    forSale: integer("for_sale").notNull().default(1),
+    accuracyPct: integer("accuracy_pct"),
+    scope: text("scope"),
+    sampleJson: text("sample_json"),
   },
   (t) => [uniqueIndex("catalog_products_slug_uq").on(t.slug), uniqueIndex("catalog_products_source_uq").on(t.sourceId), index("catalog_products_import_idx").on(t.importId, t.status)],
 );
+
+export const slugAliases = sqliteTable("slug_aliases", {
+  oldSlug: text("old_slug").primaryKey(),
+  newSlug: text("new_slug").notNull(),
+  createdAt: createdAt(),
+});
 
 export const catalogImportErrors = sqliteTable("catalog_import_errors", {
   id: integer("id").primaryKey({ autoIncrement: true }),
