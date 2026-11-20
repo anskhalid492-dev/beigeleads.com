@@ -84,6 +84,18 @@ export const TAXONOMY: TaxGroup[] = [
     ],
   },
   {
+    slug: "management-levels", name: "Management Levels", menuName: "Management Levels", icon: "users", status: "upcoming",
+    short: "C-suite, directors and managers.",
+    blurb: "Lists built around seniority rather than job title. Not on sale yet; request a custom list to reach one management level in an industry or place.",
+    children: [
+      up("c-suite", "C-Suite Contacts", "Chief executives and officers", "Email contacts at chief-officer level."),
+      up("vice-presidents", "VP Contacts", "Vice presidents", "Email contacts at vice-president level."),
+      up("directors", "Director Contacts", "Directors", "Email contacts at director level."),
+      up("managers", "Manager Contacts", "Managers", "Email contacts at manager level."),
+      up("owners-partners", "Owner and Partner Contacts", "Owners and partners", "Email contacts for business owners and partners."),
+    ],
+  },
+  {
     slug: "industry-databases", name: "Industry Databases", menuName: "Industry Lists", icon: "building", status: "available",
     short: "Dentists, restaurants and more.",
     blurb: "Pick the type of business you sell to. Industries with a ready-made list link straight to it; the others are open for custom requests.",

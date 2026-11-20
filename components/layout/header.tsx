@@ -50,24 +50,14 @@ export function Header({ lists }: { lists: ListsMenuData }) {
   const [mobile, setMobile] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
-  const listsBtn = useRef<HTMLSpanElement>(null);
-  const [listsLeft, setListsLeft] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const close = useCallback(() => {
     clearTimeout(timer.current);
     setOpen(null);
   }, []);
-  // Anchor the Lists panel under its nav item, clamped so the widest state (20rem) stays inside the bar.
-  const place = () => {
-    const w = wrap.current, b = listsBtn.current;
-    if (!w || !b) return;
-    const left = b.getBoundingClientRect().left - w.getBoundingClientRect().left - 12;
-    setListsLeft(Math.max(0, Math.min(left, w.clientWidth - 336)));
-  };
   const hoverOpen = (k: Key) => {
     clearTimeout(timer.current);
-    if (k === "lists") place();
     setOpen(k);
   };
   const hoverClose = () => {
@@ -118,12 +108,11 @@ export function Header({ lists }: { lists: ListsMenuData }) {
       onKeyDown={(e) => {
         if (e.key === "ArrowDown") {
           e.preventDefault();
-          if (k === "lists") place();
-          setOpen(k);
+                setOpen(k);
           requestAnimationFrame(() => document.querySelector<HTMLElement>(`#menu-${k} button, #menu-${k} a`)?.focus());
         }
       }}
-      onClick={() => { if (k === "lists") place(); setOpen((v) => (v === k ? null : k)); }}
+      onClick={() => setOpen((v) => (v === k ? null : k))}
       className={`flex items-center gap-1 rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${open === k || active ? "bg-sand-100" : ""}`}
     >
       {label} <ChevronDown className={`size-4 transition-transform ${open === k ? "rotate-180" : ""}`} aria-hidden />
@@ -142,7 +131,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
 
           <nav aria-label="Main" className="hidden items-center gap-0.5 lg:flex">
             <div onMouseEnter={() => hoverOpen("lists")} onMouseLeave={hoverClose}>
-              <span ref={listsBtn} className="inline-flex">{trigger("lists", "Lists", pathname.startsWith("/lists"))}</span>
+              {trigger("lists", "Lists", pathname.startsWith("/lists"))}
             </div>
             <div onMouseEnter={() => hoverOpen("solutions")} onMouseLeave={hoverClose}>
               {trigger("solutions", "Solutions", pathname.startsWith("/solutions"))}
@@ -221,7 +210,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
                 </div>
               </div>
             ) : (
-              <div style={{ marginLeft: listsLeft }} className="w-fit max-w-full"><ListsMegaPanel tax={tax} industries={industries} onNavigate={close} /></div>
+              <ListsMegaPanel tax={tax} industries={industries} onNavigate={close} />
             )}
           </div>
         )}
