@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BadgeCheck, CalendarClock, EyeOff, Mail, ShieldCheck, Wallet, Hourglass, TrendingDown, MailX } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { Faq } from "@/components/shared/faq";
+import { SolutionFaq } from "@/components/solutions/sections";
 import { Button } from "@/components/ui/button";
 import { RecordJourney } from "@/components/data-sources/record-journey";
 import { SourceFlow } from "@/components/data-sources/source-flow";
@@ -219,7 +219,7 @@ export default function DataSourcesPage() {
         </ul>
       </section>
 
-      <Faq heading="Questions about our data" items={faq} />
+      <SolutionFaq name="Our Data" items={faq} />
     </>
   );
 }

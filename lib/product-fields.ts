@@ -69,3 +69,8 @@ export const FIELD_CATALOG = [
 ] as const;
 
 export const FIELD_NAMES: readonly string[] = FIELD_CATALOG.map((f) => f.name);
+
+/** Short field text for cards and meta descriptions: the first few names and how many more. */
+export function fieldSummary(fields: readonly string[], n = 6): string {
+  return fields.length <= n ? fields.join(", ") : `${fields.slice(0, n).join(", ")} and ${fields.length - n} more`;
+}

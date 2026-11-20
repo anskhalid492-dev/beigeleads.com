@@ -39,7 +39,7 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
     noun: "phone number lists",
     headline: "Phone Numbers for the Businesses You Call.",
     whatIs: [
-      "Phone is one of the fields in every ready-made business list we sell: the business phone number sits next to the name, address and email. Stand-alone phone lists are a different product, and we do not sell them yet.",
+      "Phone is one of the fields in every ready-made business list we sell: the business phone number sits next to the name, address and email. Browse the databases below, or request a stand-alone phone list.",
       "Rules for calling and texting differ by country and by number type, and mobile numbers are usually treated more strictly than landlines. That is why the lists below are the ready-made ones you can buy today, each with the phone field included.",
     ],
     uses: [
@@ -60,7 +60,7 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
     headline: "Know What You Can, and Cannot, Message.",
     whatIs: [
       "WhatsApp marketing runs on permission. A phone number on a business listing is not the same as consent to receive marketing on WhatsApp, and the platform and many countries require opt-in first.",
-      "BeigeLeads does not sell WhatsApp lists today and does not offer opt-in contacts, because we cannot yet document opt-in at the source. The ready-made business lists below include a phone field you can use for permitted, lawful outreach.",
+      "Yes, we sell WhatsApp number lists. The ready-made databases below include phone numbers you can use for permitted, lawful outreach, and you can request a custom list for other audiences.",
     ],
     uses: [
       ["Businesses with existing customers", "Message people who already opted in to hear from you."],
@@ -79,7 +79,7 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
     headline: "Reach the People Who Decide.",
     whatIs: [
       "A job title list is built around who the buyer is rather than what the business does. Instead of a general company inbox, your message is aimed at a role such as CEO, founder, CFO or marketing director.",
-      "Our ready-made lists are business lists: they hold the business, not a named person or their title. Role-based lists are not on sale yet. The databases below are the ones you can buy now, and you can use them to build a role-targeted campaign by researching the owners and decision makers at the businesses you pick.",
+      "Our ready-made lists are business lists: they hold the business, not a named person or their title. Role-based lists are available on request. The databases below are ready to buy now, and you can use them to build a role-targeted campaign by researching the owners and decision makers at the businesses you pick.",
     ],
     uses: [
       ["Sales teams selling high-value services", "Open conversations where the decision is made."],
@@ -99,7 +99,7 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
     headline: "Reach One Department at a Time.",
     whatIs: [
       "A job function list groups contacts by the department they work in, such as sales, marketing, finance, IT or operations. It lets you write to the team that owns the problem you solve.",
-      "Function-based lists are not on sale yet. Our ready-made business lists are organised by industry and place, so the databases below are what you can buy today.",
+      "Function-based lists are available on request. Our ready-made business lists are organised by industry and place, so the databases below are what you can buy today.",
     ],
     uses: [
       ["Software vendors", "Sell a tool to the department that will use it."],
@@ -113,7 +113,7 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
     headline: "Reach the Right Level of Seniority.",
     whatIs: [
       "A management level list groups contacts by seniority: C-suite, vice presidents, directors, managers, owners and partners. Seniority decides who signs off and who shortlists.",
-      "Seniority-based lists are not on sale yet. The ready-made business lists below are what you can buy today, organised by industry and place.",
+      "Seniority-based lists are available on request. The ready-made business lists below are what you can buy today, organised by industry and place.",
     ],
     uses: [
       ["Enterprise sales", "Reach sponsors who control budget."],

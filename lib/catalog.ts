@@ -67,7 +67,7 @@ export type Package = {
   highlighted?: boolean;
 };
 
-import { FIELD_NAMES, PRODUCT_ACCURACY, PRODUCT_VERIFIED } from "@/lib/product-fields";
+import { FIELD_NAMES, PRODUCT_ACCURACY, PRODUCT_VERIFIED, fieldSummary } from "@/lib/product-fields";
 export const FIELDS = [
   "Business name",
   "Address",
@@ -291,7 +291,7 @@ export function getProductFaqs(p: Product, c: Category, k: Country): ProductFaq[
   const verified = p.lastVerified ?? "not verified yet";
   return [
     [`What information is included in the ${p.name}?`, p.fields.length
-      ? `Each record can include ${p.fields.map((f) => f.toLowerCase()).join(", ")}. The fields section on this page lists exactly what is in the file.`
+      ? `Each record can include ${fieldSummary(p.fields).toLowerCase()}. The fields section on this page lists exactly what is in the file.`
       : "The exact columns depend on the list. Request the free sample to see the fields and a masked set of rows before you buy."],
     [`How many ${c.singular.toLowerCase()} contacts are available?`, `The list holds ${count}. The count is shown on this page so you can compare it with the package you pick.`],
     ["Which countries are covered?", `This list covers ${k.name}. Other countries are added list by list, and you can request one on the custom list page.`],

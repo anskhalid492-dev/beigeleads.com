@@ -332,7 +332,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
       </div>
 
       <ul aria-label="Included data fields" className="mt-4 flex flex-wrap gap-1.5">
-        {l.fields.map((f) => <li key={f} className="rounded-full bg-sand-100 px-2.5 py-1 text-xs text-forest-900">{f}</li>)}
+        {l.fields.slice(0, 8).map((f) => <li key={f} className="rounded-full bg-sand-100 px-2.5 py-1 text-xs text-forest-900">{f}</li>)}
       </ul>
 
       {l.packages.length > 1 && (

@@ -19,7 +19,7 @@ type Props = { group: TaxGroup; child?: TaxChild; country?: { slug: string; name
 const cta = "inline-flex h-12 items-center rounded-full bg-purple-600 px-6 font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 const ghost = "inline-flex h-12 items-center rounded-full border border-forest-900 px-6 font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50";
 
-const chip = (s: "available" | "upcoming") => (
+const chip = (s: "available" | "upcoming") => s === "upcoming" ? null : (
   <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${s === "available" ? "bg-forest-100 text-forest-900" : "bg-purple-100 text-forest-900"}`}>{STATUS_LABEL[s]}</span>
 );
 
@@ -102,12 +102,12 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
         {products.length > 0 ? (
           <>
             <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{status === "upcoming" && !ruled?.length ? "Ready-Made Databases You Can Buy Today" : `${node.name}: Ready-Made Databases`}</h2>
-            <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} is not on sale yet. These are the real ready-made business databases available now.` : "Each database has its own page with a masked sample, the fields it includes and packages."}{!live && " Some are previews that are not for sale yet."}</p>
+            <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} ready-made databases. Each has a masked sample, its fields and packages.` : "Each database has its own page with a masked sample, the fields it includes and packages."}{!live && " Some are previews that are not for sale yet."}</p>
             <div className="mt-8 space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
             {scoped.length > products.length && <p className="mt-6"><Link href="/lists#databases" className={ghost}>Browse every ready-made list</Link></p>}
           </>
         ) : (
-          <StatusPanel title={country ? `No ${title.toLowerCase()} database is recorded yet` : `${title} is not on sale yet`} text={country ? `We sell national lists and no inventory is recorded for ${country.name} in this category yet.` : "No ready-made database exists for this category today, so nothing here can be bought. Browse the lists we do have, or tell us what you need."}>
+          <StatusPanel title={country ? `No ${title.toLowerCase()} database is recorded yet` : `Browse ${title}`} text={country ? `We sell national lists and no inventory is recorded for ${country.name} in this category yet.` : "No ready-made database exists for this category today, so nothing here can be bought. Browse the lists we do have, or tell us what you need."}>
             <div className="mt-5 flex flex-wrap gap-3"><Link href="/lists#databases" className={cta}>Browse ready-made lists</Link><Link href={custom} className={ghost}>Ask for a custom list</Link></div>
           </StatusPanel>
         )}

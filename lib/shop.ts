@@ -24,7 +24,9 @@ export type GeoTree = GeoCountryNode[];
 /** What kind of database a product is: a whole country, one city, or one industry. */
 export type Kind = "" | "country" | "city" | "industry";
 export const KINDS: readonly Kind[] = ["country", "city", "industry"];
-export const productKind = (p: Pick<ShopProduct, "scope" | "categorySlug" | "region">): Exclude<Kind, ""> => (p.scope === "city" || !!p.region ? "city" : p.categorySlug === "business" ? "country" : "industry");
+/** Categories whose lists cover a whole country (business, consumer and phone databases by country). */
+const COUNTRY_CATS: ReadonlySet<string> = new Set(["business", "business-email-lists", "consumer-email-lists", "phone-number-lists"]);
+export const productKind = (p: Pick<ShopProduct, "scope" | "categorySlug" | "region">): Exclude<Kind, ""> => (p.scope === "city" || !!p.region ? "city" : COUNTRY_CATS.has(p.categorySlug) ? "country" : "industry");
 
 export type Filters = {
   type: "b2b" | "b2c";

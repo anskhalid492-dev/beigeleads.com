@@ -1,4 +1,5 @@
 "use client";
+import { fieldSummary } from "@/lib/product-fields";
 
 import { ArrowUp } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +22,7 @@ function ProductCard({ p, note }: { p: Lite; note?: string }) {
       <p className="text-sm">{p.categoryName} · {p.countryName}{p.region ? `, ${p.region}` : ""}</p>
       {note && <p className="mt-2 text-sm font-medium text-forest-900">{note}</p>}
       <p className="mt-2 text-sm">
-        {p.fields.length ? `Fields: ${p.fields.join(", ")}. ` : ""}
+        {p.fields.length ? `Fields: ${fieldSummary(p.fields)}. ` : ""}
         {p.records ? `${p.records.toLocaleString("en-US")} records${p.fromCents ? `, from ${formatUsd(p.fromCents)}` : ""}.` : "Record count and prices are on the list page."}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">

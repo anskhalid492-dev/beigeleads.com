@@ -57,7 +57,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
       {f.type === "b2c" ? (
         <section id="databases" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-14">
           <h2 className="display text-4xl text-forest-900">Consumer databases are not available yet.</h2>
-          <p className="mt-4">BeigeLeads currently provides business contact data only. We do not sell consumer contact lists. If you need a prospect segment, tell us what you are looking for and we will tell you honestly what is possible.</p>
+          <p className="mt-4">Browse the consumer and business databases below. If you need a prospect segment, tell us what you are looking for and we will tell you honestly what is possible.</p>
           <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button><Button asChild variant="secondary" size="lg"><Link href="/lists">Browse B2B Lists</Link></Button></div>
         </section>
       ) : (
@@ -73,7 +73,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
       <SolutionFaq name="Our Lists" items={[
         ["Do I need an account?", "No. You pay once in crypto and receive a download link by email."],
         ["Can I check the data first?", "Yes. Masked sample on every list page, and you can request a free sample file by email."],
-        ["Are consumer databases available?", "Not yet. BeigeLeads currently provides business contact data only."],
+        ["Are consumer databases available?", "Yes. Browse the consumer email databases, or request a custom list for the audience you need."],
         ["Is a city page a separate list?", "No. City and state pages are views of the national list for that industry. They are shown only where we have recorded real inventory."],
         ["What if my industry or country is missing?", "Request it on the custom list page. New industries and countries are added over time."],
       ]} />

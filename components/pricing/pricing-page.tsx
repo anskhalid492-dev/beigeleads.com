@@ -1,3 +1,4 @@
+import { fieldSummary } from "@/lib/product-fields";
 import Link from "next/link";
 import { ArrowRight, Briefcase, Check, Download, FileSpreadsheet, ListChecks, MapPin, Package, Search, Users, Eye, BadgeDollarSign, type LucideIcon } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -73,7 +74,7 @@ function ProductCard({ p }: { p: Product }) {
           <div><dt className="text-xs text-forest-500">Starting at</dt><dd className="font-semibold text-forest-900">{formatUsd(start)}</dd></div>
         </dl>
         <p className="mt-4 text-sm"><span className="font-semibold text-forest-900">Packages:</span> {offeredPackages(p).map((x) => x.records.toLocaleString("en-US")).join(", ")} records</p>
-        <p className="mt-2 text-sm"><span className="font-semibold text-forest-900">Fields:</span> {p.fields.join(", ")}</p>
+        <p className="mt-2 text-sm"><span className="font-semibold text-forest-900">Fields:</span> {fieldSummary(p.fields)}</p>
         <p className="mt-2 flex items-center gap-2 text-sm"><Check className="size-4 text-forest-500" aria-hidden />Masked sample available</p>
         <span className="mt-6 inline-flex items-center gap-2 font-semibold text-forest-900">View Pricing &amp; Packages <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden /></span>
       </Link>

@@ -1,3 +1,4 @@
+import { fieldSummary } from "@/lib/product-fields";
 import { SITE_URL } from "@/lib/site";
 import { offeredPackages, startingPriceCents, type Category, type Country, type Product } from "@/lib/catalog";
 
@@ -10,7 +11,7 @@ export const productTitle = (p: Product, k: Country) => `${p.name} ${short(k)}: 
 
 export function productMetaDescription(p: Product, c: Category, k: Country) {
   const fields = ["email", "phone", "address", "website"].filter((f) => p.fields.some((x) => x.toLowerCase() === f));
-  const list = fields.length ? fields.join(", ") : "contact details";
+  const list = fields.length ? fieldSummary(fields) : "contact details";
   return `Buy the ${p.name} for ${withThe(k)}: ${c.reachLabel} with ${list}. Masked sample first, one-time crypto payment, CSV, Excel or TXT.`;
 }
 

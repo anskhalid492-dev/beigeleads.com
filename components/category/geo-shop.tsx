@@ -69,7 +69,7 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
               <p className="text-sm font-bold text-forest-500">Featured database</p>
               <h3 className="display mt-1 text-[2.2rem] leading-none text-forest-900 sm:text-[2.8rem]">{k} Business Email Database: Full Country</h3>
               <p className="mt-3 max-w-[56ch]">{full.description}</p>
-              <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Data fields">{full.fields.map((f) => <li key={f} className="inline-flex items-center gap-1 rounded-full bg-sand-100 px-3 py-1 text-sm font-medium text-forest-900"><Check className="size-3 text-forest-500" aria-hidden />{f}</li>)}</ul>
+              <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Data fields">{full.fields.slice(0, 8).map((f) => <li key={f} className="inline-flex items-center gap-1 rounded-full bg-sand-100 px-3 py-1 text-sm font-medium text-forest-900"><Check className="size-3 text-forest-500" aria-hidden />{f}</li>)}</ul>
             </div>
             <div className="flex flex-col justify-between gap-5 rounded-2xl bg-sand-100 p-5">
               <dl className="space-y-3 text-sm">

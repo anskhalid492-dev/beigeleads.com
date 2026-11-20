@@ -7,9 +7,10 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { ledgerSheets } from "@/lib/home-ledger";
 import { SampleLedger } from "@/components/home/sample-ledger";
 import { DbBadge } from "@/components/shared/db-icon";
+import { fmtNum } from "@/components/product/meta";
 import { SolutionFaq } from "@/components/solutions/sections";
 import { Button } from "@/components/ui/button";
-import { formatUsd, getCategories, getCities, getCountries, getProducts, startingPriceCents } from "@/lib/catalog";
+import { formatUsd, getCategories, getCities, getCountries, getCountry, getProducts, startingPriceCents } from "@/lib/catalog";
 import { solutions } from "@/lib/solutions";
 
 // Home. No invented stats, reviews, customers or counts (CLAUDE.md section 2). Never state how many lists exist (section 37).
@@ -90,6 +91,17 @@ export default async function Home() {
   const ledger = ledgerSheets();
   const categories = getCategories();
   const products = getProducts();
+  // Eight lists, live ones first, spread over different industries and countries.
+  const featured = (() => {
+    const seen = new Set<string>(); const out: (typeof products)[number][] = [];
+    for (const p of [...products].sort((a, b) => Number(b.status === "live") - Number(a.status === "live"))) {
+      const key = `${p.categorySlug}|${p.countrySlug}`;
+      if (seen.has(key)) continue;
+      seen.add(key); out.push(p);
+      if (out.length === 8) break;
+    }
+    return out;
+  })();
   const countries = getCountries();
   return (
     <>
@@ -137,17 +149,16 @@ export default async function Home() {
             <h2 id="lists" className={h2}>Explore available lists</h2>
             <Link href="/lists" className="font-semibold text-forest-700 underline underline-offset-4">All lists</Link>
           </div>
-          <ul className="mt-10 grid gap-4 md:grid-cols-3">
-            {products.map((p) => {
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p) => {
               const price = startingPriceCents(p);
+              const k = getCountry(p.countrySlug);
               return (
                 <li key={p.slug} className={`${card} flex flex-col`}>
-                  <span className="flex items-center gap-3"><DbBadge category={p.categorySlug} hint={p.name} country="US" size="lg" /><span><span className="block text-lg font-bold text-forest-900">{p.name}</span><span className="text-sm">{p.title}</span></span></span>
-                  <p className="mt-4 text-sm">Fields: {p.fields.join(", ")}.</p>
-                  <p className="mt-3 text-sm font-medium text-forest-900">
-                    {p.recordCount ? `${p.recordCount.toLocaleString("en-US")} records` : null}
-                    {price ? ` · from ${formatUsd(price)}` : null}
-                    {p.placeholderData ? <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold">Placeholder figures</span> : null}
+                  <span className="flex items-center gap-3"><DbBadge category={p.categorySlug} hint={p.name} country={k?.code} region={p.region} size="lg" /><span className="min-w-0"><span className="block text-lg font-bold leading-snug text-forest-900">{p.name}</span><span className="text-sm">{k?.name ?? ""}</span></span></span>
+                  <p className="mt-4 text-sm font-medium text-forest-900">
+                    {!p.placeholderData && p.recordCount ? `${fmtNum(p.recordCount)} records` : "Free sample available"}
+                    {!p.placeholderData && price ? ` · from ${formatUsd(price)}` : null}
                   </p>
                   <div className="mt-auto flex flex-wrap gap-2 pt-5">
                     <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>View list</Link></Button>

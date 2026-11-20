@@ -11,7 +11,7 @@ export function ListCard({ p, view = "grid" }: { p: ShopProduct; view?: "grid" |
   const buyable = p.status === "live";
   const row = view === "list";
   const kind = productKind(p);
-  const place = p.scope === "city" ? `${p.title.replace(/^Business contacts in /, "")}` : p.scope === "country" && p.categorySlug === "business" ? `All of ${p.countryName}` : p.countryName;
+  const place = p.scope === "city" ? `${p.title.replace(/^Business contacts in /, "")}` : kind === "country" ? `All of ${p.countryName}` : p.countryName;
   const fields = p.fields.slice(0, row ? 7 : 4);
   return (
     <li className={`group relative rounded-[1.4rem] border border-sand-300 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-forest-500 hover:shadow-[0_18px_34px_-24px_rgba(15,42,29,.55)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${row ? "flex flex-col gap-5 md:flex-row md:items-center" : "flex flex-col"}`}>

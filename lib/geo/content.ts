@@ -1,3 +1,4 @@
+import { fieldSummary } from "@/lib/product-fields";
 import type { Category, Country, Product } from "@/lib/catalog";
 
 /** Text for geography pages. Pure. Every number comes from the arguments (real inventory) or is left out. */
@@ -22,7 +23,7 @@ export function geoCopy(i: GeoCopyInput) {
   const h1 = `${where} ${c.singular} Email List`;
   const title = place ? `${h1} | ${full}` : `${h1} | ${c.name} Contact Database`;
   const have = records !== null && records > 0;
-  const fields = product ? product.fields.map((f) => f.toLowerCase()).join(", ") : "";
+  const fields = product ? fieldSummary(product.fields).toLowerCase() : "";
   const kids = children.slice(0, 5).map((x) => `${x.name} (${n(x.records)})`);
   const levelWord = !place ? "country" : place.level === "region" ? "state or region" : "city";
 

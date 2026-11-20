@@ -1,3 +1,4 @@
+import { fieldSummary } from "@/lib/product-fields";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Faq } from "@/components/shared/faq";
@@ -21,7 +22,7 @@ export function GeoPage({ d }: { d: GeoPageData }) {
         <p className="mt-5 max-w-2xl text-lg">{copy.intro}</p>
         <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3 text-sm">
           <div><dt className="font-bold text-forest-900">Records here</dt><dd>{records ? n(records) : "None recorded yet"}</dd></div>
-          {product && <div><dt className="font-bold text-forest-900">Fields</dt><dd>{product.fields.join(", ")}</dd></div>}
+          {product && <div><dt className="font-bold text-forest-900">Fields</dt><dd>{fieldSummary(product.fields)}</dd></div>}
           <div><dt className="font-bold text-forest-900">Formats</dt><dd>CSV, Excel or TXT</dd></div>
         </dl>
         <div className="mt-8 flex flex-wrap gap-3">

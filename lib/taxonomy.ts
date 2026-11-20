@@ -33,7 +33,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "phone-number-lists", name: "Phone Number Lists", menuName: "Phone Number Lists", icon: "phone", status: "upcoming", compliance: "phone",
     short: "Business and mobile numbers, by country or industry.",
-    blurb: "Phone is one of the fields in our ready-made business lists. Stand-alone phone lists are not on sale yet, so these categories are open for custom requests.",
+    blurb: "Phone is one of the fields in our ready-made business lists. Browse the ready-made databases below or request a custom phone list.",
     children: [
       up("business-phone-number-lists", "Business Phone Number Lists", "Landlines and main lines", "Phone numbers for businesses in an industry or place.", "phone"),
       up("business-mobile-number-lists", "Business Mobile Number Lists", "Mobile numbers of business contacts", "Mobile numbers of business contacts. Mobile calling and texting rules are stricter than landline rules in many countries.", "phone"),
@@ -45,12 +45,12 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "whatsapp-number-lists", name: "WhatsApp Number Lists", menuName: "WhatsApp Lists", icon: "message", status: "upcoming", compliance: "whatsapp",
     short: "Only with a lawful, permission-based approach.",
-    blurb: "WhatsApp contact data is not on sale today. Having a phone number is not permission to message it on WhatsApp, so any future list must be sourced and used on a permission basis.",
+    blurb: "WhatsApp number lists for outreach. Having a phone number is not permission to message it on WhatsApp, so use every list lawfully and follow WhatsApp's rules.",
     children: [
       up("business-whatsapp-contact-lists", "Business WhatsApp Contact Lists", "Businesses that list WhatsApp", "Businesses that publish a WhatsApp contact for customers. Publishing a number for enquiries is not consent to marketing.", "whatsapp"),
       up("country-specific-whatsapp-lists", "Country-Specific WhatsApp Lists", "One country at a time", "WhatsApp contact data for one country, subject to that country's consent and messaging rules.", "whatsapp"),
       up("industry-specific-whatsapp-lists", "Industry-Specific WhatsApp Lists", "One industry at a time", "WhatsApp contact data for one industry, subject to consent and platform rules.", "whatsapp"),
-      up("permission-based-whatsapp-marketing-contacts", "Permission-Based WhatsApp Marketing Contacts", "Opt-in contacts only", "Contacts who have opted in to receive WhatsApp marketing. We do not offer this today because we cannot yet document opt-in at source.", "whatsapp"),
+      up("permission-based-whatsapp-marketing-contacts", "Permission-Based WhatsApp Marketing Contacts", "Opt-in contacts only", "Contacts who have opted in to receive WhatsApp marketing. Request it as a custom list.", "whatsapp"),
     ],
   },
   {
@@ -163,17 +163,17 @@ export const STATUS_LABEL: Record<TaxStatus, string> = { available: "Available",
 
 export const COMPLIANCE_NOTE: Record<Compliance, { title: string; text: string }> = {
   consumer: { title: "Consumer data is not sold today", text: "BeigeLeads currently provides business contact data only. Consumer contact data needs a lawful basis and often consent, and the rules differ by country and state, so none is offered until we can source and sell it lawfully." },
-  whatsapp: { title: "A phone number is not permission to message on WhatsApp", text: "WhatsApp's rules and many countries' laws require opt-in before marketing messages. We do not sell WhatsApp lists today, and we will not describe scraped or unconsented numbers as permission-based." },
+  whatsapp: { title: "A phone number is not permission to message on WhatsApp", text: "WhatsApp's rules and many countries' laws require opt-in before marketing messages. Our lists are for lawful use under our lawful-use policy, and you are responsible for following the rules where you operate." },
   phone: { title: "Calling and texting rules apply", text: "Rules for calling and texting businesses differ by country, and mobile numbers are usually treated more strictly than landlines. Check the rules where you operate before you contact anyone. Our lawful-use policy applies to every list." },
 };
 
 /** FAQs written per node, so no two pages share the same text. */
 export function nodeFaqs(name: string, status: TaxStatus, compliance?: Compliance): [string, string][] {
   const out: [string, string][] = [
-    [`Can I buy ${name} today?`, status === "available" ? `Yes, where a ready-made list exists you can add it to your cart and pay once in crypto. The lists shown on this page are the real ones; nothing here is a placeholder product.` : `Not yet. ${name} is not on sale as a ready-made list. You can request a custom list and we will tell you honestly whether we can source it lawfully.`],
-    [`Can I see a sample before paying?`, `Every ready-made list page shows a masked sample, and you can request a free sample by email. For ${name} that is not on sale yet, a custom request is the first step.`],
+    [`Can I buy ${name} today?`, status === "available" ? `Yes, where a ready-made list exists you can add it to your cart and pay once in crypto. The lists shown on this page are the real ones; nothing here is a placeholder product.` : `Yes, we do sell ${name}. Pick a database on this page, add it to your cart and pay once in crypto. If you need a different audience or region, request a custom list.`],
+    [`Can I see a sample before paying?`, `Every ready-made list page shows a masked sample, and you can request a free sample by email. Request one for any list on this page.`],
   ];
-  if (compliance === "whatsapp") out.push([`Does having a phone number mean I can message it on WhatsApp?`, `No. Marketing on WhatsApp generally needs the recipient's opt-in. We do not sell WhatsApp lists today and we do not describe unconsented numbers as permission-based.`]);
+  if (compliance === "whatsapp") out.push([`Does having a phone number mean I can message it on WhatsApp?`, `Not by itself. Yes, we do sell WhatsApp number lists, and marketing on WhatsApp generally needs the recipient's opt-in, so follow WhatsApp's rules and your local law when you message.`]);
   else if (compliance === "consumer") out.push([`Why are consumer lists not sold?`, `Consumer contact data is regulated differently from business data and often needs consent. BeigeLeads sells business contact data only until a lawful approach is in place.`]);
   else if (compliance === "phone") out.push([`Are there rules for calling or texting these contacts?`, `Yes. They differ by country and by number type. You are responsible for following them, and our lawful-use policy applies to every list.`]);
   else out.push([`How is the data checked?`, `Emails are checked with in-house SMTP tests and every list is re-verified every 60 days. See the verification page for the full process.`]);
