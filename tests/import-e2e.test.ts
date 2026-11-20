@@ -9,6 +9,7 @@ import { getProduct } from "@/lib/catalog";
 import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
+import { applyLinks } from "@/lib/delivery/bulk";
 import { applyBatch, finishImport, listProducts, planBatch, rollbackImport, setStatus, startImport, type ImportRow } from "@/lib/import/store";
 import { reservedSlugs } from "@/lib/import/reserved";
 import { buildProduct, parseWoo } from "@/lib/import/woo";
@@ -60,6 +61,18 @@ describe("catalog import", () => {
     expect(priced.lines[0].priceCents).toBe(9900);
     const link = await env.DB.prepare("SELECT url FROM delivery_links WHERE product_slug = ?").bind(clean.slug).first<{ url: string }>();
     expect(link?.url).toMatch(/^https:\/\//);
+  });
+  it("bulk delivery links work for draft imported products, skip existing unless replace is ticked", async () => {
+    const db = getDbFromEnv(env);
+    const draft = (await listProducts(db, { status: "draft" }, 1)).rows[0];
+    const r1 = await applyLinks(db, "t@test", [{ slug: draft.slug, pkg: "", url: "https://files.example.com/one" }, { slug: "nope", pkg: "", url: "https://x.com/a" }, { slug: draft.slug, pkg: "", url: "http://insecure.com" }], false);
+    expect(r1.map((o) => o.result)).toEqual(["added", "failed", "failed"]);
+    const r2 = await applyLinks(db, "t@test", [{ slug: draft.slug, pkg: "", url: "https://files.example.com/two" }], false);
+    expect(r2[0].result).toBe("skipped");
+    const r3 = await applyLinks(db, "t@test", [{ slug: draft.slug, pkg: "", url: "https://files.example.com/two" }], true);
+    expect(r3[0].result).toBe("replaced");
+    const r4 = await applyLinks(db, "t@test", [{ slug: draft.slug, pkg: "", url: "https://files.example.com/two" }], true);
+    expect(r4[0].result).toBe("same");
   });
   it("rollback removes only unpublished, never-ordered imports", async () => {
     const db = getDbFromEnv(env);

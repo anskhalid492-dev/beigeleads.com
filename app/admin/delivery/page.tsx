@@ -39,7 +39,7 @@ export default async function DeliveryPage() {
 
   return (
     <>
-      <PageHeader title="Delivery links" text="When an order is paid, the buyer is emailed the link set here. A package link wins over the product's default link. Every change is emailed to the owner." />
+      <PageHeader title="Delivery links" text="When an order is paid, the buyer is emailed the link set here. A package link wins over the product's default link. Every change is emailed to the owner." actions={<Link href="/admin/delivery/bulk" className="inline-flex h-9 items-center rounded-full border border-forest-900 px-4 text-sm font-semibold">Bulk upload (CSV)</Link>} />
       <DeliveryManager rows={rows} />
       <Panel title="Recent paid orders" className="mt-8">
         {paid.length === 0 ? <Empty title="No paid orders yet" text="Paid orders and their delivery status appear here." /> : (

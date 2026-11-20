@@ -980,3 +980,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Imported categories: `/lists/<imported-category>` renders `components/category/imported-page.tsx` (hero, country chips, product cards, 5 generic FAQs; no claims about fields/countries/verification beyond the product pages). 404 when it has no published product. `generateMetadata` handles it.
 - `/lists` data (`lib/lists-data.ts`) now hydrates the imported catalog and adds imported industries and countries (only those with a published product) to the filters/search. Sitemap includes imported category, country and product URLs (published only).
 - Not built yet (Phase B part 2): regional/city pages for imported products with only regional lists (country URL stays 404 when no national product exists), mega-menu entries for imported categories, image import, SEO copy per product, per-product edit.
+
+## 94. Bulk delivery links (Nov 2026) — extends section 33
+
+- `/admin/delivery/bulk` (admins; button "Bulk upload (CSV)" on `/admin/delivery`): upload a CSV (`slug` or exact product name, `package` empty = link for every package, `url` https only). The browser previews every row (new / different / unchanged / problem) with the pure `lib/delivery/bulk-check.ts`; "Replace existing" is off by default; batches of 100 go to `bulkLinksAction`, which re-validates against the real product list. Works for EVERY product including imported drafts (`lib/delivery/bulk.ts` `linkTargets` reads `catalog_products`), so links can be added before publishing. A template CSV of products without any link can be downloaded.
+- One audit row + ONE owner email per upload (not per link). `updated_by` = `bulk:<admin email>`. Test: `tests/delivery-bulk.test.ts` + a case in `tests/import-e2e.test.ts`.
