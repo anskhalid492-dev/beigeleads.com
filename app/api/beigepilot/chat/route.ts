@@ -28,6 +28,8 @@ export async function POST(req: Request) {
   const input = { history: p.data.messages, path: p.data.path, cart: p.data.cart };
   const finish = async (r: Awaited<ReturnType<typeof chat>>) => {
     if (!r.ok || !r.text) { await noteError(env.CACHE, r.error ?? "The assistant returned no text."); return null; }
+    // A good answer clears the old failure note, so the admin Overview never shows a stale error.
+    ctx.waitUntil(env.CACHE.delete("beigepilot:lasterr").catch(() => {}));
     if (validCid(p.data.cid)) {
       const cid = p.data.cid;
       const user = p.data.messages[p.data.messages.length - 1].text;
