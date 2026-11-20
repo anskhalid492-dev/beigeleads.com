@@ -117,6 +117,8 @@ export function suggestFor(items: CartItem[], limit = 3): Suggestion[] {
   const owned = items.map((i) => getProduct(i.slug)).filter((p): p is Product => !!p);
   const countries = new Set(owned.map((p) => p.countrySlug));
   const cats = new Set(owned.map((p) => p.categorySlug));
+  const channels = new Set(owned.map((p) => p.channel).filter(Boolean));
+  const regions = new Set(owned.map((p) => p.region).filter(Boolean));
   return getProducts()
     .filter((p) => !inCart.has(p.slug) && isRealProduct(p) && offeredPackages(p).length > 0)
     .map((p) => {
@@ -127,7 +129,7 @@ export function suggestFor(items: CartItem[], limit = 3): Suggestion[] {
       const k = getCountry(p.countrySlug);
       const reason = owned.length === 0 ? "" : sameCat ? "Same industry, another market" : sameCountry ? `Same market (${k?.name ?? ""}), another audience` : "Another market you can reach";
       return {
-        score: Number(sameCat) * 3 + Number(sameCountry) * 2,
+        score: Number(sameCat) * 8 + Number(sameCountry) * 4 + Number(!!p.channel && channels.has(p.channel)) * 2 + Number(!!p.region && regions.has(p.region)),
         s: {
           slug: p.slug, name: p.name, categoryName: getCategory(p.categorySlug)?.name ?? "", categorySlug: p.categorySlug, coverage: k?.name ?? "", countryCode: k?.code ?? "",
           packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, recordCount: p.recordCount, startPriceCents: Math.min(...pks.map((x) => x.priceUsdCents)), reason,

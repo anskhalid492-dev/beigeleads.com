@@ -231,11 +231,14 @@ export const formatUsd = (cents: number) =>
 export const startingPriceCents = (p: Product) =>
   p.packages.length ? Math.min(...p.packages.map((x) => x.priceUsdCents)) : null;
 
-/** Other products to recommend. Same category first (other countries), then the rest. */
-export const getRelatedProducts = (p: Product, limit = 3) =>
-  [...allProducts().filter((x) => x.slug !== p.slug)]
-    .sort((a, b) => Number(b.categorySlug === p.categorySlug) - Number(a.categorySlug === p.categorySlug) || Number(b.countrySlug === p.countrySlug) - Number(a.countrySlug === p.countrySlug))
-    .slice(0, limit);
+/** Other products to link to and recommend, most related first: same industry (other markets), then same market and channel, then same state. */
+export const getRelatedProducts = (p: Product, limit = 3) => {
+  const score = (x: Product) =>
+    Number(x.categorySlug === p.categorySlug) * 8 + Number(x.countrySlug === p.countrySlug) * 4 + Number(!!x.channel && x.channel === p.channel) * 2 + Number(!!p.region && x.region === p.region);
+  // Ties are broken by a stable hash of the pair, so links spread over many products instead of always pointing at the same few.
+  const h = (x: Product) => { let n = 2166136261; for (const ch of `${p.slug}|${x.slug}`) n = Math.imul(n ^ ch.charCodeAt(0), 16777619); return n >>> 0; };
+  return allProducts().filter((x) => x.slug !== p.slug).map((x) => [score(x), h(x), x] as const).sort((a, b) => b[0] - a[0] || a[1] - b[1]).slice(0, limit).map((r) => r[2]);
+};
 
 export type ProductFaq = readonly [question: string, answer: string];
 

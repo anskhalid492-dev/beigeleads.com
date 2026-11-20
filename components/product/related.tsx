@@ -5,8 +5,11 @@ import { DbBadge } from "@/components/shared/db-icon";
 import { formatUsd, getCategory, getCountry, startingPriceCents, type Product } from "@/lib/catalog";
 import { fmtNum } from "./meta";
 
+const CARDS = 6;
 export function RelatedProducts({ items }: { items: readonly Product[] }) {
   if (!items.length) return null;
+  const more = items.slice(CARDS);
+  items = items.slice(0, CARDS);
   return (
     <section className="border-t border-sand-200 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -42,6 +45,12 @@ export function RelatedProducts({ items }: { items: readonly Product[] }) {
             );
           })}
         </ul>
+        {more.length > 0 && (
+          <nav aria-label="More lists" className="mt-12 border-t border-sand-300 pt-8">
+            <h3 className="font-bold text-forest-900">More lists you can open</h3>
+            <ul className="mt-4 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">{more.map((r) => <li key={r.slug}><Link href={`/lists/${r.slug}`} className="underline decoration-sand-300 underline-offset-4 hover:text-forest-900">{r.name}</Link></li>)}</ul>
+          </nav>
+        )}
       </div>
     </section>
   );

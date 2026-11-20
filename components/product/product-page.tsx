@@ -13,7 +13,6 @@ import { ProductAudience } from "@/components/product/audience";
 import { ProductHowItWorks } from "@/components/product/how-it-works";
 import { ProductQuality } from "@/components/product/quality";
 import { RelatedProducts } from "@/components/product/related";
-import { ProductFinalCta } from "@/components/product/final-cta";
 import { getCategory, getCities, getCountry, getProduct, getProductFaqs, getRelatedProducts } from "@/lib/catalog";
 import { productSamples } from "@/lib/sample-data";
 
@@ -58,8 +57,7 @@ export function ProductPageView({ slug }: { slug: string }) {
       <ProductHowItWorks name={p.name} />
       <ProductQuality product={p} />
       <SolutionFaq name={`the ${p.name}`} items={getProductFaqs(p, c, k)} />
-      <RelatedProducts items={getRelatedProducts(p)} />
-      <ProductFinalCta product={p} category={c} />
+      <RelatedProducts items={getRelatedProducts(p, 12)} />
       <JsonLd data={productJsonLd(p, c, k, forSale)} />
     </>
   );
