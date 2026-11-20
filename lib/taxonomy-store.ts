@@ -37,7 +37,12 @@ export async function loadTaxonomy(env: { DB: D1Database; CACHE: KVNamespace }, 
   let out: TaxGroup[] = TAXONOMY;
   try {
     const rows = await db.select().from(schema.taxonomyNodes).limit(500);
-    if (rows.length > 0) out = buildTree(rows).filter((g) => g.published).map((g) => ({ ...g, children: g.children.filter((c) => c.published) }));
+    if (rows.length > 0) {
+      const known = new Set(rows.filter((r) => r.parentSlug === "").map((r) => r.slug));
+      out = buildTree(rows).filter((g) => g.published).map((g) => ({ ...g, children: g.children.filter((c) => c.published) }));
+      // Built-in groups the database has no row for (added to the code after the admin import) stay available, so the menu and their pages never go missing.
+      out = [...out, ...TAXONOMY.filter((g) => !known.has(g.slug))];
+    }
   } catch { /* migration 0031 not applied: built-in tree */ }
   try { await env.CACHE.put(TAX_CACHE_KEY, JSON.stringify(out), { expirationTtl: 60 }); } catch { /* ignore */ }
   return out;
