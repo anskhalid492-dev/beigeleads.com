@@ -19,9 +19,9 @@ const GROUPS = [
 ] as const;
 
 const LINKS = [
-  { label: "Data Reseller Partners", href: "/partners" },
   { label: "Blog", href: "/blog" },
   { label: "Help Center", href: "/help-center" },
+  { label: "Data Resellers", href: "/partners" },
 ] as const;
 
 type Key = "lists" | "solutions" | null;
