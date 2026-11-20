@@ -58,12 +58,12 @@ export function Header({ lists }: { lists: ListsMenuData }) {
     clearTimeout(timer.current);
     setOpen(null);
   }, []);
-  // Anchor the Lists panel under its nav item, clamped so the widest state (about 46rem) stays inside the bar.
+  // Anchor the Lists panel under its nav item, clamped so the widest state (about 26rem) stays inside the bar.
   const place = () => {
     const w = wrap.current, b = listsBtn.current;
     if (!w || !b) return;
     const left = b.getBoundingClientRect().left - w.getBoundingClientRect().left - 12;
-    setListsLeft(Math.max(0, Math.min(left, w.clientWidth - 744)));
+    setListsLeft(Math.max(0, Math.min(left, w.clientWidth - 420)));
   };
   const hoverOpen = (k: Key) => {
     clearTimeout(timer.current);
@@ -83,7 +83,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
       if (wrap.current && !wrap.current.contains(e.target as Node)) close();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !e.defaultPrevented) {
         close();
         setMobile(false);
       }
