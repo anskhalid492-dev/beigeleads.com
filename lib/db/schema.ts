@@ -96,6 +96,8 @@ export const orders = sqliteTable(
     discountCode: text("discount_code"),
     discountPercent: integer("discount_percent"),
     subtotalCents: integer("subtotal_cents"),
+    /** Total discount in cents (migration 0034): partner or promotion. Set only when a discount applied. */
+    discountCents: integer("discount_cents"),
   },
   (t) => [index("orders_status_idx").on(t.status)],
 );
@@ -954,4 +956,55 @@ export const partnerDiscounts = sqliteTable(
     deactivatedAt: integer("deactivated_at"),
   },
   (t) => [uniqueIndex("partner_discounts_code_uq").on(t.code), uniqueIndex("partner_discounts_application_uq").on(t.applicationId)],
+);
+
+/** Promotions created in the admin (migration 0034). Lists are JSON text; empty list = no restriction. */
+export const promotions = sqliteTable(
+  "promotions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    name: text("name").notNull(),
+    title: text("title").notNull(),
+    code: text("code"),
+    description: text("description"),
+    kind: text("kind", { enum: ["percent", "fixed"] }).notNull().default("percent"),
+    value: integer("value").notNull(),
+    productSlugs: text("product_slugs").notNull().default("[]"),
+    categorySlugs: text("category_slugs").notNull().default("[]"),
+    packageNames: text("package_names").notNull().default("[]"),
+    minCartCents: integer("min_cart_cents").notNull().default(0),
+    maxDiscountCents: integer("max_discount_cents"),
+    startsAt: integer("starts_at"),
+    endsAt: integer("ends_at"),
+    timezone: text("timezone").notNull().default("UTC"),
+    usageLimit: integer("usage_limit"),
+    perCustomerLimit: integer("per_customer_limit"),
+    firstPurchaseOnly: integer("first_purchase_only").notNull().default(0),
+    partnerOnly: integer("partner_only").notNull().default(0),
+    automatic: integer("automatic").notNull().default(0),
+    combinable: integer("combinable").notNull().default(0),
+    status: text("status", { enum: ["draft", "active", "paused"] }).notNull().default("draft"),
+    bannerPlaces: text("banner_places").notNull().default("[]"),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => [uniqueIndex("promotions_code_uq").on(t.code)],
+);
+
+/** One row per (order, promotion). reserved = order created, redeemed = paid, released = order expired unpaid. */
+export const promotionRedemptions = sqliteTable(
+  "promotion_redemptions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    promotionId: integer("promotion_id").notNull(),
+    orderId: text("order_id").notNull(),
+    email: text("email").notNull(),
+    code: text("code"),
+    discountCents: integer("discount_cents").notNull(),
+    orderTotalCents: integer("order_total_cents").notNull().default(0),
+    status: text("status", { enum: ["reserved", "redeemed", "released"] }).notNull().default("reserved"),
+    createdAt: createdAt(),
+    redeemedAt: integer("redeemed_at"),
+  },
+  (t) => [uniqueIndex("promotion_redemptions_order_uq").on(t.orderId, t.promotionId), index("promotion_redemptions_promo_idx").on(t.promotionId, t.status)],
 );

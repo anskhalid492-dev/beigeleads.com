@@ -3,6 +3,8 @@ import { getDbFromEnv, schema } from "@/lib/db";
 import { MAX_CART_ITEMS, priceCart } from "@/lib/cart/model";
 import { sha256Hex } from "@/lib/forms/hash";
 import { countUse, resolveDiscount } from "@/lib/partners/discount";
+import { isPartnerCode } from "@/lib/partners/types";
+import { dropReservations, loadCandidates, reserveRedemptions } from "@/lib/promos/store";
 import { buildQuote, formatAtomic, parseAtomic } from "@/lib/payments/amounts";
 import { OPTIONS } from "@/lib/payments/options";
 import { getUsdPriceCached } from "@/lib/payments/rates";
@@ -35,16 +37,24 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   const slugs = input.items.map((i) => i.productSlug);
   if (new Set(slugs).size !== slugs.length) throw new CheckoutError("Each list can be in an order only once.");
   const db = getDbFromEnv(env);
+  // One code box: a partner code (PARTNER-XXXX-XXXX, needs the partner's own email) or a public promotion code.
+  const typed = input.discountCode?.trim() ?? "";
   let discount: { code: string; percent: number } | undefined;
-  if (input.discountCode?.trim()) {
-    const d = await resolveDiscount(db, input.discountCode, input.email);
+  if (typed && isPartnerCode(typed)) {
+    const d = await resolveDiscount(db, typed, input.email);
     if (!d.ok) throw new CheckoutError(d.reason);
     discount = d.discount;
   }
-  const priced = priceCart(input.items.map((i) => ({ slug: i.productSlug, pkg: i.packageName })), { checkoutOpen: true, allowPlaceholder: on(env.CHECKOUT_ALLOW_PLACEHOLDER), discount });
+  const candidates = await loadCandidates(db, input.email);
+  const priced = priceCart(
+    input.items.map((i) => ({ slug: i.productSlug, pkg: i.packageName })),
+    { checkoutOpen: true, allowPlaceholder: on(env.CHECKOUT_ALLOW_PLACEHOLDER), discount, promo: { candidates, enteredCode: typed && !discount ? typed : undefined, nowSec: Math.floor(Date.now() / 1000), emailKnown: true } },
+  );
   if (priced.dropped.length > 0) throw new CheckoutError("A list or package in your cart does not exist any more. Review your cart.");
   const unavailable = priced.lines.find((l) => !l.purchasable);
   if (unavailable) throw new CheckoutError(`${unavailable.name} is not on sale yet. Remove it from your cart to continue.`);
+  // A code the buyer typed that does not apply stops the order: they must not pay a price they did not expect.
+  if (typed && !discount && priced.codeError) throw new CheckoutError(priced.codeError);
   const totalCents = priced.totalCents;
 
   const opt = OPTIONS[input.option];
@@ -66,7 +76,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   const quote = buildQuote(spec, totalCents, rate, now);
 
   // Same buyer, same cart, same coin within 10 minutes: hand back the order that is still open (no second order, no second payment session).
-  const dedupeKey = `co:${await sha256Hex(`${input.email}|${input.option}|${priced.lines.map((l) => `${l.slug}:${l.packageName}`).sort().join(",")}|${priced.discountCode}`)}`;
+  const dedupeKey = `co:${await sha256Hex(`${input.email}|${input.option}|${priced.lines.map((l) => `${l.slug}:${l.packageName}`).sort().join(",")}|${priced.discountCode}|${priced.totalCents}`)}`;
   const prev = await env.CACHE.get(dedupeKey).catch(() => null);
   if (prev) {
     const [o] = await db.select({ status: schema.orders.status }).from(schema.orders).where(eq(schema.orders.id, prev));
@@ -83,7 +93,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
     const amount = formatAtomic(atomic, spec.decimals);
 
     await db.batch([
-      db.insert(schema.orders).values({ id: orderId, email: input.email, status: "pending", totalUsdCents: totalCents, ...(priced.discountPercent > 0 ? { discountCode: priced.discountCode, discountPercent: priced.discountPercent, subtotalCents: priced.subtotalCents } : {}) }),
+      db.insert(schema.orders).values({ id: orderId, email: input.email, status: "pending", totalUsdCents: totalCents, ...(priced.discountCents > 0 ? { discountCode: priced.discountCode, subtotalCents: priced.subtotalCents, discountCents: priced.discountCents, ...(priced.discountPercent > 0 ? { discountPercent: priced.discountPercent } : {}) } : {}) }),
       db.insert(schema.orderItems).values(priced.lines.map((l) => ({ orderId, productSlug: l.slug, packageName: l.packageName, records: l.records, priceUsdCents: l.payCents }))),
       db.insert(schema.paymentAttempts).values({
         orderId, coin: opt.coin, network, walletId: wallet.id, address: wallet.addressOrXpub,
@@ -93,7 +103,22 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
     // Two buyers can race for the same amount. Keep exactly one: if we are not alone, undo ours and pick again.
     const same = await db.select({ orderId: schema.paymentAttempts.orderId }).from(schema.paymentAttempts)
       .where(and(eq(schema.paymentAttempts.address, wallet.addressOrXpub), eq(schema.paymentAttempts.coin, opt.coin), eq(schema.paymentAttempts.network, network), eq(schema.paymentAttempts.expectedAmount, amount), gt(schema.paymentAttempts.expiresAt, new Date(now - WINDOW_MS))));
-    if (same.length <= 1) { await env.CACHE.put(dedupeKey, orderId, { expirationTtl: 600 }).catch(() => undefined); if (discount) await countUse(db, discount.code).catch(() => undefined); return orderId; }
+    if (same.length <= 1) {
+      // Reserve the promotion use. If the last use went to someone else a moment ago, undo this order.
+      const res = await reserveRedemptions(db, orderId, input.email, priced.applied, totalCents);
+      if (!res.ok) {
+        await dropReservations(db, orderId);
+        await db.batch([
+          db.delete(schema.paymentAttempts).where(eq(schema.paymentAttempts.orderId, orderId)),
+          db.delete(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)),
+          db.delete(schema.orders).where(eq(schema.orders.id, orderId)),
+        ]);
+        throw new CheckoutError(res.reason === "customer" ? "You have already used this code the maximum number of times." : res.reason === "limit" ? "This code has just reached its usage limit." : "We could not apply your discount. Please try again.");
+      }
+      await env.CACHE.put(dedupeKey, orderId, { expirationTtl: 600 }).catch(() => undefined);
+      if (discount) await countUse(db, discount.code).catch(() => undefined);
+      return orderId;
+    }
     await db.batch([
       db.delete(schema.paymentAttempts).where(eq(schema.paymentAttempts.orderId, orderId)),
       db.delete(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)),

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { applyPromotions, type Applied, type Candidate } from "@/lib/promos/engine";
 import { getCategory, getCountry, getProduct, getProducts, offeredPackages, type Product } from "@/lib/catalog";
 
 /** What the browser stores: ONLY the product and the chosen package. Prices, names and totals always come from the server. */
@@ -36,6 +37,8 @@ export type CartPricing = {
   subtotalCents: number;
   /** partner discount applied to this cart (0 = none), the amount it takes off, and the code that earned it */
   discountPercent: number; discountCents: number; discountCode: string;
+  /** every discount applied (partner or promotions) with the amount it takes off, and what to tell the buyer about a code that did not apply */
+  applied: Applied[]; codeError: string; needsEmail: boolean;
   /** what the buyer pays */
   totalCents: number; checkoutOpen: boolean; canCheckout: boolean;
   /** items in the request that no longer exist in the catalog (removed from the cart by the client) */
@@ -46,6 +49,8 @@ export type CartContext = {
   checkoutOpen: boolean; allowPlaceholder: boolean;
   /** Already VALIDATED by resolveDiscount (the browser never supplies this). One discount per order, never stacked. */
   discount?: { code: string; percent: number };
+  /** Promotions loaded from the database for this request (never from the browser). Omitted = no promotions. */
+  promo?: { candidates: Candidate[]; enteredCode?: string; nowSec: number; emailKnown: boolean };
 };
 
 /** Cents to pay for a list price after a percent discount. Whole cents, rounded to nearest. */
@@ -58,7 +63,6 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
   const items = normalizeItems(input);
   const lines: PricedLine[] = [];
   const dropped: CartItem[] = [];
-  const pct = ctx.discount ? Math.min(100, Math.max(0, Math.floor(ctx.discount.percent))) : 0;
   for (const i of items) {
     const p = getProduct(i.slug);
     const pk = (p ? offeredPackages(p) : []).find((x) => x.name === i.pkg);
@@ -68,7 +72,7 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
     const sellable = productSellable(p, ctx);
     lines.push({
       slug: p.slug, name: p.name, categoryName: c?.name ?? "", categorySlug: p.categorySlug, coverage: k?.name ?? "",
-      packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, payCents: discounted(pk.priceUsdCents, pct), fields: p.fields,
+      packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, payCents: pk.priceUsdCents, fields: p.fields,
       packages: offeredPackages(p).map((x) => ({ name: x.name, records: x.records, priceCents: x.priceUsdCents })),
       placeholder: p.placeholderData,
       purchasable: sellable && ctx.checkoutOpen,
@@ -77,8 +81,18 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
     });
   }
   const subtotalCents = lines.reduce((s, l) => s + l.priceCents, 0);
+  const r = applyPromotions(
+    lines.map((l) => ({ slug: l.slug, categorySlug: l.categorySlug, packageName: l.packageName, priceCents: l.priceCents })),
+    { candidates: ctx.promo?.candidates ?? [], enteredCode: ctx.promo?.enteredCode, partner: ctx.discount, nowSec: ctx.promo?.nowSec ?? Math.floor(Date.now() / 1000), emailKnown: ctx.promo?.emailKnown ?? false },
+  );
+  lines.forEach((l, i) => { l.payCents = r.payCents[i]; });
   const totalCents = lines.reduce((s, l) => s + l.payCents, 0);
-  return { lines, subtotalCents, discountPercent: pct, discountCents: subtotalCents - totalCents, discountCode: pct > 0 ? (ctx.discount?.code ?? "") : "", totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length > 0 && lines.every((l) => l.purchasable), dropped, placeholderPrices: lines.some((l) => l.placeholder) };
+  const single = r.applied.length === 1 && r.applied[0].kind === "percent" ? r.applied[0].percent : 0;
+  return {
+    lines, subtotalCents, discountPercent: single, discountCents: subtotalCents - totalCents, discountCode: r.applied.map((a) => a.code).filter(Boolean).join(", "),
+    applied: r.applied, codeError: r.codeError, needsEmail: r.needsEmail,
+    totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length > 0 && lines.every((l) => l.purchasable), dropped, placeholderPrices: lines.some((l) => l.placeholder),
+  };
 }
 
 export type Suggestion = {

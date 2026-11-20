@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { AddToCartButton } from "@/components/cart/add-button";
 import { formatUsd, offeredPackages, type Product } from "@/lib/catalog";
+import { getPublicPromos, shownPrice } from "@/lib/promos/public";
+import { PromoBanner } from "@/components/promos/banner";
 
-export function ProductPricing({ product, forSale }: { product: Product; forSale: boolean }) {
+export async function ProductPricing({ product, forSale }: { product: Product; forSale: boolean }) {
+  // Promotions only change what is SHOWN here; the cart and checkout re-price everything on the server.
+  const promos = await getPublicPromos(getCloudflareContext().env).catch(() => []);
   if (!offeredPackages(product).length) {
     return (
       <section id="pricing" className="scroll-mt-20 bg-sand-100 py-20">
@@ -22,9 +27,13 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
           <strong className="text-forest-900">One-time payment. No subscription.</strong> You pay in crypto, download your file and keep it. No account needed.
         </p>
 
+        <PromoBanner place="product" slug={product.slug} className="mt-6" />
+
         <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
           {offeredPackages(product).map((pk) => {
             const dark = pk.highlighted;
+            const sp = shownPrice(promos, { slug: product.slug, categorySlug: product.categorySlug }, pk);
+            const shown = sp.auto ?? sp.code;
             const per1000 = (pk.priceUsdCents / 100 / (pk.records / 1000)).toFixed(2);
             return (
               <div
@@ -38,7 +47,17 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
                 <h3 className={`text-lg font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>{pk.name}</h3>
                 <p className={`display mt-3 text-6xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{pk.records.toLocaleString("en-US")}</p>
                 <p className="mt-1">records</p>
-                <p className={`display mt-6 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{formatUsd(pk.priceUsdCents)}</p>
+                {shown ? (
+                  <div className="mt-6">
+                    <p className="text-sm">Original: <s>{formatUsd(shown.originalCents)}</s></p>
+                    <p className={`display text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}><span className="sr-only">Now </span>{formatUsd(shown.nowCents)}</p>
+                    <p className="mt-1 inline-block rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold text-purple-700">
+                      Save {shown.savePercent}% ({formatUsd(shown.saveCents)}){shown.code ? ` with code ${shown.code}` : ", applied automatically"}
+                    </p>
+                  </div>
+                ) : (
+                  <p className={`display mt-6 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{formatUsd(pk.priceUsdCents)}</p>
+                )}
                 <p className="mt-1 text-sm">${per1000} per 1,000 records. Paid once.</p>
                 <ul className="mt-6 flex-1 space-y-3 text-sm">
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fields.length} fields: {product.fields.join(", ")}</li>

@@ -46,7 +46,7 @@ export function CartView() {
         setLast(loaded);
         if (applied) {
           if (j.discountError) { setCodeMsg({ ok: false, text: j.discountError }); setApplied(null); writePartner(null); }
-          else { setCodeMsg({ ok: true, text: `Partner code applied: ${j.pricing.discountPercent}% off.` }); writePartner(applied); }
+          else { setCodeMsg({ ok: true, text: appliedMessage(j.pricing) }); writePartner(applied); }
         }
         if (j.pricing.dropped.length > 0) {
           // Something in this browser's cart no longer exists in the catalog: remove it and say so.
@@ -173,7 +173,12 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         </ul>
         <dl className="mt-4 space-y-2 border-t border-sand-200 pt-4 text-sm">
           <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents)}</dd></div>
-          {pricing.discountPercent > 0 && <div className="cart-in flex justify-between text-forest-700"><dt>Partner discount ({pricing.discountPercent}%)</dt><dd className="font-semibold">&minus;{formatUsd(pricing.discountCents)}</dd></div>}
+          {pricing.applied.map((a) => (
+            <div key={`${a.source}-${a.code}-${a.title}`} className="cart-in flex justify-between gap-3 text-forest-700">
+              <dt className="min-w-0">{a.title}{a.kind === "percent" && a.percent > 0 ? ` (${a.percent}%)` : ""}{a.source === "automatic" && <span className="block text-xs text-forest-500">Applied automatically</span>}{a.code && a.source !== "automatic" && <span className="block font-mono text-xs text-forest-500">{a.code}</span>}</dt>
+              <dd className="shrink-0 font-semibold">&minus;{formatUsd(a.cents)}</dd>
+            </div>
+          ))}
           <div className="flex justify-between"><dt>BeigeLeads fees</dt><dd>None added</dd></div>
         </dl>
         <Code pricing={pricing} applied={applied} codeMsg={codeMsg} busy={busy} onApply={onApply} onRemove={onRemoveCode} />
@@ -194,36 +199,49 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
   );
 }
 
-/** Partner code. Only approved data reseller partners have one, and it works only with the email they applied with. */
+const isPartnerLike = (c: string) => /^PARTNER-/i.test(c.trim());
+const appliedMessage = (p: CartPricing) => {
+  const typed = p.applied.find((a) => a.source !== "automatic");
+  if (!typed) return "";
+  return p.needsEmail ? `${typed.code || typed.title} applied. We confirm your eligibility with your email at checkout.` : `${typed.code || typed.title} applied: you save ${formatUsd(typed.cents)}.`;
+};
+
+/** One code box for every code: public promotion codes and personal partner codes (a partner code also needs the partner's email). */
 function Code({ pricing, applied, codeMsg, busy, onApply, onRemove }: {
   pricing: CartPricing; applied: { code: string; email: string } | null; codeMsg: { ok: boolean; text: string } | null; busy: boolean;
   onApply: (code: string, email: string) => void; onRemove: () => void;
 }) {
   const [show, setShow] = useState(false);
   const [draft, setDraft] = useState({ code: "", email: "" });
-  const live = !!applied && pricing.discountPercent > 0;
+  const live = !!applied && pricing.applied.some((a) => a.source !== "automatic");
+  const partner = isPartnerLike(draft.code);
+  const ready = draft.code.trim().length > 0 && (!partner || draft.email.trim().length > 0);
   return (
     <div className="mt-4 border-t border-sand-200 pt-4 text-sm">
       {live ? (
-        <div className="cart-in flex items-center justify-between gap-3 rounded-xl bg-forest-100 px-3 py-2.5 text-forest-900" role="status">
-          <span className="flex min-w-0 items-center gap-2"><Check className="size-4 shrink-0" aria-hidden /><span className="min-w-0 truncate"><strong className="font-mono">{applied.code.toUpperCase()}</strong> applied</span></span>
-          <button type="button" onClick={onRemove} className="shrink-0 font-semibold underline focus-visible:outline-2 focus-visible:outline-purple-600">Remove</button>
+        <div className="cart-in" role="status">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-forest-100 px-3 py-2.5 text-forest-900">
+            <span className="flex min-w-0 items-center gap-2"><Check className="size-4 shrink-0" aria-hidden /><span className="min-w-0 truncate"><strong className="font-mono">{applied.code.toUpperCase()}</strong> applied</span></span>
+            <button type="button" onClick={onRemove} className="shrink-0 font-semibold underline focus-visible:outline-2 focus-visible:outline-purple-600">Remove</button>
+          </div>
+          {codeMsg?.ok && codeMsg.text && <p className="mt-2 text-xs text-forest-700">{codeMsg.text}</p>}
         </div>
       ) : (
         <>
           <button type="button" aria-expanded={show || !!codeMsg} onClick={() => setShow(!show)} className="inline-flex items-center gap-2 font-semibold text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600">
-            <TicketPercent className="size-4" aria-hidden /> Have a partner code?
+            <TicketPercent className="size-4" aria-hidden /> Have a promo code?
             <ChevronDown className={`size-4 transition-transform duration-200 ${show || codeMsg ? "rotate-180" : ""}`} aria-hidden />
           </button>
           {(show || codeMsg) && (
-            <form
-              className="cart-in mt-3 space-y-2"
-              onSubmit={(e) => { e.preventDefault(); if (draft.code.trim() && draft.email.trim()) onApply(draft.code.trim(), draft.email.trim().toLowerCase()); }}
-            >
-              <label className="block text-xs font-semibold text-forest-900">Code<input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} autoComplete="off" spellCheck={false} maxLength={40} placeholder="PARTNER-XXXX-XXXX" className="mt-1 h-10 w-full rounded-xl border border-sand-300 bg-white px-3 font-mono text-sm uppercase text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600" /></label>
-              <label className="block text-xs font-semibold text-forest-900">Email you applied with<input type="email" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} autoComplete="email" maxLength={254} className="mt-1 h-10 w-full rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600" /></label>
-              <Button type="submit" size="sm" variant="secondary" disabled={busy || !draft.code.trim() || !draft.email.trim()}>{busy ? "Checking..." : "Apply code"}</Button>
-              <p className="text-xs">Approved data reseller partner? <Link href="/partners" className="underline">About the partner program</Link></p>
+            <form className="cart-in mt-3 space-y-2" onSubmit={(e) => { e.preventDefault(); if (ready) onApply(draft.code.trim(), partner ? draft.email.trim().toLowerCase() : ""); }}>
+              <label className="block text-xs font-semibold text-forest-900">Promo code
+                <span className="mt-1 flex gap-2">
+                  <input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} autoComplete="off" spellCheck={false} maxLength={40} placeholder="Enter code" className="h-10 min-w-0 flex-1 rounded-xl border border-sand-300 bg-white px-3 font-mono text-sm uppercase text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600" />
+                  <Button type="submit" size="sm" variant="secondary" disabled={busy || !ready}>{busy ? "Checking..." : "Apply"}</Button>
+                </span>
+              </label>
+              {partner && <label className="block text-xs font-semibold text-forest-900">Email you applied with<input type="email" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} autoComplete="email" maxLength={254} className="mt-1 h-10 w-full rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600" /></label>}
+              <p className="text-xs">Approved data reseller partner? Use your personal partner code. <Link href="/partners" className="underline">About the partner program</Link></p>
             </form>
           )}
           {codeMsg && !codeMsg.ok && <p role="alert" className="cart-in mt-2 flex items-start gap-2 rounded-xl bg-sand-100 px-3 py-2 text-forest-900"><TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />{codeMsg.text}</p>}

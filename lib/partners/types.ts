@@ -48,3 +48,6 @@ export const partnerApplicationSchema = z.object({
   terms: z.literal(true, { error: "Accept the Partner Program Terms to apply." }),
 });
 export type PartnerApplicationInput = z.infer<typeof partnerApplicationSchema>;
+
+/** True for the personal codes created at approval (PARTNER-XXXX-XXXX). Other codes are public promotion codes. */
+export const isPartnerCode = (raw: string) => /^PARTNER-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(raw.trim().toUpperCase().replace(/\s+/g, ""));

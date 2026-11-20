@@ -1,3 +1,4 @@
+import { markRedeemed } from "@/lib/promos/store";
 import { and, eq, inArray } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { deliverOrder } from "@/lib/delivery/deliver";
@@ -25,6 +26,7 @@ export async function markOrderPaid(env: CloudflareEnv, actor: string, orderId: 
     .returning({ id: schema.orders.id });
   if (r.length === 0) return "not-allowed";
   await db.update(schema.paymentAttempts).set({ status: "paid" }).where(eq(schema.paymentAttempts.orderId, orderId));
+  await markRedeemed(db, orderId);
   await audit(db, orderId, actor, "mark_paid", detail);
   await notifyOwner(env, "Order marked paid by hand", `${actor} marked order ${orderId} paid. ${detail}`);
   await deliverOrder(env, orderId);

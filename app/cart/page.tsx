@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PromoBanner } from "@/components/promos/banner";
 import { CartView } from "@/components/cart/cart-view";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 
@@ -14,6 +15,7 @@ export default function CartPage() {
           <h1 className="display text-5xl text-forest-900 sm:text-6xl">Your Cart</h1>
           <p className="mt-2 text-lg">Review your databases, then check out.</p>
         </header>
+        <PromoBanner place="cart" className="mb-6" />
         <CartView />
       </div>
     </>

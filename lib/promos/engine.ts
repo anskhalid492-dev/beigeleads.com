@@ -1,0 +1,192 @@
+// Promotion engine: PURE (no database, no clock of its own). Given the priced cart lines, the promotions that may apply and facts about
+// the buyer, it returns exactly what is taken off each line. Used by the cart price API and by createOrder, so the cart never promises
+// a price that checkout refuses. The browser never supplies a discount amount.
+//
+// STACKING RULES (shown in the admin UI, keep in sync with `STACKING_RULES`):
+//  1. A verified partner code (50%) applies ALONE: no public promotion is combined with it.
+//  2. Otherwise every eligible promotion is priced on its own; the one saving the most is applied first (ties: the code the buyer typed).
+//  3. If that first promotion is "combinable", other combinable promotions are added on top, best first, each on what is still unpaid.
+//     A non-combinable promotion is always applied alone.
+//  4. Discounts only touch eligible lines, are whole cents, and never take a line below $0.
+
+export type PromoKind = "percent" | "fixed";
+export type Promo = {
+  id: number; name: string; title: string; code: string | null; description: string;
+  kind: PromoKind; value: number; // percent 1-100, or cents
+  productSlugs: string[]; categorySlugs: string[]; packageNames: string[]; // empty = no restriction
+  minCartCents: number; maxDiscountCents: number | null;
+  startsAt: number | null; endsAt: number | null; // epoch seconds, UTC
+  usageLimit: number | null; perCustomerLimit: number | null;
+  firstPurchaseOnly: boolean; partnerOnly: boolean; automatic: boolean; combinable: boolean;
+  status: "draft" | "active" | "paused";
+  bannerPlaces: string[];
+};
+/** Facts the database supplies about one promotion for this buyer. null = unknown (no email yet). */
+export type PromoFacts = { totalUses: number; customerUses: number | null; firstPurchase: boolean | null; partner: boolean | null };
+export type Candidate = { promo: Promo; facts: PromoFacts };
+export type EngineLine = { slug: string; categorySlug: string; packageName: string; priceCents: number };
+export type Applied = {
+  promotionId: number | null; code: string; title: string; kind: PromoKind; percent: number; cents: number;
+  source: "code" | "automatic" | "partner"; lineCents: number[]; combinable: boolean;
+};
+export type EngineInput = {
+  candidates: Candidate[]; enteredCode?: string;
+  partner?: { code: string; percent: number };
+  nowSec: number; emailKnown: boolean;
+};
+export type EngineResult = {
+  applied: Applied[]; discountCents: number; payCents: number[];
+  /** message about the code the buyer typed when it did not (fully) apply; "" when fine */
+  codeError: string;
+  /** some applied promotion still needs the buyer's email to be verified (first purchase, per-customer limit, partner only) */
+  needsEmail: boolean;
+};
+
+export const STACKING_RULES = [
+  "A verified Data Reseller Partner code (50%) always applies on its own. Public promotions are never combined with it.",
+  "When several promotions qualify, the one that saves the buyer the most is applied.",
+  "A promotion marked \"combinable\" can be stacked with other combinable promotions. A non-combinable promotion is always applied alone.",
+  "Discounts apply only to the lists a promotion covers, and the total can never go below $0.",
+  "Percentage discounts are rounded to the nearest cent. \"Maximum discount\" caps the total saving of one promotion.",
+];
+
+export const normalizePromoCode = (raw: string) => raw.trim().toUpperCase().replace(/\s+/g, "");
+export const PROMO_CODE_RE = /^[A-Z0-9][A-Z0-9_-]{2,29}$/;
+
+export type Window = "scheduled" | "live" | "expired";
+export function promoWindow(p: Pick<Promo, "startsAt" | "endsAt">, nowSec: number): Window {
+  if (p.startsAt !== null && nowSec < p.startsAt) return "scheduled";
+  if (p.endsAt !== null && nowSec >= p.endsAt) return "expired";
+  return "live";
+}
+
+/** Reasons a promotion cannot be used. The text is safe to show the buyer. */
+export type Refusal = "invalid" | "scheduled" | "expired" | "limit" | "customer" | "first" | "partner";
+export const REFUSAL_TEXT: Record<Refusal, string> = {
+  invalid: "This code is not valid.",
+  scheduled: "This code is not active yet.",
+  expired: "This code has expired.",
+  limit: "This code has reached its usage limit.",
+  customer: "You have already used this code the maximum number of times.",
+  first: "This code is for first purchases only.",
+  partner: "This code is for approved Data Reseller Partners.",
+};
+
+export function refusal(p: Promo, f: PromoFacts, nowSec: number): Refusal | null {
+  if (p.status !== "active") return "invalid";
+  const w = promoWindow(p, nowSec);
+  if (w === "scheduled") return "scheduled";
+  if (w === "expired") return "expired";
+  if (p.usageLimit !== null && f.totalUses >= p.usageLimit) return "limit";
+  if (p.perCustomerLimit !== null && f.customerUses !== null && f.customerUses >= p.perCustomerLimit) return "customer";
+  if (p.firstPurchaseOnly && f.firstPurchase === false) return "first";
+  if (p.partnerOnly && f.partner === false) return "partner";
+  return null;
+}
+
+const needsEmail = (p: Promo, f: PromoFacts) =>
+  (p.firstPurchaseOnly && f.firstPurchase === null) || (p.partnerOnly && f.partner === null) || (p.perCustomerLimit !== null && f.customerUses === null);
+
+export function lineEligible(p: Promo, l: EngineLine): boolean {
+  return (p.productSlugs.length === 0 || p.productSlugs.includes(l.slug))
+    && (p.categorySlugs.length === 0 || p.categorySlugs.includes(l.categorySlug))
+    && (p.packageNames.length === 0 || p.packageNames.includes(l.packageName));
+}
+
+/** Spreads `total` cents over the lines in proportion to `weights`, exactly (largest remainder), never above a line's weight. */
+export function allocate(total: number, weights: number[]): number[] {
+  const sum = weights.reduce((a, b) => a + b, 0);
+  if (sum <= 0 || total <= 0) return weights.map(() => 0);
+  const t = Math.min(total, sum);
+  const raw = weights.map((w) => (w * t) / sum);
+  const out = raw.map((x) => Math.floor(x));
+  let left = t - out.reduce((a, b) => a + b, 0);
+  const order = raw.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r || a.i - b.i);
+  for (const { i } of order) { if (left <= 0) break; if (out[i] < weights[i]) { out[i]++; left--; } }
+  return out;
+}
+
+/** Cents one promotion takes off, per line, given what each line still costs. `cartSubtotal` decides the minimum-spend rule. */
+export function promoCents(p: Promo, lines: EngineLine[], remaining: number[], cartSubtotal: number): number[] {
+  if (cartSubtotal < p.minCartCents) return lines.map(() => 0);
+  const eligible = lines.map((l, i) => (lineEligible(p, l) ? remaining[i] : 0));
+  const base = eligible.reduce((a, b) => a + b, 0);
+  if (base <= 0) return lines.map(() => 0);
+  let total = p.kind === "percent" ? Math.round((base * Math.min(100, Math.max(0, p.value))) / 100) : p.value;
+  if (p.maxDiscountCents !== null) total = Math.min(total, p.maxDiscountCents);
+  return allocate(Math.min(total, base), eligible);
+}
+
+const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+
+export function applyPromotions(lines: EngineLine[], input: EngineInput): EngineResult {
+  const price = lines.map((l) => l.priceCents);
+  const subtotal = sum(price);
+  const none: EngineResult = { applied: [], discountCents: 0, payCents: price, codeError: "", needsEmail: false };
+  if (lines.length === 0) return none;
+
+  // Rule 1: a verified partner code applies alone.
+  if (input.partner) {
+    const pct = Math.min(100, Math.max(0, Math.floor(input.partner.percent)));
+    const cents = price.map((p) => p - Math.round((p * (100 - pct)) / 100));
+    const total = sum(cents);
+    const entered = input.enteredCode ? normalizePromoCode(input.enteredCode) : "";
+    const typedOther = entered && entered !== input.partner.code;
+    return {
+      applied: total > 0 ? [{ promotionId: null, code: input.partner.code, title: "Data Reseller Partner discount", kind: "percent", percent: pct, cents: total, source: "partner", lineCents: cents, combinable: false }] : [],
+      discountCents: total, payCents: price.map((p, i) => p - cents[i]),
+      codeError: typedOther ? "Partner discounts cannot be combined with other codes." : "", needsEmail: false,
+    };
+  }
+
+  const entered = input.enteredCode ? normalizePromoCode(input.enteredCode) : "";
+  let codeError = "";
+  let enteredPromo: Candidate | undefined;
+  if (entered) {
+    enteredPromo = input.candidates.find((c) => c.promo.code === entered);
+    if (!enteredPromo) codeError = REFUSAL_TEXT.invalid;
+    else {
+      const r = refusal(enteredPromo.promo, enteredPromo.facts, input.nowSec);
+      if (r) { codeError = REFUSAL_TEXT[r]; enteredPromo = undefined; }
+    }
+  }
+
+  // Everything that may apply: the typed code + live automatic promotions.
+  const pool: { c: Candidate; src: "code" | "automatic" }[] = [];
+  if (enteredPromo) pool.push({ c: enteredPromo, src: "code" });
+  for (const c of input.candidates) {
+    if (!c.promo.automatic || c.promo.id === enteredPromo?.promo.id) continue;
+    if (refusal(c.promo, c.facts, input.nowSec)) continue;
+    pool.push({ c, src: "automatic" });
+  }
+  // Rule 2: price each on its own, best saving first (typed code wins ties).
+  const scored = pool
+    .map((x) => ({ ...x, own: promoCents(x.c.promo, lines, price, subtotal) }))
+    .filter((x) => sum(x.own) > 0)
+    .sort((a, b) => sum(b.own) - sum(a.own) || (a.src === "code" ? -1 : 0) - (b.src === "code" ? -1 : 0) || a.c.promo.id - b.c.promo.id);
+
+  if (enteredPromo && !scored.some((x) => x.c.promo.id === enteredPromo.promo.id)) {
+    const p = enteredPromo.promo;
+    codeError = subtotal < p.minCartCents ? `Spend at least $${(p.minCartCents / 100).toFixed(2)} to use this code.` : "This code does not apply to the lists in your cart.";
+  }
+  if (scored.length === 0) return { ...none, codeError };
+
+  // Rule 3: first one, then combinable extras on what is left.
+  const chosen: typeof scored = [scored[0]];
+  if (scored[0].c.promo.combinable) for (const x of scored.slice(1)) if (x.c.promo.combinable) chosen.push(x);
+  const remaining = [...price];
+  const applied: Applied[] = [];
+  let needs = false;
+  for (const x of chosen) {
+    const p = x.c.promo;
+    const cents = chosen.length === 1 ? x.own : promoCents(p, lines, remaining, subtotal);
+    const total = sum(cents);
+    if (total <= 0) continue;
+    cents.forEach((c, i) => { remaining[i] -= c; });
+    if (needsEmail(p, x.c.facts)) needs = true;
+    applied.push({ promotionId: p.id, code: p.code ?? "", title: p.title, kind: p.kind, percent: p.kind === "percent" ? p.value : 0, cents: total, source: x.src, lineCents: cents, combinable: p.combinable });
+  }
+  const notApplied = enteredPromo && !applied.some((a) => a.promotionId === enteredPromo.promo.id);
+  if (notApplied) codeError = "A better offer is already applied to your cart. Offers cannot be combined.";
+  return { applied, discountCents: sum(applied.map((a) => a.cents)), payCents: remaining, codeError, needsEmail: needs };
+}

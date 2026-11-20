@@ -43,6 +43,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   ]);
   // An order can hold several lists: fetch its items separately so paging counts ORDERS, not items.
   const itemRows = base.length ? await db.select().from(schema.orderItems).where(inArray(schema.orderItems.orderId, base.map((b) => b.id))) : [];
+  // Discount columns come from migration 0034/0033: read them on their own so this page still works before it is applied.
+  const disc = new Map<string, { cents: number; code: string | null }>();
+  try {
+    const d = base.length ? await db.select({ id: schema.orders.id, c: schema.orders.discountCents, code: schema.orders.discountCode }).from(schema.orders).where(inArray(schema.orders.id, base.map((b) => b.id))) : [];
+    for (const r of d) if (r.c) disc.set(r.id, { cents: r.c, code: r.code });
+  } catch { /* migration not applied yet */ }
   const rows = base.map((o) => {
     const its = itemRows.filter((i) => i.orderId === o.id);
     return { ...o, slug: its.length ? its.map((i) => i.productSlug).join(", ") : null, pkg: its.length ? its.map((i) => i.packageName).join(", ") : null };
@@ -73,7 +79,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   <tr key={o.id}>
                     <td className="px-4 py-3 font-mono text-xs" title={o.id}>{o.id.slice(0, 8)}</td>
                     <td className="px-4 py-3">{o.slug ?? "—"}</td><td className="px-4 py-3">{o.pkg ?? "—"}</td>
-                    <td className="px-4 py-3">{o.email}</td><td className="px-4 py-3 font-semibold text-forest-900">{usd(o.cents)}</td>
+                    <td className="px-4 py-3">{o.email}</td><td className="px-4 py-3 font-semibold text-forest-900">{usd(o.cents)}{disc.get(o.id) ? <span className="block text-xs font-normal text-forest-700">−{usd(disc.get(o.id)!.cents)}{disc.get(o.id)!.code ? ` (${disc.get(o.id)!.code})` : ""}</span> : null}</td>
                     <td className="px-4 py-3"><Badge tone={payTone[o.status]}>{o.status.replace("_", " ")}</Badge></td>
                     <td className="px-4 py-3">{o.dStatus === "sent" ? <Badge tone="good">Delivered</Badge> : o.dStatus === "failed" ? <Badge tone="bad">Failed</Badge> : o.dStatus === "sending" ? <Badge tone="info">Sending</Badge> : o.status === "paid" ? <Badge tone="warn">Waiting</Badge> : <Badge>—</Badge>}</td>
                     <td className="px-4 py-3">{fmtDate(o.createdAt)}</td>

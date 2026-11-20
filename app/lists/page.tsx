@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PromoBanner } from "@/components/promos/banner";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SolutionFaq } from "@/components/solutions/sections";
@@ -43,6 +44,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
   return (
     <>
       <div className="mx-auto max-w-7xl px-4"><Breadcrumbs items={[{ name: "Lists", href: "/lists" }]} /></div>
+      <PromoBanner place="lists" className="mb-3 mx-4" />
       <ListsHero audience={f.type} industries={data.industries} countries={data.countries} tree={data.tree} niches={data.niches.map((n) => ({ name: n.name }))} basket={basketLabels(data.industries, tax)} />
       <ul className="mx-auto mt-5 flex max-w-7xl flex-wrap justify-center gap-x-8 gap-y-2 px-4 text-sm font-semibold text-forest-900">{TRUST.map((t) => <li key={t} className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-forest-500" aria-hidden />{t}</li>)}</ul>
 

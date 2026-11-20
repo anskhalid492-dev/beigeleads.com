@@ -1,3 +1,4 @@
+import { markRedeemed, releaseOrder } from "@/lib/promos/store";
 import { and, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { notifyOwner } from "@/lib/forms/email";
@@ -135,10 +136,11 @@ async function processAttempt(env: CloudflareEnv, a: typeof schema.paymentAttemp
   const amt = (n: bigint) => `${formatAtomic(n, spec.decimals)} ${a.coin}`;
 
   if (d.action === "expire") {
-    if (await flip("expired", ["pending"])) { await attemptTo("expired"); return true; }
+    if (await flip("expired", ["pending"])) { await attemptTo("expired"); await releaseOrder(db, order.id); return true; }
   } else if (d.action === "paid") {
     if (await flip("paid", ["pending", "partial", "late_payment"], { paidAt: new Date(now) })) {
       await attemptTo("paid", d.overpaidAtomic);
+      await markRedeemed(db, order.id); // the promotion use becomes final only when the money arrived (idempotent)
       await notifyOwner(env, "Payment confirmed", `Order ${order.id} paid: received ${amt(d.receivedAtomic)}.${d.overpaidAtomic > 0n ? ` OVERPAID by ${amt(d.overpaidAtomic)}: refund or credit needed.` : ""}`);
       return true;
     }
@@ -170,7 +172,8 @@ export async function expireStaleAttempts(env: CloudflareEnv, now = Date.now()) 
       sql`NOT EXISTS (SELECT 1 FROM payment_events e WHERE e.attempt_id = payment_attempts.id)`))
     .limit(200);
   for (const s of stale) {
-    await db.update(schema.orders).set({ status: "expired" }).where(and(eq(schema.orders.id, s.orderId), eq(schema.orders.status, "pending")));
+    const exp = await db.update(schema.orders).set({ status: "expired" }).where(and(eq(schema.orders.id, s.orderId), eq(schema.orders.status, "pending"))).returning({ id: schema.orders.id });
+    if (exp.length > 0) await releaseOrder(db, s.orderId);
     await db.update(schema.paymentAttempts).set({ status: "expired" }).where(and(eq(schema.paymentAttempts.id, s.id), eq(schema.paymentAttempts.status, "open")));
   }
   return stale.length;
