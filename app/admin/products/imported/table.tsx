@@ -6,13 +6,13 @@ type R = { id: number; slug: string; name: string; status: string; category: str
 
 export function Table({ rows }: { rows: R[] }) {
   const [sel, setSel] = useState<Set<number>>(new Set());
-  const [msg, setMsg] = useState(""); const [refused, setRefused] = useState<{ slug: string; reasons: string[] }[]>([]); const [busy, setBusy] = useState(false); const [askPub, setAskPub] = useState(false);
+  const [msg, setMsg] = useState(""); const [refused, setRefused] = useState<{ slug: string; reasons: string[] }[]>([]); const [busy, setBusy] = useState(false); const [askPub, setAskPub] = useState(false); const [override, setOverride] = useState(false);
   const toggle = (id: number) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   async function go(to: "draft" | "published" | "archived") {
     if (!sel.size) return;
     setAskPub(false); setMsg("Working..."); setRefused([]); setBusy(true);
     try {
-      const r = await bulkStatusAction([...sel], to); setMsg(r.message); setRefused(r.refused ?? []); setSel(new Set());
+      const r = await bulkStatusAction([...sel], to, to === "published" && override); setMsg(r.message); setRefused(r.refused ?? []); setSel(new Set());
       if (r.ok) setTimeout(() => location.reload(), r.refused?.length ? 4000 : 900);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
@@ -23,6 +23,7 @@ export function Table({ rows }: { rows: R[] }) {
         <span>{sel.size} selected</span>
         {(["published", "draft", "archived"] as const).map((s) => <button key={s} disabled={busy || !sel.size} onClick={() => (s === "published" ? setAskPub(true) : go(s))} className="rounded-full border border-forest-900 px-3 py-1 font-semibold disabled:opacity-40">{s === "published" ? "Publish" : s === "draft" ? "Back to draft" : "Archive"}</button>)}
         {askPub && <span className="flex items-center gap-2 rounded-lg bg-sand-100 px-3 py-1">Publish {sel.size} product(s)? They become visible and buyable.
+          <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} /> Also publish restricted products (phone, consumer, sensitive). I confirm I may lawfully sell this data.</label>
           <button onClick={() => go("published")} className="rounded-full bg-forest-900 px-3 py-1 font-semibold text-sand-50">Yes, publish</button>
           <button onClick={() => setAskPub(false)} className="underline">Cancel</button></span>}
         {msg && <span role="status" aria-live="polite" className="font-semibold">{msg}</span>}

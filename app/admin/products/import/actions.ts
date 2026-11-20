@@ -63,12 +63,13 @@ export async function rollbackAction(form: FormData): Promise<void> {
   await refresh();
 }
 
-export async function bulkStatusAction(idsIn: unknown, to: unknown): Promise<{ ok: boolean; message: string; refused?: { slug: string; reasons: string[] }[] }> {
+export async function bulkStatusAction(idsIn: unknown, to: unknown, allowRestricted: unknown = false): Promise<{ ok: boolean; message: string; refused?: { slug: string; reasons: string[] }[] }> {
   const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
   const ids = z.array(z.number().int()).max(200).safeParse(idsIn), st = z.enum(["draft", "published", "archived"]).safeParse(to);
   if (!ids.success || !st.success || !ids.data.length) return { ok: false, message: "Select at least one product." };
-  const r = await setStatus(db(), ids.data, st.data);
-  await audit(a.email, `${r.changed} product(s) set to ${st.data}${r.refused.length ? `, ${r.refused.length} refused` : ""}`);
+  const override = allowRestricted === true;
+  const r = await setStatus(db(), ids.data, st.data, { allowRestricted: override });
+  await audit(a.email, `${r.changed} product(s) set to ${st.data}${r.refused.length ? `, ${r.refused.length} refused` : ""}${override && st.data === "published" ? " (restricted override ticked by the owner)" : ""}`);
   await refresh();
   return { ok: true, message: `${r.changed} product(s) set to ${st.data}.${r.refused.length ? ` ${r.refused.length} could not be published.` : ""}${r.noLink.length ? ` Warning: ${r.noLink.length} published without a delivery link yet. Add links in Delivery Links, because paid orders for them wait until a link exists.` : ""}`, refused: r.refused.slice(0, 50) };
 }
