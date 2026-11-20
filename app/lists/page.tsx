@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { Faq } from "@/components/shared/faq";
+import { SolutionFaq } from "@/components/solutions/sections";
 import { ListsCatalog } from "@/components/lists/lists-catalog";
 import { ListsDirectory } from "@/components/lists/lists-directory";
 import { basketLabels } from "@/lib/hero-basket";
@@ -62,7 +62,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
         <div><h2 className="display text-3xl !text-sand-50">Can&apos;t find your list?</h2><p className="mt-1 text-sand-200">Describe the industry, place and size you need.</p></div>
         <Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button>
       </div></section>
-      <Faq heading="Questions about our lists" items={[
+      <SolutionFaq name="Our Lists" items={[
         ["Do I need an account?", "No. You pay once in crypto and receive a download link by email."],
         ["Can I check the data first?", "Yes. Masked sample on every list page, and you can request a free sample file by email."],
         ["Are consumer databases available?", "Not yet. BeigeLeads currently provides business contact data only."],

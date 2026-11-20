@@ -176,14 +176,14 @@ const usProducts: readonly Product[] = categories.filter((c) => c.kind !== "gene
   fields: FIELDS,
 }));
 
-// Germany (owner data, 20 Nov 2026). No accuracy figure: no measurement method exists. Prices are the owner's reference packages.
+// Germany (owner data, 20 Nov 2026). Accuracy 95% = the refund-policy target (owner request), not a measured result. Prices are the owner's reference packages.
 const deFull: Product = {
   slug: "germany-business-email-database",
   categorySlug: "business", countrySlug: "germany", scope: "country",
   title: "Business contacts in Germany",
   name: "Germany Business Email Database",
   description: "Business contact details for companies across Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.",
-  recordCount: 4_000_000, lastVerified: DE_VERIFIED, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live", fields: FIELDS,
+  recordCount: 4_000_000, lastVerified: DE_VERIFIED, accuracyPct: 95, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live", fields: FIELDS,
 };
 const deCityProducts: readonly Product[] = DE_CITIES.map(([slug, name, records]) => ({
   slug: `${slug}-business-email-list`,
@@ -191,7 +191,7 @@ const deCityProducts: readonly Product[] = DE_CITIES.map(([slug, name, records])
   title: `Business contacts in ${name}, Germany`,
   name: `${name} Business Email List`,
   description: `Business contact details for companies in ${name}, Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.`,
-  recordCount: records, lastVerified: DE_VERIFIED, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live" as const, fields: FIELDS,
+  recordCount: records, lastVerified: DE_VERIFIED, accuracyPct: 95, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live" as const, fields: FIELDS,
 }));
 const products: readonly Product[] = [...usProducts, deFull, ...deCityProducts];
 

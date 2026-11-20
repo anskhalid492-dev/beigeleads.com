@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Database, Layers3, MapPinned, ShieldCheck, CalendarCheck2 } from "lucide-react";
 import type { Country, Product } from "@/lib/catalog";
 import { fmtDate, fmtNum } from "./meta";
@@ -47,7 +48,9 @@ export function ProductStats({ product, country, cityCount }: { product: Product
                     Placeholder, not measured yet
                   </p>
                 )}
-                <p className="mt-2 text-sm">How we will measure and publish this is explained under Data quality below.</p>
+                {product.placeholderData
+                  ? <p className="mt-2 text-sm">How we will measure and publish this is explained under Data quality below.</p>
+                  : <p className="mt-2 text-sm">Our accuracy target. If more than 5% of emails bounce, we replace them or refund proportionally. See the <Link href="/legal/refund-replacement" className="font-semibold text-sand-50 underline underline-offset-2">refund policy</Link>.</p>}
               </div>
             </div>
           )}
