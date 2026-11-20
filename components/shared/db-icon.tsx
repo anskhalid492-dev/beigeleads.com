@@ -1,3 +1,4 @@
+import { usState } from "@/lib/us-states";
 import {
   Car, Coffee, Croissant, Dumbbell, Factory, Fan, GraduationCap, Globe, Hammer, Hotel, Building2, Landmark, Cpu, Scissors, ShoppingBag,
   Snowflake, Stethoscope, Utensils, Wrench, Zap, Briefcase, type LucideIcon,
@@ -161,4 +162,12 @@ export function DbBadge({
       )}
     </span>
   );
+}
+
+/** A US state's own flag (static SVG in /public/flags/us). Falls back to nothing when the name is not a US state. */
+export function StateFlag({ name, className = "h-4 w-6" }: { name: string; className?: string }) {
+  const s = usState(name);
+  if (!s) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/flags/us/${s.slug}.svg`} alt={`${s.name} flag`} loading="lazy" className={`${className} rounded-[3px] object-contain`} />;
 }

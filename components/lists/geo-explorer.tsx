@@ -2,7 +2,8 @@
 import { ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Flag } from "@/components/shared/db-icon";
+import { Flag, StateFlag } from "@/components/shared/db-icon";
+import { usState } from "@/lib/us-states";
 import type { GeoTree } from "@/lib/shop";
 
 type Props = { tree: GeoTree; industries: { slug: string; name: string }[]; productCats: Record<string, string[]> };
@@ -59,7 +60,7 @@ export function GeoExplorer({ tree, industries, productCats }: Props) {
                 <div className="rounded-2xl bg-sand-100 p-5 text-sm"><p className="font-semibold text-forest-900">No states or cities are recorded for {c.name} yet.</p><p className="mt-1">{placeCats.length ? "You can still open the country pages on the right." : "No ready-made database exists for this country yet. Tell us what you need."}</p>{!placeCats.length && <Link className="mt-3 inline-flex font-semibold underline" href={`/custom-list?country=other&countryText=${encodeURIComponent(c.name)}`}>Request a {c.name} list</Link>}</div>
               ) : (
                 <ul className="grid gap-3 sm:grid-cols-2">
-                  {(r ? cityList : c.regions).filter((x) => match(x.name)).map((x) => <li key={x.slug}><button type="button" className={tile} onClick={() => { setFind(""); if (r) setCity(x.slug); else setRegion(x.slug); }}><span className="flex items-center gap-2"><MapPin className="size-4 text-forest-500" aria-hidden />{x.name}</span><ChevronRight className="size-4" aria-hidden /></button></li>)}
+                  {(r ? cityList : c.regions).filter((x) => match(x.name)).map((x) => <li key={x.slug}><button type="button" className={tile} onClick={() => { setFind(""); if (r) setCity(x.slug); else setRegion(x.slug); }}><span className="flex items-center gap-2">{!r && c.slug === "united-states" && usState(x.name) ? <StateFlag name={x.name} className="h-4 w-6" /> : <MapPin className="size-4 text-forest-500" aria-hidden />}{x.name}</span><ChevronRight className="size-4" aria-hidden /></button></li>)}
                   {!r && cityRegionless.filter((x) => match(x.name)).map((x) => <li key={`c-${x.slug}`}><button type="button" className={tile} onClick={() => { setFind(""); setCity(x.slug); }}><span className="flex items-center gap-2"><MapPin className="size-4 text-forest-500" aria-hidden />{x.name}</span><ChevronRight className="size-4" aria-hidden /></button></li>)}
                 </ul>
               )}

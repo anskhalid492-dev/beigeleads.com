@@ -4,6 +4,7 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { loadCountries, loadSubindustries } from "@/lib/catalog-extra";
 import { getDb } from "@/lib/db";
 import { allCoverage } from "@/lib/geo/store";
+import { US_STATES } from "@/lib/us-states";
 import type { GeoTree, ShopData } from "@/lib/shop";
 
 const HINTS: Record<string, string[]> = { dentists: ["dentist", "dental", "orthodontist"], restaurants: ["restaurant", "cafe", "bar", "diner"], "ski-shops": ["ski", "snowboard"] };
@@ -41,6 +42,15 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
       let city = country.cities.find((x) => x.slug === a.slug && x.regionSlug === (par?.slug ?? null));
       if (!city) { city = { slug: a.slug, name: a.name, regionSlug: par?.slug ?? null, cats: [] }; country.cities.push(city); }
       touch(city.cats, cv.categorySlug);
+    }
+  }
+  // Every US state is selectable; a state view shows the national lists, so it carries every category that has a US product.
+  const us = tree.find((c) => c.slug === "united-states");
+  if (us) {
+    const usCats = [...new Set(products.filter((p) => p.countrySlug === "united-states").map((p) => p.categorySlug))];
+    for (const st of US_STATES) {
+      const r = us.regions.find((x) => x.slug === st.slug) ?? (us.regions.push({ slug: st.slug, name: st.name, cats: [] }), us.regions[us.regions.length - 1]);
+      for (const k of usCats) touch(r.cats, k);
     }
   }
   for (const c of tree) { c.regions.sort((a, b) => a.name.localeCompare(b.name)); c.cities.sort((a, b) => a.name.localeCompare(b.name)); }

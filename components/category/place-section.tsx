@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { ArrowUpRight, MapPin, Search } from "lucide-react";
+import { StateFlag } from "@/components/shared/db-icon";
+import { usState } from "@/lib/us-states";
 import { useId, useState } from "react";
 
 export type PlaceItem = { name: string; href: string; records: number | null };
@@ -32,7 +34,7 @@ export function PlaceSection({ title, lead, places, noun }: { title: string; lea
         {sorted.map((p) => (
           <li key={p.href} hidden={!visible.has(p.href)}>
             <Link href={p.href} className="group flex items-center gap-4 rounded-2xl border border-sand-300 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-forest-900 hover:shadow-[0_14px_28px_-20px_rgba(15,42,29,.6)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-forest-900 text-forest-300 transition-colors group-hover:bg-purple-600 group-hover:text-white"><MapPin className="size-5" aria-hidden /></span>
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-forest-900 text-forest-300 transition-colors group-hover:bg-purple-600 group-hover:text-white">{noun === "states" && usState(p.name) ? <StateFlag name={p.name} className="h-6 w-8" /> : <MapPin className="size-5" aria-hidden />}</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-bold text-forest-900">{p.name}</span>
                 <span className="block text-sm">{p.records ? `${p.records.toLocaleString("en-US")} records` : "No inventory yet"}</span>

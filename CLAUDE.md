@@ -1034,3 +1034,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Tests: pure engine tests in `tests/shop.test.ts` are unchanged. NOT browser-checked after this change.
 
 - Menu fix (20 Nov 2026): `loadTaxonomy` appends built-in groups that have NO row in `taxonomy_nodes` (added in code after the admin import), so the Lists menu and their pages are never missing. A group that exists in the database but is unpublished / hidden stays hidden (publish it in /admin/categories).
+
+## 101. All US states + state flags (Nov 2026) — amends sections 71, 75, 93
+
+- Owner request (20 Nov 2026): the /lists "State or region" filter listed only states with imported inventory; every US state must be selectable and each state shows its OWN flag (not the US flag).
+- `lib/us-states.ts` (50 states + DC, slugs = flag file names). `lib/lists-data.ts` adds every state to the `united-states` region list, each carrying every category that has a US product, so a state filter shows the national lists (state pages are views of the national list, §93; no counts invented). Flags: `public/flags/us/<slug>.svg` (npm `us-state-flags`, ISC licence, svgo-optimised, served statically, not bundled). `StateFlag` in `components/shared/db-icon.tsx`; used in the /lists explorer, state place grids (`PlaceSection`) and the place note. Native `<select>` cannot show images, so the filter dropdown stays text; flags appear in the explorer/tiles.
