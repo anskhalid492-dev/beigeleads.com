@@ -4,13 +4,13 @@ import { isProviderId, PROVIDER_IDS, type ProviderId } from "./providers";
 
 export type Settings = {
   enabled: boolean; active: ProviderId | ""; fallback: ProviderId | "";
-  greeting: string; instructions: string; saveChats: boolean;
+  greeting: string; instructions: string; saveChats: boolean; retentionDays: number;
   dailyRequestLimit: number; dailyTokenLimit: number; monthlySpendUsd: number | null;
 };
 export const DEFAULT_SETTINGS: Settings = {
   enabled: false, active: "", fallback: "",
   greeting: "Hi, I'm BeigePilot. Tell me who you want to reach and I'll find the right database.",
-  instructions: "", saveChats: false, dailyRequestLimit: 500, dailyTokenLimit: 500_000, monthlySpendUsd: null,
+  instructions: "", saveChats: false, retentionDays: 90, dailyRequestLimit: 500, dailyTokenLimit: 500_000, monthlySpendUsd: null,
 };
 
 type Env = CloudflareEnv;
@@ -23,7 +23,7 @@ export async function getSettings(env: Env): Promise<{ ready: boolean; s: Settin
     const spend = m.monthlySpendUsd ? Number(m.monthlySpendUsd) : NaN;
     return { ready: true, s: {
       enabled: m.enabled === "1", active: isProviderId(m.active) ? m.active : "", fallback: isProviderId(m.fallback) ? m.fallback : "",
-      greeting: (m.greeting ?? "").slice(0, 300) || DEFAULT_SETTINGS.greeting, instructions: (m.instructions ?? "").slice(0, 1500), saveChats: m.saveChats === "1",
+      greeting: (m.greeting ?? "").slice(0, 300) || DEFAULT_SETTINGS.greeting, instructions: (m.instructions ?? "").slice(0, 1500), saveChats: m.saveChats === "1", retentionDays: [30, 90, 180, 365].includes(Number(m.retentionDays)) ? Number(m.retentionDays) : 90,
       dailyRequestLimit: num(m.dailyRequestLimit, DEFAULT_SETTINGS.dailyRequestLimit, 1, 1_000_000), dailyTokenLimit: num(m.dailyTokenLimit, DEFAULT_SETTINGS.dailyTokenLimit, 1000, 1_000_000_000),
       monthlySpendUsd: Number.isFinite(spend) && spend > 0 ? spend : null,
     } };

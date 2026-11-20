@@ -2,15 +2,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Compass, Minus, Send, X } from "lucide-react";
+import { Compass, Minus, Send, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import { useCart } from "@/lib/cart/client";
 import type { Card, Source } from "@/lib/beigepilot/tools";
 import { Markup } from "./markup";
 import { ChatProductCard } from "./product-card";
 import { ApiForm } from "@/components/forms/api-form";
 
-type Msg = { role: "user" | "assistant"; text: string; cards?: Card[]; sources?: Source[]; handoff?: boolean; error?: boolean };
+type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; sources?: Source[]; handoff?: boolean; error?: boolean };
 const KEY = "bp-chat-v1";
+const CID = "bp-cid-v1";
+function chatId(): string { try { let c = sessionStorage.getItem(CID); if (!c) { c = crypto.randomUUID().replace(/-/g, "").slice(0, 24); sessionStorage.setItem(CID, c); } return c; } catch { return "nostorage" + Math.random().toString(36).slice(2, 12); } }
 const SUGGESTED = ["Find a database for my business", "Compare available packages", "How fresh is your data?", "How does delivery work?", "What guarantees do you offer?"];
 
 /** Page-aware opening question (public page path only). */
@@ -24,7 +26,7 @@ function hint(path: string): string {
 export function BeigePilot() {
   const path = usePathname();
   const cart = useCart();
-  const [cfg, setCfg] = useState<{ enabled: boolean; greeting: string } | null>(null);
+  const [cfg, setCfg] = useState<{ enabled: boolean; greeting: string; saving?: boolean } | null>(null);
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
@@ -36,7 +38,7 @@ export function BeigePilot() {
   useEffect(() => {
     let live = true;
     const t = setTimeout(() => {
-      fetch("/api/beigepilot/config").then((r) => r.json() as Promise<{ enabled: boolean; greeting: string }>).then((c) => { if (live) setCfg(c); }).catch(() => {});
+      fetch("/api/beigepilot/config").then((r) => r.json() as Promise<{ enabled: boolean; greeting: string; saving?: boolean }>).then((c) => { if (live) setCfg(c); }).catch(() => {});
       try { const s = sessionStorage.getItem(KEY); if (s) setMsgs(JSON.parse(s) as Msg[]); } catch { /* storage blocked */ }
     }, 1800);
     return () => { live = false; clearTimeout(t); };
@@ -53,7 +55,7 @@ export function BeigePilot() {
     try {
       const res = await fetch("/api/beigepilot/chat", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: next.filter((m) => !m.error).slice(-12).map((m) => ({ role: m.role, text: m.text.slice(0, 1500) })), path, cart: cart.slice(0, 10) }),
+        body: JSON.stringify({ cid: chatId(), messages: next.filter((m) => !m.error).slice(-12).map((m) => ({ role: m.role, text: m.text.slice(0, 1500) })), path, cart: cart.slice(0, 10) }),
       });
       const j = (await res.json().catch(() => ({}))) as { ok?: boolean; text?: string; cards?: Card[]; sources?: Source[]; handoff?: string | null; error?: string };
       if (res.ok && j.ok && j.text) setMsgs([...next, { role: "assistant", text: j.text, cards: j.cards, sources: j.sources, handoff: !!j.handoff }]);
@@ -61,6 +63,11 @@ export function BeigePilot() {
     } catch { setMsgs([...next, { role: "assistant", error: true, handoff: true, text: "I could not reach the server. Please try again, or contact our team." }]); }
     setBusy(false);
   }, [busy, msgs, path, cart]);
+
+  const rate = (i: number, rating: 1 | -1) => {
+    setMsgs((m) => m.map((x, j) => (j === i ? { ...x, rated: rating } : x)));
+    void fetch("/api/beigepilot/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ cid: chatId(), idx: i, rating }) }).catch(() => {});
+  };
 
   if (!cfg?.enabled || path.startsWith("/admin") || path.startsWith("/checkout")) return null;
   const onCart = path.startsWith("/cart");
@@ -97,6 +104,14 @@ export function BeigePilot() {
               <div key={i} className="bp-msg space-y-2.5">
                 <div className={`max-w-[92%] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-forest-900 ${m.error ? "bg-amber-100" : "bg-sand-100"}`}><Markup text={m.text} /></div>
                 {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} />)}
+                {!m.error && (
+                  <div className="flex items-center gap-1 text-xs" role="group" aria-label="Rate this answer">
+                    <span className="mr-1">{m.rated ? "Thanks for the feedback." : "Was this helpful?"}</span>
+                    {!m.rated && <>
+                      <button type="button" onClick={() => rate(i, 1)} aria-label="Helpful" className="grid size-7 place-items-center rounded-full hover:bg-sand-200"><ThumbsUp className="size-3.5" aria-hidden /></button>
+                      <button type="button" onClick={() => rate(i, -1)} aria-label="Not helpful" className="grid size-7 place-items-center rounded-full hover:bg-sand-200"><ThumbsDown className="size-3.5" aria-hidden /></button></>}
+                  </div>
+                )}
                 {m.handoff && form !== i && <button type="button" onClick={() => setForm(i)} className="inline-flex rounded-full border border-forest-900 px-4 py-2 text-xs font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50">Contact Our Team</button>}
                 {m.handoff && form === i && (
                   <div className="rounded-xl border border-sand-300 bg-white p-3.5">
@@ -125,7 +140,7 @@ export function BeigePilot() {
                 className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-sand-300 bg-white px-3 py-2.5 text-[0.93rem] text-forest-900 placeholder:text-forest-700/60 focus-visible:outline-2 focus-visible:outline-purple-600" />
               <button type="submit" disabled={busy || !text.trim()} aria-label="Send message" className="grid size-11 shrink-0 place-items-center rounded-xl bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-40"><Send className="size-4" aria-hidden /></button>
             </div>
-            <p className="mt-2 text-[0.7rem] leading-snug">AI assistant: check details on the product page. Please do not share personal or payment information.</p>
+            <p className="mt-2 text-[0.7rem] leading-snug">AI assistant: check details on the product page. Please do not share personal or payment information.{cfg.saving && " Conversations may be stored to improve the service."}</p>
           </form>
         </section>
       )}

@@ -9,6 +9,8 @@ import { purgeCartEvents } from "./lib/cart/stats";
 import { purgeOldPopupEvents } from "./lib/popups/store";
 import { purgeEmailLogs } from "./lib/system-emails/webhook";
 import { purgeUnanswered } from "./lib/beigepilot/leads";
+import { purgeHistory } from "./lib/beigepilot/history";
+import { getSettings as getBpSettings } from "./lib/beigepilot/store";
 import { applyPageSeo, type PageOverrideMap } from "./lib/seo/page-rewrite";
 import { findRedirect, isProtected, type RedirectMap } from "./lib/seo/redirect-rules";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
@@ -96,6 +98,7 @@ export default {
       ctx.waitUntil(purgeOldSearches(env).catch(() => undefined));
       ctx.waitUntil(purgeEmailLogs(env).catch(() => undefined));
       ctx.waitUntil(purgeUnanswered(env).catch(() => undefined));
+      ctx.waitUntil(getBpSettings(env).then(({ s }) => purgeHistory(env, s.retentionDays)).catch(() => undefined));
       ctx.waitUntil(purgeOldPopupEvents(env).catch(() => undefined));
       ctx.waitUntil(purgeCartEvents(env));
     }

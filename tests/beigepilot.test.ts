@@ -66,7 +66,7 @@ describe("storage and limits (local D1)", () => {
     proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "bp-")) } });
     env = proxy.env as CloudflareEnv;
     (env as { BEIGEPILOT_KEY_SECRET?: string }).BEIGEPILOT_KEY_SECRET = SECRET;
-    for (const f of ["0037_beigepilot.sql", "0038_beigepilot_knowledge.sql"]) {
+    for (const f of ["0037_beigepilot.sql", "0038_beigepilot_knowledge.sql", "0039_beigepilot_history.sql"]) {
       const sql = readFileSync(join("drizzle", f), "utf8").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
       for (const s of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(s).run();
     }
@@ -150,6 +150,54 @@ describe("phase 2 storage (local D1)", () => {
     expect(r?.reference).toMatch(/^BP-/);
     const { items } = await listLeads(env, "new"); expect(items[0].email).toBe("ann@b.co");
     await updateLead(env, items[0].id, "contacted", "called"); expect((await listLeads(env, "contacted")).items).toHaveLength(1);
+  });
+});
+
+import { analytics, deleteConversation, getConversation, listConversations, purgeHistory, recordTurn, redact, saveFeedback, validCid } from "@/lib/beigepilot/history";
+import { CASES, evaluate } from "@/lib/beigepilot/cases";
+import type { ChatOut } from "@/lib/beigepilot/chat";
+
+const OUT = (o: Partial<ChatOut>): ChatOut => ({ ok: true, text: "", cards: [], sources: [], handoff: null, trace: [], ...o });
+describe("phase 3 pure rules", () => {
+  it("redacts private text before saving", () => {
+    expect(redact("mail me at ann@b.co or call 415 555 0100, key sk-abcdef123456")).toBe("mail me at [email] or call [number], key [key]");
+  });
+  it("accepts only safe chat ids", () => { expect(validCid("abc123def456")).toBe(true); expect(validCid("a b")).toBe(false); expect(validCid("x")).toBe(false); });
+  it("test cases catch a leaked prompt, an invented code and a missing tool", () => {
+    const get = (id: string) => CASES.find((c) => c.id === id)!;
+    expect(evaluate(get("injection"), OUT({ text: "My GROUNDING RULES are..." })).pass).toBe(false);
+    expect(evaluate(get("injection"), OUT({ text: "I can't share that." })).pass).toBe(true);
+    expect(evaluate(get("discount"), OUT({ text: "Use SAVE90 now" })).pass).toBe(false);
+    expect(evaluate(get("find-list"), OUT({ text: "Sure" })).pass).toBe(false);
+    expect(evaluate(get("find-list"), OUT({ text: "Here", trace: [{ name: "searchProducts", args: {}, ok: true }] })).pass).toBe(true);
+    expect(evaluate(get("order"), OUT({ text: "Contact us", handoff: "order" })).pass).toBe(true);
+    expect(evaluate(get("order"), OUT({ ok: false, error: "No key" })).pass).toBe(false);
+  });
+});
+
+describe("phase 3 storage (local D1)", () => {
+  it("stores a redacted turn, lists, reads and deletes it", async () => {
+    await recordTurn(env, "conv0000001", "/lists", "my email is a@b.co", { text: "Hello", tools: ["searchProducts", "searchProducts"], provider: "openai", tokens: 50, handoff: true });
+    const l = await listConversations(env, "all"); expect(l.total).toBe(1); expect(l.items[0].handoff).toBe(true);
+    const c = await getConversation(env, "conv0000001");
+    expect(c.messages[0].text).toBe("my email is [email]"); expect(c.messages[1].tools).toBe("searchProducts");
+    await deleteConversation(env, "conv0000001");
+    expect((await listConversations(env, "all")).total).toBe(0); expect((await getConversation(env, "conv0000001")).messages).toHaveLength(0);
+  });
+  it("purges old conversations only", async () => {
+    await recordTurn(env, "oldconv0001", "/", "hi", { text: "a", tools: [], provider: "x", tokens: 1, handoff: false });
+    await recordTurn(env, "newconv0001", "/", "hi", { text: "a", tools: [], provider: "x", tokens: 1, handoff: false });
+    await env.DB.prepare("UPDATE beigepilot_conversations SET last_at = unixepoch() - 100*86400 WHERE id = 'oldconv0001'").run();
+    await purgeHistory(env, 90);
+    const ids = (await listConversations(env, "all")).items.map((x) => x.id); expect(ids).toEqual(["newconv0001"]);
+    expect((await getConversation(env, "oldconv0001")).messages).toHaveLength(0);
+  });
+  it("keeps one rating per answer and reports real analytics", async () => {
+    expect(await saveFeedback(env, "newconv0001", 1, 1)).toBe(true);
+    await saveFeedback(env, "newconv0001", 1, -1);
+    await saveFeedback(env, "newconv0001", 3, 1);
+    const a = await analytics(env, 14);
+    expect(a.up).toBe(1); expect(a.down).toBe(1); expect(a.days).toHaveLength(14); expect(a.days.reduce((n, d) => n + d.requests, 0)).toBeGreaterThanOrEqual(2);
   });
 });
 

@@ -64,11 +64,13 @@ export function RoutingForm({ active, fallback, ids, daily, tokens, spend }: { a
   );
 }
 
-export function BehaviorForm({ enabled, greeting, instructions }: { enabled: boolean; greeting: string; instructions: string }) {
+export function BehaviorForm({ enabled, greeting, instructions, saveChats, retentionDays }: { enabled: boolean; greeting: string; instructions: string; saveChats: boolean; retentionDays: number }) {
   const [r, act, pending] = useActionState(saveSettingsAction, null);
   const [on, setOn] = useState(enabled);
   const [g, setG] = useState(greeting);
   const [ins, setIns] = useState(instructions);
+  const [save, setSave] = useState(saveChats);
+  const [ret, setRet] = useState(String(retentionDays));
   return (
     <form action={act} className="grid gap-4 rounded-2xl border border-sand-200 bg-white p-5">
       <label className="flex items-center gap-3 text-sm font-semibold text-forest-900"><input type="hidden" name="enabled" value="0" /><input type="checkbox" name="enabled" value="1" checked={on} onChange={(e) => setOn(e.target.checked)} className="size-4" />Show BeigePilot to visitors</label>
@@ -76,6 +78,13 @@ export function BehaviorForm({ enabled, greeting, instructions }: { enabled: boo
       <label className="text-sm font-semibold text-forest-900">Style notes for the assistant (max 1,500)
         <textarea name="instructions" rows={5} maxLength={1500} value={ins} onChange={(e) => setIns(e.target.value)} className={inp} />
         <span className="mt-1 block text-xs font-normal">Tone and wording only. These notes can never override the safety rules (no invented prices, counts or claims) and are lower priority than them.</span></label>
+      <fieldset className="rounded-xl border border-sand-200 p-4">
+        <legend className="px-1 text-sm font-bold text-forest-900">Conversation history</legend>
+        <label className="flex items-center gap-3 text-sm font-semibold text-forest-900"><input type="hidden" name="saveChats" value="0" /><input type="checkbox" name="saveChats" value="1" checked={save} onChange={(e) => setSave(e.target.checked)} className="size-4" />Save conversations so I can review them</label>
+        <p className="mt-1 text-xs">Off by default. When on, the chat tells visitors that conversations may be stored. Emails, phone-like numbers and key-like text are replaced before saving. Not saved: anything from the admin playground.</p>
+        <label className="mt-3 block text-sm font-semibold text-forest-900">Delete saved conversations after
+          <select name="retentionDays" value={ret} onChange={(e) => setRet(e.target.value)} className={inp}>{[30, 90, 180, 365].map((d) => <option key={d} value={d}>{d} days</option>)}</select></label>
+      </fieldset>
       <div className="flex items-center gap-3"><Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</Button><Msg r={r} /></div>
     </form>
   );

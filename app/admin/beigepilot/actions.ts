@@ -63,6 +63,7 @@ export async function saveSettingsAction(_: Result | null, form: FormData): Prom
   if (form.has("active")) { patch.active = isProviderId(active) ? active : ""; patch.fallback = isProviderId(fallback) && fallback !== active ? fallback : ""; }
   if (form.has("enabled")) patch.enabled = form.getAll("enabled").pop() === "1" ? "1" : "0";
   if (form.has("greeting")) patch.greeting = String(form.get("greeting")).trim().slice(0, 300);
+  if (form.has("retentionDays")) { patch.saveChats = form.getAll("saveChats").pop() === "1" ? "1" : "0"; const d = Number(form.get("retentionDays")); patch.retentionDays = String([30, 90, 180, 365].includes(d) ? d : 90); }
   if (form.has("instructions")) patch.instructions = String(form.get("instructions")).trim().slice(0, 1500);
   if (form.has("dailyRequestLimit")) { patch.dailyRequestLimit = String(Math.round(numOr(form.get("dailyRequestLimit"), 500, 1, 1_000_000))); patch.dailyTokenLimit = String(Math.round(numOr(form.get("dailyTokenLimit"), 500000, 1000, 1_000_000_000))); const m = optNum(form.get("monthlySpendUsd")); patch.monthlySpendUsd = m ? String(m) : ""; }
   if (patch.enabled === "1") {
@@ -129,4 +130,33 @@ export async function leadAction(form: FormData): Promise<void> {
   if (String(form.get("op")) === "delete") { await deleteLead(env, id); await audit(env, who, `lead.${id}`, "deleted"); }
   else { await updateLead(env, id, String(form.get("status") ?? ""), String(form.get("note") ?? "")); await audit(env, who, `lead.${id}`, `status ${String(form.get("status"))}`); }
   revalidatePath("/admin/beigepilot/leads");
+}
+
+/* ---------------- Phase 3: test cases, conversations ---------------- */
+import { CASES, evaluate, type CaseResult } from "@/lib/beigepilot/cases";
+import { deleteAllConversations, deleteConversation } from "@/lib/beigepilot/history";
+
+export async function runCaseAction(caseId: string, provider: string): Promise<CaseResult> {
+  const who = await actor();
+  const c = CASES.find((x) => x.id === caseId);
+  const fail = (m: string): CaseResult => ({ id: caseId, pass: false, failures: [m], answer: "", tools: [], tokens: 0, error: m });
+  if (!who || !c) return fail("Not allowed.");
+  const env = getCloudflareContext().env;
+  if (await isRateLimited(env.CACHE, "bp-cases", who, 100, 3600)) return fail("Too many test runs this hour.");
+  const out = await chat(env, { history: [{ role: "user", text: c.question }], path: c.path, provider: isProviderId(provider) ? provider : undefined });
+  return evaluate(c, out);
+}
+export async function deleteConversationAction(form: FormData): Promise<void> {
+  const who = await actor(); if (!who) return;
+  const id = String(form.get("id") ?? ""); if (!/^[A-Za-z0-9_-]{8,40}$/.test(id)) return;
+  const env = getCloudflareContext().env;
+  await deleteConversation(env, id); await audit(env, who, "conversation", "deleted one");
+  redirect("/admin/beigepilot/conversations");
+}
+export async function deleteAllConversationsAction(form: FormData): Promise<void> {
+  const who = await actor(); if (!who) return;
+  if (form.get("confirm") !== "yes") return;
+  const env = getCloudflareContext().env;
+  await deleteAllConversations(env); await audit(env, who, "conversation", "deleted all");
+  revalidatePath("/admin/beigepilot/conversations");
 }
