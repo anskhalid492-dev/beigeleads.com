@@ -42,7 +42,7 @@ Every approach, from cold email to trade shows, follows the same loop:
 1. **Define** who you want to reach and why they would care.
 2. **Source** the contacts: find the right companies and the right people in them.
 3. **Verify** the details so your messages arrive.
-4. **Reach out** with a message that is specific to that audience.
+4. **Reach out** with a message that is specific to that prospect.
 5. **Follow up** a small number of times, politely.
 6. **Measure** replies, meetings and sales, then adjust the definition, the list or the message.
 
@@ -90,7 +90,7 @@ A targeted list is built from the ICP, not from the largest database you can fin
 
 **Preview before you pay.** With any list, look at a sample first: are the businesses the kind you meant, are the fields filled in, do the roles make sense? BeigeLeads shows a [masked sample](/sample) before purchase, and the Help Center explains [what the masked sample shows](/help/data-quality/masked-sample-data).
 
-**Use a ready-made list or ask for a custom one.** If your niche and location already exist as a list, you can start there. If not, the [custom list builder](/custom-list) lets you describe the audience, location and fields you need. The Help Center article on [ready-made vs custom lists](/help/getting-started/ready-made-vs-custom) explains the difference, and you can browse everything that is available on the [lists](/lists) page.
+**Use a ready-made list or ask for a custom one.** If your niche and location already exist as a list, you can start there. If not, the [custom list builder](/custom-list) lets you describe the prospects, location and fields you need. The Help Center article on [ready-made vs custom lists](/help/getting-started/ready-made-vs-custom) explains the difference, and you can browse everything that is available on the [lists](/lists) page.
 
 **Keep it clean.** Remove duplicates, remove anyone who has asked not to be contacted, and keep a note of where each list came from.
 
@@ -202,7 +202,7 @@ Decide what you are measuring before you send. A short list of numbers is enough
 
 Change one thing at a time. If you alter the list, the subject line and the offer together, you will not know which change mattered. Test subject lines or opening lines on a small portion of a list, keep what works, and move on.
 
-Be cautious with benchmarks. Typical reply and meeting rates vary widely by industry, audience, offer and list quality, so a figure from someone else's campaign rarely transfers to yours. Your own first campaign is your baseline. Improve against that.
+Be cautious with benchmarks. Typical reply and meeting rates vary widely by industry, prospect type, offer and list quality, so a figure from someone else's campaign rarely transfers to yours. Your own first campaign is your baseline. Improve against that.
 
 Review each list after a campaign: which segments replied, which bounced, which roles responded. Feed that back into your ICP.
 
@@ -242,7 +242,7 @@ In the United States, the FTC says CAN-SPAM covers business email too, so you ne
 
 ### Is buying a list better than building my own?
 
-It depends on your time and your audience. Building your own gives you control but takes a lot of hours. A reputable data provider saves that time, but you should ask where the data comes from, how it is verified, and what happens if it is wrong. Look at a sample first either way.
+It depends on your time and your prospects. Building your own gives you control but takes a lot of hours. A reputable data provider saves that time, but you should ask where the data comes from, how it is verified, and what happens if it is wrong. Look at a sample first either way.
 
 ### How do I know an email address is valid?
 
@@ -256,7 +256,7 @@ Constantly. People change roles and companies close or move, so any list loses a
 
 There is no single number. It depends on your industry, offer, list and message, so published benchmarks rarely match your situation. Treat your first campaign as your baseline and improve against it, while keeping bounces and complaints low.
 
-### Can BeigeLeads build a list for my exact audience?
+### Can BeigeLeads build a list for my exact prospects?
 
 Yes, you can describe it in the [custom list builder](/custom-list). It is a request rather than an instant order, and the Help Center explains [how custom list requests work](/help/custom-list/request-a-custom-list). If you are not sure which list fits, you can also [ask for a free sample](/sample) first.`,
   },

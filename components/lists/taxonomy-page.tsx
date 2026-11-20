@@ -8,6 +8,8 @@ import { TaxIconSvg } from "@/components/lists/tax-icon";
 import { COMPLIANCE_NOTE, STATUS_LABEL, childHref, industryChildren, nodeFaqs, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 import type { ShopProduct } from "@/lib/shop";
 import type { TaxGroup as TG } from "@/lib/taxonomy";
+import { RolePage, PlacePage } from "@/components/category/pages";
+import { isPlacePrototype, isRolePrototype } from "@/lib/category-view";
 
 const badge = (s: "available" | "upcoming") => (
   <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${s === "available" ? "bg-forest-100 text-forest-900" : "bg-purple-100 text-forest-900"}`}>{STATUS_LABEL[s]}</span>
@@ -16,7 +18,16 @@ const badge = (s: "available" | "upcoming") => (
 type Props = { group: TaxGroup; child?: TaxChild; country?: { slug: string; name: string }; tax: TG[]; products: ShopProduct[]; industries: { slug: string; name: string }[] };
 
 /** One template for a list-type group (/lists/<group>), a subcategory and a subcategory scoped to a country. */
-export function TaxonomyPage({ group, child, country, tax, products: allProducts, industries }: Props) {
+export async function TaxonomyPage(props: Props) {
+  const { group, child, country } = props;
+  // Category Pages 2.0 prototypes (owner approval pending): only these pages use the new design.
+  const inds = props.industries;
+  if (child && isRolePrototype(group.slug, child.slug)) return <RolePage group={group} child={child} industries={inds} />;
+  if (child && country && isPlacePrototype(group.slug, child.slug, country.slug)) return <PlacePage group={group} child={child} country={country} industries={inds} />;
+  return <TaxonomyPageClassic {...props} />;
+}
+
+function TaxonomyPageClassic({ group, child, country, tax, products: allProducts, industries }: Props) {
   const node = child ?? group;
   const status = node.status;
   const compliance = child?.compliance ?? group.compliance;

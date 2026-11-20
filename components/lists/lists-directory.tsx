@@ -10,10 +10,10 @@ import { STATUS_LABEL, type TaxGroup } from "@/lib/taxonomy";
 
 type Industry = { slug: string; name: string; blurb: string };
 type Props = { tax: TaxGroup[]; industries: Industry[]; tree: GeoTree; products: ShopProduct[]; niches: { category: string; name: string }[]; productCats: Record<string, string[]> };
-const TABS = [["industries", "Industries", Building2], ["types", "List types", Layers], ["locations", "Locations", Globe2], ["audience", "Audience", Layers]] as const;
+const TABS = [["industries", "Industries", Building2], ["types", "List types", Layers], ["locations", "Locations", Globe2], ["audience", "Prospects", Layers]] as const;
 type Tab = (typeof TABS)[number][0];
 
-/** The directory: every industry, a country -> state -> city explorer, and audience types. Real data only. */
+/** The directory: every industry, a country -> state -> city explorer, and prospect types. Real data only. */
 export function ListsDirectory({ tax, industries, tree, products, niches, productCats }: Props) {
   const [tab, setTab] = useState<Tab>("industries");
   useEffect(() => {

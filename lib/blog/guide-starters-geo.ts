@@ -58,7 +58,7 @@ On BeigeLeads you can follow this structure directly. Pick an industry such as [
 
 ## 4. Combine location with industry
 
-Location alone gives you a crowd. Location plus industry gives you an audience. A list of every business in a city is far less useful than a list of the dental practices, restaurants or ski shops in it, because you can write one message that fits.
+Location alone gives you a crowd. Location plus industry gives you prospects. A list of every business in a city is far less useful than a list of the dental practices, restaurants or ski shops in it, because you can write one message that fits.
 
 Add industry in this order:
 

@@ -78,7 +78,7 @@ export function ListsCatalog({ data, initial, featured }: { data: ShopData & { n
       ) : (
         <div className="mt-5 rounded-[1.4rem] border border-sand-300 bg-sand-100 p-7">
           <p className="display text-2xl text-forest-900">No ready-made list matches that yet.</p>
-          <p className="mt-2 text-sm">{(f.state || f.city || it.state || it.city) ? "We have not recorded inventory for that place. " : ""}Describe the audience and we will tell you honestly what is possible. Nothing is promised until we reply.</p>
+          <p className="mt-2 text-sm">{(f.state || f.city || it.state || it.city) ? "We have not recorded inventory for that place. " : ""}Describe the prospects and we will tell you honestly what is possible. Nothing is promised until we reply.</p>
           <div className="mt-4 flex flex-wrap gap-3"><Button asChild><Link href={noMatch}>Build My Custom List</Link></Button>{active.length > 0 && <Button variant="secondary" onClick={clear}>Clear filters</Button>}</div>
         </div>
       )}

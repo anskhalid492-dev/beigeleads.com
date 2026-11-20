@@ -14,6 +14,8 @@ export type Category = {
   reachLabel: string;
   /** Who uses this database: shown as the "Who uses this database" section. */
   useCases: readonly { name: string; text: string }[];
+  /** "general" = all businesses (not one industry). Kept out of industry pickers and menus. */
+  kind?: "industry" | "general";
 };
 
 export type Country = { slug: string; code: string; name: string };
@@ -37,6 +39,9 @@ export type Product = {
   packages: readonly Package[];
   /** true while record count, dates, accuracy and prices are placeholders. Blocks launch. */
   placeholderData: boolean;
+  /** Geographic scope. Default: the whole country. */
+  scope?: "country" | "city";
+  citySlug?: string;
 };
 
 export type Package = {
@@ -108,26 +113,51 @@ const categories: readonly Category[] = [
       { name: "Resort and travel partners", text: "Build partnerships with shops near the slopes." },
     ],
   },
+  {
+    slug: "business",
+    kind: "general",
+    name: "Business",
+    blurb: "Businesses of every kind",
+    description: "Contact details for businesses across industries.",
+    buyers: ["B2B sales teams", "Marketing agencies", "Recruitment firms", "Market research teams", "Business development teams"],
+    singular: "Business",
+    reachLabel: "businesses",
+    useCases: [
+      { name: "B2B sales teams", text: "Build prospect lists by city and reach local businesses with one message." },
+      { name: "Marketing agencies", text: "Plan campaigns for clients who sell to businesses in a specific market." },
+      { name: "Recruitment firms", text: "Find employers in the regions where you place candidates." },
+      { name: "Market research teams", text: "Reach businesses for surveys, interviews and panels." },
+      { name: "Business development teams", text: "Map potential partners, resellers and distributors." },
+    ],
+  },
 ];
 
-const countries: readonly Country[] = [{ slug: "united-states", code: "US", name: "United States" }];
+const countries: readonly Country[] = [
+  { slug: "united-states", code: "US", name: "United States" },
+  { slug: "germany", code: "DE", name: "Germany" },
+];
+
+const DE_CITIES: readonly [string, string][] = [["berlin", "Berlin"], ["hamburg", "Hamburg"], ["munich", "Munich"], ["frankfurt", "Frankfurt"], ["cologne", "Cologne"], ["stuttgart", "Stuttgart"], ["dusseldorf", "Düsseldorf"], ["leipzig", "Leipzig"]];
 
 const cities: readonly City[] = [
   { slug: "denver", name: "Denver", countrySlug: "united-states" },
   { slug: "chicago", name: "Chicago", countrySlug: "united-states" },
+  ...DE_CITIES.map(([slug, name]) => ({ slug, name, countrySlug: "germany" })),
 ];
 
 // PLACEHOLDER DATA (owner-approved for development, Nov 2026): 100,000 records, accuracy 95%,
 // verified 59 days before 2026-11-16, $99 starter price. Tier sizes and the two higher prices are
 // extrapolated placeholders. All of it must be replaced by real pipeline output before launch
 // (TODO-BEFORE-LAUNCH.md). `placeholderData` makes the page say so out loud.
+// Owner reference prices (20 Nov 2026): Starter $99 / 100,000, Professional $199 / 1,000,000+, Complete $299 / 5,000,000.
+// A package is offered only when the list really holds at least that many records (see `offeredPackages`).
 const PLACEHOLDER_PACKAGES: readonly Package[] = [
-  { name: "Starter", records: 10_000, priceUsdCents: 9_900 },
-  { name: "Pro", records: 50_000, priceUsdCents: 24_900, highlighted: true },
-  { name: "Complete", records: 100_000, priceUsdCents: 39_900 },
+  { name: "Starter", records: 100_000, priceUsdCents: 9_900 },
+  { name: "Professional", records: 1_000_000, priceUsdCents: 19_900, highlighted: true },
+  { name: "Complete", records: 5_000_000, priceUsdCents: 29_900 },
 ];
 
-const products: readonly Product[] = categories.map((c) => ({
+const usProducts: readonly Product[] = categories.filter((c) => c.kind !== "general").map((c) => ({
   slug: `${c.slug}-us`,
   categorySlug: c.slug,
   countrySlug: "united-states",
@@ -142,6 +172,31 @@ const products: readonly Product[] = categories.map((c) => ({
   status: "draft" as const,
   fields: FIELDS,
 }));
+
+// Germany (owner confirmed 20 Nov 2026 that German data exists). COUNTS ARE NOT ENTERED YET: recordCount is null
+// until the owner supplies real numbers; status stays draft and placeholderData true (TODO-BEFORE-LAUNCH.md).
+const deFull: Product = {
+  slug: "germany-business-email-database",
+  categorySlug: "business", countrySlug: "germany", scope: "country",
+  title: "Business contacts in Germany",
+  name: "Germany Business Email Database",
+  description: "Business contact details for companies across Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.",
+  recordCount: null, lastVerified: null, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: true, status: "draft", fields: FIELDS,
+};
+const deCityProducts: readonly Product[] = DE_CITIES.map(([slug, name]) => ({
+  slug: `${slug}-business-email-list`,
+  categorySlug: "business", countrySlug: "germany", scope: "city" as const, citySlug: slug,
+  title: `Business contacts in ${name}, Germany`,
+  name: `${name} Business Email List`,
+  description: `Business contact details for companies in ${name}, Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.`,
+  recordCount: null, lastVerified: null, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: true, status: "draft" as const, fields: FIELDS,
+}));
+const products: readonly Product[] = [...usProducts, deFull, ...deCityProducts];
+
+/** Packages a buyer may be offered. A package larger than the list's real record count is never offered.
+ *  While a list is still placeholder data the count is unknown, so every configured package is shown (the page says so). */
+export const offeredPackages = (p: Product): readonly Package[] =>
+  p.placeholderData || p.recordCount === null ? p.packages : p.packages.filter((k) => k.records <= (p.recordCount ?? 0));
 
 export const formatUsd = (cents: number) =>
   `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 })}`;
@@ -179,7 +234,7 @@ export function getProductFaqs(p: Product, c: Category, k: Country): ProductFaq[
   ];
 }
 
-export const getCategories = () => categories;
+export const getCategories = () => categories.filter((c) => c.kind !== "general");
 export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
 export const getCountries = () => countries;
 export const getCountry = (slug: string) => countries.find((c) => c.slug === slug);

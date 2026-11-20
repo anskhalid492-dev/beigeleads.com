@@ -50,6 +50,14 @@ const r = (business: string, address: string, city: string, phone: string, email
 });
 
 export const productSamples: Record<string, readonly ProductSampleRow[]> = {
+  business: [
+    r("Beispiel Handels GmbH (fictional)", "12 ••••• Str.", "Berlin", "+49 30 ••• ••01", "i***@example.de", "beispiel-handel.example"),
+    r("Muster Logistik AG (fictional)", "4 ••••• Allee", "Hamburg", "+49 40 ••• ••02", "k***@example.de", "muster-logistik.example"),
+    r("Probe Werkstatt GmbH (fictional)", "88 ••••• Weg", "Munich", "+49 89 ••• ••03", "b***@example.de", "probe-werkstatt.example"),
+    r("Demo Consulting GmbH (fictional)", "7 ••••• Platz", "Frankfurt", "+49 69 ••• ••04", "m***@example.de", "demo-consulting.example"),
+    r("Beispiel Bau GmbH (fictional)", "31 ••••• Str.", "Cologne", "+49 221 ••• ••05", "s***@example.de", "beispiel-bau.example"),
+    r("Muster Systeme GmbH (fictional)", "2 ••••• Ring", "Stuttgart", "+49 711 ••• ••06", "h***@example.de", "muster-systeme.example"),
+  ],
   dentists: [
     r("Sample Dental Studio", "12 ••••• St", "Denver", "+1 303 ••• ••01", "o***@example.com", "sample-dental.example"),
     r("Placeholder Family Dentistry", "840 ••••• Ave", "Chicago", "+1 312 ••• ••02", "i***@example.com", "placeholder-family.example"),

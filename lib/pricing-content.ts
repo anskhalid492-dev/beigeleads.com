@@ -4,9 +4,9 @@
 
 export const PRICE_FACTORS = [
   { icon: "users", t: "Number of contacts", d: "A bigger package holds more records, so it can cost more." },
-  { icon: "briefcase", t: "Industry or specialization", d: "Some audiences take more work to find and check than others." },
+  { icon: "briefcase", t: "Industry or specialization", d: "Some prospect groups take more work to find and check than others." },
   { icon: "map", t: "Geographic targeting", d: "A whole country and a single region are different files." },
-  { icon: "list", t: "Available data fields", d: "Email, phone, website and address are not equally available for every audience." },
+  { icon: "list", t: "Available data fields", d: "Email, phone, website and address are not equally available for every prospect group." },
   { icon: "package", t: "Package size", d: "Each list page shows its own package sizes and the price of each." },
   { icon: "search", t: "Custom sourcing", d: "A list we have to build for you is quoted on its own." },
 ] as const;
@@ -21,7 +21,7 @@ export const BUY_STEPS = [
 export const PRICING_FAQS: readonly (readonly [string, string])[] = [
   ["Does BeigeLeads charge monthly fees?", "No. You pay once for each list you buy. There is no subscription, no recurring fee and no account."],
   ["Do I need to purchase credits?", "No. We do not sell credits or tokens. You buy a list, download the file and keep it."],
-  ["Are all database prices the same?", "No. Each list has its own packages and prices, shown on its product page before you pay. Prices can depend on things like the number of contacts, the audience, the place and the fields included."],
+  ["Are all database prices the same?", "No. Each list has its own packages and prices, shown on its product page before you pay. Prices can depend on things like the number of contacts, the prospect group, the place and the fields included."],
   ["Can I preview a sample before purchasing?", "Yes. List pages show masked sample rows, and you can request a free sample by email. Sample files only ever contain masked data."],
   ["Can I choose different contact volumes?", "Where a list offers more than one package, each one has its own record count and price on the product page. Need a different size or place? Send a custom list request."],
   ["How will I receive my database?", "Once your crypto payment is confirmed, we email your download link. Delivery is mostly instant and in some cases takes up to 12 hours at most. You can download the file as many times as you like, in CSV, Excel or TXT."],

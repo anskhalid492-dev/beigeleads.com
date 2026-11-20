@@ -144,7 +144,7 @@ Beyond compliance, a few habits keep your reputation healthy:
 - **Chasing volume.** More rows means more bounces, more complaints and less time per prospect.
 - **Skipping the sample check.** Looking at fifty rows takes minutes and can save a whole campaign.
 - **Ignoring freshness.** An old list can contain closed businesses and people who left.
-- **Mixing audiences.** One message sent to very different segments fits nobody.
+- **Mixing prospect types.** One message sent to very different segments fits nobody.
 - **Forgetting suppression.** Emailing people who opted out is the fastest way to create complaints.
 - **Treating the list as the strategy.** A good list only gives you a chance. The message and the offer still have to be worth reading.
 

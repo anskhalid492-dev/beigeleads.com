@@ -16,7 +16,7 @@ export function summaryLines(d: CustomListInput): string[] {
   const extra = [["Company size", t.companySize], ["Specialization", t.specialization], ["Business type", t.businessType], ["Revenue range", t.revenue], ["Other criteria", t.other]].filter(([, v]) => v);
   return [
     `Industries: ${d.industries.join(", ")}`,
-    `Audience: ${d.audience.length ? d.audience.join(", ") : "not stated"}`,
+    `Prospects: ${d.audience.length ? d.audience.join(", ") : "not stated"}`,
     `Job titles: ${d.jobTitles.length ? d.jobTitles.join(", ") : "not stated"}`,
     ...extra.map(([k, v]) => `${k}: ${v}`),
     `Locations: ${d.locations.map(describeLocation).join("; ")}`,

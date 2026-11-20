@@ -50,7 +50,7 @@ export function ListsMegaPanel({ tax, onNavigate }: Props) {
       <div className="relative flex flex-col overflow-hidden border-r border-sand-200 bg-sand-100 px-7 py-7">
         <span aria-hidden className="intro-glow pointer-events-none absolute -bottom-12 -right-12 size-44 rounded-full bg-purple-100 opacity-80 blur-2xl" />
         <h3 className="display intro-rise relative text-[1.7rem] leading-[1.05] text-forest-900" style={{ "--d": 0 } as React.CSSProperties}>
-          Find the audience that <span className="relative inline-block">fits.<span aria-hidden className="intro-draw absolute inset-x-0 -bottom-0.5 h-[3px] rounded-full bg-purple-600" /></span>
+          Find the prospects that <span className="relative inline-block">fit.<span aria-hidden className="intro-draw absolute inset-x-0 -bottom-0.5 h-[3px] rounded-full bg-purple-600" /></span>
         </h3>
         <p className="intro-rise relative mt-3 flex items-baseline gap-1.5 text-[0.95rem] text-forest-700" style={{ "--d": 1 } as React.CSSProperties}>
           Browse by

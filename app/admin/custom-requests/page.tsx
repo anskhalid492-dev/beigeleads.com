@@ -55,7 +55,7 @@ export default async function CustomRequestsPage() {
                         <div><dt className="font-bold text-forest-900">Customer</dt><dd>{r.name ?? "—"} · <a className="underline" href={`mailto:${r.email}`}>{r.email}</a>{r.company ? ` · ${r.company}` : ""}</dd></div>
                         <div><dt className="font-bold text-forest-900">Reference / received</dt><dd>{r.reference ?? "legacy request"} · {fmtDate(r.createdAt)}</dd></div>
                         <div><dt className="font-bold text-forest-900">Industries</dt><dd>{d.industries?.join(", ") ?? r.category}</dd></div>
-                        <div><dt className="font-bold text-forest-900">Audience type</dt><dd>{d.audience?.length ? d.audience.join(", ") : "—"}</dd></div>
+                        <div><dt className="font-bold text-forest-900">Prospect type</dt><dd>{d.audience?.length ? d.audience.join(", ") : "—"}</dd></div>
                         <div><dt className="font-bold text-forest-900">Locations</dt><dd>{place || "—"}{d.exclusions?.length ? ` (exclude: ${d.exclusions.join(", ")})` : ""}</dd></div>
                         <div><dt className="font-bold text-forest-900">Quantity</dt><dd>{r.quantity ? `${r.quantity.toLocaleString("en-US")}${d.quantityPlus ? "+" : ""}` : "Not given"}</dd></div>
                         {extra.length > 0 && <div className="sm:col-span-2"><dt className="font-bold text-forest-900">Additional filters</dt><dd>{extra.map(([k, v]) => `${k}: ${v}`).join(" · ")}</dd></div>}

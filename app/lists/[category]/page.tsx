@@ -11,6 +11,10 @@ import { getCategory, getCountries, getCountry, getProducts } from "@/lib/catalo
 import { sampleSheets } from "@/lib/sample-data";
 import { PlaceDirectory } from "@/components/geo/city-directory";
 import { getDb } from "@/lib/db";
+import { IndustryPage } from "@/components/category/pages";
+import { isIndustryPrototype } from "@/lib/category-view";
+import { GeoShopPage } from "@/components/category/geo-shop";
+import { countryFromFlat, geoShopMetadata } from "@/lib/geo-shop";
 import { TaxonomyPage } from "@/components/lists/taxonomy-page";
 import { loadListsData } from "@/lib/lists-data";
 import { resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
@@ -20,6 +24,8 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/lists/[category]">): Promise<Metadata> {
   const { category } = await props.params;
+  const flat = countryFromFlat(category);
+  if (flat) return geoShopMetadata(flat, "main");
   const tax = await resolveTax(category);
   if (tax) return taxMetadata(tax);
   const c = getCategory(category);
@@ -33,6 +39,8 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
 
 export default async function CategoryPage(props: PageProps<"/lists/[category]">) {
   const { category } = await props.params;
+  const flat = countryFromFlat(category);
+  if (flat) return <GeoShopPage country={flat} products={(await loadListsData()).products} />;
   const tax = await resolveTax(category);
   if (tax) return <TaxonomyPage {...tax} products={(await loadListsData()).products} industries={taxIndustries()} />;
   const c = getCategory(category);
@@ -56,6 +64,12 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
       cities: cities.map((a) => ({ name: a.name, href: `${base}${a.regionSlug ? `/${a.regionSlug}` : ""}/${a.slug}`, records: cov.get(a.id) ?? null })),
     };
   }));
+
+  // Category Pages 2.0 prototype (owner approval pending): dentists only.
+  if (isIndustryPrototype(c.slug)) {
+    const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug);
+    return <IndustryPage c={c} products={rows} geo={geo.map((g) => ({ name: g.k.name, regions: g.regions, cities: g.cities }))} />;
+  }
 
   return (
     <>

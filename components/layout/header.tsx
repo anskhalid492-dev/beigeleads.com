@@ -201,7 +201,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
                   <span>
                     <Sparkles className="size-5 text-sand-300" aria-hidden />
                     <span className="display mt-3 block text-2xl">Lead discovery co-pilot</span>
-                    <span className="mt-2 block text-sm text-sand-200">Describe your audience and we search the catalog for a match.</span>
+                    <span className="mt-2 block text-sm text-sand-200">Describe your prospects and we search the catalog for a match.</span>
                   </span>
                   <span className="mt-4 text-sm font-semibold text-sand-50 underline underline-offset-4">Try it</span>
                 </Link>

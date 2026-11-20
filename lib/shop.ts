@@ -13,6 +13,7 @@ export type ShopProduct = {
   countrySlug: string; countryName: string; countryCode: string;
   fields: string[]; status: "draft" | "live";
   recordCount: number | null; fromCents: number | null;
+  scope?: "country" | "city"; citySlug?: string | null; description?: string;
 };
 export type GeoCityNode = { slug: string; name: string; regionSlug: string | null; cats: string[] };
 export type GeoRegionNode = { slug: string; name: string; cats: string[] };

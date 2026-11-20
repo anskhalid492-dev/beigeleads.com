@@ -57,7 +57,7 @@ export function GeoPage({ d }: { d: GeoPageData }) {
           <ul className="mt-5 flex flex-wrap gap-2">{otherCategories.map((o) => <li key={o.slug}><Link href={`${d.path.replace(`/lists/${c.slug}`, `/lists/${o.slug}`)}`} className="inline-flex rounded-full border border-sand-300 bg-sand-50 px-4 py-1.5 text-sm font-semibold text-forest-900 hover:border-forest-900">{o.name}{o.records ? ` (${n(o.records)})` : ""}</Link></li>)}</ul>
         </div></section>
       )}
-      <RelatedGuides terms={[c.name, view?.area.name ?? k.name, "by city"]} heading="Guides for building this audience" />
+      <RelatedGuides terms={[c.name, view?.area.name ?? k.name, "by city"]} heading="Guides for building this prospect list" />
       <Faq heading={`${copy.h1}: questions`} items={copy.faqs} />
     </>
   );

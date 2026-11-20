@@ -1,5 +1,5 @@
 // Server side: builds the serialisable catalog data for /lists from the real catalog + geography tables.
-import { getCategories, getProducts, startingPriceCents } from "@/lib/catalog";
+import { getCategories, getCategory, getProducts, startingPriceCents } from "@/lib/catalog";
 import { loadCountries, loadSubindustries } from "@/lib/catalog-extra";
 import { getDb } from "@/lib/db";
 import { allCoverage } from "@/lib/geo/store";
@@ -17,7 +17,7 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
     const k = cname.get(p.countrySlug);
     const from = startingPriceCents(p);
     const real = !p.placeholderData; // placeholder counts and prices never reach the browser
-    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
+    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, description: p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
   });
 
   // Geography with REAL inventory only (count above zero, place allowed to be shown).

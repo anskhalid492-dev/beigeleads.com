@@ -63,9 +63,9 @@ export function ListsHero({ audience, industries, countries, tree, niches }: Pro
           ))}
         </div>
         <h1 className="display max-w-3xl text-5xl leading-[0.95] text-forest-900 sm:text-6xl">Find the Right Contacts. Own the List.</h1>
-        <p className="mt-4 max-w-2xl text-lg">Explore targeted business contact databases by industry and location. Preview available data, choose your audience, and purchase once.</p>
+        <p className="mt-4 max-w-2xl text-lg">Explore targeted business contact databases by industry and location. Preview available data, choose your prospects, and purchase once.</p>
 
-        <div role="tablist" aria-label="Audience" className="mt-6 inline-flex rounded-full border border-sand-300 bg-sand-50 p-1">{tab("b2b", "B2B databases")}{tab("b2c", "B2C databases")}</div>
+        <div role="tablist" aria-label="Prospect type" className="mt-6 inline-flex rounded-full border border-sand-300 bg-sand-50 p-1">{tab("b2b", "B2B databases")}{tab("b2c", "B2C databases")}</div>
 
         <div ref={box} className="relative mt-4 max-w-2xl">
           <form role="search" onSubmit={(e) => { e.preventDefault(); go(active >= 0 && list[active] ? list[active] : q); }} className="flex gap-2 rounded-2xl border-2 border-forest-900 bg-white p-1.5 shadow-[4px_4px_0_0_var(--color-forest-900)]">

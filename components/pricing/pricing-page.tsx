@@ -4,7 +4,7 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { DbBadge } from "@/components/shared/db-icon";
 import { SolutionFaq } from "@/components/solutions/sections";
-import { formatUsd, getCategory, getCountry, getProducts, startingPriceCents, type Product } from "@/lib/catalog";
+import { formatUsd, getCategory, offeredPackages, getCountry, getProducts, startingPriceCents, type Product } from "@/lib/catalog";
 import { BUY_STEPS, PRICE_FACTORS, PRICING_FAQS } from "@/lib/pricing-content";
 import { SITE_URL } from "@/lib/site";
 
@@ -72,7 +72,7 @@ function ProductCard({ p }: { p: Product }) {
           <div><dt className="text-xs text-forest-500">Contacts</dt><dd className="font-semibold text-forest-900">{p.recordCount?.toLocaleString("en-US") ?? "Not counted"}</dd></div>
           <div><dt className="text-xs text-forest-500">Starting at</dt><dd className="font-semibold text-forest-900">{formatUsd(start)}</dd></div>
         </dl>
-        <p className="mt-4 text-sm"><span className="font-semibold text-forest-900">Packages:</span> {p.packages.map((x) => x.records.toLocaleString("en-US")).join(", ")} records</p>
+        <p className="mt-4 text-sm"><span className="font-semibold text-forest-900">Packages:</span> {offeredPackages(p).map((x) => x.records.toLocaleString("en-US")).join(", ")} records</p>
         <p className="mt-2 text-sm"><span className="font-semibold text-forest-900">Fields:</span> {p.fields.join(", ")}</p>
         <p className="mt-2 flex items-center gap-2 text-sm"><Check className="size-4 text-forest-500" aria-hidden />Masked sample available</p>
         <span className="mt-6 inline-flex items-center gap-2 font-semibold text-forest-900">View Pricing &amp; Packages <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden /></span>
@@ -185,7 +185,7 @@ function Custom() {
         <div className="grid gap-8 rounded-[2rem] bg-forest-100/70 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr] lg:items-center">
           <div>
             <h2 className={h2}>Need Something More Specific?</h2>
-            <p className="mt-4 max-w-xl text-lg">Tell us your target industry, location, and audience requirements. We&rsquo;ll review your request and provide a custom quote.</p>
+            <p className="mt-4 max-w-xl text-lg">Tell us your target industry, location, and prospect requirements. We&rsquo;ll review your request and provide a custom quote.</p>
           </div>
           <div className="lg:justify-self-end">
             <Link href="/custom-list" className="inline-flex h-12 items-center gap-2 rounded-full bg-purple-600 px-7 font-semibold text-white transition-colors hover:bg-purple-700">Build My Custom List <FileSpreadsheet className="size-4" aria-hidden /></Link>

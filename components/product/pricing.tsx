@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/add-button";
-import { formatUsd, type Product } from "@/lib/catalog";
+import { formatUsd, offeredPackages, type Product } from "@/lib/catalog";
 
 export function ProductPricing({ product, forSale }: { product: Product; forSale: boolean }) {
-  if (!product.packages.length) {
+  if (!offeredPackages(product).length) {
     return (
       <section id="pricing" className="scroll-mt-20 bg-sand-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -23,7 +23,7 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
         </p>
 
         <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
-          {product.packages.map((pk) => {
+          {offeredPackages(product).map((pk) => {
             const dark = pk.highlighted;
             const per1000 = (pk.priceUsdCents / 100 / (pk.records / 1000)).toFixed(2);
             return (

@@ -14,7 +14,7 @@ export const EMPTY: WizardState = {
   locations: [], exclusions: [], fields: [], customFields: [], quantity: "", quantityPlus: false, instructions: "", name: "", email: "", company: "", message: "",
 };
 
-export const STEPS = ["Audience", "Location", "Data", "Review"] as const;
+export const STEPS = ["Prospects", "Location", "Data", "Review"] as const;
 
 export const qtyNumber = (s: WizardState) => { const n = Number(s.quantity.replace(/[^\d]/g, "")); return Number.isInteger(n) && n >= 1 ? n : undefined; };
 export const qtyLabel = (s: WizardState) => { const n = qtyNumber(s); return n ? `${n.toLocaleString("en-US")}${s.quantityPlus ? "+" : ""}` : ""; };

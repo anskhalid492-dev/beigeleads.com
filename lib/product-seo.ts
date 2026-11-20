@@ -1,5 +1,5 @@
 import { SITE_URL } from "@/lib/site";
-import { startingPriceCents, type Category, type Country, type Product } from "@/lib/catalog";
+import { offeredPackages, startingPriceCents, type Category, type Country, type Product } from "@/lib/catalog";
 
 /** "the United States" but "Germany". Used inside sentences. */
 export const withThe = (k: Country) => (/^united /i.test(k.name) ? `the ${k.name}` : k.name);
@@ -48,7 +48,7 @@ export function productJsonLd(p: Product, c: Category, k: Country, forSale: bool
         "@type": "AggregateOffer",
         priceCurrency: "USD",
         lowPrice: (start / 100).toFixed(2),
-        offerCount: p.packages.length,
+        offerCount: offeredPackages(p).length,
         availability: "https://schema.org/InStock",
         url,
       },

@@ -33,16 +33,16 @@ describe("catalog extras (local D1)", () => {
   afterAll(async () => { await proxy?.dispose(); });
 
   it("adds, hides and protects countries that already have places", async () => {
-    expect((await loadCountries(db)).map((c) => c.slug)).toEqual(["united-states"]);
-    await addCountry(db, { slug: "germany", code: "DE", name: "Germany" });
-    expect((await findCountry(db, "germany"))?.code).toBe("DE");
-    await setCountryEnabled(db, "germany", false);
-    expect(await findCountry(db, "germany")).toBeUndefined();
-    expect((await allCountryRows(db)).rows.find((r) => r.slug === "germany")?.enabled).toBe(false);
-    await setCountryEnabled(db, "germany", true);
-    await importGeo(db, "germany", [{ region: "", city: "Berlin", category: "dentists", records: 10 }]);
-    expect((await geoPageList(db)).map((p) => p.path)).toContain("/lists/dentists/germany");
-    expect(await deleteCountry(db, "germany")).toBe(false);
+    expect((await loadCountries(db)).map((c) => c.slug)).toEqual(["united-states", "germany"]);
+    await addCountry(db, { slug: "spain", code: "ES", name: "Spain" });
+    expect((await findCountry(db, "spain"))?.code).toBe("ES");
+    await setCountryEnabled(db, "spain", false);
+    expect(await findCountry(db, "spain")).toBeUndefined();
+    expect((await allCountryRows(db)).rows.find((r) => r.slug === "spain")?.enabled).toBe(false);
+    await setCountryEnabled(db, "spain", true);
+    await importGeo(db, "spain", [{ region: "", city: "Madrid", category: "dentists", records: 10 }]);
+    expect((await geoPageList(db)).map((p) => p.path)).toContain("/lists/dentists/spain");
+    expect(await deleteCountry(db, "spain")).toBe(false);
     await addCountry(db, { slug: "france", code: "FR", name: "France" });
     expect(await deleteCountry(db, "france")).toBe(true);
   });

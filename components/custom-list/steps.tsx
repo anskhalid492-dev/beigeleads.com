@@ -27,7 +27,7 @@ export function StepAudience({ s, set, catalog }: P & { catalog: readonly string
       <ChipInput label="Industries" value={s.industries} onChange={(industries) => set({ industries })} suggestions={suggestions} marked={new Set(catalog)} max={15}
         placeholder="Search or type an industry" hint="Suggestions are ideas, not a promise that a list exists. Type any industry that is not shown." />
       <fieldset>
-        <legend className={label}>Target audience (optional)</legend>
+        <legend className={label}>Target prospects (optional)</legend>
         <div className="flex flex-wrap gap-2">{AUDIENCES.map((a) => <button key={a} type="button" aria-pressed={s.audience.includes(a)} onClick={() => toggle(a)} className={pill(s.audience.includes(a))}>{a}</button>)}</div>
       </fieldset>
       <ChipInput label="Job titles (optional)" value={s.jobTitles} onChange={(jobTitles) => set({ jobTitles })} suggestions={JOB_TITLE_EXAMPLES} max={20} placeholder="Search or type a job title" />
@@ -93,7 +93,7 @@ export function StepData({ s, set }: P) {
   const n = Number(s.quantity.replace(/[^\d]/g, ""));
   return (
     <div className="space-y-7">
-      <Heading title="What information should your list include?" text="Pick the fields you need. Availability of each field depends on whether we can source it for your audience." />
+      <Heading title="What information should your list include?" text="Pick the fields you need. Availability of each field depends on whether we can source it for your prospects." />
       {FIELD_GROUPS.map((g) => (
         <fieldset key={g.title}>
           <legend className={label}>{g.title}</legend>

@@ -52,8 +52,8 @@ export const TEMPLATES: TemplateDef[] = [
     vars: ["first_name", "request_reference", "industry", "country", "quantity", "data_fields", "requirements"], required: ["request_reference"],
     content: {
       subject: "{{first_name}}, we're reviewing your custom list request",
-      preheader: "Here's a summary of the audience you requested.",
-      heading: "Let's find your ideal audience.",
+      preheader: "Here's a summary of the prospects you requested.",
+      heading: "Let's find your ideal prospects.",
       blocks: [
         { t: "p", text: "Thanks for telling us who you want to reach. We saved your request under reference **{{request_reference}}**." },
         { t: "kv", rows: [{ label: "Target industry:", value: "{{industry}}" }, { label: "Locations:", value: "{{country}}" }, { label: "Requested contacts:", value: "{{quantity}}" }, { label: "Data fields:", value: "{{data_fields}}" }, { label: "Special requirements:", value: "{{requirements}}" }] },
@@ -182,7 +182,7 @@ export const TEMPLATES: TemplateDef[] = [
     vars: ["first_name", "request_reference", "quote_summary", "quote_url"], required: ["quote_summary", "request_reference"],
     content: {
       subject: "Your custom B2B data quote is ready, {{first_name}}",
-      preheader: "Review the available options for your requested audience.",
+      preheader: "Review the available options for your requested prospects.",
       heading: "Your custom quote is ready.",
       blocks: [
         { t: "p", text: "Thanks for your patience. We reviewed request **{{request_reference}}** and prepared the following quotation." },

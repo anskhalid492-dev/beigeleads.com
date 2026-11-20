@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getCategory, getCountry, getProduct, getProducts, type Product } from "@/lib/catalog";
+import { getCategory, getCountry, getProduct, getProducts, offeredPackages, type Product } from "@/lib/catalog";
 
 /** What the browser stores: ONLY the product and the chosen package. Prices, names and totals always come from the server. */
 export type CartItem = { slug: string; pkg: string };
@@ -44,7 +44,7 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
   const dropped: CartItem[] = [];
   for (const i of items) {
     const p = getProduct(i.slug);
-    const pk = p?.packages.find((x) => x.name === i.pkg);
+    const pk = (p ? offeredPackages(p) : []).find((x) => x.name === i.pkg);
     if (!p || !pk) { dropped.push(i); continue; }
     const c = getCategory(p.categorySlug);
     const k = getCountry(p.countrySlug);
@@ -52,7 +52,7 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
     lines.push({
       slug: p.slug, name: p.name, categoryName: c?.name ?? "", categorySlug: p.categorySlug, coverage: k?.name ?? "",
       packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, fields: p.fields,
-      packages: p.packages.map((x) => ({ name: x.name, records: x.records, priceCents: x.priceUsdCents })),
+      packages: offeredPackages(p).map((x) => ({ name: x.name, records: x.records, priceCents: x.priceUsdCents })),
       placeholder: p.placeholderData,
       purchasable: sellable && ctx.checkoutOpen,
       reason: !sellable ? "This list is not on sale yet." : !ctx.checkoutOpen ? "Checkout is not open yet." : "",
@@ -72,9 +72,9 @@ export function suggestFor(items: CartItem[], limit = 3): Suggestion[] {
   const countries = new Set(owned.map((p) => p.countrySlug));
   const cats = new Set(owned.map((p) => p.categorySlug));
   return getProducts()
-    .filter((p) => !inCart.has(p.slug) && p.packages.length > 0)
+    .filter((p) => !inCart.has(p.slug) && offeredPackages(p).length > 0)
     .map((p) => {
-      const pk = p.packages.find((x) => x.highlighted) ?? p.packages[0];
+      const pk = offeredPackages(p).find((x) => x.highlighted) ?? offeredPackages(p)[0];
       const sameCountry = countries.has(p.countrySlug);
       const sameCat = cats.has(p.categorySlug);
       return {

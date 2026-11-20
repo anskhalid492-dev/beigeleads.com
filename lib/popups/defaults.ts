@@ -7,7 +7,7 @@ const R = (o: Partial<Rules>): Rules => ({ pages: [], visitor: "any", minSeconds
  * what the site really does (see CLAUDE.md): no counts, no prices, no reviews, no urgency.
  */
 export const DEFAULT_POPUPS: Campaign[] = [
-  { id: "audience-discovery", name: "Audience discovery", stage: "tofu", status: "draft", priority: 40, version: 1, format: "modal", block: "audience",
+  { id: "audience-discovery", name: "Prospect discovery", stage: "tofu", status: "draft", priority: 40, version: 1, format: "modal", block: "audience",
     headline: "Who Are You Trying to Reach?", body: "Pick an industry and a place. We will show the matching lists from our catalog, or help you request a custom one.",
     cta: { label: "Find My Leads", href: "/lists" }, secondary: null, rules: R({ pages: ["home"], visitor: "new", minSeconds: 20, minScrollPct: 30, maxImpressions: 1 }) },
   { id: "educational-discovery", name: "Educational discovery", stage: "tofu", status: "draft", priority: 35, version: 1, format: "slide", block: "guides",
@@ -22,8 +22,8 @@ export const DEFAULT_POPUPS: Campaign[] = [
   { id: "find-right-list", name: "Find the right list", stage: "mofu", status: "draft", priority: 45, version: 1, format: "card", block: "matcher",
     headline: "Not Sure Which List Fits?", body: "Tell us the industry and where you sell. We will point you to the closest list in the catalog.",
     cta: { label: "Find My List", href: "/lists" }, secondary: null, rules: R({ pages: ["lists"], minSeconds: 30, minPages: 3, maxImpressions: 1 }) },
-  { id: "custom-audience", name: "Custom audience", stage: "mofu", status: "draft", priority: 80, version: 1, format: "modal", block: "custom",
-    headline: "Can't Find Your Ideal Audience?", body: "We can check whether we can source it. Your search is carried over, so you do not start from zero.",
+  { id: "custom-audience", name: "Custom prospects", stage: "mofu", status: "draft", priority: 80, version: 1, format: "modal", block: "custom",
+    headline: "Can't Find Your Ideal Prospects?", body: "We can check whether we can source it. Your search is carried over, so you do not start from zero.",
     cta: { label: "Build My List", href: "{custom_href}" }, secondary: null, rules: R({ signal: "search_noresults", maxImpressions: 3, cooldownHours: 1 }) },
   { id: "checkout-reassurance", name: "Checkout reassurance", stage: "bofu", status: "draft", priority: 65, version: 1, format: "nudge", block: "checkout",
     headline: "Your List. One Purchase. No Subscription.", body: "You pay once in crypto, no account needed. After payment is confirmed we email you the delivery link.",
@@ -41,6 +41,6 @@ export const DEFAULT_POPUPS: Campaign[] = [
     headline: "Make the Most of Your New List.", body: "Guides on outreach and handling your data lawfully.",
     cta: { label: "Explore Guides", href: "/blog" }, secondary: null, rules: R({ pages: ["home", "blog", "help", "lists"], minSeconds: 20, maxImpressions: 1, cooldownHours: 24 * 14 }) },
   { id: "additional-lists", name: "Relevant additional lists", stage: "post", status: "draft", priority: 35, version: 1, format: "card", block: "related",
-    headline: "Exploring Another Audience?", body: "Other lists from the catalog.",
+    headline: "Exploring Other Prospects?", body: "Other lists from the catalog.",
     cta: { label: "Browse Related Lists", href: "/lists" }, secondary: null, rules: R({ pages: ["home", "lists", "product"], minSeconds: 25, maxImpressions: 2, cooldownHours: 24 * 7 }) },
 ];

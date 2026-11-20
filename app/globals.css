@@ -546,3 +546,14 @@ summary::-webkit-details-marker {
 @keyframes strike-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .strike-line { transform-origin: left center; animation: strike-draw 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: var(--d, 0ms); }
 @media (prefers-reduced-motion: reduce) { .strike-line { animation: none; } }
+
+/* Category Pages 2.0 (prototype): restrained, looping indicators; all off under reduced motion. */
+@keyframes cat-rung { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes cat-ring { 0% { transform: scale(.6); opacity: .55; } 100% { transform: scale(1.25); opacity: 0; } }
+@keyframes cat-field { 0%, 70%, 100% { background-color: transparent; } 8%, 30% { background-color: var(--purple-100); } }
+@keyframes cat-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.cat-rung { animation: cat-rung 4.8s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .6s); }
+.cat-ring { animation: cat-ring 4.5s ease-out infinite; animation-delay: calc(var(--i, 0) * 1.5s); }
+.cat-field { animation: cat-field 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 1s); }
+.cat-in { animation: cat-in .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+@media (prefers-reduced-motion: reduce) { .cat-rung, .cat-ring, .cat-field, .cat-in { animation: none !important; } .cat-ring { opacity: .25; } }

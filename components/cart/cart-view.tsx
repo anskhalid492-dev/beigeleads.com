@@ -241,7 +241,7 @@ function Empty({ notice }: { notice: string }) {
         <circle cx="92" cy="30" r="5" fill="#D8EADF" />
       </svg>
       {notice && <p role="status" className="mt-4 rounded-xl bg-forest-100 px-4 py-2 text-sm font-medium text-forest-900">{notice}</p>}
-      <h2 className="display mt-5 text-5xl text-forest-900 sm:text-6xl">Your Next Audience Starts Here.</h2>
+      <h2 className="display mt-5 text-5xl text-forest-900 sm:text-6xl">Your Next Prospects Start Here.</h2>
       <p className="mx-auto mt-3 max-w-md text-lg">Explore business contact lists and add the ones that match your goals.</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild size="lg"><Link href="/lists">Explore Lists</Link></Button>

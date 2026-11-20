@@ -11,7 +11,7 @@ import { listPublished, publishedCategories } from "@/lib/blog/posts";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "The BeigeLeads Journal: B2B data and prospecting guides",
-  description: "Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business audiences.",
+  description: "Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business prospects.",
   alternates: { canonical: "/blog" },
 };
 
@@ -44,7 +44,7 @@ export default async function BlogIndex(props: PageProps<"/blog">) {
           <div>
             <p className="text-sm font-bold tracking-[0.18em] text-forest-500">THE BEIGELEADS JOURNAL</p>
             <h1 className="display mt-3 text-5xl text-forest-900 sm:text-7xl lg:text-8xl">Insights for Smarter B2B Growth.</h1>
-            <p className="mt-5 max-w-2xl text-lg sm:text-xl">Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business audiences.</p>
+            <p className="mt-5 max-w-2xl text-lg sm:text-xl">Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business prospects.</p>
           </div>
           <form action="/blog" method="get" role="search" className="flex gap-2">
             <input name="q" defaultValue={q} placeholder="Search articles" aria-label="Search articles" className="h-11 min-w-0 flex-1 rounded-xl border border-sand-300 bg-white px-4 text-sm" />

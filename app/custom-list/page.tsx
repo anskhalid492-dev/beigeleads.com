@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const STEPS: readonly [string, string][] = [
-  ["Define your audience", "Tell us who you want to reach."],
+  ["Define your prospects", "Tell us who you want to reach."],
   ["Customize your data", "Select locations, quantities, and fields."],
   ["We review feasibility", "Our team checks sourcing possibilities."],
   ["Receive your quotation", "We follow up with available options and pricing."],
@@ -25,9 +25,9 @@ const STEPS: readonly [string, string][] = [
 const FAQS: readonly FaqItem[] = [
   ["Can I request industries not listed on BeigeLeads?", "Yes. Type any industry in the builder. Our ready-made lists are listed on the Lists page, and a custom request lets you ask for anything else. We tell you whether we can source it."],
   ["Can I target multiple countries?", "Yes. Add as many countries as you need in one request, and narrow each by state, province or city. Our ready-made lists cover the United States today, so for other countries we tell you honestly whether we can source them."],
-  ["Can I request specific job titles?", "Yes. Add the titles you care about. Titles are a request: we check what we can source for your audience and tell you what is possible."],
+  ["Can I request specific job titles?", "Yes. Add the titles you care about. Titles are a request: we check what we can source for your prospects and tell you what is possible."],
   ["Is requesting a quotation free?", "Yes. Submitting a request is free and you do not need an account. Nothing is charged when you send it."],
-  ["Are all requested data fields guaranteed?", "No. Field availability depends on whether we can source it for your audience. We confirm which fields are possible when we reply."],
+  ["Are all requested data fields guaranteed?", "No. Field availability depends on whether we can source it for your prospects. We confirm which fields are possible when we reply."],
   ["How is custom-list pricing determined?", "Pricing is confirmed after review, once we know what we can source. The builder shows no price estimate, because any number before review would be a guess."],
   ["What happens after I submit?", "We save your request, give you a request reference, and our team reviews your requirements. We then contact you by email about availability and pricing. A request is not an order."],
   ["Can I modify my request?", "Yes. Before you send it, you can go back to any step and change it. After you send it, contact us with your request reference and we will update it."],

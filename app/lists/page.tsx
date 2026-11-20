@@ -60,7 +60,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
       {f.type === "b2c" ? (
         <section id="databases" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-14">
           <h2 className="display text-4xl text-forest-900">Consumer databases are not available yet.</h2>
-          <p className="mt-4">BeigeLeads currently provides business contact data only. We do not sell consumer contact lists. If you need an audience segment, tell us what you are looking for and we will tell you honestly what is possible.</p>
+          <p className="mt-4">BeigeLeads currently provides business contact data only. We do not sell consumer contact lists. If you need a prospect segment, tell us what you are looking for and we will tell you honestly what is possible.</p>
           <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button><Button asChild variant="secondary" size="lg"><Link href="/lists">Browse B2B Lists</Link></Button></div>
         </section>
       ) : (

@@ -196,7 +196,7 @@ export function Copilot() {
             )}
             {result.exact.length === 0 && (
               <div className="rounded-2xl border-2 border-forest-900 bg-forest-100 p-6">
-                <h2 className="display text-3xl text-forest-900">Not seeing your ideal audience? We can help you build it.</h2>
+                <h2 className="display text-3xl text-forest-900">Not seeing your ideal prospects? We can help you build it.</h2>
                 <p className="mx-auto mt-2 max-w-lg">
                   We couldn&apos;t find an exact match for &ldquo;{result.parsed.raw}&rdquo;. Send us your requirements and we will check whether we can source it. Your search is carried over.
                 </p>

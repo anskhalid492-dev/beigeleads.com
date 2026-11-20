@@ -32,7 +32,7 @@ export function Summary({ s, onEdit, compact = false }: Props) {
         </div>
       )}
       <dl>
-        <Row title="Target audience" step={0} onEdit={onEdit} empty={s.audience.length === 0}>{chips(s.audience)}</Row>
+        <Row title="Target prospects" step={0} onEdit={onEdit} empty={s.audience.length === 0}>{chips(s.audience)}</Row>
         <Row title="Industries" step={0} onEdit={onEdit} empty={s.industries.length === 0}>{chips(s.industries)}</Row>
         <Row title="Job titles" step={0} onEdit={onEdit} empty={s.jobTitles.length === 0}>{chips(s.jobTitles)}</Row>
         <Row title="Additional filters" step={0} onEdit={onEdit} empty={extra.length === 0}>
