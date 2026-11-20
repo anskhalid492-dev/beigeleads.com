@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 /** Global "see a sample" band. Hidden on /, /sample, /about, /contact, /solutions and /verification, which end with their own CTA. */
 export function FooterCta() {
   const path = usePathname();
-  if (path === "/solutions" || path.startsWith("/solutions/") || path === "/verification" || path === "/sample" || path === "/how-it-works" || path === "/pricing" || path === "/about" || path === "/contact" || path === "/" || path === "/cart" || path.startsWith("/checkout")) return null; // the cart and checkout keep one clear next step
+  if (path === "/solutions" || path.startsWith("/solutions/") || path === "/verification" || path === "/sample" || path === "/how-it-works" || path === "/pricing" || path === "/about" || path === "/contact" || path === "/" || path === "/partners" || path === "/cart" || path.startsWith("/checkout")) return null; // the cart and checkout keep one clear next step
   return (
     <div className="border-b border-forest-700">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-4 py-20 sm:px-6 lg:px-8">

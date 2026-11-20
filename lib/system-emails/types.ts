@@ -81,6 +81,10 @@ export type TemplateDef = {
   key: string;
   name: string;
   audience: Audience;
+  /** Optional group shown as a badge and filter in the admin (for example "Data Reseller Partners"). */
+  category?: string;
+  /** True = the admin may switch this template off. Only emails that have no plain-text twin (nothing else sends for the same event). */
+  canDisable?: boolean;
   /** Plain-words description of the event that sends it. */
   event: string;
   connection: Connection;

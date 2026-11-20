@@ -4,6 +4,7 @@ import { Badge, Empty, PageHeader, Panel, StatCard } from "@/components/admin/ui
 import { guardAdmin } from "@/lib/admin/guard";
 import { getDbFromEnv } from "@/lib/db";
 import { BRAND } from "@/lib/system-emails/brand";
+import { listOff } from "@/lib/system-emails/enabled";
 import { getBranding } from "@/lib/system-emails/branding";
 import { TEMPLATES } from "@/lib/system-emails/defaults";
 import { listEditable } from "@/lib/system-emails/store";
@@ -54,7 +55,8 @@ export default async function SystemEmails({ searchParams }: { searchParams: Pro
   const secretSet = !!env.RESEND_WEBHOOK_SECRET;
 
   const all = [...map.values()];
-  const rows: Row[] = all.map((e) => ({ key: e.def.key, name: e.def.name, audience: e.def.audience, connection: e.def.connection, subject: (e.draft ?? e.published).subject, state: e.draft ? "draft" : e.custom ? "published" : "built-in", version: e.version, updatedAt: e.updatedAt, event: e.def.event, copy: e.copy }));
+  const off = await listOff(db);
+  const rows: Row[] = all.map((e) => ({ key: e.def.key, name: e.def.name, audience: e.def.audience, connection: e.def.connection, subject: (e.draft ?? e.published).subject, state: e.draft ? "draft" : e.custom ? "published" : "built-in", version: e.version, updatedAt: e.updatedAt, event: e.def.event, copy: e.copy, category: e.def.category ?? "", off: off.has(e.def.key) }));
   const branding = await getBranding(db);
   const connected = TEMPLATES.filter((t) => t.connection === "connected").length;
   const name = (k: string) => map.get(k)?.def.name ?? k;

@@ -6,6 +6,7 @@ import { getDbFromEnv, schema } from "@/lib/db";
 import { sendEmailDetailed } from "@/lib/forms/email";
 import { BrandingError, brandingSchema, getBranding, saveBranding } from "@/lib/system-emails/branding";
 import { TEMPLATES } from "@/lib/system-emails/defaults";
+import { setTemplateOff } from "@/lib/system-emails/enabled";
 import { systemVars } from "@/lib/system-emails/mail";
 import { renderEmail } from "@/lib/system-emails/render";
 import { EmailError, checkContent, deleteCopy, discardDraft, duplicateTemplate, exampleVars, getEditable, publish, restoreVersion, saveDraft } from "@/lib/system-emails/store";
@@ -24,6 +25,16 @@ async function run<T extends object>(fn: (env: CloudflareEnv, actor: string) => 
 const audit = (env: CloudflareEnv, actor: string, key: string, what: string) =>
   getDbFromEnv(env).insert(schema.settingsAuditLog).values({ actor, category: "system-emails", settingKey: key, newValue: what }).catch(() => {});
 
+/** Switch a template on or off. Only templates marked canDisable (no plain-text twin) can be switched off; admin alerts never. */
+export async function setEnabledAction(key: string, enabled: boolean) {
+  return run(async (env, who) => {
+    const def = TEMPLATES.find((t) => t.key === key);
+    if (!def?.canDisable) throw new EmailError("This email cannot be switched off.");
+    await setTemplateOff(getDbFromEnv(env), who, key, !enabled);
+    await audit(env, who, key, enabled ? "switched on" : "switched off");
+    return {};
+  });
+}
 export async function saveDraftAction(key: string, content: unknown) { return run(async (env, who) => { await saveDraft(getDbFromEnv(env), who, key, content); return {}; }); }
 export async function publishAction(key: string, content: unknown, note?: string) {
   return run(async (env, who) => { const v = await publish(getDbFromEnv(env), who, key, content, note ?? ""); await audit(env, who, key, `published version ${v}`); return { version: v }; });

@@ -28,6 +28,9 @@ export const VARIABLES: VarDef[] = [
   { key: "case_update", label: "Case update", description: "What happened and what happens next.", example: "We are checking the bounce report." },
   { key: "delivery_issue", label: "Delivery issue", description: "Verified, customer-safe description of a delivery issue.", example: "The link we sent could not be opened." },
   { key: "admin_url", label: "Admin link", description: "Secure admin link (admin emails only).", example: "https://beigeleads.com/admin/orders" },
+  { key: "business_name", label: "Business name", description: "The business named in a partner application.", example: "Northwind Growth Agency" },
+  { key: "partner_code", label: "Partner discount code", description: "The partner's personal 50% code. Works only with the email address of the approved partner.", example: "PARTNER-EXMP-1234" },
+  { key: "partner_discount", label: "Partner discount", description: "The partner discount, as text.", example: "50%" },
   { key: "timestamp", label: "Time", description: "When the event happened (UTC).", example: "2026-11-19 10:30 UTC" },
   { key: "details", label: "Details", description: "Short factual details for admin alerts. Never secrets.", example: "Example details" },
   // Added by the system on every send.

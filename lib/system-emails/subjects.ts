@@ -25,6 +25,9 @@ export function suggestSubjects(def: TemplateDef, _c: Content): SubjectIdea[] {
     custom_quote: ["Your custom B2B data quote is ready", `${name}your custom quote is ready`, "Review your custom quote"],
     category_request_received: ["Your requested business category is under review", `${name}thanks for your category suggestion`, "Category request received"],
     delivery_issue: [`An update about your BeigeLeads order${ref}`, `${name}an update on your order${ref}`, `Order${ref}: delivery update`],
+    partner_application_received: ["We've received your BeigeLeads partner application", `${name}we've received your partner application`, "Partner application received"],
+    partner_application_approved: ["Your BeigeLeads partner application is approved", `${name}welcome to the BeigeLeads partner program`, "You're approved: your 50% code"],
+    partner_application_declined: ["Update on your BeigeLeads partner application", `${name}an update on your partner application`, "Partner application update"],
     refund_update: [`Update on your BeigeLeads request${ref}`, `${name}here's the latest on your request${ref}`, `Request${ref}: status update`],
   };
   const t = topic[def.key];

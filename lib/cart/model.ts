@@ -19,7 +19,10 @@ export function normalizeItems(raw: unknown): CartItem[] {
 
 export type PricedLine = {
   slug: string; name: string; categoryName: string; categorySlug: string; coverage: string;
-  packageName: string; records: number; priceCents: number; fields: readonly string[];
+  packageName: string; records: number; priceCents: number;
+  /** what the buyer pays for this line: priceCents minus the partner discount (equal when there is none) */
+  payCents: number;
+  fields: readonly string[];
   /** every package of this product so the buyer can switch (names, sizes, prices all from the catalog) */
   packages: { name: string; records: number; priceCents: number }[];
   placeholder: boolean;
@@ -28,12 +31,25 @@ export type PricedLine = {
   hasSample: boolean;
 };
 export type CartPricing = {
-  lines: PricedLine[]; totalCents: number; checkoutOpen: boolean; canCheckout: boolean;
+  lines: PricedLine[];
+  /** list prices added up, before any discount */
+  subtotalCents: number;
+  /** partner discount applied to this cart (0 = none), the amount it takes off, and the code that earned it */
+  discountPercent: number; discountCents: number; discountCode: string;
+  /** what the buyer pays */
+  totalCents: number; checkoutOpen: boolean; canCheckout: boolean;
   /** items in the request that no longer exist in the catalog (removed from the cart by the client) */
   dropped: CartItem[];
   placeholderPrices: boolean;
 };
-export type CartContext = { checkoutOpen: boolean; allowPlaceholder: boolean };
+export type CartContext = {
+  checkoutOpen: boolean; allowPlaceholder: boolean;
+  /** Already VALIDATED by resolveDiscount (the browser never supplies this). One discount per order, never stacked. */
+  discount?: { code: string; percent: number };
+};
+
+/** Cents to pay for a list price after a percent discount. Whole cents, rounded to nearest. */
+export const discounted = (priceCents: number, percent: number) => Math.round((priceCents * (100 - percent)) / 100);
 
 export const productSellable = (p: Product, ctx: CartContext) => (p.status === "live" && !p.placeholderData) || ctx.allowPlaceholder;
 
@@ -42,6 +58,7 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
   const items = normalizeItems(input);
   const lines: PricedLine[] = [];
   const dropped: CartItem[] = [];
+  const pct = ctx.discount ? Math.min(100, Math.max(0, Math.floor(ctx.discount.percent))) : 0;
   for (const i of items) {
     const p = getProduct(i.slug);
     const pk = (p ? offeredPackages(p) : []).find((x) => x.name === i.pkg);
@@ -51,7 +68,7 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
     const sellable = productSellable(p, ctx);
     lines.push({
       slug: p.slug, name: p.name, categoryName: c?.name ?? "", categorySlug: p.categorySlug, coverage: k?.name ?? "",
-      packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, fields: p.fields,
+      packageName: pk.name, records: pk.records, priceCents: pk.priceUsdCents, payCents: discounted(pk.priceUsdCents, pct), fields: p.fields,
       packages: offeredPackages(p).map((x) => ({ name: x.name, records: x.records, priceCents: x.priceUsdCents })),
       placeholder: p.placeholderData,
       purchasable: sellable && ctx.checkoutOpen,
@@ -59,8 +76,9 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
       hasSample: hasSample(p.categorySlug),
     });
   }
-  const totalCents = lines.reduce((s, l) => s + l.priceCents, 0);
-  return { lines, totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length > 0 && lines.every((l) => l.purchasable), dropped, placeholderPrices: lines.some((l) => l.placeholder) };
+  const subtotalCents = lines.reduce((s, l) => s + l.priceCents, 0);
+  const totalCents = lines.reduce((s, l) => s + l.payCents, 0);
+  return { lines, subtotalCents, discountPercent: pct, discountCents: subtotalCents - totalCents, discountCode: pct > 0 ? (ctx.discount?.code ?? "") : "", totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length > 0 && lines.every((l) => l.purchasable), dropped, placeholderPrices: lines.some((l) => l.placeholder) };
 }
 
 export type Suggestion = { slug: string; name: string; categoryName: string; coverage: string; packageName: string; records: number; priceCents: number; reason: string };

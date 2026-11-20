@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BookMarked, BookOpen, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
+import { Handshake, BookMarked, BookOpen, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
@@ -19,6 +19,7 @@ const NAV = [
   ["Payments & Wallets", "/admin/wallets", Wallet],
   ["Sample Requests", "/admin/sample-requests", Inbox],
   ["Contact Inquiries", "/admin/contact-inquiries", MessageSquare],
+  ["Partner Requests", "/admin/partner-requests", Handshake],
   ["Help Center", "/admin/help", LifeBuoy],
   ["System Emails", "/admin/system-emails", MailCheck],
   ["Popups", "/admin/popups", MessageSquare],
@@ -41,7 +42,7 @@ const NAV = [
 
 const TITLES: Record<string, string> = Object.fromEntries(NAV.map(([l, h]) => [h, l]));
 
-export function AdminShell({ email, role = "admin", logout, children }: { email: string | null; role?: "admin" | "editor"; logout: () => Promise<void>; children: React.ReactNode }) {
+export function AdminShell({ email, role = "admin", logout, pendingPartners = 0, children }: { email: string | null; role?: "admin" | "editor"; logout: () => Promise<void>; pendingPartners?: number; children: React.ReactNode }) {
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(() => {
     try { return typeof localStorage !== "undefined" && localStorage.getItem("admin-collapsed") === "1"; } catch { return false; }
@@ -61,9 +62,12 @@ export function AdminShell({ email, role = "admin", logout, children }: { email:
       {NAV.filter(([, href]) => role === "admin" || href === "/admin/blog" || href === "/admin/media").map(([label, href, Icon]) => (
         <li key={href}>
           <Link href={href} prefetch={false} title={label} aria-current={active(href) ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-purple-600 ${active(href) ? "bg-forest-100 text-forest-900" : "text-sand-200 hover:bg-forest-700 hover:text-sand-50"} ${active(href) ? "!text-forest-900" : ""}`}>
+            className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-purple-600 ${active(href) ? "bg-forest-100 text-forest-900" : "text-sand-200 hover:bg-forest-700 hover:text-sand-50"} ${active(href) ? "!text-forest-900" : ""}`}>
             <Icon className="size-5 shrink-0" aria-hidden />
             <span className={compact ? "sr-only" : ""}>{label}</span>
+            {href === "/admin/partner-requests" && pendingPartners > 0 && (
+              <span className={`ml-auto grid min-w-5 place-items-center rounded-full bg-purple-600 px-1.5 text-xs font-bold leading-5 text-white ${compact ? "absolute right-1.5 top-1" : ""}`}><span className="sr-only">Pending: </span>{pendingPartners}</span>
+            )}
           </Link>
         </li>
       ))}

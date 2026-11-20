@@ -116,16 +116,18 @@ function Summary({ pricing, open, setOpen }: { pricing: CartPricing; open: boole
       </button>
       <div id="summary-body" className={`${open ? "block" : "hidden"} lg:block`}>
         <ul className="mt-4 space-y-2 text-sm">
-          {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span className="min-w-0 truncate">{l.name} <span className="text-forest-500">· {l.packageName}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(l.priceCents)}</span></li>)}
+          {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span className="min-w-0 truncate">{l.name} <span className="text-forest-500">· {l.packageName}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(l.payCents)}</span></li>)}
         </ul>
         <dl className="mt-4 space-y-2 border-t border-sand-200 pt-4 text-sm">
-          <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.totalCents)}</dd></div>
+          <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents)}</dd></div>
+          {pricing.discountPercent > 0 && <div className="flex justify-between"><dt>Partner discount ({pricing.discountPercent}%)</dt><dd className="font-semibold text-forest-900">&minus;{formatUsd(pricing.discountCents)}</dd></div>}
           <div className="flex justify-between"><dt>BeigeLeads fees</dt><dd>None added</dd></div>
         </dl>
         <div className="mt-4 flex items-end justify-between border-t border-sand-200 pt-4">
           <p className="font-bold text-forest-900">Total</p>
           <p className="display text-5xl leading-none text-forest-900">{formatUsd(pricing.totalCents)}</p>
         </div>
+        {pricing.discountPercent === 0 && <p className="mt-2 text-xs">Approved data reseller partner? Enter your code at checkout. <Link href="/partners" className="underline">About the partner program</Link></p>}
         <p className="mt-2 text-xs">Priced in US dollars. You pay in crypto: the exact coin amount is shown at checkout and locked for 30 minutes.</p>
       </div>
       <div className="mt-5 hidden lg:block"><CheckoutCta pricing={pricing} count={pricing.lines.length} /></div>
@@ -170,7 +172,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
             <h3 className="text-lg font-bold leading-snug text-forest-900"><Link href={`/lists/${l.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{l.name}</Link></h3>
-            <p className="display text-3xl leading-none text-forest-900" aria-label={`Price ${formatUsd(l.priceCents)}`}>{formatUsd(l.priceCents)}</p>
+            <p className="display text-3xl leading-none text-forest-900" aria-label={`Price ${formatUsd(l.payCents)}`}>{l.payCents !== l.priceCents && <span className="mr-2 text-lg font-normal text-forest-500 line-through">{formatUsd(l.priceCents)}</span>}{formatUsd(l.payCents)}</p>
           </div>
           <p className="mt-1 text-sm">{l.categoryName} · {l.coverage}</p>
           <p className="mt-2 text-sm"><strong className="text-forest-900">{l.records.toLocaleString("en-US")} records</strong> in the {l.packageName} package{l.placeholder ? " (placeholder size)" : ""}</p>

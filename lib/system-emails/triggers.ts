@@ -1,5 +1,6 @@
 import type { getDbFromEnv } from "@/lib/db";
 import { sendEmail } from "@/lib/forms/email";
+import { isTemplateOff } from "./enabled";
 import { systemMail } from "./mail";
 import type { Vars } from "./render";
 
@@ -20,6 +21,7 @@ export async function sendHistory(env: CloudflareEnv, key: string, reference: st
  */
 export async function sendOnce(env: CloudflareEnv, db: Db, key: string, to: string, vars: Vars, reference: string): Promise<"sent" | "already-sent" | "skipped" | "failed"> {
   if (!env.RESEND_API_KEY) return "skipped";
+  if (await isTemplateOff(db, key)) return "skipped"; // an admin switched this email off
   const h = await sendHistory(env, key, reference);
   if (h.sent) return "already-sent";
   if (h.tries >= MAX_TRIES) return "skipped";

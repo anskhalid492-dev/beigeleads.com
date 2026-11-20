@@ -18,6 +18,7 @@ const columns: Column[] = [
     links: [
       ["About", "/about"],
       ["Contact", "/contact"],
+      ["Data Reseller Partners", "/partners"],
       ["Request a Category", "/request-category"],
       ["Opt Out", "/opt-out"],
     ],

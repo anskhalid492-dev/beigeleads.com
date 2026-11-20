@@ -92,6 +92,10 @@ export const orders = sqliteTable(
     totalUsdCents: integer("total_usd_cents").notNull(),
     createdAt: createdAt(),
     paidAt: integer("paid_at", { mode: "timestamp" }),
+    /** Partner discount (migration 0033). totalUsdCents is always the amount the buyer pays; subtotal is the list price. */
+    discountCode: text("discount_code"),
+    discountPercent: integer("discount_percent"),
+    subtotalCents: integer("subtotal_cents"),
   },
   (t) => [index("orders_status_idx").on(t.status)],
 );
@@ -903,3 +907,51 @@ export const glossaryCategories = sqliteTable("glossary_categories", {
   description: text("description").notNull().default(""),
   sortOrder: integer("sort_order").notNull().default(0),
 });
+
+// Data Reseller Partners (migration 0033).
+export const partnerApplications = sqliteTable(
+  "partner_applications",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    reference: text("reference").notNull(),
+    fullName: text("full_name").notNull(),
+    businessName: text("business_name").notNull(),
+    email: text("email").notNull(),
+    website: text("website").notNull(),
+    country: text("country").notNull(),
+    businessType: text("business_type").notNull(),
+    resalePlan: text("resale_plan").notNull(),
+    monthlyVolume: text("monthly_volume"),
+    notes: text("notes"),
+    termsAcceptedAt: integer("terms_accepted_at").notNull(),
+    /** One open application per email. Unique, so double clicks and retries never create a second row or email. */
+    dedupeKey: text("dedupe_key").notNull(),
+    status: text("status", { enum: ["pending", "under_review", "approved", "declined"] }).notNull().default("pending"),
+    internalNote: text("internal_note"),
+    emailStatus: text("email_status", { enum: ["pending", "sent", "failed", "skipped"] }).notNull().default("pending"),
+    decisionEmail: text("decision_email", { enum: ["sent", "failed", "skipped"] }),
+    ownerNotify: text("owner_notify", { enum: ["pending", "sent", "failed", "skipped"] }).notNull().default("pending"),
+    decidedAt: integer("decided_at"),
+    decidedBy: text("decided_by"),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => [uniqueIndex("partner_applications_dedupe_uq").on(t.dedupeKey), uniqueIndex("partner_applications_reference_uq").on(t.reference)],
+);
+
+export const partnerDiscounts = sqliteTable(
+  "partner_discounts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    applicationId: integer("application_id").notNull(),
+    code: text("code").notNull(),
+    /** The approved partner's email. The code works only for an order placed with this address. */
+    email: text("email").notNull(),
+    percent: integer("percent").notNull().default(50),
+    active: integer("active").notNull().default(1),
+    uses: integer("uses").notNull().default(0),
+    createdAt: createdAt(),
+    deactivatedAt: integer("deactivated_at"),
+  },
+  (t) => [uniqueIndex("partner_discounts_code_uq").on(t.code), uniqueIndex("partner_discounts_application_uq").on(t.applicationId)],
+);

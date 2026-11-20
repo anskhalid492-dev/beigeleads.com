@@ -8,6 +8,69 @@ const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and 
  * then wins. "connected" means a real backend event sends it today (see CONNECTIONS in the admin Triggers tab).
  */
 export const TEMPLATES: TemplateDef[] = [
+  // ---- Data Reseller Partners ---------------------------------------------------------------------------
+  {
+    key: "partner_application_received", name: "Partner application received", audience: "customer", category: "Data Reseller Partners", canDisable: true, connection: "connected",
+    event: "Someone submits the Data Reseller Partner application (sent once per application).",
+    vars: ["first_name", "business_name", "request_reference"], required: ["request_reference"],
+    content: {
+      subject: "We've Received Your BeigeLeads Partner Application",
+      preheader: "Our team will respond within 7 days.",
+      heading: "Application received",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "Thank you for applying to become a BeigeLeads Data Reseller Partner!" },
+        { t: "p", text: "We've successfully received your application." },
+        { t: "kv", rows: [{ label: "Reference:", value: "{{request_reference}}" }, { label: "Business:", value: "{{business_name}}" }] },
+        { t: "p", text: "Our team will review your business details and respond within 7 days." },
+        { t: "p", text: "Once approved, you'll become eligible for an exclusive 50% discount on BeigeLeads database products." },
+        { t: "p", text: "We'll contact you at this email address with the next steps." },
+      ],
+      signoff: "Best regards,\nThe BeigeLeads Team",
+    },
+  },
+  {
+    key: "partner_application_approved", name: "Partner application approved", audience: "customer", category: "Data Reseller Partners", canDisable: true, connection: "connected",
+    event: "An admin approves a partner application (sent once per application; carries the partner's personal 50% code).",
+    vars: ["first_name", "business_name", "request_reference", "partner_code", "partner_discount"], required: ["partner_code"],
+    content: {
+      subject: "Welcome to the BeigeLeads Data Reseller Partner Program!",
+      preheader: "Your application is approved. Your 50% code is inside.",
+      heading: "You're approved!",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "Great news: your BeigeLeads Data Reseller Partner application for **{{business_name}}** has been approved. You are now eligible for **{{partner_discount}} off every BeigeLeads database product**, on every package." },
+        { t: "kv", rows: [{ label: "Your partner code:", value: "{{partner_code}}" }, { label: "Discount:", value: "{{partner_discount}} off every list" }, { label: "Reference:", value: "{{request_reference}}" }] },
+        { t: "heading", text: "How to claim your discount" },
+        { t: "list", items: ["Add the lists you want to your cart.", "Go to checkout. Open \"Approved data reseller partner? Add your code\".", "Enter your partner code and **the email address you applied with** (this one), then press Apply code.", "Check that the total shows your discount, choose how to pay, and complete your one-time purchase."] },
+        { t: "note", text: "Your code is personal. It works only with this email address and can't be shared or combined with other offers. We may deactivate a code if it's misused or if the partner terms are not followed." },
+        { t: "p", text: "There are no subscriptions or membership fees. You pay once for each list you buy, with the same crypto checkout as every other order." },
+      ],
+      cta: { label: "Browse Lists", url: "{{lists_url}}" },
+      signoff: "Welcome aboard,\nThe BeigeLeads Team",
+    },
+  },
+  {
+    key: "partner_application_declined", name: "Partner application declined", audience: "customer", category: "Data Reseller Partners", canDisable: true, connection: "connected",
+    event: "An admin declines a partner application (sent once per application).",
+    vars: ["first_name", "business_name", "request_reference"], required: [],
+    content: {
+      subject: "Update on Your BeigeLeads Partner Application",
+      preheader: "A decision on your Data Reseller Partner application.",
+      heading: "An update on your application",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "Thank you for your interest in the BeigeLeads Data Reseller Partner Program and for the time you took to apply on behalf of **{{business_name}}**." },
+        { t: "p", text: "After reviewing your application, we are not able to approve it at this time." },
+        { t: "p", text: "This does not affect anything else: you can still buy any BeigeLeads database at its standard price, as a one-time purchase with no account needed. If your business changes, you are welcome to apply again in the future." },
+        { t: "kv", rows: [{ label: "Reference:", value: "{{request_reference}}" }] },
+        { t: "p", text: "If you have questions about this decision, reply to this email and mention your reference." },
+      ],
+      cta: { label: "Browse Lists", url: "{{lists_url}}" },
+      signoff: "Best regards,\nThe BeigeLeads Team",
+    },
+  },
+
   // ---- Customer emails with a real trigger -------------------------------------------------------------
   {
     key: "product_delivery", name: "Product delivery", audience: "customer", connection: "connected",
