@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Lock, PackageCheck, Eye, Trash2, TriangleAlert, Check, RefreshCw, Repeat2, Plus, TicketPercent } from "lucide-react";
+import { Mail, FileText, Clock, ArrowRight, ChevronDown, Lock, PackageCheck, Eye, Trash2, TriangleAlert, Check, RefreshCw, Repeat2, Plus, TicketPercent } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { EmptyCart } from "@/components/cart/empty-cart";
 import { Flag, IndustryIcon } from "@/components/shared/db-icon";
@@ -246,10 +246,33 @@ function Trust() {
           <li key={label} className="flex flex-col items-center gap-1.5 rounded-2xl border border-sand-200 bg-sand-50 px-2 py-3"><Icon className="size-4 text-forest-500" aria-hidden />{label}</li>
         ))}
       </ul>
-      <p className="mt-3 rounded-2xl border border-sand-200 bg-sand-50 p-4 text-sm">
-        <strong className="text-forest-900">How you get your lists.</strong> Once your payment is confirmed on the network, we email you the download link for each list (CSV, Excel or TXT). Delivery is mostly instant and can take up to 12 hours. <Link href="/help/delivery/how-you-receive-your-list" className="font-semibold underline">How delivery works</Link>
-      </p>
-      <p className="mt-3 text-center text-xs"><Link href="/sample" className="underline">Request a free masked sample</Link> if you want to look before you buy.</p>
+      <section aria-labelledby="cart-delivery-h" className="mt-3 rounded-2xl border border-sand-200 bg-sand-100/60 p-4 text-left">
+        <div className="flex items-center gap-2">
+          <Mail className="size-4 shrink-0 text-forest-500" aria-hidden />
+          <h3 id="cart-delivery-h" className="text-sm font-bold leading-snug text-forest-900">How You&apos;ll Receive Your Lists</h3>
+        </div>
+        <p className="mt-2 text-[13px] leading-relaxed text-forest-700/80">
+          Once your payment is confirmed, we&apos;ll email you a secure download link for each purchased database.
+        </p>
+        <dl className="mt-3 space-y-2 text-[13px] leading-snug">
+          <div className="flex items-start gap-2">
+            <FileText className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />
+            <div><dt className="text-forest-700/70">File formats</dt><dd className="font-semibold text-forest-900">CSV, Excel or TXT</dd></div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Clock className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />
+            <div><dt className="text-forest-700/70">Delivery time</dt><dd className="font-semibold text-forest-900">Usually instant, up to 12 hours</dd></div>
+          </div>
+        </dl>
+        <div className="mt-3 flex flex-col gap-2 border-t border-sand-200 pt-3 text-[13px] font-semibold sm:flex-row sm:flex-wrap sm:gap-x-5">
+          <Link href="/help/delivery/how-you-receive-your-list" className="group inline-flex items-center gap-1.5 rounded text-forest-900 transition-colors hover:text-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+            How delivery works <ArrowRight className="size-3.5 transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden />
+          </Link>
+          <Link href="/sample" className="group inline-flex items-center gap-1.5 rounded text-forest-900 transition-colors hover:text-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+            Preview before buying <Eye className="size-3.5" aria-hidden />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
