@@ -4,6 +4,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { AddToCartButton } from "@/components/cart/add-button";
 import { formatUsd, offeredPackages, type Product } from "@/lib/catalog";
 import { getPublicPromos, shownPrice } from "@/lib/promos/public";
+import { fmtNum } from "./meta";
 import { PromoBanner } from "@/components/promos/banner";
 
 export async function ProductPricing({ product, forSale }: { product: Product; forSale: boolean }) {
@@ -47,7 +48,7 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
                 <h3 className={`text-lg font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>{pk.name}</h3>
                 {pk.records > 0 ? (
                   <>
-                    <p className={`display mt-3 text-6xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{pk.records.toLocaleString("en-US")}</p>
+                    <p className={`display mt-3 text-6xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{fmtNum(pk.records)}</p>
                     <p className="mt-1">records</p>
                   </>
                 ) : (

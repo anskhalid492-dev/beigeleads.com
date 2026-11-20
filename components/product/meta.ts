@@ -15,4 +15,5 @@ export function fmtDate(iso: string | null): string | null {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 }
 
-export const fmtNum = (n: number | null) => (n === null ? null : n.toLocaleString("en-US"));
+/** Whole numbers up to 999,999; from one million up: 1M+, 10M+ (rounded down). */
+export const fmtNum = (n: number | null) => (n === null ? null : n >= 1_000_000 ? `${Math.floor(n / 1_000_000)}M+` : n.toLocaleString("en-US"));
