@@ -103,10 +103,10 @@ describe("catalog import", () => {
     expect(row.origin).toBe("builtin"); expect(row.forSale).toBe(0); expect(row.placeholder).toBe(1);
     const pk = JSON.parse(row.packagesJson) as { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number }[];
     await setStatus(db, [row.id], "published");
-    expect((await updateProduct(db, row.id, { name: "Dentist Email List", title: "", description: "Real.", seoTitle: "", metaDescription: "", recordCount: 777, dataFields: ["Email"], fileFormats: "CSV", coverage: "", lastUpdated: "2026-11-02", placeholder: false, forSale: true, packages: pk })).ok).toBe(true);
+    expect((await updateProduct(db, row.id, { name: "Dentist Email List", title: "", description: "Real.", seoTitle: "", metaDescription: "", recordCount: 777, dataFields: ["Email"], fileFormats: "CSV", coverage: "", lastUpdated: "2026-11-19", placeholder: false, forSale: true, packages: pk })).ok).toBe(true);
     await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
     const live = getProduct("dentists-us")!;
-    expect(live.recordCount).toBe(777); expect(live.status).toBe("live"); expect(live.placeholderData).toBe(false); expect(live.lastVerified).toBe("2026-11-02"); expect(live.fileFormats).toBe("CSV");
+    expect(live.recordCount).toBe(777); expect(live.status).toBe("live"); expect(live.placeholderData).toBe(false); expect(live.lastVerified).toBe("2026-11-19"); expect(live.fileFormats).toBe("CSV");
     await setStatus(db, [row.id], "draft");
     await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
     expect(getProduct("dentists-us")).toBeUndefined(); // unpublished built-in is hidden, not shown from code

@@ -124,7 +124,7 @@ export function ProductHero({
           <p className="mt-4 text-sm">One-time payment. No subscription. No account.</p>
           {!forSale && (
             <p className="mt-5 max-w-xl rounded-xl bg-forest-100 px-4 py-3 text-sm font-medium text-forest-900">
-              Preview build: the record count, dates and prices on this page are placeholders or not entered yet. This list is not for sale yet.
+              Preview build: the record count and prices on this page are not final. This list is not for sale yet.
             </p>
           )}
         </div>

@@ -67,6 +67,7 @@ export type Package = {
   highlighted?: boolean;
 };
 
+import { FIELD_NAMES, PRODUCT_ACCURACY, PRODUCT_VERIFIED } from "@/lib/product-fields";
 export const FIELDS = [
   "Business name",
   "Address",
@@ -237,10 +238,24 @@ export function registerImported(x: { products: readonly Product[]; categories: 
   for (const c of x.countries) importedCountries.set(c.slug, c);
 }
 // A database row with the same slug REPLACES the built-in product (built-ins edited in the admin); an unpublished built-in is hidden.
-const allProducts = (): readonly Product[] => {
+let rawKey: [readonly Product[], ReadonlySet<string>] | null = null;
+let rawVal: readonly Product[] = [];
+const rawProducts = (): readonly Product[] => {
   if (!importedProducts.length && !hiddenStatic.size) return staticProducts;
+  if (rawKey && rawKey[0] === importedProducts && rawKey[1] === hiddenStatic) return rawVal;
   const over = new Set(importedProducts.map((p) => p.slug));
-  return [...staticProducts.filter((p) => !over.has(p.slug) && !hiddenStatic.has(p.slug)), ...importedProducts];
+  rawKey = [importedProducts, hiddenStatic];
+  rawVal = [...staticProducts.filter((p) => !over.has(p.slug) && !hiddenStatic.has(p.slug)), ...importedProducts];
+  return rawVal;
+};
+
+// Every product page states the same field catalog, verification date and accuracy (owner decision, 20 Nov 2026).
+let normFrom: readonly Product[] | null = null;
+let normTo: readonly Product[] = [];
+const allProducts = (): readonly Product[] => {
+  const raw = rawProducts();
+  if (raw !== normFrom) { normFrom = raw; normTo = raw.map((p) => ({ ...p, fields: FIELD_NAMES, lastVerified: p.lastVerified && p.lastVerified > PRODUCT_VERIFIED ? p.lastVerified : PRODUCT_VERIFIED, accuracyPct: PRODUCT_ACCURACY })); }
+  return normTo;
 };
 /** The products defined in code (used to copy them into the database). */
 export const getStaticProducts = () => staticProducts;

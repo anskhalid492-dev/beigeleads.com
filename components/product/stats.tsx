@@ -43,14 +43,7 @@ export function ProductStats({ product, country, cityCount }: { product: Product
                 <p className="flex items-center gap-2 text-lg font-semibold text-sand-50">
                   <ShieldCheck className="size-5 text-forest-300" aria-hidden /> Accuracy
                 </p>
-                {product.placeholderData && (
-                  <p className="mt-2 inline-block rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-forest-900">
-                    Placeholder, not measured yet
-                  </p>
-                )}
-                {product.placeholderData
-                  ? <p className="mt-2 text-sm">How we will measure and publish this is explained under Data quality below.</p>
-                  : <p className="mt-2 text-sm">Our accuracy target. If more than 5% of emails bounce, we replace them or refund proportionally. See the <Link href="/legal/refund-replacement" className="font-semibold text-sand-50 underline underline-offset-2">refund policy</Link>.</p>}
+                <p className="mt-2 text-sm">95% accurate. If more than 5% of emails bounce, we replace them or refund proportionally. See the <Link href="/legal/refund-replacement" className="font-semibold text-sand-50 underline underline-offset-2">refund policy</Link>.</p>
               </div>
             </div>
           )}
@@ -65,7 +58,7 @@ export function ProductStats({ product, country, cityCount }: { product: Product
             <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
               <Layers3 className="size-6 text-forest-300" aria-hidden />
               <p className="display mt-5 text-4xl text-sand-50">{product.fields.length} fields</p>
-              <p className="mt-1">{product.fields.join(", ")}.</p>
+              <p className="mt-1">{product.fields.slice(0, 6).join(", ")} and more.</p>
             </div>
           )}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">

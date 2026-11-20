@@ -22,14 +22,14 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
   return (
     <section id="pricing" className="scroll-mt-20 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">{product.name} pricing: pick a package, pay once</h2>
-        <p className="mt-4 max-w-2xl text-lg">
+        <h2 className={`display max-w-3xl text-5xl text-forest-900 sm:text-6xl ${offeredPackages(product).length < 3 ? "mx-auto text-center" : ""}`}>{product.name} pricing: pick a package, pay once</h2>
+        <p className={`mt-4 max-w-2xl text-lg ${offeredPackages(product).length < 3 ? "mx-auto text-center" : ""}`}>
           <strong className="text-forest-900">One-time payment. No subscription.</strong> You pay in crypto, download your file and keep it. No account needed.
         </p>
 
         <PromoBanner place="product" slug={product.slug} className="mt-6" />
 
-        <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
+        <div className={`mt-12 grid items-stretch gap-6 ${offeredPackages(product).length === 1 ? "mx-auto max-w-md" : offeredPackages(product).length === 2 ? "mx-auto max-w-3xl lg:grid-cols-2" : "lg:grid-cols-3"}`}>
           {offeredPackages(product).map((pk) => {
             const dark = pk.highlighted;
             const sp = shownPrice(promos, { slug: product.slug, categorySlug: product.categorySlug }, pk);
@@ -66,7 +66,7 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
                 )}
                 <p className="mt-1 text-sm">{pk.records > 0 ? `$${per1000} per 1,000 records. ` : ""}Paid once.</p>
                 <ul className="mt-6 flex-1 space-y-3 text-sm">
-                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fields.length} fields: {product.fields.join(", ")}</li>
+                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fields.length}+ data fields per record</li>
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fileFormats?.trim() || "CSV, Excel or TXT"} file</li>
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />Download link by email, unlimited downloads</li>
                 </ul>
@@ -76,10 +76,10 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
           })}
         </div>
 
-        <p className="mt-8 text-sm">
+        <p className={`mt-8 text-sm ${offeredPackages(product).length < 3 ? "text-center" : ""}`}>
           Not sure which size? <Link href={`/sample?product=${product.slug}`} className="font-semibold text-forest-900 underline underline-offset-4">Get a free sample first</Link>, or{" "}
           <Link href="/custom-list" className="font-semibold text-forest-900 underline underline-offset-4">ask for a custom list</Link>.
-          {!forSale && " Package sizes and prices shown here are placeholders, and checkout is not open yet."}
+          {!forSale && " Package sizes and prices shown here are not final, and checkout is not open yet."}
         </p>
       </div>
     </section>
