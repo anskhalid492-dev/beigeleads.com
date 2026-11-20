@@ -1,5 +1,6 @@
 // Server side: builds the serialisable catalog data for /lists from the real catalog + geography tables.
-import { getCategories, getCategory, getProducts, startingPriceCents } from "@/lib/catalog";
+import { getCategories, getCategory, getCountry, getProducts, startingPriceCents } from "@/lib/catalog";
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { loadCountries, loadSubindustries } from "@/lib/catalog-extra";
 import { getDb } from "@/lib/db";
 import { allCoverage } from "@/lib/geo/store";
@@ -8,16 +9,17 @@ import type { GeoTree, ShopData } from "@/lib/shop";
 const HINTS: Record<string, string[]> = { dentists: ["dentist", "dental", "orthodontist"], restaurants: ["restaurant", "cafe", "bar", "diner"], "ski-shops": ["ski", "snowboard"] };
 
 export async function loadListsData(): Promise<ShopData & { niches: { category: string; categoryName: string; name: string }[] }> {
+  await hydrateCatalog(); // published imported products (section 91)
   const db = getDb();
   const countries = await loadCountries(db);
   const cats = getCategories();
   const catName = new Map(cats.map((c) => [c.slug, c.name]));
   const cname = new Map(countries.map((c) => [c.slug, c]));
   const products = getProducts().map((p) => {
-    const k = cname.get(p.countrySlug);
+    const k = cname.get(p.countrySlug) ?? getCountry(p.countrySlug);
     const from = startingPriceCents(p);
     const real = !p.placeholderData; // placeholder counts and prices never reach the browser
-    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, description: p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
+    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, description: p.imported ? p.description.slice(0, 160) : p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
   });
 
   // Geography with REAL inventory only (count above zero, place allowed to be shown).
