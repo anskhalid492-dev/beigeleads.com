@@ -1,3 +1,4 @@
+import { CASE_STUDY_STARTERS } from "./case-study-starters";
 import { GUIDE_STARTERS } from "./guide-starters";
 import type { Kind } from "./kind";
 import { mdToDoc } from "./markdown";
@@ -210,4 +211,4 @@ When you are ready to start, [browse the ready-made lists](/lists) or [request a
 export const starterDoc = (s: StarterArticle) => mdToDoc(s.markdown);
 
 // Guides come after the articles so existing article lookups by position keep working.
-STARTERS.push(...GUIDE_STARTERS);
+STARTERS.push(...GUIDE_STARTERS, ...CASE_STUDY_STARTERS);

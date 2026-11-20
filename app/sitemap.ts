@@ -1,4 +1,5 @@
 import { taxonomyPaths } from "@/lib/taxonomy";
+import { KINDS, asKind } from "@/lib/blog/kind";
 import { getTax } from "@/lib/taxonomy-route";
 import { geoSitemapPaths } from "@/lib/geo/store";
 import { getDbFromEnv } from "@/lib/db";
@@ -22,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Published, indexable blog articles (read from D1). If the blog tables are missing, the rest of the sitemap still works.
   let blog: MetadataRoute.Sitemap = [];
   let authors: MetadataRoute.Sitemap = [];
-  try { blog = (await publishedSitemap(getCloudflareContext().env)).filter((p) => !p.noindex).map((p) => ({ url: `${SITE_URL}${p.kind === "guide" ? "/guides" : "/blog"}/${p.slug}`, lastModified: p.updatedAt })); } catch { /* blog not set up yet */ }
+  try { blog = (await publishedSitemap(getCloudflareContext().env)).filter((p) => !p.noindex).map((p) => ({ url: `${SITE_URL}${KINDS[asKind(p.kind)].pub}/${p.slug}`, lastModified: p.updatedAt })); } catch { /* blog not set up yet */ }
   try { authors = (await authorSitemap(getCloudflareContext().env)).map((a) => ({ url: `${SITE_URL}/blog/author/${a.slug}`, lastModified: a.updatedAt })); } catch { /* authors not set up yet */ }
   const excluded = await excludedSitemapPaths(getCloudflareContext().env);
   const geoPaths = await geoSitemapPaths(getDbFromEnv(getCloudflareContext().env));
@@ -32,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const all: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/blog` },
     { url: `${SITE_URL}/guides` },
+    { url: `${SITE_URL}/case-studies` },
     ...(glossary.length ? [{ url: `${SITE_URL}/glossary` }] : []),
     ...glossary.filter((g) => !g.thin).map((g) => ({ url: `${SITE_URL}/glossary/${g.slug}`, lastModified: g.updatedAt })),
     ...blog,

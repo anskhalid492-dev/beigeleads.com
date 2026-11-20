@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KINDS, catHref as catHrefOf, type Kind } from "@/lib/blog/kind";
 import type { PublicCard } from "@/lib/blog/posts";
 import { AuthorAvatar } from "./avatar";
 
@@ -17,9 +18,10 @@ export function CardMeta({ p, size = 28 }: { p: PublicCard; size?: number }) {
   );
 }
 
-export function PostCard({ p, priority = false, guide = false }: { p: PublicCard; priority?: boolean; guide?: boolean }) {
-  const base = guide ? "/guides" : "/blog";
-  const catHref = guide ? `/guides?category=${p.categorySlug}` : `/blog/category/${p.categorySlug}`;
+export function PostCard({ p, priority = false, guide = false, kind }: { p: PublicCard; priority?: boolean; guide?: boolean; kind?: Kind }) {
+  const k: Kind = kind ?? (guide ? "guide" : "blog");
+  const base = KINDS[k].pub;
+  const catHref = catHrefOf(k, p.categorySlug ?? "");
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-sand-200 bg-white transition-shadow hover:shadow-md">
       <Link href={`${base}/${p.slug}`} tabIndex={-1} aria-hidden className="block overflow-hidden">

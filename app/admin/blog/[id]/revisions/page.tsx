@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KINDS, adminOnly, asKind } from "@/lib/blog/kind";
 import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Badge, Empty, PageHeader, Panel, fmtDate } from "@/components/admin/ui";
@@ -14,14 +15,14 @@ export default async function Revisions({ params, searchParams }: { params: Prom
   const id = Number((await params).id);
   const env = getCloudflareContext().env;
   const post = Number.isInteger(id) ? await getPost(env, id) : null;
-  if (!post || (post.kind === "guide" && user.role !== "admin")) notFound();
+  if (!post || (adminOnly(post.kind) && user.role !== "admin")) notFound();
   const revs = await listRevisions(env, id);
   const sel = Number((await searchParams).rev) || 0;
   const shown = sel ? await getRevision(env, id, sel) : null;
   return (
     <>
       <PageHeader title="Revision history" text={`“${post.title}”. Restoring creates a new version, so nothing is lost. Autosaves are recorded at most every 10 minutes.`}
-        actions={<Link href={`${post.kind === "guide" ? "/admin/guides" : "/admin/blog"}/${id}/edit`} className="text-sm font-semibold underline">Back to editor</Link>} />
+        actions={<Link href={`${KINDS[asKind(post.kind)].admin}/${id}/edit`} className="text-sm font-semibold underline">Back to editor</Link>} />
       <div className="grid gap-6 lg:grid-cols-[22rem_1fr]">
         <Panel title={`${revs.length} revision${revs.length === 1 ? "" : "s"}`}>
           {revs.length === 0 ? <Empty title="No revisions yet" text="A revision is saved when you press Save, and periodically while autosaving." /> : (

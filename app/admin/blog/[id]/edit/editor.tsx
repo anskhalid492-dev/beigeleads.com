@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { KINDS, type Kind } from "@/lib/blog/kind";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor, type Editor as TipTap } from "@tiptap/react";
@@ -26,7 +27,7 @@ export type Fields = {
   seoTitle: string; metaDescription: string; canonicalUrl: string; noindex: boolean; ogTitle: string; ogDescription: string; ogImage: string | null;
   focusKeyword: string; secondaryKeywords: string; related: number[]; tagIds: number[]; scheduledAt: number | null;
 };
-export type EditorPost = { kind?: "blog" | "guide"; id: number; version: number; status: Status; updatedAt: number; publishedAt: number | null; doc: DocNode; fields: Fields };
+export type EditorPost = { kind?: Kind; id: number; version: number; status: Status; updatedAt: number; publishedAt: number | null; doc: DocNode; fields: Fields };
 type Save = "saved" | "dirty" | "saving" | "failed";
 
 const input = "h-10 w-full rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900";
@@ -39,8 +40,8 @@ const tzLabel = () => { try { const o = -new Date().getTimezoneOffset(); const s
 export function Editor({ role, post, authors, cats, tags, options, targets }: { role: "admin" | "editor"; post: EditorPost; authors: AuthorOption[]; cats: { id: number; name: string }[]; tags: { id: number; name: string }[]; options: { id: number; title: string }[]; targets: InternalTarget[] }) {
   const router = useRouter();
   const toast = useToast();
-  const A = post.kind === "guide" ? "/admin/guides" : "/admin/blog";
-  const P = post.kind === "guide" ? "/guides" : "/blog";
+  const A = KINDS[post.kind ?? "blog"].admin;
+  const P = KINDS[post.kind ?? "blog"].pub;
   const [f, setF] = useState<Fields>(post.fields);
   const [status, setStatus] = useState<Status>(post.status);
   const [save, setSave] = useState<Save>("saved");
@@ -229,7 +230,7 @@ export function Editor({ role, post, authors, cats, tags, options, targets }: { 
   return (
     <div className="-mx-1">
       <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 border-b border-sand-200 bg-sand-50/95 px-1 py-3 backdrop-blur">
-        <Link href={A} className="text-sm font-semibold underline">All {post.kind === "guide" ? "guides" : "articles"}</Link>
+        <Link href={A} className="text-sm font-semibold underline">All {KINDS[post.kind ?? "blog"].many}</Link>
         <Badge tone={TONE[status]}>{status[0].toUpperCase() + status.slice(1)}</Badge>
         <span role="status" aria-live="polite" className={`text-sm ${save === "failed" ? "font-semibold text-red-700" : ""}`}>{statusText}</span>
         <div className="ml-auto flex flex-wrap gap-2">

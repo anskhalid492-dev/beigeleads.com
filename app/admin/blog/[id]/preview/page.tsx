@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { adminOnly, asKind } from "@/lib/blog/kind";
 import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { ArticleView } from "@/components/blog/article-view";
@@ -16,10 +17,10 @@ export default async function Preview({ params }: { params: Promise<{ id: string
   const id = Number((await params).id);
   const env = getCloudflareContext().env;
   const p = Number.isInteger(id) ? await getPostForEdit(env, id) : null;
-  if (!p || (p.row.kind === "guide" && user.role !== "admin")) notFound();
-  const cats = await listCategories(env);
+  if (!p || (adminOnly(p.row.kind) && user.role !== "admin")) notFound();
+  const cats = await listCategories(env, asKind(p.row.kind));
   const c = cats.find((x) => x.id === p.row.categoryId);
   const r = p.row;
   const pa = await getAuthorForPreview(env, r.authorId).catch(() => null);
-  return <ArticleView preview related={[]} a={{ title: r.title, slug: r.slug, excerpt: r.excerpt, author: r.author, readingMinutes: r.readingMinutes, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt, featuredCaption: r.featuredCaption, focalX: r.featuredFocalX, focalY: r.featuredFocalY, publishedAt: r.publishedAt ?? new Date(), updatedAt: r.updatedAt, category: c ? { name: c.name, slug: c.slug } : null, tags: [], doc: p.doc, ogImage: r.ogImage, authorProfile: pa ? { slug: pa.slug, name: pa.name, title: pa.title, photo: pa.photo, shortBio: pa.shortBio, links: pa.links } : null }} />;
+  return <ArticleView preview kind={asKind(p.row.kind)} related={[]} a={{ title: r.title, slug: r.slug, excerpt: r.excerpt, author: r.author, readingMinutes: r.readingMinutes, featuredImage: r.featuredImage, featuredAlt: r.featuredAlt, featuredCaption: r.featuredCaption, focalX: r.featuredFocalX, focalY: r.featuredFocalY, publishedAt: r.publishedAt ?? new Date(), updatedAt: r.updatedAt, category: c ? { name: c.name, slug: c.slug } : null, tags: [], doc: p.doc, ogImage: r.ogImage, authorProfile: pa ? { slug: pa.slug, name: pa.name, title: pa.title, photo: pa.photo, shortBio: pa.shortBio, links: pa.links } : null }} />;
 }

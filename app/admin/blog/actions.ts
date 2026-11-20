@@ -8,18 +8,19 @@ import { requireBlogUser } from "@/lib/admin/require-admin";
 import { createPost, deletePost, duplicatePost, getPost, restoreRevision, savePost, transition, type Action } from "@/lib/blog/posts";
 import { deleteCategory, deleteTag, saveCategory, saveTag, BlogError } from "@/lib/blog/taxonomy";
 import { deleteMedia, listMedia, mediaByUrl, mediaUsage, originalUrlOf, setAlt, setMediaMeta } from "@/lib/blog/media";
+import { adminOnly, asKind } from "@/lib/blog/kind";
 
 export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string; conflict?: boolean };
 
 /** Articles and guides share this CMS; refresh both sections' pages after any change. */
-const revalidateAll = () => { for (const p of ["/admin/blog", "/blog", "/admin/guides", "/guides"]) revalidatePath(p); };
+const revalidateAll = () => { for (const p of ["/admin/blog", "/blog", "/admin/guides", "/guides", "/admin/case-studies", "/case-studies"]) revalidatePath(p); };
 
 const need = (ok: boolean) => { if (!ok) throw new BlogError("Only an admin can do this."); };
 /** Editors may only change drafts. Admins may change anything. */
 async function mayEdit(u: BlogUser, id: number) {
   const post = await getPost(getCloudflareContext().env, id);
   if (!post) throw new BlogError("Article not found.");
-  if (post.kind === "guide") need(u.role === "admin"); // guides are admin-managed
+  if (adminOnly(post.kind)) need(u.role === "admin"); // guides and case studies are admin-managed
   need(can.editPost(u.role, post.status));
 }
 
@@ -73,11 +74,18 @@ export async function createGuideAction(): Promise<void> {
   redirect(`/admin/guides/${id}/edit`);
 }
 
+export async function createCaseStudyAction(): Promise<void> {
+  const admin = await requireBlogUser();
+  need(can.publish(admin.role));
+  const id = await createPost(getCloudflareContext().env, admin.email, "Untitled case study", "case");
+  redirect(`/admin/case-studies/${id}/edit`);
+}
+
 export async function duplicateAction(id: number): Promise<Result<{ id: number }>> {
   try {
     const admin = await requireBlogUser();
     const src = await getPost(getCloudflareContext().env, id);
-    if (src?.kind === "guide") need(admin.role === "admin");
+    if (src && adminOnly(src.kind)) need(admin.role === "admin");
     const nid = await duplicatePost(getCloudflareContext().env, admin.email, id);
     revalidateAll();
     return { ok: true, id: nid };
@@ -129,7 +137,7 @@ export async function categoryAction(form: FormData): Promise<Result> {
     const env = getCloudflareContext().env;
     const id = Number(form.get("id")) || undefined;
     if (String(form.get("intent")) === "delete" && id) await deleteCategory(env, id);
-    else await saveCategory(env, { kind: String(form.get("kind")) === "guide" ? "guide" : "blog", id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? ""), description: String(form.get("description") ?? ""), seoTitle: String(form.get("seoTitle") ?? ""), metaDescription: String(form.get("metaDescription") ?? "") });
+    else await saveCategory(env, { kind: asKind(String(form.get("kind"))), id, name: String(form.get("name") ?? ""), slug: String(form.get("slug") ?? ""), description: String(form.get("description") ?? ""), seoTitle: String(form.get("seoTitle") ?? ""), metaDescription: String(form.get("metaDescription") ?? "") });
     revalidateAll();
     return { ok: true };
   } catch (e) { return fail(e); }

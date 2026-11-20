@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KINDS, catHref as catHrefOf, type Kind } from "@/lib/blog/kind";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { AboutAuthor, Byline, publicName, type ArticleAuthor } from "./author-pa
 import { NewsletterCta } from "./newsletter";
 import { PostCard, fmtDate } from "./cards";
 import { ReadingProgress } from "./client";
+import { CASE_CTA, isIllustrative } from "@/lib/case-studies";
 import { InlineCta, ctaFor } from "./inline-cta";
 import { Share } from "./share";
 import { Toc } from "./toc";
@@ -20,21 +22,25 @@ export type ArticleData = {
   ogImage: string | null; authorProfile?: ArticleAuthor | null;
 };
 
+const SECTION: Record<Kind, string> = { blog: "Blog", guide: "Guides", case: "Case Studies" };
+
 /** The article page, shared by the public route and the admin preview so what you preview is what is published. */
-export function ArticleView({ a, related, preview = false, newsletter = false, guide = false, faq = [] }: { a: ArticleData; related: PublicCard[]; preview?: boolean; newsletter?: boolean; guide?: boolean; faq?: { q: string; a: string }[] }) {
-  const base = guide ? "/guides" : "/blog";
-  const catHref = (slug: string) => (guide ? `/guides?category=${slug}` : `/blog/category/${slug}`);
+export function ArticleView({ a, related, preview = false, newsletter = false, guide = false, kind, faq = [] }: { a: ArticleData; related: PublicCard[]; preview?: boolean; newsletter?: boolean; guide?: boolean; kind?: Kind; faq?: { q: string; a: string }[] }) {
+  const k: Kind = kind ?? (guide ? "guide" : "blog");
+  const nonBlog = k !== "blog";
+  const base = KINDS[k].pub;
+  const catHref = (slug: string) => catHrefOf(k, slug);
   const toc = headingsOf(a.doc).filter((h) => h.level <= 3);
   const url = `${SITE_URL}${base}/${a.slug}`;
   const img = a.ogImage ?? a.featuredImage;
   return (
     <>
       {!preview && <ReadingProgress />}
-      {preview && <p role="status" className="bg-purple-100 px-4 py-2 text-center text-sm font-semibold text-forest-900">Preview. This is how the {guide ? "guide" : "article"} looks once it is published.</p>}
-      <Breadcrumbs wide items={[{ name: guide ? "Guides" : "Blog", href: base }, ...(a.category ? [{ name: a.category.name, href: catHref(a.category.slug) }] : []), { name: a.title, href: `${base}/${a.slug}` }]} />
+      {preview && <p role="status" className="bg-purple-100 px-4 py-2 text-center text-sm font-semibold text-forest-900">Preview. This is how the {KINDS[k].one} looks once it is published.</p>}
+      <Breadcrumbs wide items={[{ name: SECTION[k], href: base }, ...(a.category ? [{ name: a.category.name, href: catHref(a.category.slug) }] : []), { name: a.title, href: `${base}/${a.slug}` }]} />
       {!preview && (
         <JsonLd data={{
-          "@context": "https://schema.org", "@type": guide ? "Article" : "BlogPosting", headline: a.title, description: a.excerpt || undefined,
+          "@context": "https://schema.org", "@type": nonBlog ? "Article" : "BlogPosting", headline: a.title, description: a.excerpt || undefined,
           datePublished: a.publishedAt.toISOString(), dateModified: a.updatedAt.toISOString(),
           author: (() => {
             const pa = a.authorProfile;
@@ -46,10 +52,10 @@ export function ArticleView({ a, related, preview = false, newsletter = false, g
           mainEntityOfPage: url, image: img ? [img.startsWith("http") ? img : `${SITE_URL}${img}`] : undefined,
         }} />
       )}
-      {!preview && guide && faq.length >= 2 && <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />}
+      {!preview && nonBlog && faq.length >= 2 && <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />}
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-4xl">
-          {a.category && <Link href={catHref(a.category.slug)} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-2">{k === "case" && isIllustrative(a.slug) && <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-forest-900">Illustrative use case</span>}{a.category && <Link href={catHref(a.category.slug)} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}</p>
           <h1 className="display mt-2 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{a.title}</h1>
           {a.excerpt && <p className="mt-4 max-w-3xl text-lg sm:text-xl">{a.excerpt}</p>}
           <Byline author={a.authorProfile ?? null} plainName={a.author} date={a.publishedAt} />
@@ -69,9 +75,9 @@ export function ArticleView({ a, related, preview = false, newsletter = false, g
             <div id="article-body"><ArticleBody doc={a.doc} /></div>
             {a.tags.length > 0 && <ul className="mt-10 flex flex-wrap gap-2" aria-label="Tags">{a.tags.map((t) => <li key={t.id} className="rounded-full bg-sand-100 px-3 py-1 text-sm">{t.name}</li>)}</ul>}
             <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-sand-200 pt-6 lg:hidden"><span className="text-sm font-semibold text-forest-900">Share</span><Share url={url} title={a.title} /></div>
-            <InlineCta cta={ctaFor(a)} />
+            <InlineCta cta={k === "case" ? CASE_CTA : ctaFor(a)} />
             {a.authorProfile && <AboutAuthor author={a.authorProfile} />}
-            <p className="mt-8"><Link href={base} className="text-sm font-semibold text-forest-900 underline underline-offset-4">← Back to all {guide ? "guides" : "articles"}</Link></p>
+            <p className="mt-8"><Link href={base} className="text-sm font-semibold text-forest-900 underline underline-offset-4">← Back to all {KINDS[k].many}</Link></p>
           </div>
           <aside className="hidden lg:col-start-3 lg:row-start-1 lg:block">
             <div className="sticky top-32 space-y-6">
@@ -89,8 +95,8 @@ export function ArticleView({ a, related, preview = false, newsletter = false, g
 
         {related.length > 0 && (
           <section className="mx-auto mt-16 max-w-6xl" aria-labelledby="rel">
-            <h2 id="rel" className="display text-4xl text-forest-900">{guide ? "Related guides" : "Continue reading"}</h2>
-            <ul className="mt-6 grid gap-5 md:grid-cols-3">{related.map((p) => <li key={p.id}><PostCard p={p} guide={guide} /></li>)}</ul>
+            <h2 id="rel" className="display text-4xl text-forest-900">{k === "guide" ? "Related guides" : k === "case" ? "More case studies" : "Continue reading"}</h2>
+            <ul className="mt-6 grid gap-5 md:grid-cols-3">{related.map((p) => <li key={p.id}><PostCard p={p} kind={k} /></li>)}</ul>
           </section>
         )}
       </div>

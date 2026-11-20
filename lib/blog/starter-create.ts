@@ -12,7 +12,7 @@ export async function createFromStarter(env: CloudflareEnv, actor: string, slug:
   if (!s) throw new BlogError("Starter article not found.");
   const db = getDbFromEnv(env);
   const dup = await db.select({ id: schema.blogPosts.id }).from(schema.blogPosts).where(eq(schema.blogPosts.slug, s.slug)).limit(1);
-  if (dup[0]) throw new BlogError("An article with this URL already exists.");
+  if (dup[0]) throw new BlogError("Something with this URL already exists.");
 
   const kind = s.kind ?? "blog";
   let cat = (await listCategories(env, kind)).find((c) => c.slug === slugifyText(s.category));
@@ -24,7 +24,7 @@ export async function createFromStarter(env: CloudflareEnv, actor: string, slug:
 
   // Optional approved brand image: copied from the site's own static assets into the media library.
   let featuredImage: string | null = null;
-  if (s.brandImage && env.ASSETS && /^\/brand\/[\w./-]+$/.test(s.brandImage) && !s.brandImage.includes("..")) {
+  if (s.brandImage && env.ASSETS && /^\/(brand|case-studies)\/[\w./-]+$/.test(s.brandImage) && !s.brandImage.includes("..")) {
     const res = await env.ASSETS.fetch(new Request(`https://assets.local${s.brandImage}`));
     if (res.ok) {
       const up = await saveUpload(env, actor, { name: s.brandImage.split("/").pop() ?? "brand", bytes: new Uint8Array(await res.arrayBuffer()) });

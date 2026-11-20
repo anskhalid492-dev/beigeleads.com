@@ -16,7 +16,7 @@ export async function TaxonomyAdmin({ kind }: { kind: Kind }) {
   }
   return (
     <>
-      <PageHeader title="Categories & tags" text={kind === "guide" ? "Guide categories are filters on /guides. A category with guides cannot be deleted until they are moved. Tags are shared with the blog." : "Categories get a public page at /blog/category/<slug>. A category with articles cannot be deleted until they are moved."} actions={<Link href={K.admin} className="text-sm font-semibold underline">Back to {K.many}</Link>} />
+      <PageHeader title="Categories & tags" text={kind === "case" ? "Case study categories (industry and use case) are filters on /case-studies. A category with case studies cannot be deleted until they are moved. Tags are shared with the blog." : kind === "guide" ? "Guide categories are filters on /guides. A category with guides cannot be deleted until they are moved. Tags are shared with the blog." : "Categories get a public page at /blog/category/<slug>. A category with articles cannot be deleted until they are moved."} actions={<Link href={K.admin} className="text-sm font-semibold underline">Back to {K.many}</Link>} />
       <h2 className="mb-3 text-lg font-bold text-forest-900">Categories</h2>
       <CategoryManager kind={kind} cats={data.cats} />
       <h2 className="mb-3 mt-10 text-lg font-bold text-forest-900">Tags</h2>

@@ -14,6 +14,7 @@ export async function createStarterAction(slug: string, authorId: number | null)
     const id = await createFromStarter(getCloudflareContext().env, u.email, z.string().max(200).parse(slug), z.number().int().nullable().parse(authorId));
     revalidatePath("/admin/blog");
     revalidatePath("/admin/guides");
+    revalidatePath("/admin/case-studies");
     return { ok: true, id };
   } catch (e) {
     if (e instanceof BlogError) return { ok: false, error: e.message };

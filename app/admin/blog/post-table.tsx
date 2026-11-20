@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { KINDS, type Kind } from "@/lib/blog/kind";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Badge, Empty, Panel } from "@/components/admin/ui";
@@ -12,16 +13,16 @@ export type PostRow = { id: number; title: string; slug: string; status: Status;
 const TONE = { draft: "mute", scheduled: "info", published: "good", archived: "warn" } as const;
 const field = "h-10 rounded-xl border border-sand-300 bg-white px-3 text-sm text-forest-900";
 
-export function PostTable(p: { kind?: "blog" | "guide"; role: "admin" | "editor"; rows: PostRow[]; total: number; page: number; per: number; cats: { id: number; name: string }[]; authors: string[]; q: string; status: string; category: string; author: string; sort: string }) {
+export function PostTable(p: { kind?: Kind; role: "admin" | "editor"; rows: PostRow[]; total: number; page: number; per: number; cats: { id: number; name: string }[]; authors: string[]; q: string; status: string; category: string; author: string; sort: string }) {
   const router = useRouter();
   const toast = useToast();
   const [pending, start] = useTransition();
   const [sel, setSel] = useState<number[]>([]);
   const [confirm, setConfirm] = useState<null | { text: string; run: () => Promise<void> }>(null);
   const admin = p.role === "admin";
-  const A = p.kind === "guide" ? "/admin/guides" : "/admin/blog";
-  const P = p.kind === "guide" ? "/guides" : "/blog";
-  const N = p.kind === "guide" ? "guide" : "article";
+  const A = KINDS[p.kind ?? "blog"].admin;
+  const P = KINDS[p.kind ?? "blog"].pub;
+  const N = KINDS[p.kind ?? "blog"].one;
   const pages = Math.max(1, Math.ceil(p.total / p.per));
   const qs = (n: number) => { const u = new URLSearchParams(); if (p.q) u.set("q", p.q); if (p.status) u.set("status", p.status); if (p.category) u.set("category", p.category); if (p.author) u.set("author", p.author); if (p.sort !== "updated") u.set("sort", p.sort); if (n > 1) u.set("page", String(n)); const s = u.toString(); return s ? `?${s}` : "?"; };
 
