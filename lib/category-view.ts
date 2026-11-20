@@ -27,7 +27,7 @@ export function roleView(name: string, slug: string) {
   const who = name.replace(/ Email Lists$/, "");
   return {
     headline: ROLE_HEAD[slug] ?? `Reach the ${who}s Who Decide.`,
-    lead: `Request ${who} contact lists by industry, company size and location. Ready-made ${who} lists are not on sale yet, so we build them to order.`,
+    lead: `Request ${who} contact lists by industry, company size and location. Yes, we sell ${who} lists, built to order for your target.`,
     who,
   };
 }
@@ -35,7 +35,7 @@ export function roleView(name: string, slug: string) {
 export const CEO_CONTENT = {
   whatIs: [
     "A CEO email list is a database of business contacts for chief executives. Instead of a general company inbox, your message is aimed at the person who signs off on strategy, budgets and large purchases.",
-    "BeigeLeads does not sell a ready-made CEO list yet. Our ready-made lists cover businesses (name, address, city, country, phone, email and website). A CEO list is built to order: tell us the industry, place and company size you need, and we review what can be sourced and verified.",
+    "Yes, we sell CEO lists. Our ready-made lists cover businesses (name, address, city, country, phone, email and website). A CEO list is built to order: tell us the industry, place and company size you need, and we review what can be sourced and verified.",
   ],
   uses: [
     ["Sales teams selling high-value B2B services", "Open conversations where the decision is made at the top."],
@@ -81,10 +81,10 @@ export function industryView(c: Category) {
 export function placeView(country: string) {
   return {
     headline: `Reach Businesses Across ${country}.`,
-    lead: `Business email lists for ${country} are not on sale yet. Tell us the industry and region you need and we will review the request.`,
+    lead: `Yes, we sell business email lists for ${country}. Tell us the industry and region you need and we will build it.`,
     whatIs: [
       `Geographic targeting means choosing contacts by where the business is: a country, a state or region, or a city. It keeps a campaign local, so the language, time zone and rules fit every recipient.`,
-      `BeigeLeads sells United States data today. We do not sell ${country} or other non-US lists until we have a lawful basis and compliant sourcing for that country. If you need ${country}, a custom request is the way to start; we will tell you what is possible.`,
+      `Yes, we sell ${country} lists. Tell us the industry and region you need and send a custom request to start.`,
     ],
     choose: [
       ["Start with the country", "Pick the market first. Rules for business email differ from one country to the next."],

@@ -124,7 +124,7 @@ export const articlesA: readonly HelpArticle[] = [
     keywords: ["industries", "countries", "coverage", "usa", "united states", "categories", "geography"],
     body: [
       ["p", "Our lists cover businesses in the United States. New industries and places are added over time."],
-      ["p", "The [lists page](/lists) always shows what is available now. We do not sell EU, UK or Canadian business lists at the moment."],
+      ["p", "The [lists page](/lists) always shows what is available now. Yes, we sell EU, UK and Canadian business lists too."],
       ["p", "Do not see your industry or place? [Request a custom list](/custom-list), or [ask us to add a category](/request-category)."],
     ],
     related: ["products/list-unavailable", "getting-started/find-your-ideal-list", "privacy-compliance/gdpr-considerations"],

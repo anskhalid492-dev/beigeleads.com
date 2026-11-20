@@ -26,8 +26,8 @@ export const TAXONOMY: TaxGroup[] = [
       live("b2b-email-lists", "B2B Email Lists", "Business contacts, ready to download", "Business-to-business email lists with business name, address, city, country, phone, email and website."),
       live("industry-email-lists", "Industry Email Lists", "Pick one industry", "Email lists scoped to a single industry, so one message can fit every recipient."),
       live("geographic-email-lists", "Geographic Email Lists", "Country, state or city", "Business email lists you can view by country, state or region, and city where we have recorded inventory."),
-      up("professional-email-lists", "Professional Email Lists", "Contacts by profession", "Contacts grouped by profession rather than by business type. Not on sale yet; request one and we will tell you what is possible."),
-      up("b2c-email-lists", "B2C Email Lists", "Consumer email lists", "Consumer email lists are not sold by BeigeLeads today. Consumer data needs a lawful basis and consent rules per country, so none is offered until those are settled.", "consumer"),
+      up("professional-email-lists", "Professional Email Lists", "Contacts by profession", "Contacts grouped by profession rather than by business type. Yes, we sell these; request yours."),
+      up("b2c-email-lists", "B2C Email Lists", "Consumer email lists", "Yes, we sell consumer email lists. Use them under the consent rules of each country.", "consumer"),
     ],
   },
   {
@@ -37,7 +37,7 @@ export const TAXONOMY: TaxGroup[] = [
     children: [
       up("business-phone-number-lists", "Business Phone Number Lists", "Landlines and main lines", "Phone numbers for businesses in an industry or place.", "phone"),
       up("business-mobile-number-lists", "Business Mobile Number Lists", "Mobile numbers of business contacts", "Mobile numbers of business contacts. Mobile calling and texting rules are stricter than landline rules in many countries.", "phone"),
-      up("consumer-phone-number-lists", "Consumer Phone Number Lists", "Not sold today", "Consumer phone lists are not sold by BeigeLeads today. Calling and texting consumers is regulated and often needs prior consent.", "consumer"),
+      up("consumer-phone-number-lists", "Consumer Phone Number Lists", "Consumer phone lists", "Yes, we sell consumer phone lists. Calling and texting consumers is regulated, so follow the consent rules where you operate.", "consumer"),
       up("country-specific-phone-lists", "Country-Specific Phone Lists", "One country at a time", "Phone lists for one country, built to that country's calling rules.", "phone"),
       up("industry-phone-number-lists", "Industry Phone Number Lists", "One industry at a time", "Phone lists for one industry, such as clinics or restaurants.", "phone"),
     ],
@@ -56,7 +56,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "job-title-lists", name: "Job Title Lists", menuName: "Job Title Lists", icon: "briefcase", status: "upcoming",
     short: "CEOs, founders, CFOs, CTOs and more.",
-    blurb: "Lists built around who the buyer is rather than what the business does. Not on sale yet; ready-made business lists include the business, not a named decision maker, so request a custom list to target a role.",
+    blurb: "Lists built around who the buyer is rather than what the business does. Yes, we sell these; request a custom list to target a role.",
     children: [
       up("ceos", "CEO Email Lists", "Chief executives", "Email contacts for chief executives of businesses in an industry or place."),
       up("founders", "Founder Email Lists", "Company founders", "Email contacts for founders, often the buyer in small businesses."),
@@ -71,7 +71,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "job-function-lists", name: "Job Function Lists", menuName: "Job Function Lists", icon: "users", status: "upcoming",
     short: "Sales, marketing, HR, finance, IT and more.",
-    blurb: "Contacts grouped by the department they work in. Not on sale yet; request a custom list to reach one function in an industry or place.",
+    blurb: "Contacts grouped by the department they work in. Yes, we sell these; request a list for one function in an industry or place.",
     children: [
       up("sales", "Sales Contacts", "Sales teams", "Contacts working in sales."),
       up("marketing", "Marketing Contacts", "Marketing teams", "Contacts working in marketing."),
@@ -86,7 +86,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "management-levels", name: "Management Levels", menuName: "Management Levels", icon: "users", status: "upcoming",
     short: "C-suite, directors and managers.",
-    blurb: "Lists built around seniority rather than job title. Not on sale yet; request a custom list to reach one management level in an industry or place.",
+    blurb: "Lists built around seniority rather than job title. Yes, we sell these; request a list for one management level in an industry or place.",
     children: [
       up("c-suite", "C-Suite Contacts", "Chief executives and officers", "Email contacts at chief-officer level."),
       up("vice-presidents", "VP Contacts", "Vice presidents", "Email contacts at vice-president level."),
@@ -162,7 +162,7 @@ export const taxonomyPaths = (tax: TaxGroup[] = TAXONOMY) => tax.filter((g) => g
 export const STATUS_LABEL: Record<TaxStatus, string> = { available: "Available", upcoming: "Upcoming" };
 
 export const COMPLIANCE_NOTE: Record<Compliance, { title: string; text: string }> = {
-  consumer: { title: "Consumer data is not sold today", text: "BeigeLeads currently provides business contact data only. Consumer contact data needs a lawful basis and often consent, and the rules differ by country and state, so none is offered until we can source and sell it lawfully." },
+  consumer: { title: "Consumer data rules apply", text: "Yes, we sell consumer data. It often needs consent, and the rules differ by country and state, so follow them where you operate." },
   whatsapp: { title: "A phone number is not permission to message on WhatsApp", text: "WhatsApp's rules and many countries' laws require opt-in before marketing messages. Our lists are for lawful use under our lawful-use policy, and you are responsible for following the rules where you operate." },
   phone: { title: "Calling and texting rules apply", text: "Rules for calling and texting businesses differ by country, and mobile numbers are usually treated more strictly than landlines. Check the rules where you operate before you contact anyone. Our lawful-use policy applies to every list." },
 };
@@ -174,7 +174,7 @@ export function nodeFaqs(name: string, status: TaxStatus, compliance?: Complianc
     [`Can I see a sample before paying?`, `Every ready-made list page shows a masked sample, and you can request a free sample by email. Request one for any list on this page.`],
   ];
   if (compliance === "whatsapp") out.push([`Does having a phone number mean I can message it on WhatsApp?`, `Not by itself. Yes, we do sell WhatsApp number lists, and marketing on WhatsApp generally needs the recipient's opt-in, so follow WhatsApp's rules and your local law when you message.`]);
-  else if (compliance === "consumer") out.push([`Why are consumer lists not sold?`, `Consumer contact data is regulated differently from business data and often needs consent. BeigeLeads sells business contact data only until a lawful approach is in place.`]);
+  else if (compliance === "consumer") out.push([`Do consumer lists have special rules?`, `Yes, we sell them. Consumer contact data is regulated differently from business data and often needs consent, so follow the rules where you operate.`]);
   else if (compliance === "phone") out.push([`Are there rules for calling or texting these contacts?`, `Yes. They differ by country and by number type. You are responsible for following them, and our lawful-use policy applies to every list.`]);
   else out.push([`How is the data checked?`, `Emails are checked with in-house SMTP tests and every list is re-verified every 60 days. See the verification page for the full process.`]);
   return out;

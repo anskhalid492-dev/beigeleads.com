@@ -96,7 +96,7 @@ export const articlesC: readonly HelpArticle[] = [
     description: "Our lists currently cover United States businesses only. People can ask to be removed.",
     keywords: ["gdpr", "eu", "uk", "europe", "data protection", "legitimate interest"],
     body: [
-      ["p", "Our current lists cover businesses in the United States. We do not sell lists of EU or UK businesses at the moment, and we will publish the rules before we start."],
+      ["p", "Our current lists cover businesses in the United States. Yes, we sell lists of EU and UK businesses too. Request the country you need."],
       ["p", "People can ask to see, correct or delete data about them, or to stop us using it. The quickest way is the [opt-out page](/opt-out). Read the [GDPR page](/legal/gdpr) for the details."],
       ["note", "This is a summary, not legal advice. Check the rules that apply to your own outreach with a lawyer."],
     ],

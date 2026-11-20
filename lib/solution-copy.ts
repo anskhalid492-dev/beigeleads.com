@@ -343,7 +343,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       "Find local businesses to pitch for sponsorships. Restaurant and ski shop contacts with email, phone and website. No influencer or social handle data.",
     h1: "Local business contacts for creators who want sponsors close to home",
     lede:
-      "Creators and influencer agencies often pitch national brands and ignore the local businesses that would pay for a nearby audience. These lists give you restaurants and ski shops to approach, with email, phone and website. We do not sell influencer lists.",
+      "Creators and influencer agencies often pitch national brands and ignore the local businesses that would pay for a nearby audience. These lists give you restaurants and ski shops to approach, with email, phone and website. Influencer lists are available on request.",
     challenge: {
       heading: "Local sponsors exist, but you have to find them first",
       paragraphs: [

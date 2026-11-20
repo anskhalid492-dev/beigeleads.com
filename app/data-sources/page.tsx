@@ -47,7 +47,7 @@ export default function DataSourcesPage() {
           className="pointer-events-none absolute inset-0"
           style={{ background: "radial-gradient(60% 60% at 85% 20%, rgba(143,208,169,0.18), transparent 70%)" }}
         />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:pb-28 lg:pt-24">
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-32 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:pb-28 lg:pt-44">
           <div>
             <h1 className="display text-6xl text-sand-50 sm:text-7xl lg:text-8xl">Every record has a paper trail.</h1>
             <p className="mt-6 max-w-xl text-lg text-sand-200">

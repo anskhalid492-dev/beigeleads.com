@@ -101,13 +101,13 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
       <section id="databases" className="scroll-mt-28 py-12 sm:py-14"><div className={wrap}>
         {products.length > 0 ? (
           <>
-            <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{status === "upcoming" && !ruled?.length ? "Ready-Made Databases You Can Buy Today" : `${node.name}: Ready-Made Databases`}</h2>
-            <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} ready-made databases. Each has a masked sample, its fields and packages.` : "Each database has its own page with a masked sample, the fields it includes and packages."}{!live && " Some are previews that are not for sale yet."}</p>
+            <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{`${node.name}: Ready-Made Databases`}</h2>
+            <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} ready-made databases. Each has a masked sample, its fields and packages.` : "Each database has its own page with a masked sample, the fields it includes and packages."}</p>
             <div className="mt-8 space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
             {scoped.length > products.length && <p className="mt-6"><Link href="/lists#databases" className={ghost}>Browse every ready-made list</Link></p>}
           </>
         ) : (
-          <StatusPanel title={country ? `No ${title.toLowerCase()} database is recorded yet` : `Browse ${title}`} text={country ? `We sell national lists and no inventory is recorded for ${country.name} in this category yet.` : "No ready-made database exists for this category today, so nothing here can be bought. Browse the lists we do have, or tell us what you need."}>
+          <StatusPanel title={country ? `Request ${title.toLowerCase()} for this place` : `Browse ${title}`} text={country ? `Yes, we sell these. Tell us what you need for ${country.name} and we will build it.` : "Yes, we sell this. Browse the ready-made lists, or tell us what you need and we will build it."}>
             <div className="mt-5 flex flex-wrap gap-3"><Link href="/lists#databases" className={cta}>Browse ready-made lists</Link><Link href={custom} className={ghost}>Ask for a custom list</Link></div>
           </StatusPanel>
         )}

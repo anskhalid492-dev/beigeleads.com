@@ -79,8 +79,8 @@ const dbCards = [
   { name: "Industry databases", text: "Dentists and other industries, with more added list by list.", href: "/lists/dentists", badge: <DbBadge category="dentists" size="lg" /> },
   { name: "Local business databases", text: "Restaurants, cafes and bars, sorted by city.", href: "/lists/restaurants", badge: <DbBadge category="restaurants" size="lg" /> },
   { name: "E-commerce and retail databases", text: "Ski shops today, with other retail niches on request.", href: "/lists/ski-shops", badge: <DbBadge category="ski-shops" size="lg" /> },
-  { name: "Professional databases", text: "Not available yet. Tell us what you need and we will say whether we can build it.", href: "/request-category", badge: <DbBadge category="finance" size="lg" /> },
-  { name: "Creator databases", text: "Not available yet. Request it and we will say honestly whether we can source it.", href: "/request-category", badge: <DbBadge category="technology" size="lg" /> },
+  { name: "Professional databases", text: "Yes, we build professional databases. Tell us the profession and region you need and we will quote it.", href: "/request-category", badge: <DbBadge category="finance" size="lg" /> },
+  { name: "Creator databases", text: "Yes, we build creator databases. Request the platform and niche you need and we will quote it.", href: "/request-category", badge: <DbBadge category="technology" size="lg" /> },
 ] as const;
 
 const faq = [
@@ -372,7 +372,7 @@ export default function VerificationPage() {
         <div className={wrap}>
           <div className="reveal mx-auto max-w-3xl text-center">
             <h2 className={h2}>Explore our databases</h2>
-            <p className="mt-4 text-lg">The other categories show where we are heading, and we say clearly which are not available yet.</p>
+            <p className="mt-4 text-lg">Every category is open: browse ready-made databases or request a custom one.</p>
           </div>
           <ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {dbCards.map((c) => (
