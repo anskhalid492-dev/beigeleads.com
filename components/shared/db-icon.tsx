@@ -129,7 +129,13 @@ const flags: Record<string, () => React.ReactNode> = {
 
 export function Flag({ code, className = "h-4 w-6" }: { code: string; className?: string }) {
   const f = flags[code.toUpperCase()];
-  if (!f) return <Globe className={className} aria-hidden />;
+  if (!f) {
+    const c = code.trim().toLowerCase();
+    if (!/^[a-z]{2}$/.test(c)) return <Globe className={className} aria-hidden />;
+    // Every other country: its own flag file (flag-icons, MIT), static in /public/flags/c.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`/flags/c/${c}.svg`} alt={`${code.toUpperCase()} flag`} loading="lazy" className={`${className} inline-block shrink-0 rounded-[2px] object-cover`} />;
+  }
   return <span className={`inline-block shrink-0 ${className}`}>{f()}</span>;
 }
 

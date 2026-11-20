@@ -35,8 +35,11 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
   const compliance = child?.compliance ?? group.compliance;
   const copy = GROUP_COPY[group.slug] ?? fallbackCopy(group.name);
   const mapped = node.productSlugs ?? [];
-  const pool = mapped.length ? allProducts.filter((p) => mapped.includes(p.slug)) : allProducts;
-  const products = country ? pool.filter((p) => p.countrySlug === country.slug) : pool;
+  const mappedPool = mapped.length ? allProducts.filter((p) => mapped.includes(p.slug)) : [];
+  const pool = mappedPool.length ? mappedPool : allProducts; // stale mapping (renamed slugs) falls back to every real product
+  const scoped = country ? pool.filter((p) => p.countrySlug === country.slug) : pool;
+  const rank = (p: ShopProduct) => Number(p.status === "live") * 2 + Number(p.recordCount != null);
+  const products = [...scoped].sort((a, b) => rank(b) - rank(a)).slice(0, 12); // the full catalog lives on /lists
   const base = `/lists/${group.slug}`;
   const path = `${base}${child ? `/${child.slug}` : ""}${country ? `/${country.slug}` : ""}`;
   const title = country ? `${child?.name ?? group.name} in ${country.name}` : node.name;
@@ -49,9 +52,9 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
   const slugs = products.map((p) => p.slug);
   const rows = (realSamples(slugs)?.rows ?? []).slice(0, 5); // real, masked rows only
   const sheet = sheetRows(slugs);
-  const countries = [...new Map(products.map((p) => [p.countrySlug, p])).values()];
-  const inds = [...new Map(products.filter((p) => p.scope !== "city" && p.categorySlug !== "business").map((p) => [p.categorySlug, p])).values()];
-  const cities = products.filter((p) => p.scope === "city");
+  const countries = [...new Map(scoped.map((p) => [p.countrySlug, p])).values()];
+  const inds = [...new Map(scoped.filter((p) => p.scope !== "city" && p.categorySlug !== "business").map((p) => [p.categorySlug, p])).values()];
+  const cities = scoped.filter((p) => p.scope === "city");
   const others = tax.filter((g) => g.slug !== group.slug && g.published !== false && g.menuVisible !== false);
   const primary = products.length ? { label: "Browse ready-made databases", href: "#databases" } : { label: "Browse all ready-made lists", href: "/lists#databases" };
   const faqs = nodeFaqs(title, status, compliance);
@@ -99,6 +102,7 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
             <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{status === "upcoming" ? "Ready-Made Databases You Can Buy Today" : `${node.name}: Ready-Made Databases`}</h2>
             <p className="mt-3 max-w-[60ch]">{status === "upcoming" ? `${title} is not on sale yet. These are the real ready-made business databases available now.` : "Each database has its own page with a masked sample, the fields it includes and packages."}{!live && " Some are previews that are not for sale yet."}</p>
             <div className="mt-8 space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
+            {scoped.length > products.length && <p className="mt-6"><Link href="/lists#databases" className={ghost}>Browse every ready-made list</Link></p>}
           </>
         ) : (
           <StatusPanel title={country ? `No ${title.toLowerCase()} database is recorded yet` : `${title} is not on sale yet`} text={country ? `We sell national lists and no inventory is recorded for ${country.name} in this category yet.` : "No ready-made database exists for this category today, so nothing here can be bought. Browse the lists we do have, or tell us what you need."}>

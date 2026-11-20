@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CalendarClock, Globe2, Layers, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DbBadge, Flag } from "@/components/shared/db-icon";
+import { DbBadge, Flag, StateFlag } from "@/components/shared/db-icon";
+import { usState } from "@/lib/us-states";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { getCity, type Category, type Country, type Product } from "@/lib/catalog";
 import type { ProductSampleRow } from "@/lib/sample-data";
@@ -91,7 +92,7 @@ export function ProductHero({
         <div>
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <DbBadge category={category.slug} country={country.code} size="lg" />
-            <span className="inline-flex items-center gap-2 rounded-full border border-sand-300 bg-sand-50 px-4 py-1.5 text-sm font-semibold text-forest-900"><Flag code={country.code} /> {coverage}</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-sand-300 bg-sand-50 px-4 py-1.5 text-sm font-semibold text-forest-900">{product.region && country.code === "US" && usState(product.region) ? <StateFlag name={product.region} /> : <Flag code={country.code} />} {coverage}</span>
             <span className="inline-flex items-center rounded-full bg-purple-100 px-3 py-1.5 text-sm font-semibold text-forest-900">One-time purchase</span>
           </div>
           <h1 className="display text-5xl text-forest-900 sm:text-6xl xl:text-[4.4rem]">{product.name}
