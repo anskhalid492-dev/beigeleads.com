@@ -12,6 +12,8 @@ export default async function BeigePilotOverview() {
   await guardAdmin();
   const env = getCloudflareContext().env;
   const [{ ready, s }, provs, today, month] = await Promise.all([getSettings(env), listProviders(env), usageToday(env), usageMonth(env)]);
+  let lastErr: { at: number; reason: string } | null = null;
+  try { lastErr = await env.CACHE.get("beigepilot:lasterr", "json"); } catch { /* optional */ }
   const active = provs.find((p) => p.id === s.active);
   const live = ready && s.enabled && !!active?.hasKey && !!active.model;
   return (
@@ -20,6 +22,7 @@ export default async function BeigePilotOverview() {
       <BpNav here="/admin/beigepilot" />
       {!ready && <p className="mb-5 max-w-3xl rounded-xl bg-amber-100 px-4 py-3 text-sm text-amber-900">Run migration 0037 in D1 (3 statements, one at a time). Until then BeigePilot is off.</p>}
       {!env.BEIGEPILOT_KEY_SECRET && <p className="mb-5 max-w-3xl rounded-xl bg-amber-100 px-4 py-3 text-sm text-amber-900">The secret <code>BEIGEPILOT_KEY_SECRET</code> is not set in Cloudflare. Provider keys cannot be saved without it.</p>}
+      {lastErr && <p className="mb-5 max-w-3xl rounded-xl bg-red-50 px-4 py-3 text-sm text-red-900"><strong>Last visitor chat failure</strong> ({new Date(lastErr.at).toLocaleString("en-US")}): {lastErr.reason}</p>}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Status" value={live ? "Live" : "Off"} hint={live ? "Visitors see the chat widget." : "Not shown to visitors."} />
         <StatCard label="Active provider" value={active ? PROVIDER_LABEL[active.id] : "None"} hint={active?.model || "Choose one in AI Providers."} />
