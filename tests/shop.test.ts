@@ -77,7 +77,7 @@ describe("shop filters", () => {
     expect(isFiltered(f({ type: "b2c" }))).toBe(true);
   });
   it("catalog products convert without leaking placeholders", () => {
-    expect(getProducts().every((p) => p.placeholderData)).toBe(true);
+    expect(getProducts().filter((p) => p.countrySlug === "united-states").every((p) => p.placeholderData)).toBe(true);
   });
   it("cleans the featured slug list", () => {
     expect(parseSlugList("Dentists, restaurants,, dentists, bad slug!")).toEqual(["dentists", "restaurants"]);

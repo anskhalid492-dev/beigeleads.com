@@ -137,12 +137,15 @@ const countries: readonly Country[] = [
   { slug: "germany", code: "DE", name: "Germany" },
 ];
 
-const DE_CITIES: readonly [string, string][] = [["berlin", "Berlin"], ["hamburg", "Hamburg"], ["munich", "Munich"], ["frankfurt", "Frankfurt"], ["cologne", "Cologne"], ["stuttgart", "Stuttgart"], ["dusseldorf", "Düsseldorf"], ["leipzig", "Leipzig"]];
+// Owner data (20 Nov 2026): full Germany 4,000,000 records, Berlin 200,000+ (entered as 200,000), last updated 2026-10-31.
+// Other German cities are added only when the owner supplies their data. [slug, name, records]
+const DE_CITIES: readonly [string, string, number][] = [["berlin", "Berlin", 200_000]];
+const DE_VERIFIED = "2026-10-31";
 
 const cities: readonly City[] = [
   { slug: "denver", name: "Denver", countrySlug: "united-states" },
   { slug: "chicago", name: "Chicago", countrySlug: "united-states" },
-  ...DE_CITIES.map(([slug, name]) => ({ slug, name, countrySlug: "germany" })),
+  ...DE_CITIES.map(([slug, name, records]) => ({ slug, name, countrySlug: "germany" })),
 ];
 
 // PLACEHOLDER DATA (owner-approved for development, Nov 2026): 100,000 records, accuracy 95%,
@@ -173,23 +176,22 @@ const usProducts: readonly Product[] = categories.filter((c) => c.kind !== "gene
   fields: FIELDS,
 }));
 
-// Germany (owner confirmed 20 Nov 2026 that German data exists). COUNTS ARE NOT ENTERED YET: recordCount is null
-// until the owner supplies real numbers; status stays draft and placeholderData true (TODO-BEFORE-LAUNCH.md).
+// Germany (owner data, 20 Nov 2026). No accuracy figure: no measurement method exists. Prices are the owner's reference packages.
 const deFull: Product = {
   slug: "germany-business-email-database",
   categorySlug: "business", countrySlug: "germany", scope: "country",
   title: "Business contacts in Germany",
   name: "Germany Business Email Database",
   description: "Business contact details for companies across Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.",
-  recordCount: null, lastVerified: null, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: true, status: "draft", fields: FIELDS,
+  recordCount: 4_000_000, lastVerified: DE_VERIFIED, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live", fields: FIELDS,
 };
-const deCityProducts: readonly Product[] = DE_CITIES.map(([slug, name]) => ({
+const deCityProducts: readonly Product[] = DE_CITIES.map(([slug, name, records]) => ({
   slug: `${slug}-business-email-list`,
   categorySlug: "business", countrySlug: "germany", scope: "city" as const, citySlug: slug,
   title: `Business contacts in ${name}, Germany`,
   name: `${name} Business Email List`,
   description: `Business contact details for companies in ${name}, Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.`,
-  recordCount: null, lastVerified: null, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: true, status: "draft" as const, fields: FIELDS,
+  recordCount: records, lastVerified: DE_VERIFIED, accuracyPct: null, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live" as const, fields: FIELDS,
 }));
 const products: readonly Product[] = [...usProducts, deFull, ...deCityProducts];
 
