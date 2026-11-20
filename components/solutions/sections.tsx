@@ -200,7 +200,7 @@ export function RecommendedDatabases({ s, heading = "Recommended databases" }: {
             return (
               <li key={p!.slug} className="flex w-full flex-col overflow-hidden rounded-3xl border border-sand-300 bg-sand-100 transition-shadow hover:shadow-[0_25px_50px_-30px_rgba(15,42,29,0.6)] md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
                 <div className="flex items-center justify-between bg-forest-900 px-6 py-5">
-                  <DbBadge category={p!.categorySlug} country={getCountry(p!.countrySlug)?.code} size="md" tone="dark" />
+                  <DbBadge category={p!.categorySlug} hint={p!.name} country={getCountry(p!.countrySlug)?.code} size="md" tone="dark" />
                   <span className="rounded-full bg-forest-100 px-3 py-1 text-xs font-semibold text-forest-900">CSV · Excel · TXT</span>
                 </div>
                 <div className="flex flex-1 flex-col p-6">

@@ -39,7 +39,7 @@ export function DatabaseRow({ p }: { p: ShopProduct }) {
   return (
     <div className="group grid gap-5 rounded-[1.6rem] border border-sand-300 bg-white p-5 transition duration-200 hover:border-forest-500 hover:shadow-[0_18px_36px_-24px_rgba(15,42,29,.55)] motion-reduce:transition-none md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6">
       <div className="flex items-start gap-4">
-        <DbBadge category={p.categorySlug} country={p.countryCode} size="lg" />
+        <DbBadge category={p.categorySlug} hint={p.name} country={p.countryCode} size="lg" />
         <div className="min-w-0">
           <h3 className="display text-[1.7rem] leading-[1.05] text-forest-900">{p.name}</h3>
           <p className="mt-1 flex items-center gap-1.5 text-sm"><Flag code={p.countryCode} className="h-3 w-[18px]" />{p.countryName}</p>

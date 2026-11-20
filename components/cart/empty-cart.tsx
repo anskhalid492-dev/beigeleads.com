@@ -72,7 +72,7 @@ function RecCard({ s }: { s: Suggestion }) {
   return (
     <article className="group flex h-full flex-col rounded-3xl border border-sand-200 bg-white p-5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-26px_rgba(15,42,29,0.5)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <div className="flex items-center gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-forest-900 text-forest-300"><IndustryIcon slug={s.categorySlug} className="size-6" /></span>
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-forest-900 text-forest-300"><IndustryIcon slug={s.categorySlug} hint={s.name} className="size-6" /></span>
         <h3 className="min-w-0 text-lg font-bold leading-snug text-forest-900"><Link href={`/lists/${s.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{s.name}</Link></h3>
       </div>
       <p className="mt-3 flex items-center gap-2 text-sm">{s.countryCode && <Flag code={s.countryCode} />}{s.coverage}</p>

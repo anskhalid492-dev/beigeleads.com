@@ -320,7 +320,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
   return (
     <article className="rounded-3xl border border-sand-200 bg-white p-5 transition-shadow duration-200 hover:shadow-[0_18px_40px_-30px_rgba(15,42,29,0.5)] sm:p-6">
       <div className="flex gap-4">
-        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-forest-900 text-forest-300"><IndustryIcon slug={l.categorySlug} className="size-7" /></span>
+        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-forest-900 text-forest-300"><IndustryIcon slug={l.categorySlug} hint={l.name} className="size-7" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
             <h3 className="text-lg font-bold leading-snug text-forest-900"><Link href={`/lists/${l.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{l.name}</Link></h3>
@@ -384,7 +384,7 @@ function Reach({ items, count }: { items: Suggestion[]; count: number }) {
       <ul className="mt-4 space-y-3">
         {items.map((s, i) => (
           <li key={s.slug} className="cart-in flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-sand-200 bg-sand-50 p-4 transition-colors duration-200 hover:bg-white" style={{ "--i": i } as React.CSSProperties}>
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-forest-900 text-forest-300"><IndustryIcon slug={s.categorySlug} className="size-5" /></span>
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-forest-900 text-forest-300"><IndustryIcon slug={s.categorySlug} hint={s.name} className="size-5" /></span>
             <div className="min-w-0 flex-1 basis-48">
               <p className="font-bold leading-snug text-forest-900"><Link href={`/lists/${s.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{s.name}</Link></p>
               <p className="mt-0.5 flex items-center gap-1.5 text-xs">{s.countryCode && <Flag code={s.countryCode} className="h-3 w-4" />}{s.coverage}{s.reason && <> · {s.reason}</>}</p>

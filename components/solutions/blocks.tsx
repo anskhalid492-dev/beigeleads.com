@@ -174,7 +174,7 @@ export function ListsPanel({ s }: { s: Solution }) {
         {prods.map((p) => (
           <li key={p.slug} className="flex w-full flex-col rounded-2xl md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.85rem)] border border-sand-200 bg-sand-50 p-6 transition-shadow hover:shadow-md">
             <div className="flex items-center gap-3">
-              <DbBadge category={p.categorySlug} country={getCountry(p.countrySlug)?.code} />
+              <DbBadge category={p.categorySlug} hint={p.name} country={getCountry(p.countrySlug)?.code} />
               <h3 className="text-lg font-bold leading-tight text-forest-900">{p.name}</h3>
             </div>
             <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">

@@ -53,20 +53,22 @@ const industry: Record<string, { Icon: IconCmp; label: string }> = {
 
 /** Most related icon for categories that have no entry above: first keyword rule that matches the category slug wins. */
 const KEYWORD_ICONS: [RegExp, IconCmp][] = [
-  [/dentist|dental|orthodont/, Tooth], [/dermat|cosmetic|beauty|salon|spa|skin/, Scissors], [/ophthalm|optom|eye/, Eye], [/psycholog|psychiat|therap|mental|social-worker|counsel/, Brain],
-  [/cardio|heart/, Heart], [/orthop|chiropract|physical|physio|bone/, Bone], [/pediatric|obstet|gyneco|midwi|maternity|baby/, Baby], [/pharma|drug/, Pill], [/surgeon|surgery|urolog|endocrin|acupunct|medical|clinic|doctor|physician|nurs|health|hospital|veterinar|vet/, Stethoscope],
-  [/lab|biotech|research|scien/, Microscope], [/real-estate|realtor|property|mortgage|housing|home/, Home], [/construction|contractor|roof|remodel|builder|engineer/, HardHat], [/hvac|plumb|electric|repair|restoration|maintenance/, Wrench],
+  [/whatsapp/, MessageCircle], [/phone number|phone-number|mobile number|telemarket/, Phone], [/cafe|coffee/, Coffee], [/bakery|bakeries/, Croissant], [/gym|fitness cent/, Dumbbell], [/consumer email|consumer-email|consumers?\b/, Users],
+  [/dentist|dental|orthodont/, Tooth], [/dermat|cosmetic|beauty|salon|spas?(?=-|$)|skin/, Scissors], [/ophthalm|optom|eye/, Eye], [/psycholog|psychiat|therap|mental|social-worker|counsel/, Brain],
+  [/cardio|heart/, Heart], [/orthop|chiropract|physical|physio|bone/, Bone], [/pediatric|obstet|gyneco|midwi|maternity|baby/, Baby], [/pharma|drug/, Pill], [/surgeon|surgery|urolog|endocrin|acupunct|medical|clinic|doctor|physician|nurs|health|hospital|veterinar|vets?(?=-|$)/, Stethoscope],
+  [/labs?(?=-|$)|laborator|biotech|research|scien/, Microscope], [/real-estate|realtor|property|mortgage|housing|home/, Home], [/construction|contractor|roof|remodel|builder|engineer/, HardHat], [/hvac|plumb|electric|repair|restoration|maintenance/, Wrench],
   [/crypto|blockchain|bitcoin|nft/, Bitcoin], [/forex|trading|stock|invest|crowdfund|wealth/, TrendingUp], [/bank|loan|credit|debt|financ|insur|account/, Landmark], [/payment|debit|wallet/, Wallet], [/ecom|e-com|shopify|woocommerce|store|retail|wholesale|shop/, ShoppingCart],
   [/pet|animal|dog|cat/, PawPrint], [/media|film|video|production|news|publish/, Film], [/legal|law|attorney|lawyer|court/, Scale], [/transport|logistic|freight|truck|shipping|courier/, Truck], [/travel|tour|airline|flight|aviation/, Plane],
-  [/hotel|hospitality|resort|lodging/, Bed], [/restaurant|food|beverage|pizza|catering|cafe|coffee|bakery|kitchen/, Utensils], [/alcohol|wine|beer|brewer|liquor|bar/, Wine], [/farm|agri|garden|crop|landscap/, Sprout],
-  [/ngo|charity|nonprofit|non-profit|donor|volunteer|foundation/, HeartHandshake], [/gambl|bett|casino|lotter/, Dices], [/game|gaming|esport/, Gamepad2], [/religio|church|faith|mosque/, Church], [/design|art|creative|tattoo|photograph/, Palette],
-  [/saas|software|app|developer|tech|it-|cloud|microsoft|office|google|adobe|salesforce|hubspot|aws/, Code2], [/startup|founder|entrepreneur|owner|small-business/, Rocket], [/ceo|cxo|chief|executive|president|c-level|director|vp|vice/, Crown],
+  [/hotel|hospitality|resort|lodging/, Bed], [/restaurant|food|beverage|pizza|catering|cafe|coffee|bakery|kitchen/, Utensils], [/alcohol|wine|beer|brewer|liquor|bars?(?=-|$)/, Wine], [/farm|agri|garden|crop|landscap/, Sprout],
+  [/ngo|charity|nonprofit|non-profit|donor|volunteer|foundation/, HeartHandshake], [/gambl|bett|casino|lotter/, Dices], [/game|gaming|esport/, Gamepad2], [/religio|church|faith|mosque/, Church], [/design|arts?(?=-|$)|creative|tattoo|photograph/, Palette],
+  [/saas|software|apps?(?=-|$)|developer|tech|it-|cloud|microsoft|office|google|adobe|salesforce|hubspot|aws/, Code2], [/startup|founder|entrepreneur|owner|small-business/, Rocket], [/ceo|cxo|chief|executive|president|c-level|director|vp|vice/, Crown],
   [/fashion|cloth|apparel|jewel|garment/, Shirt], [/phone|mobile|telecom|sms/, Phone], [/whatsapp|messag|chat/, MessageCircle], [/consumer|customer|b2c|households/, Users], [/fitness|gym|yoga|sport|wellness|coach|training/, Dumbbell],
   [/tobacco|vape|smok/, Cigarette], [/weed|marijuana|cannabis|cbd/, Cannabis], [/mlm|network-marketing|money-making|affiliate|marketing|advertis|seo|agenc/, Megaphone], [/dating|love|wedding/, Heart], [/school|universit|college|education|teacher|student|training/, GraduationCap],
-  [/manufactur|factory|industrial|machin|steel|chemical|plastic/, Factory], [/automobile|automotive|car|auto|dealer|vehicle/, Car], [/energy|solar|oil|gas|power|utilit/, Zap], [/recruit|talent|hr|human-resource|staffing|job/, ClipboardList], [/package|packag|supplier|distribut/, Package], [/partner|b2b|business/, Handshake], [/radio|broadcast|telecom/, Radio], [/internet|isp|wifi|broadband/, Wifi], [/laptop|computer|hardware/, Laptop],
+  [/manufactur|factory|industrial|machin|steel|chemical|plastic/, Factory], [/automobile|automotive|cars?(?=-|$)|auto|dealer|vehicle/, Car], [/energy|solar|oil|gas|power|utilit/, Zap], [/recruit|talent|hr|human-resource|staffing|job/, ClipboardList], [/package|packag|supplier|distribut/, Package], [/partner|b2b|business/, Handshake], [/radio|broadcast|telecom/, Radio], [/internet|isp|wifi|broadband/, Wifi], [/laptop|computer|hardware/, Laptop],
 ];
-export function IndustryIcon({ slug, className = "size-5" }: { slug: string; className?: string }) {
-  const hit = industry[slug]?.Icon ?? KEYWORD_ICONS.find(([re]) => re.test(slug))?.[1];
+export function IndustryIcon({ slug, className = "size-5", hint = "" }: { slug: string; className?: string; hint?: string }) {
+  const text = `${slug} ${hint}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const hit = industry[slug]?.Icon ?? KEYWORD_ICONS.find(([re]) => new RegExp(`(?:^|-)(?:${re.source})`).test(text))?.[1];
   const Icon = hit ?? Briefcase;
   return <Icon className={className} aria-hidden />;
 }
@@ -166,8 +168,10 @@ export function DbBadge({
   size = "md",
   tone = "light",
   region,
+  hint,
 }: {
   category: string;
+  hint?: string;
   country?: string;
   region?: string;
   size?: "sm" | "md" | "lg";
@@ -179,7 +183,7 @@ export function DbBadge({
   const colors = tone === "dark" ? "bg-forest-100 text-forest-900" : "bg-forest-900 text-forest-300";
   return (
     <span className={`relative inline-grid shrink-0 place-items-center ${box} ${colors}`}>
-      <IndustryIcon slug={category} className={icon} />
+      <IndustryIcon slug={category} hint={hint} className={icon} />
       {country && (
         <span className="absolute -bottom-1 -right-1.5 rounded-[3px] bg-white p-px shadow-sm ring-1 ring-sand-300">
           {region && country?.toUpperCase() === "US" && usState(region) ? <StateFlag name={region} className={flag} /> : <Flag code={country} className={flag} />}

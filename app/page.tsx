@@ -142,7 +142,7 @@ export default async function Home() {
               const price = startingPriceCents(p);
               return (
                 <li key={p.slug} className={`${card} flex flex-col`}>
-                  <span className="flex items-center gap-3"><DbBadge category={p.categorySlug} country="US" size="lg" /><span><span className="block text-lg font-bold text-forest-900">{p.name}</span><span className="text-sm">{p.title}</span></span></span>
+                  <span className="flex items-center gap-3"><DbBadge category={p.categorySlug} hint={p.name} country="US" size="lg" /><span><span className="block text-lg font-bold text-forest-900">{p.name}</span><span className="text-sm">{p.title}</span></span></span>
                   <p className="mt-4 text-sm">Fields: {p.fields.join(", ")}.</p>
                   <p className="mt-3 text-sm font-medium text-forest-900">
                     {p.recordCount ? `${p.recordCount.toLocaleString("en-US")} records` : null}

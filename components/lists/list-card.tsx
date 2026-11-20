@@ -16,7 +16,7 @@ export function ListCard({ p, view = "grid" }: { p: ShopProduct; view?: "grid" |
   return (
     <li className={`group relative rounded-[1.4rem] border border-sand-300 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-forest-500 hover:shadow-[0_18px_34px_-24px_rgba(15,42,29,.55)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${row ? "flex flex-col gap-5 md:flex-row md:items-center" : "flex flex-col"}`}>
       <div className={`flex items-start gap-4 ${row ? "md:w-[23rem] md:shrink-0" : ""}`}>
-        <DbBadge category={p.categorySlug} country={p.countryCode} region={p.region} size="lg" />
+        <DbBadge category={p.categorySlug} hint={p.name} country={p.countryCode} region={p.region} size="lg" />
         <div className="min-w-0">
           <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-bold text-forest-900">{kind === "city" && p.region && p.scope !== "city" ? "State database" : KIND[kind]}</span>
           <h3 className="display mt-1.5 text-[1.55rem] leading-[1.05] text-forest-900"><Link href={`/lists/${p.slug}`} className="after:absolute after:inset-0 after:rounded-[1.4rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">{p.name}</Link></h3>
