@@ -16,6 +16,8 @@ export type Category = {
   useCases: readonly { name: string; text: string }[];
   /** "general" = all businesses (not one industry). Kept out of industry pickers and menus. */
   kind?: "industry" | "general";
+  /** Created by the WooCommerce import (section 91). It has no category page of its own yet. */
+  imported?: boolean;
 };
 
 export type Country = { slug: string; code: string; name: string };
@@ -42,6 +44,12 @@ export type Product = {
   /** Geographic scope. Default: the whole country. */
   scope?: "country" | "city";
   citySlug?: string;
+  /** Imported from WooCommerce (section 91). Fields, verification date and accuracy are unknown for these lists. */
+  imported?: boolean;
+  /** "business-email" | "consumer-email" | "phone" | "email" (imported lists only). */
+  channel?: string;
+  /** US state for imported state lists. */
+  region?: string;
 };
 
 export type Package = {
@@ -193,7 +201,21 @@ const deCityProducts: readonly Product[] = DE_CITIES.map(([slug, name, records])
   description: `Business contact details for companies in ${name}, Germany: name, address, phone, email and website, with a masked sample you can inspect before you pay.`,
   recordCount: records, lastVerified: DE_VERIFIED, accuracyPct: 95, packages: PLACEHOLDER_PACKAGES, placeholderData: false, status: "live" as const, fields: FIELDS,
 }));
-const products: readonly Product[] = [...usProducts, deFull, ...deCityProducts];
+const staticProducts: readonly Product[] = [...usProducts, deFull, ...deCityProducts];
+const products = staticProducts;
+
+// Imported catalog (section 91). The sync getters below include it once `registerImported` has run for this request/isolate
+// (see lib/catalog-db.ts `hydrateCatalog`). Before that, or when the import tables do not exist, nothing changes.
+let importedProducts: readonly Product[] = [];
+const importedCategories = new Map<string, Category>();
+const importedCountries = new Map<string, Country>();
+export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[] }) {
+  importedProducts = x.products;
+  importedCategories.clear(); importedCountries.clear();
+  for (const c of x.categories) importedCategories.set(c.slug, c);
+  for (const c of x.countries) importedCountries.set(c.slug, c);
+}
+const allProducts = () => (importedProducts.length ? [...staticProducts, ...importedProducts] : staticProducts);
 
 /** Packages a buyer may be offered. A package larger than the list's real record count is never offered.
  *  While a list is still placeholder data the count is unknown, so every configured package is shown (the page says so). */
@@ -208,8 +230,8 @@ export const startingPriceCents = (p: Product) =>
 
 /** Other products to recommend. Same category first (other countries), then the rest. */
 export const getRelatedProducts = (p: Product, limit = 3) =>
-  [...products.filter((x) => x.slug !== p.slug)]
-    .sort((a, b) => Number(b.categorySlug === p.categorySlug) - Number(a.categorySlug === p.categorySlug))
+  [...allProducts().filter((x) => x.slug !== p.slug)]
+    .sort((a, b) => Number(b.categorySlug === p.categorySlug) - Number(a.categorySlug === p.categorySlug) || Number(b.countrySlug === p.countrySlug) - Number(a.countrySlug === p.countrySlug))
     .slice(0, limit);
 
 export type ProductFaq = readonly [question: string, answer: string];
@@ -222,7 +244,9 @@ export function getProductFaqs(p: Product, c: Category, k: Country): ProductFaq[
   const count = p.recordCount === null ? "not counted yet" : `${p.recordCount.toLocaleString("en-US")} records`;
   const verified = p.lastVerified ?? "not verified yet";
   return [
-    [`What information is included in the ${p.name}?`, `Each record can include ${p.fields.map((f) => f.toLowerCase()).join(", ")}. The fields section on this page lists exactly what is in the file.`],
+    [`What information is included in the ${p.name}?`, p.fields.length
+      ? `Each record can include ${p.fields.map((f) => f.toLowerCase()).join(", ")}. The fields section on this page lists exactly what is in the file.`
+      : "The exact columns depend on the list. Request the free sample to see the fields and a masked set of rows before you buy."],
     [`How many ${c.singular.toLowerCase()} contacts are available?`, `The list holds ${count}. The count is shown on this page so you can compare it with the package you pick.`],
     ["Which countries are covered?", `This list covers ${k.name}. Other countries are added list by list, and you can request one on the custom list page.`],
     [`Can I see a sample of the ${p.name}?`, "Yes. This page shows masked sample rows, and you can request a free sample by email. Sample files only ever contain masked data."],
@@ -237,14 +261,14 @@ export function getProductFaqs(p: Product, c: Category, k: Country): ProductFaq[
 }
 
 export const getCategories = () => categories.filter((c) => c.kind !== "general");
-export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
+export const getCategory = (slug: string) => categories.find((c) => c.slug === slug) ?? importedCategories.get(slug);
 export const getCountries = () => countries;
-export const getCountry = (slug: string) => countries.find((c) => c.slug === slug);
+export const getCountry = (slug: string) => countries.find((c) => c.slug === slug) ?? importedCountries.get(slug);
 export const getCities = (countrySlug: string) => cities.filter((c) => c.countrySlug === countrySlug);
 export const getCity = (countrySlug: string, slug: string) =>
   cities.find((c) => c.countrySlug === countrySlug && c.slug === slug);
 export const getProducts = (categorySlug?: string) =>
-  categorySlug ? products.filter((p) => p.categorySlug === categorySlug) : products;
-export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
+  categorySlug ? allProducts().filter((p) => p.categorySlug === categorySlug) : allProducts();
+export const getProduct = (slug: string) => allProducts().find((p) => p.slug === slug);
 export const getProductFor = (categorySlug: string, countrySlug: string) =>
-  products.find((p) => p.categorySlug === categorySlug && p.countrySlug === countrySlug);
+  staticProducts.find((p) => p.categorySlug === categorySlug && p.countrySlug === countrySlug);

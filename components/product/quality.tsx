@@ -7,7 +7,7 @@ export function ProductQuality({ product }: { product: Product }) {
   const contactFields = product.fields.filter((f) => ["Email", "Phone", "Website"].includes(f));
   const rows: [string, React.ReactNode][] = [
     ["Verification", "Email addresses are checked by our own team with SMTP checks."],
-    ["Contact information", contactFields.length ? contactFields.join(", ") : "None"],
+    ["Contact information", contactFields.length ? contactFields.join(", ") : product.fields.length ? "None" : "Request the free sample to see the exact fields."],
     ["Completeness", "Not every business publishes every detail, so some cells can be empty. A per-list completeness figure is published once it is measured."],
     ["Last updated", fmtDate(product.lastVerified) ?? "Not verified yet"],
     ["Data sourcing", <>Public listings, websites, registries, directories, licensed data, surveys and our own research. <Link href="/data-sources" className="font-semibold text-forest-900 underline underline-offset-4">See every source type</Link>.</>],

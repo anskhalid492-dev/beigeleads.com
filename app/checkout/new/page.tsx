@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import type { Metadata } from "next";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { ApiForm } from "@/components/forms/api-form";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Checkout", robots: { index: false, f
 export const dynamic = "force-dynamic";
 
 export default async function NewCheckout(props: PageProps<"/checkout/new">) {
+  await hydrateCatalog();
   const sp = await props.searchParams;
   const pick = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
   const product = getProduct(pick(sp.product));

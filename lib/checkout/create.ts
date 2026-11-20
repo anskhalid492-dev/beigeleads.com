@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { and, eq, gt } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { MAX_CART_ITEMS, priceCart } from "@/lib/cart/model";
@@ -32,6 +33,7 @@ export function testContract(env: CloudflareEnv, optionId: string): string | und
  */
 export async function createOrder(env: CloudflareEnv, input: CreateInput): Promise<string> {
   if (!on(env.CHECKOUT_ENABLED)) throw new CheckoutError("Checkout is not open yet.");
+  await hydrateCatalog(env, true);
   if (input.items.length === 0) throw new CheckoutError("Your cart is empty.");
   if (input.items.length > MAX_CART_ITEMS) throw new CheckoutError(`You can buy up to ${MAX_CART_ITEMS} lists in one order.`);
   const slugs = input.items.map((i) => i.productSlug);

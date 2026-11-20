@@ -61,15 +61,17 @@ export function ProductStats({ product, country, cityCount }: { product: Product
               <p className="mt-1">Last verified. Re-checked every 60 days.</p>
             </div>
           )}
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
-            <Layers3 className="size-6 text-forest-300" aria-hidden />
-            <p className="display mt-5 text-4xl text-sand-50">{product.fields.length} fields</p>
-            <p className="mt-1">{product.fields.join(", ")}.</p>
-          </div>
+          {product.fields.length > 0 && (
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
+              <Layers3 className="size-6 text-forest-300" aria-hidden />
+              <p className="display mt-5 text-4xl text-sand-50">{product.fields.length} fields</p>
+              <p className="mt-1">{product.fields.join(", ")}.</p>
+            </div>
+          )}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
             <MapPinned className="size-6 text-forest-300" aria-hidden />
             <p className="display mt-5 text-4xl text-sand-50">{country.name}</p>
-            <p className="mt-1">{cityCount} city pages.</p>
+            <p className="mt-1">{cityCount > 0 ? `${cityCount} city pages.` : "Coverage area."}</p>
           </div>
         </div>
       </div>

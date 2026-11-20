@@ -1,6 +1,7 @@
 import type { Category, Product } from "@/lib/catalog";
 
 export function ProductAudience({ product, category }: { product: Product; category: Category }) {
+  if (!category.useCases.length) return null; // imported categories have no written use cases yet
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
       <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">

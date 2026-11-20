@@ -1008,3 +1008,66 @@ export const promotionRedemptions = sqliteTable(
   },
   (t) => [uniqueIndex("promotion_redemptions_order_uq").on(t.orderId, t.promotionId), index("promotion_redemptions_promo_idx").on(t.promotionId, t.status)],
 );
+
+// ---- Imported catalog (WooCommerce import, section 91) ----
+export const catalogImports = sqliteTable("catalog_imports", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  source: text("source").notNull().default("woocommerce"),
+  filename: text("filename"),
+  status: text("status").notNull().default("running"),
+  total: integer("total").notNull().default(0),
+  created: integer("created").notNull().default(0),
+  updated: integer("updated").notNull().default(0),
+  skipped: integer("skipped").notNull().default(0),
+  failed: integer("failed").notNull().default(0),
+  note: text("note"),
+  createdAt: createdAt(),
+  finishedAt: integer("finished_at"),
+  rolledBackAt: integer("rolled_back_at"),
+});
+
+export const catalogProducts = sqliteTable(
+  "catalog_products",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    importId: integer("import_id"),
+    sourceId: text("source_id"),
+    slug: text("slug").notNull(),
+    status: text("status", { enum: ["draft", "published", "archived"] }).notNull().default("draft"),
+    name: text("name").notNull(),
+    title: text("title").notNull(),
+    description: text("description").notNull().default(""),
+    originalDescription: text("original_description"),
+    categorySlug: text("category_slug").notNull(),
+    categoryName: text("category_name").notNull(),
+    channel: text("channel").notNull(),
+    grp: text("grp").notNull().default("general"),
+    jobTitle: text("job_title"),
+    countrySlug: text("country_slug").notNull(),
+    countryCode: text("country_code").notNull(),
+    countryName: text("country_name").notNull(),
+    region: text("region"),
+    city: text("city"),
+    restrictedJson: text("restricted_json").notNull().default("[]"),
+    flagsJson: text("flags_json").notNull().default("[]"),
+    recordCount: integer("record_count"),
+    packagesJson: text("packages_json").notNull().default("[]"),
+    seoTitle: text("seo_title"),
+    metaDescription: text("meta_description"),
+    imageUrl: text("image_url"),
+    tagsJson: text("tags_json").notNull().default("[]"),
+    sourceJson: text("source_json").notNull().default("{}"),
+    note: text("note"),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => [uniqueIndex("catalog_products_slug_uq").on(t.slug), uniqueIndex("catalog_products_source_uq").on(t.sourceId), index("catalog_products_import_idx").on(t.importId, t.status)],
+);
+
+export const catalogImportErrors = sqliteTable("catalog_import_errors", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  importId: integer("import_id").notNull(),
+  sourceId: text("source_id"),
+  message: text("message").notNull(),
+  createdAt: createdAt(),
+});

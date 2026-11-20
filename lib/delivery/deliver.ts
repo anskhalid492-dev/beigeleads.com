@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { and, eq, sql } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { notifyOwner, sendEmail } from "@/lib/forms/email";
@@ -55,6 +56,7 @@ export type DeliverResult = "sent" | "already-sent" | "no-link" | "not-paid" | "
  * sending, so two cron runs can never send twice. A failed send is retried by the cron (max 5 attempts).
  */
 export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { force?: boolean } = {}): Promise<DeliverResult> {
+  await hydrateCatalog(env);
   const db = getDbFromEnv(env);
   const [order] = await db.select().from(schema.orders).where(eq(schema.orders.id, orderId));
   if (!order || order.status !== "paid") return "not-paid";

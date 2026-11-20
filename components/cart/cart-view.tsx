@@ -328,7 +328,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
             <p className="display text-3xl leading-none text-forest-900" aria-label={`Price ${formatUsd(l.payCents)}`}>{l.payCents !== l.priceCents && <span className="mr-2 text-lg font-normal text-forest-500 line-through">{formatUsd(l.priceCents)}</span>}<Money cents={l.payCents} /></p>
           </div>
           <p className="mt-1 text-sm">{l.categoryName} · {l.coverage}</p>
-          <p className="mt-2 text-sm"><strong className="text-forest-900">{l.records.toLocaleString("en-US")} contacts</strong> in the {l.packageName} package{l.placeholder ? " (placeholder size)" : ""}</p>
+          <p className="mt-2 text-sm"><strong className="text-forest-900">{l.records > 0 ? `${l.records.toLocaleString("en-US")} contacts` : "Full list"}</strong> in the {l.packageName} package{l.placeholder ? " (placeholder size)" : ""}</p>
         </div>
       </div>
 
@@ -345,7 +345,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
                 <input type="radio" name={grp} value={p.name} checked={p.name === l.packageName} onChange={() => cartActions.setPackage(l.slug, p.name)} className="peer sr-only" />
                 <span className="block rounded-xl border border-sand-300 bg-white px-3 py-2 text-sm transition-[border-color,background-color,box-shadow] duration-150 hover:border-forest-500 peer-checked:border-forest-900 peer-checked:bg-forest-100 peer-checked:shadow-[inset_0_0_0_1px_#0F2A1D] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-purple-600 motion-reduce:transition-none">
                   <span className="block font-bold text-forest-900">{p.name}</span>
-                  <span className="block text-xs">{p.records.toLocaleString("en-US")} contacts</span>
+                  <span className="block text-xs">{p.records > 0 ? `${p.records.toLocaleString("en-US")} contacts` : "Full list"}</span>
                   <span className="block text-sm font-semibold text-forest-900">{formatUsd(p.priceCents)}</span>
                 </span>
               </label>

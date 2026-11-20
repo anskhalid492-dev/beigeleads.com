@@ -22,7 +22,9 @@ export function productOverview(p: Product, c: Category, k: Country) {
   return {
     heading: `About the ${p.name}`,
     paragraphs: [
-      `The ${p.name} is a ready-made ${s} email database for ${withThe(k)}. Each record is one business, with ${fieldText} where the business publishes them. Use it as a ${s} mailing list for cold email outreach, phone campaigns, direct mail or market research, without finding ${c.reachLabel} one by one.`,
+      p.imported
+        ? `The ${p.name} is a ready-made ${p.channel === "phone" ? "phone number list" : p.channel === "consumer-email" ? "consumer email list" : "email list"} for ${withThe(k)}${p.region ? ` (${p.region})` : ""}. ${p.recordCount ? `The largest package holds ${p.recordCount.toLocaleString("en-US")} records. ` : ""}Request the free sample to see the exact fields before you buy.`
+        : `The ${p.name} is a ready-made ${s} email database for ${withThe(k)}. Each record is one business, with ${fieldText} where the business publishes them. Use it as a ${s} mailing list for cold email outreach, phone campaigns, direct mail or market research, without finding ${c.reachLabel} one by one.`,
       `You pay once and keep the file in CSV, Excel or TXT. There is no subscription and no account. Before you buy, check the masked sample on this page or request a free sample by email.`,
     ],
     // Links are written in the component so they stay real routes.

@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { sha256Hex } from "@/lib/forms/hash";
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
   const p = body.safeParse(await req.json().catch(() => null));
   if (!p.success) return json(400, { ok: false, error: "Invalid cart." });
   const { env } = getCloudflareContext();
+  await hydrateCatalog(env);
   const ip = req.headers.get("cf-connecting-ip") ?? "x";
   const who = await sha256Hex(`${env.HASH_SALT ?? ""}:ip:${ip}`);
   if (await isRateLimited(env.CACHE, "cart-price", who, 300, 3600)) return json(429, { ok: false, error: "Too many requests. Try again in a few minutes." });

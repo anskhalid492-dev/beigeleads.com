@@ -66,7 +66,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
     <div className="space-y-6">
       <section aria-label="Order summary" className="rounded-2xl border border-sand-200 bg-white p-5">
         <ul className="space-y-2 text-sm">
-          {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span>{l.name} <span className="text-forest-500">· {l.packageName}, {l.records.toLocaleString("en-US")} records</span></span><span className="font-semibold text-forest-900">{formatUsd(l.payCents)}</span></li>)}
+          {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span>{l.name} <span className="text-forest-500">· {l.packageName}{l.records > 0 ? `, ${l.records.toLocaleString("en-US")} records` : ""}</span></span><span className="font-semibold text-forest-900">{formatUsd(l.payCents)}</span></li>)}
         </ul>
         {pricing.applied.length > 0 && (
           <dl className="mt-4 space-y-1 border-t border-sand-200 pt-4 text-sm">

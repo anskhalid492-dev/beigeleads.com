@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { ApiForm } from "@/components/forms/api-form";
 import { optionForWallet } from "@/lib/payments/options";
 import type { Metadata } from "next";
@@ -16,6 +17,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]">) {
   const { orderId } = await props.params;
+  await hydrateCatalog();
   if (!UUID.test(orderId)) notFound();
   const db = getDb();
   const [order] = await db.select().from(schema.orders).where(eq(schema.orders.id, orderId));
@@ -41,7 +43,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
       <ul aria-label="Lists in this order" className="mt-3 space-y-1.5 rounded-2xl border border-sand-200 bg-white p-4 text-sm">
         {items.map((it) => (
           <li key={it.id} className="flex flex-wrap items-baseline justify-between gap-x-4">
-            <span className="font-semibold text-forest-900">{getProduct(it.productSlug)?.name ?? it.productSlug} <span className="font-normal">· {it.packageName} package, {it.records.toLocaleString("en-US")} records</span></span>
+            <span className="font-semibold text-forest-900">{getProduct(it.productSlug)?.name ?? it.productSlug} <span className="font-normal">· {it.packageName} package{it.records > 0 ? `, ${it.records.toLocaleString("en-US")} records` : ""}</span></span>
             <span>{formatUsd(it.priceUsdCents)}</span>
           </li>
         ))}

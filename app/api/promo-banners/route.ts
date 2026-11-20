@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getProduct } from "@/lib/catalog";
 import { bannerFor, getPublicPromos, type PlaceName } from "@/lib/promos/public";
@@ -13,6 +14,7 @@ export async function GET(req: Request) {
   if (!PLACES.has(place)) return new Response(JSON.stringify({ banner: null }), { status: 400, headers });
   const p = place === "product" ? getProduct(slug) : undefined;
   const { env } = getCloudflareContext();
+  await hydrateCatalog(env);
   const banner = bannerFor(await getPublicPromos(env), place as PlaceName, p ? { slug: p.slug, categorySlug: p.categorySlug } : undefined);
   return new Response(JSON.stringify({ banner }), { headers });
 }

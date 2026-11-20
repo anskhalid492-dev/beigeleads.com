@@ -7,6 +7,7 @@ export function ProductFields({ product }: { product: Product }) {
     .map((g) => ({ g, items: product.fields.filter((f) => fieldMeta[f]?.group === g) }))
     .filter((x) => x.items.length);
   const other = product.fields.filter((f) => !fieldMeta[f]);
+  if (!product.fields.length) return null; // imported lists: the exact fields are unknown, so none are claimed
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
       <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">What data fields are in the {product.name}?</h2>

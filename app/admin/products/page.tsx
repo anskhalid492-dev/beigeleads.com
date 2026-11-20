@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, Empty, PageHeader, Panel, usd } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/require-admin";
@@ -13,7 +14,7 @@ export default async function ProductsPage() {
   const products = getProducts();
   return (
     <>
-      <PageHeader title="Products" text="The catalog lives in code (lib/catalog.ts), so products are read-only here. Changes to names, counts and prices are made in code and deployed. Delivery links are managed on the Delivery Links page." />
+      <PageHeader title="Products" actions={<span className="flex gap-4 text-sm"><Link href="/admin/products/import" className="underline">Import products</Link><Link href="/admin/products/imported" className="underline">Imported products</Link></span>} text="The catalog lives in code (lib/catalog.ts), so products are read-only here. Changes to names, counts and prices are made in code and deployed. Delivery links are managed on the Delivery Links page." />
       <Panel>
         {products.length === 0 ? <Empty title="No products yet" /> : (
           <div className="overflow-x-auto">

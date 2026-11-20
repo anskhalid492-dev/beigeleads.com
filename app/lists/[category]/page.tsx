@@ -1,3 +1,4 @@
+import { hydrateCatalog } from "@/lib/catalog-db";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCategory, getCountries, getProduct } from "@/lib/catalog";
@@ -15,13 +16,14 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/lists/[category]">): Promise<Metadata> {
   const { category } = await props.params;
+  await hydrateCatalog();
   if (getProduct(category)) return productMetadata(category);
   const flat = countryFromFlat(category);
   if (flat) return geoShopMetadata(flat, "main");
   const tax = await resolveTax(category);
   if (tax) return taxMetadata(tax);
   const c = getCategory(category);
-  if (!c) return {};
+  if (!c || c.imported) return {};
   return {
     title: `${c.name} contact lists`,
     description: `${c.description} See a masked sample first, then pay once and download the file.`,
@@ -31,13 +33,14 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
 
 export default async function CategoryPage(props: PageProps<"/lists/[category]">) {
   const { category } = await props.params;
+  await hydrateCatalog();
   if (getProduct(category)) return <ProductPageView slug={category} />;
   const flat = countryFromFlat(category);
   if (flat) return <GeoShopPage country={flat} products={(await loadListsData()).products} />;
   const tax = await resolveTax(category);
   if (tax) return <TaxonomyPage {...tax} products={(await loadListsData()).products} industries={taxIndustries()} />;
   const c = getCategory(category);
-  if (!c) notFound();
+  if (!c || c.imported) notFound(); // imported categories get their own pages in a later phase
 
   const countries = getCountries();
 

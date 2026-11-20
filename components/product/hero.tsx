@@ -61,13 +61,13 @@ export function ProductHero({
   const general = category.kind === "general";
   const stats = [
     { label: "Records", value: fmtNum(product.recordCount) ?? "Count to be confirmed" },
-    { label: "Data fields", value: String(product.fields.length) },
+    ...(product.fields.length ? [{ label: "Data fields", value: String(product.fields.length) }] : []),
     { label: "File formats", value: "CSV, Excel, TXT", one: true },
   ];
   const facts = [
     { icon: Globe2, label: "Coverage", value: coverage },
     { icon: Layers, label: "Industry", value: general ? "All industries" : category.name },
-    { icon: Mail, label: "Email", value: hasEmail ? "Included" : "Not included" },
+    ...(product.fields.length ? [{ icon: Mail, label: "Email", value: hasEmail ? "Included" : "Not included" }] : []),
     { icon: CalendarClock, label: "Last updated", value: fmtDate(product.lastVerified) ?? "Not verified yet" },
   ];
   return (
