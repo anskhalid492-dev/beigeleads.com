@@ -1,6 +1,6 @@
 import { hydrateCatalog } from "@/lib/catalog-db";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getCategory, getCountries, getProduct } from "@/lib/catalog";
 import { ProductPageView, productMetadata } from "@/components/product/product-page";
 import { getDb } from "@/lib/db";
@@ -18,7 +18,9 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(props: PageProps<"/lists/[category]">): Promise<Metadata> {
   const { category } = await props.params;
   await hydrateCatalog();
-  if (getProduct(category)) return productMetadata(category);
+  const found = getProduct(category);
+  if (found && found.slug !== category) return {};
+  if (found) return productMetadata(category);
   const flat = countryFromFlat(category);
   if (flat) return geoShopMetadata(flat, "main");
   const tax = await resolveTax(category);
@@ -35,7 +37,9 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
 export default async function CategoryPage(props: PageProps<"/lists/[category]">) {
   const { category } = await props.params;
   await hydrateCatalog();
-  if (getProduct(category)) return <ProductPageView slug={category} />;
+  const found = getProduct(category);
+  if (found && found.slug !== category) permanentRedirect(`/lists/${found.slug}`); // old slug of a renamed product
+  if (found) return <ProductPageView slug={category} />;
   const flat = countryFromFlat(category);
   if (flat) return <GeoShopPage country={flat} products={(await loadListsData()).products} />;
   const tax = await resolveTax(category);

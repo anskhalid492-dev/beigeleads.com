@@ -11,7 +11,7 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
-import { createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
+import { applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
 import { maskRows } from "@/lib/product-samples";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { getStaticProducts } from "@/lib/catalog";
@@ -137,6 +137,23 @@ describe("catalog import", () => {
     expect(r).toEqual({ saved: 1, unknown: ["no-such-product"] });
     await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
     expect(getProduct(pub.slug)!.samples).toBeUndefined();
+  });
+  it("SEO regeneration renames slugs with redirects, moves delivery links and rewrites name/title", async () => {
+    const db = getDbFromEnv(env);
+    const c = await createProduct(db, { name: "Best Plumbers Email Database USA", title: "", description: "", seoTitle: "", metaDescription: "", recordCount: 10, dataFields: [], fileFormats: "", coverage: "", lastUpdated: "", placeholder: false, forSale: true, packages: [{ name: "Starter", records: 10, priceUsdCents: 500 }], categoryName: "Plumbers", countryName: "United States", countryCode: "US", region: "", channel: "business-email" });
+    const old = c.slug!;
+    await db.insert(schema.deliveryLinks).values({ productSlug: old, packageName: "", url: "https://example.com/x", updatedBy: "t" });
+    const r = await applySeo(db, [c.id!], { slugs: true, names: true, titles: true });
+    expect(r.slugChanged).toBe(1);
+    const row = (await getProductRow(db, c.id!))!;
+    expect(row.slug).not.toBe(old); expect(row.name).toContain("Plumbers Email List"); expect(row.seoTitle!.length).toBeLessThanOrEqual(62);
+    expect((await db.select().from(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, old)))[0].newSlug).toBe(row.slug);
+    expect((await db.select().from(schema.deliveryLinks).where(eq(schema.deliveryLinks.productSlug, row.slug))).length).toBe(1);
+    const again = await renameProduct(db, c.id!, row.slug);
+    expect(again.changed).toBe(false);
+    const second = await renameProduct(db, c.id!, "plumbers-list");
+    expect(second.changed).toBe(true);
+    expect((await db.select().from(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, old)))[0].newSlug).toBe("plumbers-list");
   });
   it("rollback removes only unpublished, never-ordered imports", async () => {
     const db = getDbFromEnv(env);

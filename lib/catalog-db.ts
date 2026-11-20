@@ -20,9 +20,9 @@ export type PubProduct = {
   dataFields?: string[]; fileFormats?: string; coverage?: string; lastUpdated?: string; placeholder?: boolean; forSale?: boolean; accuracyPct?: number | null;
   scope?: "country" | "city" | null; citySlug?: string; samples?: SampleRowData[];
 };
-type Payload = { products: PubProduct[]; hidden: string[] };
+type Payload = { products: PubProduct[]; hidden: string[]; aliases?: Record<string, string> };
 
-export function toCatalog(list: PubProduct[], hidden: string[] = []): { products: Product[]; categories: Category[]; countries: Country[]; hidden: string[] } {
+export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Record<string, string> = {}): { products: Product[]; categories: Category[]; countries: Country[]; hidden: string[]; aliases: Record<string, string> } {
   const cats = new Map<string, Category>(), ctry = new Map<string, Country>();
   const products = list.map((p): Product => {
     if (!cats.has(p.categorySlug)) cats.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, description: `${p.categoryName} contact lists.`, buyers: [], singular: p.categoryName, reachLabel: p.categoryName.toLowerCase(), useCases: [], imported: true });
@@ -33,7 +33,7 @@ export function toCatalog(list: PubProduct[], hidden: string[] = []): { products
       ...(p.scope ? { scope: p.scope } : {}), ...(p.citySlug ? { citySlug: p.citySlug } : {}), ...(p.fileFormats ? { fileFormats: p.fileFormats } : {}), ...(p.coverage ? { coverage: p.coverage } : {}), ...(p.samples?.length ? { samples: p.samples } : {}), imported: true, channel: p.channel, region: p.region || undefined, seoTitle: p.seoTitle || undefined, metaDescription: p.metaDescription || undefined,
     };
   });
-  return { products, categories: [...cats.values()], countries: [...ctry.values()], hidden };
+  return { products, categories: [...cats.values()], countries: [...ctry.values()], hidden, aliases };
 }
 
 const clean = (r: { slug: string; name: string; title: string; description: string; categorySlug: string; categoryName: string; channel: string; countrySlug: string; countryCode: string; countryName: string; region: string | null; recordCount: number | null; packagesJson: string; seoTitle: string | null; metaDescription: string | null }): PubProduct => ({
@@ -56,7 +56,9 @@ async function read(env: CloudflareEnv): Promise<Payload | null> {
       };
     });
     const hidden = (await db.select({ slug: schema.catalogProducts.slug }).from(schema.catalogProducts).where(and(eq(schema.catalogProducts.origin, "builtin"), ne(schema.catalogProducts.status, "published")))).map((r) => r.slug);
-    payload = { products: pub, hidden };
+    let aliases: Record<string, string> = {};
+    try { aliases = Object.fromEntries((await db.select().from(schema.slugAliases)).map((a) => [a.oldSlug, a.newSlug])); } catch { /* alias table not created yet */ }
+    payload = { products: pub, hidden, aliases };
   } catch {
     // Migration 0036 not applied yet: the old columns still work, so imported products never disappear from the site.
     try {
@@ -73,7 +75,7 @@ export async function hydrateCatalog(env?: CloudflareEnv, force = false): Promis
   if (!force && Date.now() - loadedAt < TTL_MS) return;
   try {
     const list = await read(env ?? getCloudflareContext().env);
-    if (list) { registerImported(toCatalog(list.products, list.hidden)); loadedAt = Date.now(); }
+    if (list) { registerImported(toCatalog(list.products, list.hidden, list.aliases ?? {})); loadedAt = Date.now(); }
   } catch { /* keep the code catalog */ }
 }
 

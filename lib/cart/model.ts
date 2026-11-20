@@ -14,7 +14,7 @@ export function normalizeItems(raw: unknown): CartItem[] {
   const parsed = cartItemsSchema.safeParse(raw);
   if (!parsed.success) return [];
   const byProduct = new Map<string, CartItem>();
-  for (const i of parsed.data) { byProduct.delete(i.slug); byProduct.set(i.slug, i); }
+  for (const raw0 of parsed.data) { const i = { ...raw0, slug: getProduct(raw0.slug)?.slug ?? raw0.slug }; byProduct.delete(i.slug); byProduct.set(i.slug, i); } // a renamed product keeps working from an old cart
   return [...byProduct.values()].slice(-MAX_CART_ITEMS);
 }
 

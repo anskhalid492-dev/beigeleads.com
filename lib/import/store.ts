@@ -5,6 +5,7 @@ import { getCategories, getCategory, getCountries, getCountry, getStaticProducts
 import { cleanStored, type SampleRowData } from "@/lib/product-samples";
 import { schema } from "@/lib/db";
 import { reservedSlugs } from "./reserved";
+import { seoText } from "./seo-text";
 import { publishBlockers } from "./woo";
 
 type Db = ReturnType<typeof import("@/lib/db").getDbFromEnv>;
@@ -226,12 +227,13 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
 }
 
 /** A free slug: base, base-2, base-3 ... (checks products AND old-slug aliases). */
-export async function uniqueSlug(db: Db, base: string): Promise<string> {
+export async function uniqueSlug(db: Db, base: string, except?: string): Promise<string> {
   const root = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 140) || "product";
   const taken = new Set<string>();
   const like_ = `${root}%`;
-  for (const r of await db.select({ s: schema.catalogProducts.slug }).from(schema.catalogProducts).where(like(schema.catalogProducts.slug, like_))) taken.add(r.s);
-  try { for (const r of await db.select({ s: schema.slugAliases.oldSlug }).from(schema.slugAliases).where(like(schema.slugAliases.oldSlug, like_))) taken.add(r.s); } catch { /* migration 0036 not applied */ }
+  for (const r of await db.select({ s: schema.catalogProducts.slug }).from(schema.catalogProducts).where(like(schema.catalogProducts.slug, like_))) if (r.s !== except) taken.add(r.s);
+  // An old slug of ANOTHER product stays reserved (it redirects there); the product's own old slugs may be reclaimed.
+  try { for (const r of await db.select({ s: schema.slugAliases.oldSlug, n: schema.slugAliases.newSlug }).from(schema.slugAliases).where(like(schema.slugAliases.oldSlug, like_))) if (r.n !== except) taken.add(r.s); } catch { /* migration 0036 not applied */ }
   const reserved = reservedSlugs();
   const free = (x: string) => !taken.has(x) && !reserved.has(x);
   if (free(root)) return root;
@@ -314,4 +316,49 @@ export async function saveSamplesBySlug(db: Db, groups: { slug: string; rows: Sa
     if (r.length) saved++; else unknown.push(g.slug);
   }
   return { saved, unknown };
+}
+
+/** Give a product a new slug. The old address keeps working (301 through `slug_aliases`), delivery links, promotion scopes and page-SEO overrides move along. Orders keep the old slug they were bought with; delivery resolves it. */
+export async function renameProduct(db: Db, id: number, base: string): Promise<{ changed: boolean; from: string; to: string }> {
+  const row = await getProductRow(db, id);
+  if (!row) return { changed: false, from: "", to: "" };
+  const to = await uniqueSlug(db, base, row.slug), from = row.slug;
+  if (to === from) return { changed: false, from, to };
+  await db.update(schema.catalogProducts).set({ slug: to, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.catalogProducts.id, id));
+  await db.delete(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, to));
+  await db.update(schema.slugAliases).set({ newSlug: to }).where(eq(schema.slugAliases.newSlug, from));
+  await db.insert(schema.slugAliases).values({ oldSlug: from, newSlug: to }).onConflictDoUpdate({ target: schema.slugAliases.oldSlug, set: { newSlug: to } });
+  await db.update(schema.deliveryLinks).set({ productSlug: to }).where(eq(schema.deliveryLinks.productSlug, from));
+  try {
+    for (const p of await db.select({ id: schema.promotions.id, s: schema.promotions.productSlugs }).from(schema.promotions).where(like(schema.promotions.productSlugs, `%"${from}"%`)))
+      await db.update(schema.promotions).set({ productSlugs: p.s.split(`"${from}"`).join(`"${to}"`) }).where(eq(schema.promotions.id, p.id));
+  } catch { /* promotions table not present */ }
+  try {
+    const ov = (await db.select().from(schema.seoPageOverrides).where(eq(schema.seoPageOverrides.path, `/lists/${from}`)))[0];
+    if (ov) { await db.delete(schema.seoPageOverrides).where(eq(schema.seoPageOverrides.path, `/lists/${from}`)); await db.insert(schema.seoPageOverrides).values({ ...ov, path: `/lists/${to}` }).onConflictDoNothing(); }
+  } catch { /* overrides table not present */ }
+  return { changed: true, from, to };
+}
+
+export type SeoOptions = { slugs: boolean; names: boolean; titles: boolean };
+/** Regenerate slug / name+H1 / SEO title+meta for products (never touches built-in products' slugs, restricted flags or packages). */
+export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false): Promise<{ changed: number; slugChanged: number; sample: { id: number; from: string; to: string; name: string; seoTitle: string }[] }> {
+  let changed = 0, slugChanged = 0; const sample: { id: number; from: string; to: string; name: string; seoTitle: string }[] = [];
+  for (let i = 0; i < ids.length; i += 40) {
+    const rows = await db.select().from(schema.catalogProducts).where(inArray(schema.catalogProducts.id, ids.slice(i, i + 40)));
+    for (const r of rows) {
+      const t = seoText({ name: r.name, categoryName: r.categoryName, channel: r.channel, countryName: r.countryName, region: r.region, recordCount: r.recordCount, placeholder: !!r.placeholder });
+      const set: Partial<typeof schema.catalogProducts.$inferInsert> = {};
+      // The audience is read from the CURRENT name, so names are only rewritten once (idempotent: the new name reduces to the same subject).
+      if (o.names) { set.name = t.name; set.title = t.title; }
+      if (o.titles) { set.seoTitle = t.seoTitle; set.metaDescription = t.metaDescription; }
+      let to = r.slug;
+      if (o.slugs && r.origin !== "builtin") to = dry ? r.slug : (await renameProduct(db, r.id, t.slugBase)).to;
+      if (!dry && Object.keys(set).length) await db.update(schema.catalogProducts).set({ ...set, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.catalogProducts.id, r.id));
+      if (o.slugs && to !== r.slug) slugChanged++;
+      changed++;
+      if (sample.length < 40) sample.push({ id: r.id, from: r.slug, to: dry ? t.slugBase : to, name: o.names ? t.name : r.name, seoTitle: o.titles ? t.seoTitle : r.seoTitle ?? "" });
+    }
+  }
+  return { changed, slugChanged, sample };
 }

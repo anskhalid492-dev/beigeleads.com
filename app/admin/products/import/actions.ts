@@ -9,7 +9,7 @@ import { reservedSlugs } from "@/lib/import/reserved";
 import { maskRows } from "@/lib/product-samples";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
-import { applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -168,4 +168,36 @@ export async function saveSamplesBulkAction(groupsIn: unknown): Promise<{ ok: bo
   const r = await saveSamplesBySlug(db(), g.data.map((x) => ({ slug: x.slug, rows: maskRows(x.rows) })).filter((x) => x.rows.length));
   await audit(a.email, `Bulk samples: ${r.saved} product(s) saved, ${r.unknown.length} unknown slug(s)`); await refresh();
   return { ok: true, message: `${r.saved} saved.`, saved: r.saved, unknown: r.unknown };
+}
+
+const seoOpts = z.object({ slugs: z.boolean(), names: z.boolean(), titles: z.boolean() });
+/** Ids of every product the SEO regeneration touches (all statuses, cap 5000). */
+export async function seoIdsAction(): Promise<{ ok: boolean; ids: number[]; message?: string }> {
+  if (!(await admin())) return { ok: false, ids: [], message: "Your session ended. Sign in again." };
+  return { ok: true, ids: await listIds(db(), {}, 5000) };
+}
+/** Dry run for a few products: shows the new slug / name / SEO title without saving anything. */
+export async function seoPreviewAction(idsIn: unknown, optsIn: unknown) {
+  if (!(await admin())) return { ok: false as const, message: "Your session ended. Sign in again." };
+  const ids = z.array(z.number().int()).max(40).safeParse(idsIn), o = seoOpts.safeParse(optsIn);
+  if (!ids.success || !o.success) return { ok: false as const, message: "Bad request." };
+  return { ok: true as const, ...(await applySeo(db(), ids.data, o.data, true)) };
+}
+/** Apply to one chunk (max 40 ids). Slug changes keep the old address working. */
+export async function seoApplyAction(idsIn: unknown, optsIn: unknown): Promise<{ ok: boolean; message: string; changed?: number; slugChanged?: number }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const ids = z.array(z.number().int()).max(40).safeParse(idsIn), o = seoOpts.safeParse(optsIn);
+  if (!ids.success || !o.success) return { ok: false, message: "Bad request." };
+  try {
+    const r = await applySeo(db(), ids.data, o.data);
+    return { ok: true, message: "ok", changed: r.changed, slugChanged: r.slugChanged };
+  } catch (e) { return { ok: false, message: `Stopped: ${e instanceof Error ? e.message : "unknown error"}. Run migration 0036 (slug_aliases) in D1 first if you have not.` }; }
+}
+export async function seoFinishAction(summary: unknown): Promise<{ ok: boolean }> {
+  const a = await admin(); if (!a) return { ok: false };
+  const s = z.object({ changed: z.number().int(), slugChanged: z.number().int(), slugs: z.boolean(), names: z.boolean(), titles: z.boolean() }).safeParse(summary);
+  if (!s.success) return { ok: false };
+  await audit(a.email, `SEO regeneration: ${s.data.changed} products, ${s.data.slugChanged} slugs changed (slugs ${s.data.slugs}, names ${s.data.names}, titles ${s.data.titles})`);
+  await refresh();
+  return { ok: true };
 }

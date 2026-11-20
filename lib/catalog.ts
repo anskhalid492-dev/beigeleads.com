@@ -218,9 +218,11 @@ let importedProducts: readonly Product[] = [];
 const importedCategories = new Map<string, Category>();
 const importedCountries = new Map<string, Country>();
 let hiddenStatic: ReadonlySet<string> = new Set();
-export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[]; hidden?: readonly string[] }) {
+let slugAliases: ReadonlyMap<string, string> = new Map(); // old slug -> current slug (renamed products)
+export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[]; hidden?: readonly string[]; aliases?: Readonly<Record<string, string>> }) {
   importedProducts = x.products;
-  hiddenStatic = new Set(x.hidden ?? []);
+  hiddenStatic = new Set([...(x.hidden ?? []), ...Object.keys(x.aliases ?? {})]);
+  slugAliases = new Map(Object.entries(x.aliases ?? {}));
   importedCategories.clear(); importedCountries.clear();
   for (const c of x.categories) importedCategories.set(c.slug, c);
   for (const c of x.countries) importedCountries.set(c.slug, c);
@@ -289,6 +291,11 @@ export const getCity = (countrySlug: string, slug: string) =>
   cities.find((c) => c.countrySlug === countrySlug && c.slug === slug);
 export const getProducts = (categorySlug?: string) =>
   categorySlug ? allProducts().filter((p) => p.categorySlug === categorySlug) : allProducts();
-export const getProduct = (slug: string) => allProducts().find((p) => p.slug === slug);
+export const getProduct = (slug: string) => {
+  const all = allProducts();
+  return all.find((p) => p.slug === slug) ?? (slugAliases.has(slug) ? all.find((p) => p.slug === slugAliases.get(slug)) : undefined);
+};
+/** The current slug for a possibly old (renamed) one; unknown slugs come back unchanged. */
+export const resolveSlug = (slug: string) => getProduct(slug)?.slug ?? slug;
 export const getProductFor = (categorySlug: string, countrySlug: string) =>
   staticProducts.find((p) => p.categorySlug === categorySlug && p.countrySlug === countrySlug);

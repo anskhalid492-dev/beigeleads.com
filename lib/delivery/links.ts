@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 
 /** Only https links are accepted: the owner pastes them, buyers click them from an email. */
@@ -14,7 +14,10 @@ export function parseDeliveryUrl(raw: string): string {
 /** Exact package link first, then the product-wide link (package ''). */
 export async function findDeliveryLink(env: CloudflareEnv, productSlug: string, packageName: string): Promise<string | null> {
   const db = getDbFromEnv(env);
-  const rows = await db.select().from(schema.deliveryLinks).where(eq(schema.deliveryLinks.productSlug, productSlug));
+  // A renamed product keeps its links: look under the current slug too (old orders still carry the old slug).
+  let current = productSlug;
+  try { current = (await db.select({ n: schema.slugAliases.newSlug }).from(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, productSlug)).limit(1))[0]?.n ?? productSlug; } catch { /* migration 0036 not applied */ }
+  const rows = await db.select().from(schema.deliveryLinks).where(inArray(schema.deliveryLinks.productSlug, current === productSlug ? [productSlug] : [productSlug, current]));
   return (rows.find((r) => r.packageName === packageName) ?? rows.find((r) => r.packageName === ""))?.url ?? null;
 }
 
