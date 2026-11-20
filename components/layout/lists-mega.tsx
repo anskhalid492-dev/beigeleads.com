@@ -69,12 +69,12 @@ export function ListsMegaPanel({ tax, onNavigate }: Props) {
           ))}
         </div>
         <p className="intro-rise relative mt-3 text-[0.8rem] leading-5 text-forest-700/80" style={{ "--d": 3 } as React.CSSProperties}>Masked sample on every list page.</p>
-        <div className="intro-rise relative mt-auto flex flex-col items-start gap-2.5 pt-5" style={{ "--d": 4 } as React.CSSProperties}>
+        <div className="intro-rise relative mt-auto flex flex-col items-start gap-2 pt-5" style={{ "--d": 4 } as React.CSSProperties}>
           <Link href="/lists" onClick={onNavigate} className={`group/all inline-flex items-center gap-2 rounded-full bg-purple-600 px-[1.1rem] py-2.5 text-sm font-semibold text-white shadow-[0_6px_16px_-8px_rgba(124,58,237,0.7)] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-purple-700 ${ring}`}>
             Browse all lists <ArrowRight className="size-4 transition-transform duration-200 group-hover/all:translate-x-0.5" aria-hidden />
           </Link>
-          <Link href="/custom-list" onClick={onNavigate} className={`rounded text-[0.85rem] font-semibold text-forest-700 underline decoration-sand-300 underline-offset-4 transition-colors duration-200 hover:text-purple-700 hover:decoration-purple-600 ${ring}`}>
-            Or build a custom list
+          <Link href="/custom-list" onClick={onNavigate} className={`group/cl inline-flex items-center gap-2 rounded-full border border-forest-900/25 bg-white px-[1.1rem] py-2.5 text-sm font-semibold text-forest-900 transition-[border-color,color,transform] duration-200 hover:-translate-y-0.5 hover:border-purple-600 hover:text-purple-700 ${ring}`}>
+            Or build a custom list <ArrowRight className="size-4 transition-transform duration-200 group-hover/cl:translate-x-0.5" aria-hidden />
           </Link>
         </div>
       </div>
