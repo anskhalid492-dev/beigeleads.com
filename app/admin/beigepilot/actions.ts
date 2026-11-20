@@ -68,7 +68,7 @@ export async function saveSettingsAction(_: Result | null, form: FormData): Prom
   if (form.has("humor")) { const h = String(form.get("humor")); patch.humor = ["professional", "friendly", "playful"].includes(h) ? h : "friendly"; }
   if (form.has("motion")) { const m = String(form.get("motion")); patch.motion = ["calm", "balanced", "lively"].includes(m) ? m : "balanced"; }
   if (form.has("launcher")) patch.launcher = String(form.get("launcher")) === "left" ? "left" : "right";
-  if (form.has("suggestions")) patch.suggestions = String(form.get("suggestions")).split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 4).join("\n");
+  if (form.has("suggestions")) patch.suggestions = String(form.get("suggestions")).split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 3).join("\n");
   if (form.has("instructions")) patch.instructions = String(form.get("instructions")).trim().slice(0, 1500);
   if (form.has("dailyRequestLimit")) { patch.dailyRequestLimit = String(Math.round(numOr(form.get("dailyRequestLimit"), 500, 1, 1_000_000))); patch.dailyTokenLimit = String(Math.round(numOr(form.get("dailyTokenLimit"), 500000, 1000, 1_000_000_000))); const m = optNum(form.get("monthlySpendUsd")); patch.monthlySpendUsd = m ? String(m) : ""; }
   if (patch.enabled === "1") {

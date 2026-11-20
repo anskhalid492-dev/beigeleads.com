@@ -2,10 +2,10 @@
 // The BeigePilot chat panel (loaded only after the visitor first opens the assistant). State lives here so minimizing keeps the chat.
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Info, Minus, RotateCcw, Send, ThumbsDown, ThumbsUp, X, Target, Globe2, Scale, ShieldCheck, LifeBuoy } from "lucide-react";
+import { Info, RotateCcw, Send, ThumbsDown, ThumbsUp, X, LifeBuoy } from "lucide-react";
 import { useCart } from "@/lib/cart/client";
 import type { Card, Source } from "@/lib/beigepilot/tools";
-import { followUps, suggestionsFor, WELCOME_CARDS } from "@/lib/beigepilot/suggest";
+import { chipsFor, isCheer } from "@/lib/beigepilot/suggest";
 import { ApiForm } from "@/components/forms/api-form";
 import { Markup } from "./markup";
 import { ChatProductCard } from "./product-card";
@@ -18,7 +18,6 @@ type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; sources?:
 const KEY = "bp-chat-v2";
 const CID = "bp-cid-v1";
 const SEARCH_TOOLS = new Set(["searchProducts", "getProductDetails", "getProductPackages", "getRelatedProducts", "getProductVerificationInfo", "showProductCards"]);
-const ICONS = { prospects: Target, explore: Globe2, packages: Scale, quality: ShieldCheck } as const;
 function chatId(): string { try { let c = sessionStorage.getItem(CID); if (!c) { c = crypto.randomUUID().replace(/-/g, "").slice(0, 24); sessionStorage.setItem(CID, c); } return c; } catch { return `nostorage${Math.random().toString(36).slice(2, 12)}`; } }
 
 export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path: string; open: boolean; onClosed: (clear: boolean) => void }) {
@@ -104,7 +103,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
       if (hasCards) doFlash("found", 2200); else if (final.miss) doFlash("confused", 2600);
     } else {
       setOnline(false);
-      setErr(reason || (cfg.humor === "professional" ? "Something went wrong. Please try again." : "My circuits hit a tiny speed bump. Let's try again."));
+      setErr(reason || (cfg.humor === "professional" ? "Something went wrong. Please try again." : "Oops, I tripped over my own feet. Let's try again."));
     }
   }, [path, cart, cfg.humor, doFlash]);
 
@@ -112,62 +111,57 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
     const t = raw.trim();
     if (!t || busy) return;
     const next: Msg[] = [...msgs, { role: "user", text: t }];
-    setMsgs(next); setText(""); doFlash("nod", 600); setForm(null);
+    setMsgs(next); setText(""); doFlash(isCheer(t) ? "giggle" : "nod", isCheer(t) ? 1800 : 600); setForm(null);
     void run(next);
   }, [busy, msgs, run, doFlash]);
 
   const retry = () => { if (!busy && msgs.length && msgs[msgs.length - 1].role === "user") void run(msgs); };
   const rate = (i: number, rating: 1 | -1) => {
     setMsgs((m) => m.map((x, j) => (j === i ? { ...x, rated: rating } : x)));
+    if (rating === 1) doFlash("giggle", 1800);
     void fetch("/api/beigepilot/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ cid: chatId(), idx: i, rating }) }).catch(() => {});
   };
   const close = (clear: boolean) => { if (closing) return; setClosing(true); setFlash("bye"); setTimeout(() => { setClosing(false); setFlash(null); if (clear) { setMsgs([]); setErr(null); setForm(null); } onClosed(clear); }, 650); };
 
   const searching = busy && SEARCH_TOOLS.has(tool);
   const mood: Mood = closing ? "bye" : flash ?? (busy ? (searching ? "search" : "think") : err ? "error" : text.trim() ? "curious" : "idle");
-  const chips = useMemo(() => suggestionsFor(path, cfg.suggestions), [path, cfg.suggestions]);
+  const chips = useMemo(() => chipsFor(cfg.suggestions, name), [cfg.suggestions, name]);
   const last = msgs[msgs.length - 1];
-  const asked = msgs.filter((m) => m.role === "user").map((m) => m.text);
-  const status = busy ? (searching ? "Searching the catalog" : "Thinking") : online ? "Online" : "Having trouble";
-  const caption = searching ? (cfg.humor === "playful" ? "Let me dig through the data jungle..." : "Searching the catalog...") : "Thinking...";
+  const status = busy ? (searching ? "Looking through the lists" : "Thinking") : online ? "Online" : "Having trouble";
+  const caption = searching ? "Looking through the lists" : "Thinking";
+
+  const pickChip = (c: { ask?: string; focus?: boolean }) => { if (c.ask) send(c.ask); else input.current?.focus(); };
+  const lastAssistant = msgs.length - 1;
 
   return (
     <section ref={panel} tabIndex={-1} role="dialog" aria-label={`${name}, BeigeLeads assistant`} style={open || closing ? undefined : { display: "none" }}
       onKeyDown={(e) => { if (e.key === "Escape") { if (info) setInfo(false); else close(false); } }}
-      className={`${closing ? "bp-close" : "bp-open"} fixed inset-0 z-50 flex flex-col overflow-hidden bg-sand-50 outline-none sm:inset-auto sm:bottom-5 sm:h-[min(660px,calc(100vh-2.5rem))] sm:w-[400px] sm:rounded-3xl sm:border sm:border-sand-300 sm:shadow-[0_24px_60px_-24px_rgba(15,42,29,.5)] ${cfg.launcher === "left" ? "sm:left-5" : "sm:right-5"}`}>
-      <header className="flex items-center gap-2.5 border-b border-sand-200 bg-sand-100/80 px-3.5 py-2.5">
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-sand-50 ring-1 ring-sand-200"><Pilo mood={mood} size={40} intensity={cfg.motion} /></span>
-        <div className="min-w-0 flex-1">
-          <p className="display text-[1.15rem] leading-none text-forest-900">{name}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-xs" aria-live="polite"><span aria-hidden className={`size-1.5 rounded-full ${online ? "bg-forest-500" : "bg-amber-500"}`} />{status}</p>
+      className={`${closing ? "bp-close" : "bp-open"} fixed inset-0 z-50 flex flex-col overflow-hidden bg-sand-50 outline-none sm:inset-auto sm:bottom-5 sm:h-[min(620px,calc(100vh-2.5rem))] sm:w-[380px] sm:rounded-[1.75rem] sm:border sm:border-sand-300 sm:shadow-[0_24px_60px_-24px_rgba(15,42,29,.5)] ${cfg.launcher === "left" ? "sm:left-5" : "sm:right-5"}`}>
+      <header className="flex items-center gap-2 px-3 py-2">
+        {msgs.length > 0 && <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand-100"><Pilo mood={mood} size={36} intensity={cfg.motion} /></span>}
+        <div className="min-w-0 flex-1 pl-1">
+          {msgs.length > 0 && <p className="display text-[1.1rem] leading-none text-forest-900">{name}</p>}
+          <p className="flex items-center gap-1.5 text-xs" aria-live="polite"><span aria-hidden className={`size-1.5 rounded-full ${online ? "bg-forest-500" : "bg-amber-500"}`} />{status}</p>
         </div>
-        <button type="button" onClick={() => setInfo((v) => !v)} aria-expanded={info} aria-label="About this assistant and your privacy" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-200 focus-visible:outline-2 focus-visible:outline-purple-600"><Info className="size-4" aria-hidden /></button>
-        <button type="button" onClick={() => close(false)} aria-label="Minimize chat" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-200 focus-visible:outline-2 focus-visible:outline-purple-600"><Minus className="size-4" aria-hidden /></button>
-        <button type="button" onClick={() => close(true)} aria-label="Close and clear chat" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-200 focus-visible:outline-2 focus-visible:outline-purple-600"><X className="size-4" aria-hidden /></button>
+        <button type="button" onClick={() => setInfo((v) => !v)} aria-expanded={info} aria-label="About this assistant and your privacy" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600"><Info className="size-4" aria-hidden /></button>
+        <button type="button" onClick={() => close(false)} aria-label="Close chat" className="grid size-9 place-items-center rounded-full text-forest-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600"><X className="size-[1.1rem]" aria-hidden /></button>
       </header>
 
       {info && (
-        <div className="bp-msg border-b border-sand-200 bg-white px-4 py-3 text-xs leading-relaxed text-forest-900" role="note">
-          <p><b>{name}</b> is an AI assistant. It answers from BeigeLeads&apos; real catalog, help articles and policies, and can be wrong, so check details on the product page.</p>
-          <p className="mt-1.5">Please do not share personal or payment information in this chat. It is sent to an AI provider to produce answers.{cfg.saving && " Conversations may be stored to improve the service."} <Link href="/legal/privacy" className="font-semibold text-purple-700 underline">Privacy policy</Link></p>
+        <div className="bp-msg mx-3 mb-1 rounded-2xl bg-sand-100 px-3.5 py-3 text-xs leading-relaxed text-forest-900" role="note">
+          <p>{name} is an AI. It answers from BeigeLeads&apos; real catalog and policies and can be wrong, so check details on the product page. Please don&apos;t share personal or payment info here.{cfg.saving && " Conversations may be stored to improve the service."}</p>
+          <p className="mt-1.5 flex flex-wrap gap-x-3"><Link href="/legal/privacy" className="font-semibold text-purple-700 underline">Privacy policy</Link>{msgs.length > 0 && <button type="button" onClick={() => { setMsgs([]); setErr(null); setForm(null); setInfo(false); }} className="font-semibold text-purple-700 underline">Start a new chat</button>}</p>
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 py-3 text-[0.875rem] leading-snug" role="log" aria-live="polite" aria-relevant="additions">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-2 text-[0.9rem] leading-snug" role="log" aria-live="polite" aria-relevant="additions">
         {msgs.length === 0 && !busy && (
-          <div className="px-1 pb-1 pt-2 text-center">
-            <div className="mx-auto w-fit"><Pilo mood={mood === "idle" ? "wave" : mood} size={104} intensity={cfg.motion} title={`${name}, the BeigePilot mascot`} /></div>
-            <h2 className="display mt-1 text-[1.65rem] leading-tight text-forest-900">Hey there! I&apos;m {name}. 👋</h2>
-            <p className="mt-0.5 text-[0.95rem] font-semibold text-forest-700">Your little expert in finding big opportunities.</p>
-            <p className="mx-auto mt-2 max-w-[19rem] text-[0.82rem]">{cfg.greeting}</p>
-            <div className="mt-4 grid grid-cols-2 gap-2 text-left">
-              {WELCOME_CARDS.map((c) => { const I = ICONS[c.id as keyof typeof ICONS]; return (
-                <button key={c.id} type="button" onClick={() => send(c.ask)} className="group flex items-center gap-2 rounded-xl border border-sand-300 bg-white px-2.5 py-2.5 text-[0.8rem] font-semibold leading-tight text-forest-900 transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-forest-500 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-purple-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-forest-100 text-forest-700 group-hover:bg-purple-100 group-hover:text-purple-700"><I className="size-4" aria-hidden /></span>{c.label}
-                </button>); })}
-            </div>
-            <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-              {chips.map((q) => <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-sand-300 px-3 py-1.5 text-xs font-semibold text-forest-900 hover:border-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600">{q}</button>)}
+          <div className="flex min-h-full flex-col items-center justify-center pb-6 text-center">
+            <Pilo mood={mood === "idle" ? "wave" : mood} size={150} intensity={cfg.motion} title={`${name}, your little BeigeLeads friend`} />
+            <h2 className="display mt-1 text-[1.9rem] leading-none text-forest-900">Hiii! 👋 I&apos;m {name}!</h2>
+            <p className="mt-2 text-[1.02rem] text-forest-700">{cfg.greeting}</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {chips.map((c) => <button key={c.id} type="button" onClick={() => pickChip(c)} className="rounded-full border border-sand-300 bg-white px-3.5 py-1.5 text-[0.8rem] font-semibold text-forest-900 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-forest-500 focus-visible:outline-2 focus-visible:outline-purple-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0">{c.label}</button>)}
             </div>
           </div>
         )}
@@ -177,16 +171,18 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
             <div key={i} className="bp-msg ml-auto w-fit max-w-[84%] rounded-2xl rounded-br-md bg-forest-900 px-3 py-2 text-sand-50">{m.text}</div>
           ) : (
             <div key={i} className="bp-msg flex items-start gap-2">
-              <span className="mt-0.5 shrink-0"><Pilo mood={m.cards?.length && i === msgs.length - 1 ? "found" : m.miss && i === msgs.length - 1 ? "confused" : "idle"} size={28} intensity={cfg.motion} animated={i === msgs.length - 1} /></span>
+              <span className="mt-0.5 shrink-0"><Pilo mood={m.cards?.length && i === lastAssistant ? "found" : m.miss && i === lastAssistant ? "confused" : "idle"} size={30} intensity={cfg.motion} animated={i === lastAssistant} /></span>
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="w-fit max-w-full rounded-2xl rounded-tl-md bg-sand-100 px-3 py-2 text-forest-900"><Markup text={m.text} /></div>
                 {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} onAdded={() => doFlash("success", 2400)} onPick={() => doFlash("point", 1500)} />)}
-                <div className="flex flex-wrap items-center gap-1 text-xs" role="group" aria-label="Rate this answer">
-                  {m.rated ? <span>Thanks for the feedback.</span> : <>
-                    <button type="button" onClick={() => rate(i, 1)} aria-label="Helpful" className="grid size-7 place-items-center rounded-full hover:bg-sand-200"><ThumbsUp className="size-3.5" aria-hidden /></button>
-                    <button type="button" onClick={() => rate(i, -1)} aria-label="Not helpful" className="grid size-7 place-items-center rounded-full hover:bg-sand-200"><ThumbsDown className="size-3.5" aria-hidden /></button></>}
-                  {m.handoff && form !== i && <button type="button" onClick={() => setForm(i)} className="ml-1 inline-flex items-center gap-1 rounded-full border border-forest-900 px-3 py-1 font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50"><LifeBuoy className="size-3.5" aria-hidden />Contact Our Team</button>}
-                </div>
+                {(i === lastAssistant && !m.rated) || m.handoff ? (
+                  <div className="flex flex-wrap items-center gap-1 text-xs">
+                    {i === lastAssistant && !m.rated && <span role="group" aria-label="Rate this answer" className="flex">
+                      <button type="button" onClick={() => rate(i, 1)} aria-label="Helpful" className="grid size-7 place-items-center rounded-full text-forest-700/70 hover:bg-sand-100 hover:text-forest-900"><ThumbsUp className="size-3.5" aria-hidden /></button>
+                      <button type="button" onClick={() => rate(i, -1)} aria-label="Not helpful" className="grid size-7 place-items-center rounded-full text-forest-700/70 hover:bg-sand-100 hover:text-forest-900"><ThumbsDown className="size-3.5" aria-hidden /></button></span>}
+                    {m.handoff && form !== i && <button type="button" onClick={() => setForm(i)} className="inline-flex items-center gap-1 rounded-full border border-forest-900 px-3 py-1 font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50"><LifeBuoy className="size-3.5" aria-hidden />Talk to a person</button>}
+                  </div>
+                ) : null}
                 {m.handoff && form === i && <HandoffForm path={path} />}
                 {!!m.sources?.length && <p className="text-xs">Sources: {m.sources.map((s, j) => <span key={s.url}>{j > 0 && " · "}<Link href={s.url} className="font-semibold text-purple-700 underline underline-offset-2">{s.title}</Link></span>)}</p>}
               </div>
@@ -195,13 +191,14 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
 
           {busy && (
             <div className="bp-msg flex items-center gap-2" role="status">
-              <span className="shrink-0"><Pilo mood={searching ? "search" : "think"} size={34} intensity={cfg.motion} /></span>
-              <span className="rounded-2xl rounded-tl-md bg-sand-100 px-3 py-2 text-xs font-semibold text-forest-700">{caption}</span>
+              <span className="shrink-0"><Pilo mood={searching ? "search" : "think"} size={38} intensity={cfg.motion} /></span>
+              <span className="flex gap-1 rounded-2xl rounded-tl-md bg-sand-100 px-3.5 py-3" aria-hidden><i className="bp-dot" /><i className="bp-dot" style={{ animationDelay: ".15s" }} /><i className="bp-dot" style={{ animationDelay: ".3s" }} /></span>
+              <span className="sr-only">{caption}</span>
             </div>
           )}
 
           {err && !busy && (
-            <div className="bp-msg rounded-2xl border border-amber-300 bg-amber-50 p-3 text-forest-900" role="alert">
+            <div className="bp-msg rounded-2xl bg-amber-50 p-3 text-forest-900 ring-1 ring-amber-300" role="alert">
               <p className="text-[0.85rem] font-semibold">{err}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button type="button" onClick={retry} className="inline-flex items-center gap-1.5 rounded-full bg-forest-900 px-3.5 py-1.5 text-xs font-bold text-sand-50 hover:bg-forest-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"><RotateCcw className="size-3.5" aria-hidden />Retry</button>
@@ -210,26 +207,19 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
               {form === "err" && <div className="mt-3"><HandoffForm path={path} /></div>}
             </div>
           )}
-
-          {!busy && !err && last?.role === "assistant" && (
-            <div className="flex flex-wrap gap-1.5 pl-9">
-              {followUps(!!last.cards?.length, asked).map((q) => <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-sand-300 bg-white px-2.5 py-1 text-xs font-semibold text-forest-900 hover:border-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600">{q}</button>)}
-            </div>
-          )}
         </div>
         <div ref={end} />
       </div>
 
       <form className="px-3 pb-3 pt-1" onSubmit={(e) => { e.preventDefault(); send(text); }}>
-        <div className="flex items-end gap-1.5 rounded-2xl border border-sand-300 bg-white p-1.5 shadow-[0_6px_18px_-12px_rgba(15,42,29,.45)] focus-within:border-purple-600">
-          <textarea ref={input} value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={1500} placeholder={`Ask ${name} anything about our databases...`} aria-label="Your message" enterKeyHint="send"
+        <div className="flex items-end gap-1.5 rounded-[1.4rem] border border-sand-300 bg-white p-1.5 shadow-[0_8px_22px_-14px_rgba(15,42,29,.5)] transition-colors focus-within:border-purple-600">
+          <textarea ref={input} value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={1500} placeholder={`Ask ${name} anything...`} aria-label="Your message" enterKeyHint="send"
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(text); } }}
-            className="max-h-28 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-[0.9rem] leading-snug text-forest-900 placeholder:text-forest-700/55 focus:outline-none" />
-          <button type="submit" disabled={busy || !text.trim()} aria-label={busy ? "Sending" : "Send message"} className="grid size-10 shrink-0 place-items-center rounded-xl bg-purple-600 text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 disabled:bg-sand-200 disabled:text-forest-700/50">
+            className="max-h-28 min-h-9 flex-1 resize-none bg-transparent px-3 py-2 text-[0.92rem] leading-snug text-forest-900 placeholder:text-forest-700/55 focus:outline-none" />
+          <button type="submit" disabled={busy || !text.trim()} aria-label={busy ? "Sending" : "Send message"} className="grid size-10 shrink-0 place-items-center rounded-full bg-purple-600 text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 disabled:bg-sand-200 disabled:text-forest-700/50">
             {busy ? <span aria-hidden className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" /> : <Send className="size-4" aria-hidden />}
           </button>
         </div>
-        {cfg.saving && <p className="mt-1.5 px-1 text-[0.68rem]">Conversations may be stored to improve the service.</p>}
       </form>
     </section>
   );

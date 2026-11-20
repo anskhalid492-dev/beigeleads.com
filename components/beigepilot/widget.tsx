@@ -48,7 +48,7 @@ export function BeigePilot() {
         <div className={`fixed z-40 ${side} ${onCart ? "bottom-24 lg:bottom-5" : "bottom-5"}`}>
           {tip && (
             <div role="status" className={`bp-tip pointer-events-none absolute bottom-[4.1rem] w-52 rounded-2xl border border-sand-300 bg-white px-3 py-2 text-xs font-semibold leading-snug text-forest-900 shadow-lg ${cfg.launcher === "left" ? "left-0 rounded-bl-md" : "right-0 rounded-br-md"}`}>
-              Hi, I&apos;m {name}. Ask me which database fits.
+              Hiii! I&apos;m {name}. Who are we finding today?
             </div>
           )}
           <button ref={launcher} type="button" onClick={openIt} aria-label={`Open ${name}, the BeigeLeads assistant`}

@@ -630,14 +630,13 @@ summary::-webkit-details-marker {
 .pilo-float { animation: pilo-float calc(4.2s * var(--spd)) ease-in-out infinite; }
 .pilo-breathe { transform-origin: 60px 88px; transform-box: view-box; animation: pilo-breathe calc(3.6s * var(--spd)) ease-in-out infinite; }
 .pilo-tilt { transform-origin: 60px 90px; transform-box: view-box; transition: transform 320ms cubic-bezier(.3,1.4,.5,1); }
-.pilo-eyes { transition: transform 280ms ease; }
+.pilo-pupil { transition: transform 280ms ease; }
 .pilo-eye { transform-origin: center; animation: pilo-blink calc(5.5s * var(--spd)) infinite; }
 .pilo-eye:nth-child(2) { animation-delay: .02s; }
-.pilo-orb { transform-origin: center; animation: pilo-glow calc(2.8s * var(--spd)) ease-in-out infinite; }
-.pilo-antenna { transform-origin: 60px 24px; transform-box: view-box; animation: pilo-antenna calc(7s * var(--spd)) ease-in-out infinite; }
+.pilo-sprout { transform-origin: 60px 30px; transform-box: view-box; animation: pilo-sprout calc(5.5s * var(--spd)) ease-in-out infinite; }
 .pilo-arm { transform-origin: 0 0; transform-box: view-box; transition: transform 300ms cubic-bezier(.3,1.4,.5,1); }
 .pilo-arm-l { transform: rotate(-22deg); } .pilo-arm-r { transform: rotate(22deg); }
-.pilo--idle .pilo-eyes { animation: pilo-glance calc(11s * var(--spd)) ease-in-out infinite; }
+.pilo--idle .pilo-pupil { animation: pilo-glance calc(11s * var(--spd)) ease-in-out infinite; }
 .pilo--idle .pilo-arm-r { animation: pilo-fidget calc(13s * var(--spd)) ease-in-out infinite; }
 .pilo-prop { opacity: 0; transition: opacity 160ms; pointer-events: none; }
 .pilo-shadow { transform-origin: center; animation: pilo-shadow calc(4.2s * var(--spd)) ease-in-out infinite; }
@@ -645,30 +644,31 @@ summary::-webkit-details-marker {
 /* moods */
 .pilo--wave .pilo-arm-r, .pilo--bye .pilo-arm-r { animation: pilo-wave calc(.7s * var(--spd)) ease-in-out 3; }
 .pilo--wave .pilo-tilt, .pilo--bye .pilo-tilt { transform: rotate(-4deg); }
-.pilo--curious .pilo-tilt { transform: rotate(6deg); } .pilo--curious .pilo-eyes { transform: translate(2px, -1px); }
+.pilo--curious .pilo-tilt { transform: rotate(6deg); } .pilo--curious .pilo-pupil { transform: translate(2.4px, -1.6px); } .pilo--curious .pilo-sprout { animation-duration: 1.4s; }
 .pilo--nod .pilo-tilt { animation: pilo-nod .6s ease-in-out 1 both; }
-.pilo--think .pilo-tilt { transform: rotate(-7deg); } .pilo--think .pilo-eyes { transform: translate(3px, -4px); }
+.pilo--think .pilo-tilt { transform: rotate(-7deg); } .pilo--think .pilo-pupil { transform: translate(3px, -4px); }
 .pilo--think .pilo-dots { opacity: 1; } .pilo--think .pilo-dots circle { animation: pilo-dot 1.4s ease-in-out infinite; } .pilo--think .pilo-dots circle:nth-child(2) { animation-delay: .2s; } .pilo--think .pilo-dots circle:nth-child(3) { animation-delay: .4s; }
-.pilo--search .pilo-lens { opacity: 1; animation: pilo-lens 1.6s ease-in-out infinite; } .pilo--search .pilo-eyes { transform: translate(3px, 1px); } .pilo--search .pilo-arm-r { transform: rotate(-38deg); } .pilo--search .pilo-tilt { transform: rotate(4deg); }
+.pilo--search .pilo-lens { opacity: 1; animation: pilo-lens 1.6s ease-in-out infinite; } .pilo--search .pilo-pupil { transform: translate(3.4px, 1px); } .pilo--search .pilo-arm-r { transform: rotate(-38deg); } .pilo--search .pilo-tilt { transform: rotate(4deg); }
 .pilo--found .pilo-float, .pilo--success .pilo-float { animation: pilo-bounce calc(.7s * var(--spd)) ease-out 2 both; }
 .pilo--found .pilo-spark, .pilo--success .pilo-spark { opacity: 1; animation: pilo-spark 1.4s ease-out 1 both; }
 .pilo--found .pilo-arm-l, .pilo--success .pilo-arm-l { transform: rotate(62deg); } .pilo--found .pilo-arm-r, .pilo--success .pilo-arm-r { transform: rotate(-62deg); }
 .pilo--confused .pilo-q { opacity: 1; animation: pilo-wobble 1.8s ease-in-out infinite; } .pilo--confused .pilo-tilt { transform: rotate(-6deg); }
 .pilo--confused .pilo-arm-l { animation: pilo-shrug-l 1.6s ease-in-out 2 both; } .pilo--confused .pilo-arm-r { animation: pilo-shrug-r 1.6s ease-in-out 2 both; }
-.pilo--error .pilo-drop { opacity: 1; animation: pilo-drip 1.6s ease-in infinite; } .pilo--error .pilo-tilt { transform: rotate(-3deg) translateY(2px); } .pilo--error .pilo-eyes { transform: translateY(2px); } .pilo--error .pilo-antenna { animation: none; transform: rotate(-24deg); }
-.pilo--point .pilo-arm-r { transform: rotate(-6deg) scaleX(1.12); } .pilo--point .pilo-eyes { transform: translate(3px, 1px); } .pilo--point .pilo-tilt { transform: rotate(3deg); }
+.pilo--error .pilo-drop { opacity: 1; animation: pilo-drip 1.6s ease-in infinite; } .pilo--error .pilo-tilt { transform: rotate(-3deg) translateY(2px); } .pilo--error .pilo-pupil { transform: translateY(2.4px); } .pilo--error .pilo-sprout { animation: none; transform: rotate(-26deg); }
+.pilo--point .pilo-arm-r { transform: rotate(-6deg) scaleX(1.12); } .pilo--point .pilo-pupil { transform: translate(3.4px, 1px); } .pilo--point .pilo-tilt { transform: rotate(3deg); }
 .pilo--wave .pilo-spark { opacity: 0; }
+.pilo--giggle .pilo-tilt { animation: pilo-giggle .9s ease-in-out 2; } .pilo--giggle .pilo-arm-l { transform: rotate(-4deg); } .pilo--giggle .pilo-arm-r { transform: rotate(4deg); }
 
 /* hover wave on the launcher */
 .pilo-host:hover .pilo--idle .pilo-arm-r, .pilo-host:focus-visible .pilo--idle .pilo-arm-r { animation: pilo-wave .6s ease-in-out 2; }
-.pilo-host:hover .pilo--idle .pilo-eyes { animation: none; transform: translate(0, -1px); }
+.pilo-host:hover .pilo--idle .pilo-pupil { animation: none; transform: translate(0, -1px); }
 
 @keyframes pilo-float { 0%, 100% { transform: translateY(calc(1.5px * var(--amp))); } 50% { transform: translateY(calc(-3px * var(--amp))); } }
 @keyframes pilo-shadow { 0%, 100% { transform: scaleX(1); opacity: .12; } 50% { transform: scaleX(.88); opacity: .08; } }
 @keyframes pilo-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, .985); } }
 @keyframes pilo-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
-@keyframes pilo-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .75; transform: scale(1.16); } }
-@keyframes pilo-antenna { 0%, 82%, 100% { transform: rotate(0); } 86% { transform: rotate(8deg); } 92% { transform: rotate(-6deg); } 96% { transform: rotate(3deg); } }
+@keyframes pilo-sprout { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
+@keyframes pilo-giggle { 0%, 100% { transform: translateY(0) rotate(0); } 15% { transform: translateY(-2px) rotate(-3deg); } 30% { transform: translateY(0) rotate(3deg); } 45% { transform: translateY(-2px) rotate(-3deg); } 60% { transform: translateY(0) rotate(3deg); } 80% { transform: rotate(0); } }
 @keyframes pilo-glance { 0%, 62%, 100% { transform: translate(0, 0); } 66%, 74% { transform: translate(-2.5px, .5px); } 80%, 90% { transform: translate(2.5px, -.5px); } }
 @keyframes pilo-fidget { 0%, 70%, 100% { transform: rotate(22deg); } 74% { transform: rotate(-14deg); } 80% { transform: rotate(14deg); } }
 @keyframes pilo-wave { 0%, 100% { transform: rotate(-40deg); } 50% { transform: rotate(-82deg); } }

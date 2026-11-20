@@ -6,9 +6,9 @@ export type Humor = "professional" | "friendly" | "playful";
 export type Motion = "calm" | "balanced" | "lively";
 export const HUMORS: Humor[] = ["professional", "friendly", "playful"];
 export const MOTIONS: Motion[] = ["calm", "balanced", "lively"];
-const OLD_GREETING = "Hi, I'm BeigePilot. Tell me who you want to reach and I'll find the right database.";
-/** One suggested question per line, at most 4, each at most 60 characters. */
-export const parseSuggestions = (raw: string | undefined): string[] => (raw ?? "").split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 4);
+const OLD_GREETINGS = ["Hi, I'm BeigePilot. Tell me who you want to reach and I'll find the right database.", "Tell me who you'd like to reach, and I'll help you find the right database."];
+/** One suggested question per line, at most 3, each at most 60 characters. */
+export const parseSuggestions = (raw: string | undefined): string[] => (raw ?? "").split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 3);
 
 export type Settings = {
   enabled: boolean; active: ProviderId | ""; fallback: ProviderId | "";
@@ -18,7 +18,7 @@ export type Settings = {
 };
 export const DEFAULT_SETTINGS: Settings = {
   enabled: false, active: "", fallback: "",
-  greeting: "Tell me who you'd like to reach, and I'll help you find the right database.",
+  greeting: "Who are we finding today?",
   name: "Pilo", humor: "friendly", motion: "balanced", launcher: "right", suggestions: [],
   instructions: "", saveChats: false, retentionDays: 90, dailyRequestLimit: 500, dailyTokenLimit: 500_000, monthlySpendUsd: null,
 };
@@ -33,7 +33,7 @@ export async function getSettings(env: Env): Promise<{ ready: boolean; s: Settin
     const spend = m.monthlySpendUsd ? Number(m.monthlySpendUsd) : NaN;
     return { ready: true, s: {
       enabled: m.enabled === "1", active: isProviderId(m.active) ? m.active : "", fallback: isProviderId(m.fallback) ? m.fallback : "",
-      greeting: (m.greeting && m.greeting !== OLD_GREETING ? m.greeting : "").slice(0, 300) || DEFAULT_SETTINGS.greeting,
+      greeting: (m.greeting && !OLD_GREETINGS.includes(m.greeting) ? m.greeting : "").slice(0, 300) || DEFAULT_SETTINGS.greeting,
       name: (m.name ?? "").trim().slice(0, 24) || DEFAULT_SETTINGS.name, humor: HUMORS.includes(m.humor as Humor) ? (m.humor as Humor) : DEFAULT_SETTINGS.humor,
       motion: MOTIONS.includes(m.motion as Motion) ? (m.motion as Motion) : DEFAULT_SETTINGS.motion, launcher: m.launcher === "left" ? "left" : "right", suggestions: parseSuggestions(m.suggestions), instructions: (m.instructions ?? "").slice(0, 1500), saveChats: m.saveChats === "1", retentionDays: [30, 90, 180, 365].includes(Number(m.retentionDays)) ? Number(m.retentionDays) : 90,
       dailyRequestLimit: num(m.dailyRequestLimit, DEFAULT_SETTINGS.dailyRequestLimit, 1, 1_000_000), dailyTokenLimit: num(m.dailyTokenLimit, DEFAULT_SETTINGS.dailyTokenLimit, 1000, 1_000_000_000),

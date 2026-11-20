@@ -67,13 +67,16 @@ async function openai(key: string, cfg: CallCfg, system: string, msgs: Msg[], to
     else if (m.role === "assistant") messages.push({ role: "assistant", content: m.text || null, ...(m.calls?.length ? { tool_calls: m.calls.map((c) => ({ id: c.id, type: "function", function: { name: c.name, arguments: JSON.stringify(c.args) } })) } : {}) });
     else for (const r of m.results) messages.push({ role: "tool", tool_call_id: r.id, content: r.content });
   }
-  const reasoning = /^(o\d|gpt-5)/.test(cfg.model);
+  // Reasoning models (o-series, gpt-5) spend max_completion_tokens on hidden thinking too: keep thinking short and the budget roomy, or the visible answer comes back empty.
+  const reasoning = /^(o\d|gpt-5)/.test(cfg.model) && !/chat/.test(cfg.model);
   const b = await send("https://api.openai.com/v1/chat/completions", {
     method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-    body: JSON.stringify({ model: cfg.model, messages, max_completion_tokens: cfg.maxTokens, ...(reasoning ? {} : { temperature: cfg.temperature }), ...(tools.length ? { tools: tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.parameters } })), tool_choice: "auto" } : {}) }),
+    body: JSON.stringify({ model: cfg.model, messages, max_completion_tokens: reasoning ? Math.max(cfg.maxTokens, 4000) : cfg.maxTokens, ...(reasoning ? { reasoning_effort: "low" } : { temperature: cfg.temperature }), ...(tools.length ? { tools: tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.parameters } })), tool_choice: "auto" } : {}) }),
   }, cfg.timeoutMs);
-  const msg = ((b.choices as Json[])?.[0]?.message ?? {}) as Json;
+  const choice = ((b.choices as Json[])?.[0] ?? {}) as Json;
+  const msg = (choice.message ?? {}) as Json;
   const u = (b.usage ?? {}) as Json;
+  if (!(msg.tool_calls as Json[] | undefined)?.length && !(typeof msg.content === "string" && msg.content.trim()) && choice.finish_reason === "length") throw new ProviderError("The model used all its tokens thinking before it wrote an answer. Raise Max tokens for this provider (try 2000+) or pick a non-reasoning model.", "other");
   return {
     text: typeof msg.content === "string" ? msg.content : "",
     calls: ((msg.tool_calls as Json[]) ?? []).map((c) => ({ id: String(c.id), name: String((c.function as Json)?.name), args: parseArgs((c.function as Json)?.arguments) })),
@@ -117,7 +120,7 @@ async function gemini(key: string, cfg: CallCfg, system: string, msgs: Msg[], to
   }
   const b = await send(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(cfg.model)}:generateContent`, {
     method: "POST", headers: { "x-goog-api-key": key, "content-type": "application/json" },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: cfg.temperature, maxOutputTokens: cfg.maxTokens }, ...(tools.length ? { tools: [{ functionDeclarations: tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) }] } : {}) }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: cfg.temperature, maxOutputTokens: Math.max(cfg.maxTokens, 2048) }, ...(tools.length ? { tools: [{ functionDeclarations: tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) }] } : {}) }),
   }, cfg.timeoutMs);
   const parts = (((b.candidates as Json[])?.[0]?.content as Json)?.parts as Json[]) ?? [];
   const u = (b.usageMetadata ?? {}) as Json;

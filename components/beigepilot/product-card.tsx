@@ -38,7 +38,7 @@ export function ChatProductCard({ c, onAdded, onPick }: { c: Card; onAdded?: () 
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         {sellable && <button type="button" onClick={() => { const r = cartActions.add(c.slug, pkg); setAdded(r); if (r !== "full") onAdded?.(); }} className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"><ShoppingBag className="size-3.5" aria-hidden />Get This List</button>}
         <Link href={c.url} className="rounded-full border border-forest-900 px-3.5 py-1.5 text-xs font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">View Details</Link>
-        <Link href={c.sampleUrl} className="inline-flex items-center gap-1 rounded-full border border-sand-300 px-3 py-1.5 text-xs font-semibold text-forest-900 hover:border-forest-900"><FileText className="size-3.5" aria-hidden />Request a Sample</Link>
+        <Link href={c.sampleUrl} className="inline-flex items-center gap-1 px-1.5 py-1.5 text-xs font-semibold text-purple-700 underline underline-offset-2"><FileText className="size-3.5" aria-hidden />Free sample</Link>
       </div>
       {added && <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-forest-700" role="status"><Check className="size-3.5" aria-hidden />{added === "full" ? "Your cart is full. " : added === "updated" ? "Package updated in your cart. " : "Added to your cart. "}<Link href="/cart" className="text-purple-700 underline">View cart</Link></p>}
     </article>

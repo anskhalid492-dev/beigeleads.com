@@ -90,10 +90,10 @@ export function BehaviorForm({ enabled, name, humor, motion, launcher, suggestio
           <select name="motion" value={mo} onChange={(e) => setMo(e.target.value)} className={inp}><option value="calm">Calm</option><option value="balanced">Balanced</option><option value="lively">Lively</option></select>
           <span className="mt-1 block text-xs font-normal">Visitors who prefer reduced motion always see a still mascot.</span></label>
       </div>
-      <label className="text-sm font-semibold text-forest-900">Welcome message (max 300)<textarea name="greeting" rows={2} maxLength={300} value={g} onChange={(e) => setG(e.target.value)} className={inp} /></label>
-      <label className="text-sm font-semibold text-forest-900">Suggested questions (one per line, up to 4, max 60 characters each)
-        <textarea name="suggestions" rows={4} value={sg} onChange={(e) => setSg(e.target.value)} className={inp} placeholder={"Find my ideal database\nExplore countries\nBrowse industries\nHow does BeigeLeads work?"} />
-        <span className="mt-1 block text-xs font-normal">Shown on pages without their own questions (product and cart pages keep theirs). Each one is sent as a normal message, so keep them answerable. Empty = built-in questions.</span></label>
+      <label className="text-sm font-semibold text-forest-900">Welcome line under the greeting (max 300)<textarea name="greeting" rows={2} maxLength={300} value={g} onChange={(e) => setG(e.target.value)} className={inp} /></label>
+      <label className="text-sm font-semibold text-forest-900">Welcome suggestions (one per line, up to 3, max 60 characters each)
+        <textarea name="suggestions" rows={4} value={sg} onChange={(e) => setSg(e.target.value)} className={inp} placeholder={"Find contacts\nExplore lists\nHow does delivery work?"} />
+        <span className="mt-1 block text-xs font-normal">Tiny buttons on the welcome screen. Each one is sent as a normal message, so keep them answerable. Empty = Find contacts, Explore lists, Ask Pilo.</span></label>
       <label className="text-sm font-semibold text-forest-900">Style notes for the assistant (max 1,500)
         <textarea name="instructions" rows={5} maxLength={1500} value={ins} onChange={(e) => setIns(e.target.value)} className={inp} />
         <span className="mt-1 block text-xs font-normal">Tone and wording only. These notes can never override the safety rules (no invented prices, counts or claims) and are lower priority than them.</span></label>

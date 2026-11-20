@@ -5,7 +5,7 @@ import { getPlatformProxy, type PlatformProxy } from "wrangler";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildSystem, cleanOutput, pageContext } from "@/lib/beigepilot/chat";
 import { decryptKey, encryptKey, keyHint } from "@/lib/beigepilot/secret";
-import { followUps, suggestionsFor, WELCOME_CARDS } from "@/lib/beigepilot/suggest";
+import { chipsFor, DEFAULT_CHIPS, isCheer } from "@/lib/beigepilot/suggest";
 import { getProviderKey, getSettings, parseSuggestions, limitReached, listProviders, logUsage, removeProviderKey, saveProvider, saveSettings, usageToday } from "@/lib/beigepilot/store";
 import { newCtx, runTool, TOOLS } from "@/lib/beigepilot/tools";
 import { getProducts } from "@/lib/catalog";
@@ -205,33 +205,33 @@ describe("phase 3 storage (local D1)", () => {
 afterAll(async () => { await proxy?.dispose(); });
 
 describe("BeigePilot widget suggestions and personality", () => {
-  it("has four welcome cards that each start a real question", () => {
-    expect(WELCOME_CARDS).toHaveLength(4);
-    for (const c of WELCOME_CARDS) { expect(c.ask.length).toBeGreaterThan(10); expect(c.label).not.toMatch(/audience/i); }
+  it("shows exactly three tiny welcome suggestions; two start a chat, one focuses the box", () => {
+    expect(DEFAULT_CHIPS).toHaveLength(3);
+    expect(DEFAULT_CHIPS.filter((c) => c.ask)).toHaveLength(2);
+    expect(DEFAULT_CHIPS.find((c) => c.focus)?.label).toBe("Ask Pilo");
+    expect(chipsFor([], "Kiko").map((c) => c.label)).toEqual(["Find contacts", "Explore lists", "Ask Kiko"]);
   });
-  it("picks suggestions by page: database page, cart, home, admin override", () => {
-    expect(suggestionsFor("/lists/germany-business-email-list")).toContain("What fields are included?");
-    expect(suggestionsFor("/cart")).toContain("Is this a one-time payment?");
-    expect(suggestionsFor("/")).toContain("Browse industries");
-    expect(suggestionsFor("/", ["One", "Two"])).toEqual(["One", "Two"]);
-    expect(suggestionsFor("/cart", ["One"])).toContain("Can I change my package?");
+  it("admin suggestions replace the defaults (max 3) and each is a real message", () => {
+    const c = chipsFor(["One", "Two", "Three", "Four"]);
+    expect(c.map((x) => x.ask)).toEqual(["One", "Two", "Three"]);
   });
-  it("follow-ups never repeat what the visitor already asked", () => {
-    expect(followUps(true, ["Compare packages"])).not.toContain("Compare packages");
-    expect(followUps(false, [])).toHaveLength(3);
+  it("giggles only for thanks or laughter", () => {
+    expect(isCheer("thanks a lot!")).toBe(true);
+    expect(isCheer("haha nice")).toBe(true);
+    expect(isCheer("dentists in Berlin")).toBe(false);
   });
   it("parses admin suggestions: max 4 lines of 60 characters", () => {
     const r = parseSuggestions(`a\n\n  b  \nc\nd\ne\n${"x".repeat(90)}`);
-    expect(r).toEqual(["a", "b", "c", "d"]);
+    expect(r).toEqual(["a", "b", "c"]);
     expect(parseSuggestions(`${"y".repeat(90)}`)[0]).toHaveLength(60);
   });
   it("puts the humor level and its limits in the system prompt, never above the safety rules", () => {
     const base = { instructions: "", name: "Pilo" } as never;
     const pro = buildSystem({ ...(base as object), humor: "professional" } as never, "/");
     const fun = buildSystem({ ...(base as object), humor: "playful" } as never, "/");
-    expect(pro).toContain("Do not make jokes");
+    expect(pro).toContain("No jokes");
     expect(fun).toContain("playing hide-and-seek");
-    for (const s of [pro, fun]) { expect(s).toMatch(/never joke about payments/i); expect(s.indexOf("GROUNDING RULES")).toBeLessThan(s.indexOf("CURRENT PAGE")); }
+    for (const s of [pro, fun]) { expect(s).toMatch(/never joke about payments/i); expect(s).toMatch(/ONE QUESTION AT A TIME/); expect(s).toMatch(/not a robot/); expect(s.indexOf("GROUNDING RULES")).toBeLessThan(s.indexOf("CURRENT PAGE")); }
     expect(buildSystem({ ...(base as object), humor: "friendly", name: "Pilo<script>" } as never, "/")).not.toContain("<script>");
   });
 });
