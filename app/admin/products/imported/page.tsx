@@ -22,7 +22,7 @@ export default async function ImportedPage({ searchParams }: { searchParams: Pro
   const q = (o: Partial<SP>) => `?${new URLSearchParams(Object.entries({ ...sp, ...o }).filter(([, v]) => v) as [string, string][])}`;
   return (
     <>
-      <PageHeader title="Imported products" text="Everything imported starts as a draft. Restricted products, products without a price and products without a delivery link cannot be published." actions={<Link href="/admin/products/import" className="text-sm underline">Import products</Link>} />
+      <PageHeader title="Imported products" text="Everything imported starts as a draft. Restricted products and products without a price cannot be published. Products without a delivery link can be published, but paid orders for them wait until you add the link." actions={<Link href="/admin/products/import" className="text-sm underline">Import products</Link>} />
       <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Draft" value={String(st.byStatus.draft ?? 0)} /><StatCard label="Published" value={String(st.byStatus.published ?? 0)} />
         <StatCard label="Archived" value={String(st.byStatus.archived ?? 0)} /><StatCard label="Restricted" value={String(st.restricted)} />

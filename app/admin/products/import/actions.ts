@@ -70,5 +70,5 @@ export async function bulkStatusAction(idsIn: unknown, to: unknown): Promise<{ o
   const r = await setStatus(db(), ids.data, st.data);
   await audit(a.email, `${r.changed} product(s) set to ${st.data}${r.refused.length ? `, ${r.refused.length} refused` : ""}`);
   await refresh();
-  return { ok: true, message: `${r.changed} product(s) set to ${st.data}.${r.refused.length ? ` ${r.refused.length} could not be published.` : ""}`, refused: r.refused.slice(0, 50) };
+  return { ok: true, message: `${r.changed} product(s) set to ${st.data}.${r.refused.length ? ` ${r.refused.length} could not be published.` : ""}${r.noLink.length ? ` Warning: ${r.noLink.length} published without a delivery link yet. Add links in Delivery Links, because paid orders for them wait until a link exists.` : ""}`, refused: r.refused.slice(0, 50) };
 }

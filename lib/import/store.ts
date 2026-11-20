@@ -160,8 +160,9 @@ export async function stats(db: Db) {
 
 export const listImports = (db: Db) => db.select().from(schema.catalogImports).orderBy(desc(schema.catalogImports.id)).limit(30);
 
-/** Publish / unpublish / archive. Publishing is refused for restricted products, products without a price and products without a delivery link for every package. */
-export async function setStatus(db: Db, ids: number[], status: "draft" | "published" | "archived"): Promise<{ changed: number; refused: { slug: string; reasons: string[] }[] }> {
+/** Publish / unpublish / archive. Publishing is refused for restricted products, products without a price and (a missing delivery link does not block, but is reported). */
+export async function setStatus(db: Db, ids: number[], status: "draft" | "published" | "archived"): Promise<{ changed: number; refused: { slug: string; reasons: string[] }[]; noLink: string[] }> {
+  const noLink: string[] = [];
   const refused: { slug: string; reasons: string[] }[] = [];
   let ok = ids;
   if (status === "published" && ids.length) {
@@ -171,10 +172,11 @@ export async function setStatus(db: Db, ids: number[], status: "draft" | "publis
     for (const r of rows) {
       const pk = rowPackages(r);
       const has = pk.map((k) => links.some((l) => l.s === r.slug && (l.p === k.name || l.p === "") && l.u));
-      const why = publishBlockers({ restricted: rowRestricted(r), packages: pk }, has);
-      if (why.length) refused.push({ slug: r.slug, reasons: why }); else ok.push(r.id);
+      // Owner decision (20 Nov 2026): a missing delivery link no longer blocks publishing; it is reported so the link can be added later.
+      const why = publishBlockers({ restricted: rowRestricted(r), packages: pk }, has).filter((x) => x !== "download link missing");
+      if (why.length) refused.push({ slug: r.slug, reasons: why }); else { ok.push(r.id); if (has.some((x) => !x)) noLink.push(r.slug); }
     }
   }
   for (let i = 0; i < ok.length; i += 40) await db.update(schema.catalogProducts).set({ status, updatedAt: Math.floor(Date.now() / 1000) }).where(inArray(schema.catalogProducts.id, ok.slice(i, i + 40)));
-  return { changed: ok.length, refused };
+  return { changed: ok.length, refused, noLink };
 }

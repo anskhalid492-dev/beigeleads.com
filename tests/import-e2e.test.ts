@@ -49,7 +49,7 @@ describe("catalog import", () => {
     const list = (await listProducts(db, {}, 1)).rows;
     const clean = list.find((r) => r.sourceId === "20")!, consumer = list.find((r) => r.sourceId === "30")!;
     const r = await setStatus(db, [clean.id, consumer.id], "published");
-    expect(r.changed).toBe(1); expect(r.refused.map((x) => x.slug)).toEqual([consumer.slug]);
+    expect(r.changed).toBe(1); expect(r.refused.map((x) => x.slug)).toEqual([consumer.slug]); expect(Array.isArray(r.noLink)).toBe(true);
     await env.CACHE.delete("catalog:imp:v1");
     await hydrateCatalog(env, true);
     const p = getProduct(clean.slug)!;
