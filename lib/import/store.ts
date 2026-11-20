@@ -189,3 +189,29 @@ export async function setStatus(db: Db, ids: number[], status: "draft" | "publis
   for (let i = 0; i < ok.length; i += 40) await db.update(schema.catalogProducts).set({ status, updatedAt: Math.floor(Date.now() / 1000) }).where(inArray(schema.catalogProducts.id, ok.slice(i, i + 40)));
   return { changed: ok.length, refused, noLink };
 }
+
+export const productEditSchema = z.object({
+  name: z.string().trim().min(1).max(200), title: z.string().trim().max(200), description: z.string().max(2000),
+  seoTitle: z.string().trim().max(200), metaDescription: z.string().trim().max(400),
+  packages: z.array(z.object({ name: z.enum(["Starter", "Professional", "Complete"]), records: z.number().int().min(0).max(5_000_000_000), priceUsdCents: z.number().int().min(0).max(100_000_00), highlighted: z.boolean().optional() })).min(1).max(3),
+});
+export type ProductEdit = z.infer<typeof productEditSchema>;
+
+export async function getProductRow(db: Db, id: number) {
+  return (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.id, id)).limit(1))[0] ?? null;
+}
+
+/** Edit the sellable text and packages. Slug, category, country and restricted flags are fixed here. A PUBLISHED product cannot be saved with a package price of 0. Source download links stay on their package. */
+export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise<{ ok: boolean; message: string }> {
+  const row = await getProductRow(db, id);
+  if (!row) return { ok: false, message: "That product no longer exists." };
+  if (row.status === "published" && e.packages.some((k) => !k.priceUsdCents)) return { ok: false, message: "A published product needs a price on every package. Set it back to draft first, or enter a price." };
+  if (new Set(e.packages.map((k) => k.name)).size !== e.packages.length) return { ok: false, message: "Each package name can be used once." };
+  const old = rowPackages(row);
+  const packages = e.packages.map((k) => ({ ...k, ...(old.find((o) => o.name === k.name)?.link ? { link: old.find((o) => o.name === k.name)!.link } : {}) }));
+  await db.update(schema.catalogProducts).set({
+    name: e.name, title: e.title || e.name, description: e.description, seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null,
+    packagesJson: j(packages), updatedAt: Math.floor(Date.now() / 1000),
+  }).where(eq(schema.catalogProducts.id, id));
+  return { ok: true, message: "Saved." };
+}

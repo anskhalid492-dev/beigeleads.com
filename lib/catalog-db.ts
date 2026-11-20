@@ -13,6 +13,7 @@ export type PubProduct = {
   slug: string; name: string; title: string; description: string; categorySlug: string; categoryName: string; channel: string;
   countrySlug: string; countryCode: string; countryName: string; region: string; recordCount: number | null;
   packages: { name: string; records: number; priceUsdCents: number; highlighted?: boolean }[];
+  seoTitle?: string; metaDescription?: string;
 };
 
 export function toCatalog(list: PubProduct[]): { products: Product[]; categories: Category[]; countries: Country[] } {
@@ -22,7 +23,7 @@ export function toCatalog(list: PubProduct[]): { products: Product[]; categories
     if (!ctry.has(p.countrySlug)) ctry.set(p.countrySlug, { slug: p.countrySlug, code: p.countryCode, name: p.countryName });
     return {
       slug: p.slug, categorySlug: p.categorySlug, countrySlug: p.countrySlug, title: p.title, name: p.name, description: p.description, recordCount: p.recordCount,
-      lastVerified: null, accuracyPct: null, status: "live", fields: [], placeholderData: false, packages: p.packages, imported: true, channel: p.channel, region: p.region || undefined,
+      lastVerified: null, accuracyPct: null, status: "live", fields: [], placeholderData: false, packages: p.packages, imported: true, channel: p.channel, region: p.region || undefined, seoTitle: p.seoTitle || undefined, metaDescription: p.metaDescription || undefined,
     };
   });
   return { products, categories: [...cats.values()], countries: [...ctry.values()] };
@@ -34,7 +35,7 @@ async function read(env: CloudflareEnv): Promise<PubProduct[] | null> {
     const rows = await getDbFromEnv(env).select().from(schema.catalogProducts).where(eq(schema.catalogProducts.status, "published"));
     const list: PubProduct[] = rows.map((r) => ({
       slug: r.slug, name: r.name, title: r.title, description: r.description, categorySlug: r.categorySlug, categoryName: r.categoryName, channel: r.channel,
-      countrySlug: r.countrySlug, countryCode: r.countryCode, countryName: r.countryName, region: r.region ?? "", recordCount: r.recordCount,
+      countrySlug: r.countrySlug, countryCode: r.countryCode, countryName: r.countryName, region: r.region ?? "", recordCount: r.recordCount, seoTitle: r.seoTitle ?? "", metaDescription: r.metaDescription ?? "",
       packages: (JSON.parse(r.packagesJson || "[]") as { name: string; records: number; priceUsdCents: number; highlighted?: boolean }[]).map((k) => ({ name: k.name, records: k.records, priceUsdCents: k.priceUsdCents, ...(k.highlighted ? { highlighted: true } : {}) })),
     }));
     await env.CACHE.put(KEY, JSON.stringify(list), { expirationTtl: 60 }).catch(() => undefined);

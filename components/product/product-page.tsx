@@ -25,8 +25,8 @@ export function productMetadata(slug: string): Metadata {
   const k = getCountry(p.countrySlug);
   const c = getCategory(p.categorySlug);
   if (!k || !c) return {};
-  const title = productTitle(p, k);
-  const description = productMetaDescription(p, c, k);
+  const title = p.seoTitle?.trim() || productTitle(p, k);
+  const description = p.metaDescription?.trim() || productMetaDescription(p, c, k);
   return {
     title,
     description,

@@ -985,3 +985,10 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 - `/admin/delivery/bulk` (admins; button "Bulk upload (CSV)" on `/admin/delivery`): upload a CSV (`slug` or exact product name, `package` empty = link for every package, `url` https only). The browser previews every row (new / different / unchanged / problem) with the pure `lib/delivery/bulk-check.ts`; "Replace existing" is off by default; batches of 100 go to `bulkLinksAction`, which re-validates against the real product list. Works for EVERY product including imported drafts (`lib/delivery/bulk.ts` `linkTargets` reads `catalog_products`), so links can be added before publishing. A template CSV of products without any link can be downloaded.
 - One audit row + ONE owner email per upload (not per link). `updated_by` = `bulk:<admin email>`. Test: `tests/delivery-bulk.test.ts` + a case in `tests/import-e2e.test.ts`.
+
+## 95. Phase B (part 2): imported product edit + SEO text (Nov 2026)
+
+- `/admin/products/imported/[id]` (admins; the product name in the imported list links to it): edit name, short title, description (max 2,000), up to 3 packages (records, USD price, Recommended) and optional SEO title / meta description. Slug, category, country and restricted flags are fixed. A PUBLISHED product cannot be saved with a package price of 0; package names are unique; the source download link stays on its package (`updateProduct`). Saves are audited (category catalog-import) and clear the catalog cache (live within about a minute).
+- `Product.seoTitle` / `metaDescription` (imported lists only) override the automatic product metadata (`productMetadata`); empty = automatic. They flow through `catalog:imp:v1`. The site-wide noindex is untouched.
+- Deliberately NOT built: mega-menu entries for imported categories (hundreds of them would flood the menu; they are in the `/lists` directory and filters), product image import (the product page has no image slot, and the source site is not reachable from the build environment; the source image URL stays stored), bulk edit of prices.
+- Tests: edit cases in `tests/import-e2e.test.ts`.

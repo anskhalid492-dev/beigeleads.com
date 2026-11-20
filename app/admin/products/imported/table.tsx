@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { bulkStatusAction, bulkStatusByFilterAction } from "../import/actions";
 
@@ -37,7 +38,7 @@ export function Table({ rows, total, filters }: { rows: R[]; total: number; filt
         <thead className="bg-sand-100 text-xs font-bold text-forest-900"><tr><th className="px-3 py-2"><input type="checkbox" aria-label="Select all" onChange={(e) => setSel(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())} /></th><th>Product</th><th>Category</th><th>Country</th><th>Packages</th><th>Status</th><th>Flags</th></tr></thead>
         <tbody className="divide-y divide-sand-200">{rows.map((r) => (
           <tr key={r.id}><td className="px-3 py-2"><input type="checkbox" checked={sel.has(r.id)} onChange={() => toggle(r.id)} aria-label={`Select ${r.name}`} /></td>
-            <td className="py-2 pr-2"><span className="font-semibold text-forest-900">{r.name}</span><br /><span className="text-xs">{r.slug}</span></td><td>{r.category}</td><td>{r.country}</td><td>{r.packages}</td>
+            <td className="py-2 pr-2"><Link href={`/admin/products/imported/${r.id}`} className="font-semibold text-forest-900 underline-offset-2 hover:underline">{r.name}</Link><br /><span className="text-xs">{r.slug}</span></td><td>{r.category}</td><td>{r.country}</td><td>{r.packages}</td>
             <td>{r.status}</td><td>{r.restricted.length ? <span className="rounded bg-red-100 px-1.5 text-xs text-red-900">restricted: {r.restricted.join(", ")}</span> : null}{r.flags ? <span className="ml-1 text-xs text-forest-700">{r.flags} {r.flags === 1 ? "flag" : "flags"}</span> : null}</td></tr>))}</tbody></table></div>
     </div>
   );

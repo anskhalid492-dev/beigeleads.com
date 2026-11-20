@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin/require-admin";
 import { clearImportedCache } from "@/lib/catalog-db";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { reservedSlugs } from "@/lib/import/reserved";
-import { applyBatch, finishImport, listIds, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { applyBatch, finishImport, listIds, productEditSchema, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -91,4 +91,13 @@ export async function bulkStatusByFilterAction(filtersIn: unknown, to: unknown, 
   await audit(a.email, `${changed} of ${ids.length} filtered product(s) set to ${st.data}${refused.length ? `, ${refused.length} refused` : ""}${override && st.data === "published" ? " (restricted override ticked by the owner)" : ""}`);
   await refresh();
   return { ok: true, message: `${changed} of ${ids.length} product(s) set to ${st.data}.${refused.length ? ` ${refused.length} could not be published (for example no price).` : ""}${noLink.length ? ` ${noLink.length} have no delivery link yet: add links in Delivery Links, paid orders wait until then.` : ""}`, refused: refused.slice(0, 50) };
+}
+
+export async function saveProductAction(id: unknown, dataIn: unknown): Promise<{ ok: boolean; message: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const i = z.number().int().safeParse(id), d = productEditSchema.safeParse(dataIn);
+  if (!i.success || !d.success) return { ok: false, message: `Not saved: ${d.success ? "bad product id" : d.error.issues[0].path.join(".") + " " + d.error.issues[0].message}.` };
+  const r = await updateProduct(db(), i.data, d.data);
+  if (r.ok) { await audit(a.email, `Edited product #${i.data} (${d.data.name})`); await refresh(); }
+  return r;
 }

@@ -50,6 +50,9 @@ export type Product = {
   channel?: string;
   /** US state for imported state lists. */
   region?: string;
+  /** Admin-edited SEO text for imported lists (section 95). */
+  seoTitle?: string;
+  metaDescription?: string;
 };
 
 export type Package = {

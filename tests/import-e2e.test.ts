@@ -10,6 +10,7 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
+import { getProductRow, updateProduct } from "@/lib/import/store";
 import { applyBatch, finishImport, listProducts, planBatch, rollbackImport, setStatus, startImport, type ImportRow } from "@/lib/import/store";
 import { reservedSlugs } from "@/lib/import/reserved";
 import { buildProduct, parseWoo } from "@/lib/import/woo";
@@ -73,6 +74,21 @@ describe("catalog import", () => {
     expect(r3[0].result).toBe("replaced");
     const r4 = await applyLinks(db, "t@test", [{ slug: draft.slug, pkg: "", url: "https://files.example.com/two" }], true);
     expect(r4[0].result).toBe("same");
+  });
+  it("edits name, packages and SEO text, keeps the source download link, and guards published prices", async () => {
+    const db = getDbFromEnv(env);
+    const pub = (await listProducts(db, { status: "published" }, 1)).rows[0];
+    const before = (await getProductRow(db, pub.id))!;
+    const pk = JSON.parse(before.packagesJson) as { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; link?: string }[];
+    const edit = { name: "Renamed list", title: "", description: "Edited.", seoTitle: "Custom SEO title", metaDescription: "", packages: pk.map((k) => ({ name: k.name, records: k.records, priceUsdCents: 1234 })) };
+    expect((await updateProduct(db, pub.id, edit)).ok).toBe(true);
+    const after = (await getProductRow(db, pub.id))!;
+    expect(after.name).toBe("Renamed list"); expect(after.title).toBe("Renamed list"); expect(after.seoTitle).toBe("Custom SEO title"); expect(after.metaDescription).toBeNull();
+    const links = (JSON.parse(after.packagesJson) as { link?: string }[]).map((k) => k.link);
+    expect(links).toEqual(pk.map((k) => k.link));
+    const zero = await updateProduct(db, pub.id, { ...edit, packages: edit.packages.map((k) => ({ ...k, priceUsdCents: 0 })) });
+    expect(zero.ok).toBe(false);
+    expect((await updateProduct(db, pub.id, { ...edit, packages: [edit.packages[0], edit.packages[0]] })).ok).toBe(false);
   });
   it("rollback removes only unpublished, never-ordered imports", async () => {
     const db = getDbFromEnv(env);
