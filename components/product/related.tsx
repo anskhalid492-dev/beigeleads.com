@@ -10,7 +10,7 @@ export function RelatedProducts({ items }: { items: readonly Product[] }) {
   return (
     <section className="border-t border-sand-200 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">Related databases</h2>
+        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">More business email lists you may need</h2>
         <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {items.map((r) => {
             const start = startingPriceCents(r);

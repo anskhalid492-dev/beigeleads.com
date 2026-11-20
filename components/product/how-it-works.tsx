@@ -7,11 +7,11 @@ const steps = [
   { icon: Download, t: "Download your database", d: "A secure link arrives by email as soon as the payment is confirmed." },
 ] as const;
 
-export function ProductHowItWorks() {
+export function ProductHowItWorks({ name }: { name: string }) {
   return (
     <section className="border-y border-sand-200 bg-forest-100/60 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">How it works</h2>
+        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">How to buy the {name}</h2>
         <p className="mt-4 max-w-2xl text-lg">A one-time purchase. You pay once and there is no recurring subscription.</p>
         <ol className="relative mt-14 grid gap-10 md:grid-cols-4 md:gap-6">
           <span aria-hidden className="absolute left-6 top-6 hidden h-px w-[calc(100%-3rem)] bg-forest-500/40 md:block" />

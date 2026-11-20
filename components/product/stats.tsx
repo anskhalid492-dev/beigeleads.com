@@ -26,7 +26,7 @@ export function ProductStats({ product, country, cityCount }: { product: Product
   return (
     <section className="bg-forest-900 text-sand-100">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <h2 className="display max-w-3xl text-5xl text-sand-50 sm:text-6xl">The {product.name} in numbers.</h2>
+        <h2 className="display max-w-3xl text-5xl text-sand-50 sm:text-6xl">{product.name} at a glance</h2>
         <div className="mt-12 grid gap-4 lg:grid-cols-6">
           {records && (
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 lg:col-span-3">

@@ -8,7 +8,7 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
     return (
       <section id="pricing" className="scroll-mt-20 bg-sand-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="display text-5xl text-forest-900 sm:text-6xl">Pricing</h2>
+          <h2 className="display text-5xl text-forest-900 sm:text-6xl">{product.name} pricing</h2>
           <p className="mt-4 max-w-xl text-lg">Packages for this list are not set yet. Request a free sample and we will tell you when they are.</p>
         </div>
       </section>
@@ -17,7 +17,7 @@ export function ProductPricing({ product, forSale }: { product: Product; forSale
   return (
     <section id="pricing" className="scroll-mt-20 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">Pick a package. Pay once.</h2>
+        <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">{product.name} pricing: pick a package, pay once</h2>
         <p className="mt-4 max-w-2xl text-lg">
           <strong className="text-forest-900">One-time payment. No subscription.</strong> You pay in crypto, download your file and keep it. No account needed.
         </p>

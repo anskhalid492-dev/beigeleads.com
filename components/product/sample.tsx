@@ -23,7 +23,7 @@ export function ProductSample({ product, rows }: { product: Product; rows: reado
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">See what&rsquo;s inside the {product.name}</h2>
+            <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">{product.name} sample: see what&rsquo;s inside</h2>
             <p className="mt-4 max-w-2xl text-lg">
               Explore a sample of the business information included in this database before making your purchase.
             </p>

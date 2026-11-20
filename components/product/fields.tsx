@@ -9,7 +9,7 @@ export function ProductFields({ product }: { product: Product }) {
   const other = product.fields.filter((f) => !fieldMeta[f]);
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
-      <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">What&rsquo;s included in this database?</h2>
+      <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">What data fields are in the {product.name}?</h2>
       <p className="mt-4 max-w-2xl text-lg">
         Every record can carry these {product.fields.length} fields. Some businesses do not publish every detail, so not every cell is filled.
       </p>

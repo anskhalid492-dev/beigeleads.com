@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import type { Category, Country, Product } from "@/lib/catalog";
 import type { ProductSampleRow } from "@/lib/sample-data";
 import { fmtDate, fmtNum } from "./meta";
+import { withThe } from "@/lib/product-seo";
 
 function DbWindow({ product, rows }: { product: Product; rows: readonly ProductSampleRow[] }) {
   const file = `${product.slug.replace(/-us$/, "")}-email-list`;
@@ -85,7 +86,9 @@ export function ProductHero({
               <Flag code={country.code} /> {country.name}
             </span>
           </div>
-          <h1 className="display text-6xl text-forest-900 sm:text-7xl xl:text-[5.75rem]">{product.name}</h1>
+          <h1 className="display text-6xl text-forest-900 sm:text-7xl xl:text-[5.75rem]">{product.name}
+            <span className="mt-3 block text-3xl text-forest-500 sm:text-4xl">for {withThe(country)}</span>
+          </h1>
           <p className="mt-6 max-w-xl text-xl leading-relaxed">{product.description}</p>
 
           <dl className="mt-9 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-sand-300 bg-sand-50/80 p-6 backdrop-blur sm:grid-cols-3">

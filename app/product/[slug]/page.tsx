@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Faq } from "@/components/shared/faq";
+import { SolutionFaq } from "@/components/solutions/sections";
+import { JsonLd } from "@/components/shared/json-ld";
+import { ProductOverview } from "@/components/product/overview";
+import { productJsonLd, productMetaDescription, productTitle } from "@/lib/product-seo";
 import { ProductHero } from "@/components/product/hero";
 import { ProductStats } from "@/components/product/stats";
 import { ProductSample } from "@/components/product/sample";
@@ -26,10 +29,17 @@ export async function generateMetadata(props: PageProps<"/product/[slug]">): Pro
   const { slug } = await props.params;
   const p = getProduct(slug);
   if (!p) return {};
+  const k = getCountry(p.countrySlug);
+  const c = getCategory(p.categorySlug);
+  if (!k || !c) return {};
+  const title = productTitle(p, k);
+  const description = productMetaDescription(p, c, k);
   return {
-    title: p.name,
-    description: p.description,
+    title,
+    description,
     alternates: { canonical: `/product/${p.slug}` },
+    openGraph: { title, description, url: `/product/${p.slug}`, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -47,16 +57,18 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   return (
     <>
       <ProductHero product={p} category={c} country={k} rows={rows} forSale={forSale} />
+      <ProductOverview product={p} category={c} country={k} />
       <ProductStats product={p} country={k} cityCount={getCities(k.slug).length} />
       {rows.length > 0 && <ProductSample product={p} rows={rows} />}
       <ProductFields product={p} />
       <ProductPricing product={p} forSale={forSale} />
       <ProductAudience product={p} category={c} />
-      <ProductHowItWorks />
+      <ProductHowItWorks name={p.name} />
       <ProductQuality product={p} />
-      <Faq split heading={`FAQs About the ${p.name}`} items={getProductFaqs(p, c, k)} />
+      <SolutionFaq name={`the ${p.name}`} items={getProductFaqs(p, c, k)} />
       <RelatedProducts items={getRelatedProducts(p)} />
       <ProductFinalCta product={p} category={c} />
+      <JsonLd data={productJsonLd(p, c, k, forSale)} />
     </>
   );
 }

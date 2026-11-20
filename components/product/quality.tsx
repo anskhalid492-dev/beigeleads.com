@@ -15,7 +15,7 @@ export function ProductQuality({ product }: { product: Product }) {
   ];
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
-      <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">Data quality and transparency</h2>
+      <h2 className="display max-w-3xl text-5xl text-forest-900 sm:text-6xl">{product.name} data quality and verification</h2>
       <p className="mt-4 max-w-2xl text-lg">What we check, what you get, and where the limits are, stated plainly.</p>
 
       <div className="mt-12 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
