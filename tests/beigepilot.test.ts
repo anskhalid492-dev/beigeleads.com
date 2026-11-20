@@ -66,11 +66,11 @@ describe("storage and limits (local D1)", () => {
     proxy = await getPlatformProxy<CloudflareEnv>({ configPath: "wrangler.jsonc", persist: { path: mkdtempSync(join(tmpdir(), "bp-")) } });
     env = proxy.env as CloudflareEnv;
     (env as { BEIGEPILOT_KEY_SECRET?: string }).BEIGEPILOT_KEY_SECRET = SECRET;
-    const sql = readFileSync(join("drizzle", "0037_beigepilot.sql"), "utf8").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
-    for (const s of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(s).run();
+    for (const f of ["0037_beigepilot.sql", "0038_beigepilot_knowledge.sql"]) {
+      const sql = readFileSync(join("drizzle", f), "utf8").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");
+      for (const s of sql.split(";").map((x) => x.trim()).filter(Boolean)) await env.DB.prepare(s).run();
+    }
   }, 60_000);
-  afterAll(async () => { await proxy?.dispose(); });
-
   it("defaults to off, saves settings, never lists a key", async () => {
     expect((await getSettings(env)).s.enabled).toBe(false);
     await saveProvider(env, "openai", { apiKey: "sk-live-abcdefghijklmnop", model: "m1", temperature: 0.2, maxTokens: 500, priceIn: 1, priceOut: 2 });
@@ -96,3 +96,61 @@ describe("storage and limits (local D1)", () => {
     expect(await limitReached(env, s)).toContain("daily");
   });
 });
+
+import { cleanEntry, listEntries, publishedEntries, saveEntry, searchEntries, type Entry } from "@/lib/beigepilot/knowledge";
+import { createLead, listLeads, listUnanswered, logUnanswered, looksPrivate, setUnanswered, updateLead } from "@/lib/beigepilot/leads";
+import { handoffSchema } from "@/lib/beigepilot/handoff";
+
+const E = (o: Partial<Entry>): Entry => ({ id: 1, kind: "faq", title: "", answer: "", keywords: "", status: "published", updatedAt: 0, ...o });
+describe("knowledge search and rules", () => {
+  it("scores by keyword and ignores blocked claims", () => {
+    const items = [E({ id: 1, title: "Do you offer invoices?", answer: "Yes, an invoice is in your delivery email.", keywords: "invoice, receipt" }), E({ id: 2, kind: "restricted", title: "invoice guarantee", answer: "Do not promise." }), E({ id: 3, title: "Office hours", answer: "We are online." })];
+    expect(searchEntries(items, "can I get an invoice").map((e) => e.id)).toEqual([1]);
+    expect(searchEntries(items, "zzz qqq")).toEqual([]);
+  });
+  it("validates entries", () => {
+    expect(cleanEntry({ title: "x", answer: "long enough answer" }).ok).toBe(false);
+    expect(cleanEntry({ title: "A real question?", answer: "See https://evil.example/x for it." }).ok).toBe(false);
+    expect(cleanEntry({ title: "A real question?", answer: "A real answer here.", status: "published" }).ok).toBe(true);
+  });
+  it("refuses private-looking questions", () => {
+    expect(looksPrivate("my email is a@b.co")).toBe(true);
+    expect(looksPrivate("call me 415 555 0100 now")).toBe(true);
+    expect(looksPrivate("do you sell lists for plumbers")).toBe(false);
+  });
+  it("requires consent and a valid email for a handoff", () => {
+    const base = { name: "Ann Lee", email: "ann@example.com", message: "I need a custom list please", consent: "yes", turnstileToken: "t" };
+    expect(handoffSchema.safeParse(base).success).toBe(true);
+    expect(handoffSchema.safeParse({ ...base, consent: "" }).success).toBe(false);
+    expect(handoffSchema.safeParse({ ...base, email: "nope" }).success).toBe(false);
+  });
+});
+
+describe("phase 2 storage (local D1)", () => {
+  it("only published entries are used", async () => {
+    const c = cleanEntry({ title: "Do you offer invoices?", answer: "Yes, an invoice is included.", keywords: "invoice" }); if (!c.ok) throw new Error("bad");
+    const id = await saveEntry(env, null, c.v);
+    expect(await publishedEntries(env)).toHaveLength(0);
+    await saveEntry(env, id, { ...c.v, status: "published" });
+    expect((await publishedEntries(env)).map((e) => e.id)).toContain(id);
+    expect((await listEntries(env)).items).toHaveLength(1);
+  });
+  it("counts repeated unanswered questions once and reopens resolved ones", async () => {
+    expect(await logUnanswered(env, "Do you sell lists for plumbers?", "/")).toBe(true);
+    expect(await logUnanswered(env, "do you sell lists for PLUMBERS", "/lists")).toBe(true);
+    expect(await logUnanswered(env, "email me at a@b.co", "/")).toBe(false);
+    let l = (await listUnanswered(env, "all")).items; expect(l).toHaveLength(1); expect(l[0].times).toBe(2);
+    await setUnanswered(env, l[0].id, "resolved");
+    await logUnanswered(env, "Do you sell lists for plumbers?", "/");
+    l = (await listUnanswered(env, "new")).items; expect(l).toHaveLength(1);
+  });
+  it("saves a lead only with consent", async () => {
+    expect(await createLead(env, { name: "A", email: "a@b.co", message: "hello there friend", page: "/", consent: false })).toBeNull();
+    const r = await createLead(env, { name: "Ann", email: "Ann@B.co", message: "hello there friend", page: "/", consent: true });
+    expect(r?.reference).toMatch(/^BP-/);
+    const { items } = await listLeads(env, "new"); expect(items[0].email).toBe("ann@b.co");
+    await updateLead(env, items[0].id, "contacted", "called"); expect((await listLeads(env, "contacted")).items).toHaveLength(1);
+  });
+});
+
+afterAll(async () => { await proxy?.dispose(); });

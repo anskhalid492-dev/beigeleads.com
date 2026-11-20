@@ -42,15 +42,23 @@ export function ProviderCard({ p, label }: { p: ProviderRow; label: string }) {
 
 export function RoutingForm({ active, fallback, ids, daily, tokens, spend }: { active: string; fallback: string; ids: { id: string; label: string }[]; daily: number; tokens: number; spend: number | null }) {
   const [r, act, pending] = useActionState(saveSettingsAction, null);
+  // Controlled values: React resets uncontrolled fields after a form action, which looked like "nothing happens".
+  const [a, setA] = useState(active);
+  const [f, setF] = useState(fallback);
+  const [d, setD] = useState(String(daily));
+  const [t, setT] = useState(String(tokens));
+  const [m, setM] = useState(spend === null ? "" : String(spend));
+  const label = (id: string) => ids.find((i) => i.id === id)?.label ?? "None";
   return (
     <form action={act} className="grid gap-3 rounded-2xl border border-sand-200 bg-white p-5 sm:grid-cols-2">
+      <p className="sm:col-span-2 text-sm">Saved active provider: <b className="text-forest-900">{label(active)}</b>{a !== active && <span className="ml-2 font-semibold text-purple-700">Selected: {label(a)}. Press Save to apply.</span>}</p>
       <label className="text-sm font-semibold text-forest-900">Active provider
-        <select name="active" defaultValue={active} className={inp}><option value="">None</option>{ids.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}</select></label>
+        <select name="active" value={a} onChange={(e) => { setA(e.target.value); if (e.target.value === f) setF(""); }} className={inp}><option value="">None</option>{ids.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}</select></label>
       <label className="text-sm font-semibold text-forest-900">Fallback provider (used if the active one fails)
-        <select name="fallback" defaultValue={fallback} className={inp}><option value="">None</option>{ids.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}</select></label>
-      <label className="text-sm font-semibold text-forest-900">Daily request limit<input name="dailyRequestLimit" type="number" min="1" defaultValue={daily} className={inp} /></label>
-      <label className="text-sm font-semibold text-forest-900">Daily token limit<input name="dailyTokenLimit" type="number" min="1000" defaultValue={tokens} className={inp} /></label>
-      <label className="sm:col-span-2 text-sm font-semibold text-forest-900">Monthly spend limit, USD (optional; needs token prices above)<input name="monthlySpendUsd" type="number" step="0.01" min="0" defaultValue={spend ?? ""} className={inp} /></label>
+        <select name="fallback" value={f} onChange={(e) => setF(e.target.value)} className={inp}><option value="">None</option>{ids.filter((i) => i.id !== a).map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}</select></label>
+      <label className="text-sm font-semibold text-forest-900">Daily request limit<input name="dailyRequestLimit" type="number" min="1" value={d} onChange={(e) => setD(e.target.value)} className={inp} /></label>
+      <label className="text-sm font-semibold text-forest-900">Daily token limit<input name="dailyTokenLimit" type="number" min="1000" value={t} onChange={(e) => setT(e.target.value)} className={inp} /></label>
+      <label className="sm:col-span-2 text-sm font-semibold text-forest-900">Monthly spend limit, USD (optional; needs token prices above)<input name="monthlySpendUsd" type="number" step="0.01" min="0" value={m} onChange={(e) => setM(e.target.value)} className={inp} /></label>
       <div className="sm:col-span-2 flex items-center gap-3"><Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save routing and limits"}</Button><Msg r={r} /></div>
     </form>
   );
@@ -58,12 +66,15 @@ export function RoutingForm({ active, fallback, ids, daily, tokens, spend }: { a
 
 export function BehaviorForm({ enabled, greeting, instructions }: { enabled: boolean; greeting: string; instructions: string }) {
   const [r, act, pending] = useActionState(saveSettingsAction, null);
+  const [on, setOn] = useState(enabled);
+  const [g, setG] = useState(greeting);
+  const [ins, setIns] = useState(instructions);
   return (
     <form action={act} className="grid gap-4 rounded-2xl border border-sand-200 bg-white p-5">
-      <label className="flex items-center gap-3 text-sm font-semibold text-forest-900"><input type="hidden" name="enabled" value="0" /><input type="checkbox" name="enabled" value="1" defaultChecked={enabled} className="size-4" />Show BeigePilot to visitors</label>
-      <label className="text-sm font-semibold text-forest-900">Greeting (max 300)<textarea name="greeting" rows={2} maxLength={300} defaultValue={greeting} className={inp} /></label>
+      <label className="flex items-center gap-3 text-sm font-semibold text-forest-900"><input type="hidden" name="enabled" value="0" /><input type="checkbox" name="enabled" value="1" checked={on} onChange={(e) => setOn(e.target.checked)} className="size-4" />Show BeigePilot to visitors</label>
+      <label className="text-sm font-semibold text-forest-900">Greeting (max 300)<textarea name="greeting" rows={2} maxLength={300} value={g} onChange={(e) => setG(e.target.value)} className={inp} /></label>
       <label className="text-sm font-semibold text-forest-900">Style notes for the assistant (max 1,500)
-        <textarea name="instructions" rows={5} maxLength={1500} defaultValue={instructions} className={inp} />
+        <textarea name="instructions" rows={5} maxLength={1500} value={ins} onChange={(e) => setIns(e.target.value)} className={inp} />
         <span className="mt-1 block text-xs font-normal">Tone and wording only. These notes can never override the safety rules (no invented prices, counts or claims) and are lower priority than them.</span></label>
       <div className="flex items-center gap-3"><Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</Button><Msg r={r} /></div>
     </form>

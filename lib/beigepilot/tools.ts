@@ -9,6 +9,7 @@ import { helpArticles, helpCategories, plainText } from "@/lib/help";
 import { searchDocs, toDoc, type SearchDoc } from "@/lib/help/search";
 import { loadHelp } from "@/lib/help/store";
 import { legalBySlug, LEGAL_UPDATED } from "@/lib/legal/docs";
+import { publishedEntries, searchEntries } from "./knowledge";
 import type { ToolDef } from "./providers";
 
 export type Card = {
@@ -17,8 +18,8 @@ export type Card = {
   packages: { name: string; records: number; price: string; priceCents: number; highlighted: boolean }[];
 };
 export type Source = { title: string; url: string };
-export type ToolCtx = { env: CloudflareEnv; cards: Card[]; sources: Source[]; handoff: string | null; trace: { name: string; args: unknown; ok: boolean }[] };
-export const newCtx = (env: CloudflareEnv): ToolCtx => ({ env, cards: [], sources: [], handoff: null, trace: [] });
+export type ToolCtx = { env: CloudflareEnv; cards: Card[]; sources: Source[]; handoff: string | null; miss: boolean; trace: { name: string; args: unknown; ok: boolean }[] };
+export const newCtx = (env: CloudflareEnv): ToolCtx => ({ env, cards: [], sources: [], handoff: null, miss: false, trace: [] });
 
 const forSale = (p: Product) => p.status === "live" && !p.placeholderData;
 const url = (p: Product) => `/lists/${p.slug}`;
@@ -74,6 +75,7 @@ export const TOOLS: ToolDef[] = [
   { name: "getProductVerificationInfo", description: "The recorded last-updated date and stated accuracy of one list, plus the policy pages that govern verification, replacement and refunds.", parameters: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "getRelatedProducts", description: "Other real lists related to one list (same industry, country or channel).", parameters: { type: "object", properties: { slug: { type: "string" }, limit: { type: "integer" } }, required: ["slug"] } },
   { name: "showProductCards", description: "Show interactive product cards (View Details, Get This List, Request a Sample) to the visitor for up to 3 real lists. Call it after you recommend lists.", parameters: { type: "object", properties: { slugs: { type: "array", items: { type: "string" } } }, required: ["slugs"] } },
+  { name: "searchKnowledge", description: "Search answers written by the BeigeLeads team (custom FAQs). Use it for questions about policies, process or products that the catalog tools do not cover, before searchHelpArticles.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "searchHelpArticles", description: "Search published Help Center articles for how-to, delivery, payment, data and policy answers.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "getPolicyDetails", description: "Read a published policy page. topic is one of: " + POLICY_SLUGS.join(", "), parameters: { type: "object", properties: { topic: { type: "string" } }, required: ["topic"] } },
   { name: "suggestContact", description: "Use when you cannot answer confidently from tools, or the visitor asks about a specific order or account. Shows a 'Contact Our Team' button.", parameters: { type: "object", properties: { reason: { type: "string" } }, required: ["reason"] } },
@@ -120,10 +122,17 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         for (const p of found) if (!ctx.cards.some((c) => c.slug === p.slug)) ctx.cards.push(card(p));
         return { shown: found.map((p) => p.slug), unknown: slugs.length - found.length };
       }
+      case "searchKnowledge": {
+        const q = str(args.query, 160); if (!q) return { error: "empty query" };
+        const hits = searchEntries(await publishedEntries(ctx.env), q, 3);
+        if (!hits.length) ctx.miss = true;
+        return { answers: hits.map((h) => ({ question: h.title, answer: h.answer })), note: hits.length ? "These are the team's own answers. Use them, do not add to them." : "No team answer found. Try searchHelpArticles next." };
+      }
       case "searchHelpArticles": {
         const q = str(args.query, 160); if (!q) return { error: "empty query" };
         const { docs, text } = await helpDocs(ctx.env);
         const hits = searchDocs(docs, q, undefined, 4);
+        if (!hits.length) ctx.miss = true;
         for (const h of hits) ctx.sources.push({ title: h.title, url: h.href });
         return { articles: hits.map((h) => ({ title: h.title, url: h.href, excerpt: (text.get(h.id) ?? "").slice(0, 900) })), note: hits.length ? undefined : "No matching article. Do not guess; offer /contact." };
       }

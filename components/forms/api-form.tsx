@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 export type Field =
   | { name: string; label: string; type: "text" | "email"; required?: boolean; placeholder?: string; autoComplete?: string }
   | { name: string; label: string; type: "textarea"; required?: boolean; placeholder?: string }
+  | { name: string; label: string; type: "checkbox"; required?: boolean; value?: string }
   | { name: string; label: string; type: "select"; options: readonly { value: string; label: string }[]; required?: boolean };
 
 type Props = {
@@ -111,6 +112,14 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
     <form onSubmit={onSubmit} noValidate className="space-y-5">
       {fields.map((f) => {
         const id = `${formId}-${f.name}`;
+        if (f.type === "checkbox") {
+          return (
+            <label key={f.name} htmlFor={id} className="flex items-start gap-2.5 text-sm text-forest-900">
+              <input id={id} name={f.name} type="checkbox" value={f.value ?? "yes"} required={f.required} className="mt-0.5 size-4 shrink-0" />
+              <span>{f.label}</span>
+            </label>
+          );
+        }
         return (
           <div key={f.name}>
             <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-forest-900">

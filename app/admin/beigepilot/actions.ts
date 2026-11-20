@@ -86,3 +86,47 @@ export async function playgroundAction(_: { out: ChatOut | null; q: string } | n
   const out = await chat(env, { history: [{ role: "user", text: q }], path: String(form.get("path") ?? "/").slice(0, 200), provider: isProviderId(p) ? p : undefined });
   return { out, q };
 }
+
+/* ---------------- Phase 2: knowledge, unanswered, leads ---------------- */
+import { redirect } from "next/navigation";
+import { cleanEntry, deleteEntry, saveEntry } from "@/lib/beigepilot/knowledge";
+import { deleteLead, deleteUnanswered, setUnanswered, updateLead } from "@/lib/beigepilot/leads";
+
+export async function saveEntryAction(_: Result | null, form: FormData): Promise<Result> {
+  const who = await actor(); if (!who) return { ok: false, message: "Not allowed." };
+  const env = getCloudflareContext().env;
+  const c = cleanEntry({ kind: String(form.get("kind") ?? ""), title: String(form.get("title") ?? ""), answer: String(form.get("answer") ?? ""), keywords: String(form.get("keywords") ?? ""), status: String(form.get("status") ?? "") });
+  if (!c.ok) return { ok: false, message: c.error };
+  const id = Number(form.get("id")) || null;
+  const from = Number(form.get("fromUnanswered")) || null;
+  let saved: number;
+  try { saved = await saveEntry(env, id, c.v); } catch { return { ok: false, message: "Could not save. Run migration 0038 in D1 first." }; }
+  if (from) await setUnanswered(env, from, "resolved", saved).catch(() => {});
+  await audit(env, who, `knowledge.${saved}`, `${c.v.kind} ${c.v.status}`);
+  revalidatePath("/admin/beigepilot", "layout");
+  if (!id) redirect(`/admin/beigepilot/knowledge?saved=${saved}`);
+  return { ok: true, message: "Saved. Published answers are used within about a minute." };
+}
+export async function deleteEntryAction(form: FormData): Promise<void> {
+  const who = await actor(); if (!who) return;
+  const id = Number(form.get("id")); if (!id) return;
+  const env = getCloudflareContext().env;
+  await deleteEntry(env, id); await audit(env, who, `knowledge.${id}`, "deleted");
+  revalidatePath("/admin/beigepilot", "layout");
+}
+export async function unansweredAction(form: FormData): Promise<void> {
+  const who = await actor(); if (!who) return;
+  const id = Number(form.get("id")); const op = String(form.get("op") ?? ""); if (!id) return;
+  const env = getCloudflareContext().env;
+  if (op === "delete") await deleteUnanswered(env, id); else await setUnanswered(env, id, op);
+  await audit(env, who, `unanswered.${id}`, op);
+  revalidatePath("/admin/beigepilot/unanswered");
+}
+export async function leadAction(form: FormData): Promise<void> {
+  const who = await actor(); if (!who) return;
+  const id = Number(form.get("id")); if (!id) return;
+  const env = getCloudflareContext().env;
+  if (String(form.get("op")) === "delete") { await deleteLead(env, id); await audit(env, who, `lead.${id}`, "deleted"); }
+  else { await updateLead(env, id, String(form.get("status") ?? ""), String(form.get("note") ?? "")); await audit(env, who, `lead.${id}`, `status ${String(form.get("status"))}`); }
+  revalidatePath("/admin/beigepilot/leads");
+}

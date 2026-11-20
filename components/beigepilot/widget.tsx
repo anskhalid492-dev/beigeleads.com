@@ -7,6 +7,7 @@ import { useCart } from "@/lib/cart/client";
 import type { Card, Source } from "@/lib/beigepilot/tools";
 import { Markup } from "./markup";
 import { ChatProductCard } from "./product-card";
+import { ApiForm } from "@/components/forms/api-form";
 
 type Msg = { role: "user" | "assistant"; text: string; cards?: Card[]; sources?: Source[]; handoff?: boolean; error?: boolean };
 const KEY = "bp-chat-v1";
@@ -28,6 +29,7 @@ export function BeigePilot() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState<number | null>(null);
   const end = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
 
@@ -95,7 +97,21 @@ export function BeigePilot() {
               <div key={i} className="bp-msg space-y-2.5">
                 <div className={`max-w-[92%] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-forest-900 ${m.error ? "bg-amber-100" : "bg-sand-100"}`}><Markup text={m.text} /></div>
                 {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} />)}
-                {m.handoff && <Link href="/contact" className="inline-flex rounded-full border border-forest-900 px-4 py-2 text-xs font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50">Contact Our Team</Link>}
+                {m.handoff && form !== i && <button type="button" onClick={() => setForm(i)} className="inline-flex rounded-full border border-forest-900 px-4 py-2 text-xs font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50">Contact Our Team</button>}
+                {m.handoff && form === i && (
+                  <div className="rounded-xl border border-sand-300 bg-white p-3.5">
+                    <p className="mb-2 text-sm font-bold text-forest-900">Leave your details and our team will read your message.</p>
+                    <ApiForm endpoint="/api/beigepilot/handoff" submitLabel="Send to our team" successTitle="Message sent" successText="Thanks. Our team has your message. We sent a confirmation to your email."
+                      hidden={{ page: path.slice(0, 80) }}
+                      fields={[
+                        { name: "name", label: "Your name", type: "text", required: true, autoComplete: "name" },
+                        { name: "email", label: "Email", type: "email", required: true },
+                        { name: "message", label: "What do you need?", type: "textarea", required: true },
+                        { name: "consent", label: "I agree that BeigeLeads may contact me by email about this request.", type: "checkbox", required: true },
+                      ]} />
+                    <p className="mt-2 text-xs">Or write to us on the <Link href="/contact" className="font-semibold text-purple-700 underline">contact page</Link>.</p>
+                  </div>
+                )}
                 {!!m.sources?.length && <p className="text-xs">Sources: {m.sources.map((s, j) => <span key={s.url}>{j > 0 && " · "}<Link href={s.url} className="font-semibold text-purple-700 underline underline-offset-2">{s.title}</Link></span>)}</p>}
               </div>
             ))}

@@ -8,6 +8,7 @@ import { purgeOldSearches } from "./lib/help/analytics";
 import { purgeCartEvents } from "./lib/cart/stats";
 import { purgeOldPopupEvents } from "./lib/popups/store";
 import { purgeEmailLogs } from "./lib/system-emails/webhook";
+import { purgeUnanswered } from "./lib/beigepilot/leads";
 import { applyPageSeo, type PageOverrideMap } from "./lib/seo/page-rewrite";
 import { findRedirect, isProtected, type RedirectMap } from "./lib/seo/redirect-rules";
 import { expireStaleAttempts, runPaymentWatcher } from "./lib/payments/watcher";
@@ -94,6 +95,7 @@ export default {
       // Help Center search words are kept 90 days. A missing table (migration 0021 not applied yet) must not matter.
       ctx.waitUntil(purgeOldSearches(env).catch(() => undefined));
       ctx.waitUntil(purgeEmailLogs(env).catch(() => undefined));
+      ctx.waitUntil(purgeUnanswered(env).catch(() => undefined));
       ctx.waitUntil(purgeOldPopupEvents(env).catch(() => undefined));
       ctx.waitUntil(purgeCartEvents(env));
     }
