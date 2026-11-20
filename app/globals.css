@@ -431,8 +431,12 @@ summary::-webkit-details-marker {
   to { opacity: 1; transform: none; }
 }
 .mega-in { animation: mega-in 160ms ease-out both; }
+@keyframes mega-sub { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+@keyframes mega-item { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.mega-sub { animation: mega-sub 180ms ease-out both; }
+.mega-item { animation: mega-item 180ms ease-out both; animation-delay: calc(var(--i, 0) * 22ms); }
 @media (prefers-reduced-motion: reduce) {
-  .mega-in { animation: none; }
+  .mega-in, .mega-sub, .mega-item { animation: none; }
 }
 
 /* Home: staggered hero entrance, drifting background blobs, process line. Transform/opacity only. */

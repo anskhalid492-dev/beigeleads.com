@@ -43,7 +43,7 @@ export const TAXONOMY: TaxGroup[] = [
     ],
   },
   {
-    slug: "whatsapp-number-lists", name: "WhatsApp Number Lists", menuName: "WhatsApp Number Lists", icon: "message", status: "upcoming", compliance: "whatsapp",
+    slug: "whatsapp-number-lists", name: "WhatsApp Number Lists", menuName: "WhatsApp Lists", icon: "message", status: "upcoming", compliance: "whatsapp",
     short: "Only with a lawful, permission-based approach.",
     blurb: "WhatsApp contact data is not on sale today. Having a phone number is not permission to message it on WhatsApp, so any future list must be sourced and used on a permission basis.",
     children: [
@@ -84,7 +84,7 @@ export const TAXONOMY: TaxGroup[] = [
     ],
   },
   {
-    slug: "industry-databases", name: "Industry Databases", menuName: "Industry Databases", icon: "building", status: "available",
+    slug: "industry-databases", name: "Industry Databases", menuName: "Industry Lists", icon: "building", status: "available",
     short: "Dentists, restaurants and more.",
     blurb: "Pick the type of business you sell to. Industries with a ready-made list link straight to it; the others are open for custom requests.",
     // Industries that have a real product come from the catalog (see groupChildren); these are the ones without one yet.
@@ -98,7 +98,7 @@ export const TAXONOMY: TaxGroup[] = [
     ],
   },
   {
-    slug: "geographic-databases", name: "Geographic Databases", menuName: "Geographic Databases", icon: "globe", status: "available",
+    slug: "geographic-databases", name: "Geographic Databases", menuName: "Geographic Lists", icon: "globe", status: "available",
     short: "Browse by country, state or region, and city.",
     blurb: "Every ready-made list can be viewed by place. Place pages show only the inventory we have recorded there.",
     children: [
