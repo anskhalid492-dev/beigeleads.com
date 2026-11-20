@@ -38,7 +38,7 @@ export function DataExplorer({ sheets }: { sheets: readonly ExplorerSheet[] }) {
       </div>
       <div id={`${id}-p`} role="tabpanel" className="mt-4 overflow-x-auto rounded-xl border border-sand-200">
         <table className="w-full min-w-[56rem] text-left text-sm">
-          <caption className="sr-only">Example rows for {sheet.label}: fictional businesses with masked contact details.</caption>
+          <caption className="sr-only">Sample rows for {sheet.label} with masked contact details.</caption>
           <thead className="bg-forest-900 text-sand-100">
             <tr>
               {cols.map(([k, label]) => (
@@ -67,7 +67,7 @@ export function DataExplorer({ sheets }: { sheets: readonly ExplorerSheet[] }) {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-sm"><strong className="text-forest-900">Example records.</strong> Fictional businesses on example domains, shown to explain the layout. Real samples mask email, phone and street address the same way. Available fields vary by product.</p>
+      <p className="mt-3 text-sm"><strong className="text-forest-900">Real rows, masked.</strong> Email, phone and street address are partly hidden in samples. Available fields vary by product.</p>
       <p className="mt-2 text-sm"><Link href={`/lists/${sheet.productSlug}`} className="font-semibold text-forest-900 underline underline-offset-4">See the {sheet.label} list</Link> · <Link href="/lists" className="font-semibold text-forest-900 underline underline-offset-4">Browse all lists</Link></p>
     </div>
   );

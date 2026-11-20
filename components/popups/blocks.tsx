@@ -61,7 +61,7 @@ export function Block({ kind, ctx }: { kind: string; ctx: BlockCtx }) {
             <table className="w-full text-left"><thead className="bg-sand-100 text-forest-900"><tr><th className="px-2 py-1.5">Business</th><th className="px-2 py-1.5">City</th><th className="px-2 py-1.5">Email</th></tr></thead>
               <tbody>{rows.map((r) => <tr key={r[0]} className="border-t border-sand-200"><td className="px-2 py-1.5">{r[0]}</td><td className="px-2 py-1.5">{r[1]}</td><td className="px-2 py-1.5 font-mono">{r[2]}</td></tr>)}</tbody></table>
           </div>
-          <p className="mt-1.5 text-[11px] text-forest-700">Fictional example rows with masked contacts, shown to illustrate the format.</p>
+          <p className="mt-1.5 text-[11px] text-forest-700">Real rows with masked contacts.</p>
         </div>
       );
     }

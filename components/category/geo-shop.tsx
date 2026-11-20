@@ -7,8 +7,7 @@ import { SolutionFaq } from "@/components/solutions/sections";
 import { CityCollection, type CityItem } from "@/components/category/city-collection";
 import { Block, UseCases } from "@/components/category/blocks";
 import { wrap } from "@/components/category/parts";
-import { getCategory } from "@/lib/catalog";
-import { productSamples } from "@/lib/sample-data";
+import { getCategory, getDefaultSample, sampleRowsOf } from "@/lib/catalog";
 import type { ShopProduct } from "@/lib/shop";
 
 export const geoShopPath = (countrySlug: string) => `/lists/${countrySlug}-business-email-lists`;
@@ -31,7 +30,7 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
   const cityProducts = products.filter((p) => p.countrySlug === country.slug && p.scope === "city");
   const others = products.filter((p) => p.countrySlug === country.slug && p.scope !== "city" && p !== full);
   const cities: CityItem[] = cityProducts.map((p) => ({ slug: p.slug, city: p.name.replace(/ Business Email List$/, ""), name: p.name, title: p.title, description: p.description ?? p.title, fields: p.fields, recordCount: p.recordCount, coverage: `${p.name.replace(/ Business Email List$/, "")}, ${k}`, href: `/lists/${p.slug}`, forSale: p.status === "live" }));
-  const rows = productSamples[full?.categorySlug ?? "business"] ?? [];
+  const rows = full ? sampleRowsOf(full.slug) : getDefaultSample();
   const industry = getCategory("business");
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: `${k} Business Email Lists`, href: path }, ...(view === "cities" ? [{ name: "Cities", href: `${path}/cities` }] : [])];
   const primary = full ? { label: `Get the Full ${k} Database`, href: `/lists/${full.slug}` } : { label: `Browse ${k} Lists by City`, href: "#cities" };
@@ -56,7 +55,7 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
               <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3"><span className="truncate font-mono text-xs text-sand-300">{full?.slug ?? "preview"}</span><span className="rounded-full bg-forest-100 px-2.5 py-0.5 text-[0.7rem] font-semibold text-forest-900">Masked sample</span></div>
               <div className="overflow-x-auto"><table className="w-full min-w-[24rem] text-left text-[0.8rem]"><thead><tr className="text-forest-300">{["Business", "City", "Email"].map((h) => <th key={h} scope="col" className="px-4 py-2.5 font-semibold">{h}</th>)}</tr></thead>
                 <tbody>{rows.slice(0, 5).map((r) => <tr key={r.business} className="border-t border-white/10 text-sand-100"><td className="whitespace-nowrap px-4 py-2.5 font-medium text-sand-50">{r.business}</td><td className="whitespace-nowrap px-4 py-2.5">{r.city}</td><td className="whitespace-nowrap px-4 py-2.5 font-mono">{r.email}</td></tr>)}</tbody></table></div>
-              <p className="border-t border-white/10 bg-black/20 px-4 py-2.5 text-xs text-sand-300">Fictional example rows. CSV · Excel · TXT</p>
+              <p className="border-t border-white/10 bg-black/20 px-4 py-2.5 text-xs text-sand-300">Real rows, masked. CSV · Excel · TXT</p>
             </div>
           </div>
         </section>

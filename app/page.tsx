@@ -3,6 +3,8 @@ import { PromoBanner } from "@/components/promos/banner";
 import Link from "next/link";
 import { ArrowRight, Download, Eye, FileText, Mail, Search, ShieldCheck, Users, Wallet } from "lucide-react";
 import { Copilot } from "@/components/home/copilot";
+import { hydrateCatalog } from "@/lib/catalog-db";
+import { ledgerSheets } from "@/lib/home-ledger";
 import { SampleLedger } from "@/components/home/sample-ledger";
 import { DbBadge } from "@/components/shared/db-icon";
 import { SolutionFaq } from "@/components/solutions/sections";
@@ -81,7 +83,11 @@ const faq = [
   ["How do I pay?", "In cryptocurrency (BTC, USDT, USDC or ETH). Card payments may come later."],
 ] as const;
 
-export default function Home() {
+export const dynamic = "force-dynamic"; // reads the full catalog and the real sample
+
+export default async function Home() {
+  await hydrateCatalog();
+  const ledger = ledgerSheets();
   const categories = getCategories();
   const products = getProducts();
   const countries = getCountries();
@@ -195,10 +201,9 @@ export default function Home() {
           <div>
             <h2 id="preview" className={h2}>Look inside before you buy</h2>
             <p className="mt-4 text-lg">Switch between lists and see how a file is laid out. Contact details are masked in samples.</p>
-            <p className="mt-3 text-sm">The rows shown here are demonstrations, not real businesses.</p>
             <Button asChild size="lg" className="mt-6"><Link href="/sample">Request a free sample</Link></Button>
           </div>
-          <SampleLedger />
+          {ledger.length > 0 ? <SampleLedger sheets={ledger} /> : <div className="rounded-2xl border border-sand-200 bg-white p-8"><p className="display text-3xl text-forest-900">See real rows, masked.</p><p className="mt-3">Request a free sample and we send you real rows from the list, with emails and phone numbers masked.</p></div>}
         </div>
       </section>
 

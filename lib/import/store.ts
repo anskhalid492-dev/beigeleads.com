@@ -308,6 +308,12 @@ export async function saveSamples(db: Db, id: number, rows: SampleRowData[]): Pr
   return r.length > 0;
 }
 
+/** The ONE real (already masked) sample shown on every product that has none of its own. Empty array removes it. */
+export async function saveDefaultSample(db: Db, rows: SampleRowData[], by: string): Promise<void> {
+  const v = rows.length ? j(cleanStored(rows)) : "";
+  await db.insert(schema.systemSettings).values({ key: "sample.default", value: v, updatedBy: by }).onConflictDoUpdate({ target: schema.systemSettings.key, set: { value: v, updatedBy: by, updatedAt: new Date() } });
+}
+
 /** Bulk: rows grouped by product slug. Unknown slugs are reported, never created. */
 export async function saveSamplesBySlug(db: Db, groups: { slug: string; rows: SampleRowData[] }[]): Promise<{ saved: number; unknown: string[] }> {
   let saved = 0; const unknown: string[] = [];
@@ -340,10 +346,16 @@ export async function renameProduct(db: Db, id: number, base: string): Promise<{
   return { changed: true, from, to };
 }
 
-export type SeoOptions = { slugs: boolean; names: boolean; titles: boolean };
-/** Regenerate slug / name+H1 / SEO title+meta for products (never touches built-in products' slugs, restricted flags or packages). */
+export type SeoOptions = { slugs: boolean; names: boolean; titles: boolean; categories?: boolean };
+const GENERIC_CATS = new Set(["general targeted lists", "job titles"]);
+const catKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/(ies)$/, "y").replace(/s$/, "");
+/** Regenerate slug / name+H1 / SEO title+meta for products (never touches restricted flags or packages). */
 export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false): Promise<{ changed: number; slugChanged: number; sample: { id: number; from: string; to: string; name: string; seoTitle: string }[] }> {
   let changed = 0, slugChanged = 0; const sample: { id: number; from: string; to: string; name: string; seoTitle: string }[] = [];
+  // Existing categories (by normalised name) so "Dentist" and "Dentists" end up in ONE category, never two.
+  const cats = new Map<string, { slug: string; name: string }>();
+  if (o.categories) for (const c of await db.selectDistinct({ s: schema.catalogProducts.categorySlug, n: schema.catalogProducts.categoryName }).from(schema.catalogProducts)) if (!GENERIC_CATS.has(c.n.toLowerCase())) cats.set(catKey(c.n), { slug: c.s, name: c.n });
+  const taken = o.categories ? reservedSlugs() : new Set<string>();
   for (let i = 0; i < ids.length; i += 40) {
     const rows = await db.select().from(schema.catalogProducts).where(inArray(schema.catalogProducts.id, ids.slice(i, i + 40)));
     for (const r of rows) {
@@ -352,8 +364,14 @@ export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false
       // The audience is read from the CURRENT name, so names are only rewritten once (idempotent: the new name reduces to the same subject).
       if (o.names) { set.name = t.name; set.title = t.title; }
       if (o.titles) { set.seoTitle = t.seoTitle; set.metaDescription = t.metaDescription; }
+      // Products sitting in a catch-all category move into a real one named after what the list is about.
+      if (o.categories && GENERIC_CATS.has(r.categoryName.toLowerCase()) && t.subject && !/^business$/i.test(t.subject)) {
+        const k = catKey(t.subject); let c = cats.get(k);
+        if (!c) { let slug = slugify(t.subject); if (taken.has(slug)) slug = `${slug}-lists`; c = { slug, name: t.subject }; cats.set(k, c); taken.add(slug); }
+        set.categoryName = c.name; set.categorySlug = c.slug;
+      }
       let to = r.slug;
-      if (o.slugs && r.origin !== "builtin") to = dry ? r.slug : (await renameProduct(db, r.id, t.slugBase)).to;
+      if (o.slugs) to = dry ? r.slug : (await renameProduct(db, r.id, t.slugBase)).to;
       if (!dry && Object.keys(set).length) await db.update(schema.catalogProducts).set({ ...set, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.catalogProducts.id, r.id));
       if (o.slugs && to !== r.slug) slugChanged++;
       changed++;

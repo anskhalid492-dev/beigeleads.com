@@ -1,10 +1,10 @@
 import { hydrateCatalog } from "@/lib/catalog-db";
+import { sampleRowsOf } from "@/lib/catalog";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { sha256Hex } from "@/lib/forms/hash";
 import { isRateLimited } from "@/lib/forms/rate-limit";
 import { cartItemsSchema, normalizeItems, priceCart, suggestFor } from "@/lib/cart/model";
-import { productSamples } from "@/lib/sample-data";
 import { getDbFromEnv } from "@/lib/db";
 import { DISCOUNT_REFUSED, resolveDiscount } from "@/lib/partners/discount";
 import { isPartnerCode } from "@/lib/partners/types";
@@ -46,7 +46,8 @@ export async function POST(req: Request) {
   const pricing = priceCart(items, {
     checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount,
     promo: { candidates, enteredCode, nowSec: Math.floor(Date.now() / 1000), emailKnown: !!p.data.email },
-  }, (c) => (productSamples[c]?.length ?? 0) > 0);
+  }, () => false);
+  for (const l of pricing.lines) { const rs = sampleRowsOf(l.slug).slice(0, 3); l.hasSample = rs.length > 0; l.sample = rs.map((r) => ({ business: r.business, city: r.city || r.address, email: r.email, phone: r.phone })); }
   if (!discountError && enteredCode) discountError = pricing.codeError;
   const kept = new Set(pricing.lines.map((l) => l.slug));
   return json(200, { ok: true, pricing, discountError, suggestions: suggestFor(items.filter((i) => kept.has(i.slug)), items.length === 0 ? 4 : 3) });

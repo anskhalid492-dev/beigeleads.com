@@ -9,7 +9,7 @@ import { reservedSlugs } from "@/lib/import/reserved";
 import { maskRows } from "@/lib/product-samples";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
-import { applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { saveDefaultSample, applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -170,10 +170,11 @@ export async function saveSamplesBulkAction(groupsIn: unknown): Promise<{ ok: bo
   return { ok: true, message: `${r.saved} saved.`, saved: r.saved, unknown: r.unknown };
 }
 
-const seoOpts = z.object({ slugs: z.boolean(), names: z.boolean(), titles: z.boolean() });
+const seoOpts = z.object({ slugs: z.boolean(), names: z.boolean(), titles: z.boolean(), categories: z.boolean().optional() });
 /** Ids of every product the SEO regeneration touches (all statuses, cap 5000). */
 export async function seoIdsAction(): Promise<{ ok: boolean; ids: number[]; message?: string }> {
   if (!(await admin())) return { ok: false, ids: [], message: "Your session ended. Sign in again." };
+  try { await importBuiltin(db()); } catch { /* built-ins already copied or migration missing */ }
   return { ok: true, ids: await listIds(db(), {}, 5000) };
 }
 /** Dry run for a few products: shows the new slug / name / SEO title without saving anything. */
@@ -195,9 +196,21 @@ export async function seoApplyAction(idsIn: unknown, optsIn: unknown): Promise<{
 }
 export async function seoFinishAction(summary: unknown): Promise<{ ok: boolean }> {
   const a = await admin(); if (!a) return { ok: false };
-  const s = z.object({ changed: z.number().int(), slugChanged: z.number().int(), slugs: z.boolean(), names: z.boolean(), titles: z.boolean() }).safeParse(summary);
+  const s = z.object({ changed: z.number().int(), slugChanged: z.number().int(), slugs: z.boolean(), names: z.boolean(), titles: z.boolean(), categories: z.boolean().optional() }).safeParse(summary);
   if (!s.success) return { ok: false };
   await audit(a.email, `SEO regeneration: ${s.data.changed} products, ${s.data.slugChanged} slugs changed (slugs ${s.data.slugs}, names ${s.data.names}, titles ${s.data.titles})`);
   await refresh();
   return { ok: true };
+}
+
+/** The site-wide real sample (pasted once, masked on the server). Used by every product that has no sample of its own. */
+export async function saveDefaultSampleAction(csv: unknown): Promise<{ ok: boolean; message: string; count?: number }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const t = z.string().max(200_000).safeParse(csv);
+  if (!t.success) return { ok: false, message: "Bad request." };
+  const rows = t.data.trim() ? maskRows(tableFromGrid(parseCsv(t.data)).rows) : [];
+  if (t.data.trim() && !rows.length) return { ok: false, message: "No usable rows. The first line must be a header with a business name column (business, name or company)." };
+  await saveDefaultSample(db(), rows, a.email);
+  await audit(a.email, `Default sample: ${rows.length} masked row(s)`); await refresh();
+  return { ok: true, count: rows.length, message: rows.length ? `Saved ${rows.length} masked rows. Every product without its own sample now shows them.` : "Default sample removed." };
 }

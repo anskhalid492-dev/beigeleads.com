@@ -219,8 +219,17 @@ const importedCategories = new Map<string, Category>();
 const importedCountries = new Map<string, Country>();
 let hiddenStatic: ReadonlySet<string> = new Set();
 let slugAliases: ReadonlyMap<string, string> = new Map(); // old slug -> current slug (renamed products)
-export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[]; hidden?: readonly string[]; aliases?: Readonly<Record<string, string>> }) {
+type SampleRowT = NonNullable<Product["samples"]>[number];
+let defaultSample: readonly SampleRowT[] = []; // the owner's one real masked sample, used by every product without its own (section 99)
+/** The rows to show for a product: its own real sample, else the site-wide real sample, else none. Never invented rows. */
+export function sampleRowsOf(slug: string): readonly SampleRowT[] {
+  const p = getProduct(slug);
+  return p?.samples?.length ? p.samples : defaultSample;
+}
+export const getDefaultSample = (): readonly SampleRowT[] => defaultSample;
+export function registerImported(x: { products: readonly Product[]; categories: readonly Category[]; countries: readonly Country[]; hidden?: readonly string[]; aliases?: Readonly<Record<string, string>>; defaultSample?: readonly SampleRowT[] }) {
   importedProducts = x.products;
+  defaultSample = x.defaultSample ?? [];
   hiddenStatic = new Set([...(x.hidden ?? []), ...Object.keys(x.aliases ?? {})]);
   slugAliases = new Map(Object.entries(x.aliases ?? {}));
   importedCategories.clear(); importedCountries.clear();

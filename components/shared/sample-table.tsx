@@ -31,9 +31,6 @@ export function SampleTable({ rows }: { rows: readonly SampleRow[] }) {
         <Lock className="size-4 shrink-0" aria-hidden />
         <span>Emails stay masked until you buy. The full file has every row, unmasked.</span>
       </div>
-      <p className="border-t border-sand-200 px-4 py-2 text-xs text-forest-500">
-        Layout preview with placeholder rows. Not real businesses.
-      </p>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { hydrateCatalog } from "@/lib/catalog-db";
 import { SolutionHero } from "@/components/solutions/sections";
 import {
   ChallengesPanel, CtaPanel, FaqPanel, FieldsPanel, ListsPanel, OthersPanel, PreviewPanel, ResourcesPanel, StepsPanel, UsePanel, WhyPanel,
@@ -8,11 +9,7 @@ import { getSolution, solutions } from "@/lib/solutions";
 
 // One reusable template for every solution. All copy lives in lib/solutions.ts.
 // Indexability follows the site-wide setting in app/layout.tsx (noindex until launch).
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return solutions.map((s) => ({ slug: s.slug }));
-}
+export const dynamic = "force-dynamic"; // reads the real sample (D1/KV)
 
 export async function generateMetadata(props: PageProps<"/solutions/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
@@ -28,6 +25,7 @@ export async function generateMetadata(props: PageProps<"/solutions/[slug]">): P
 
 export default async function SolutionPage(props: PageProps<"/solutions/[slug]">) {
   const { slug } = await props.params;
+  await hydrateCatalog();
   const s = getSolution(slug);
   if (!s) notFound();
   return (

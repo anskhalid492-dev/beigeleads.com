@@ -8,12 +8,13 @@ import { DataExplorer, type ExplorerSheet } from "@/components/how-it-works/data
 import { PackageDemo } from "@/components/how-it-works/package-demo";
 import { CheckoutIllustration, DeliveryEmail, Step } from "@/components/how-it-works/journey";
 import { Benefits, FinalCta, Head, HowFaq, PurchaseModels, ReadyVsCustom, TrustSection, VerificationPipeline } from "@/components/how-it-works/sections";
-import { getCategories, getCountry, getProducts } from "@/lib/catalog";
-import { productSamples } from "@/lib/sample-data";
+import { hydrateCatalog } from "@/lib/catalog-db";
+import { sampleRowsOf, getCategories, getCountry, getProducts } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/site";
 
 const DESC = "How to buy a B2B business contact list with BeigeLeads: find a list, preview a masked sample, choose a package, pay once, and receive your CSV, Excel or TXT file by email.";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "How BeigeLeads works: buy business contact lists once | BeigeLeads",
   description: DESC,
@@ -21,7 +22,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true }, // site-wide noindex until launch (TODO-BEFORE-LAUNCH.md)
 };
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  await hydrateCatalog();
   const cats = getCategories();
   const products = getProducts();
   const first = products[0];
@@ -32,11 +34,13 @@ export default function HowItWorksPage() {
   const sheets: ExplorerSheet[] = cats
     .map((c): ExplorerSheet | null => {
       const p = products.find((x) => x.categorySlug === c.slug);
-      const rows = productSamples[c.slug];
-      if (!p || !rows) return null;
+      const rows = p ? sampleRowsOf(p.slug) : [];
+      if (!p || !rows.length) return null;
       return { slug: c.slug, label: c.name, productSlug: p.slug, country: getCountry(p.countrySlug)?.name ?? "", rows: rows.slice(0, 5) };
     })
-    .filter((s): s is ExplorerSheet => !!s);
+    .filter((s): s is ExplorerSheet => !!s)
+    .filter((s, i, a) => a.findIndex((x) => JSON.stringify(x.rows) === JSON.stringify(s.rows)) === i)
+    .slice(0, 4);
 
   const steps = [
     ["Find", "Search by industry, country or city", "/#find-leads"],

@@ -10,7 +10,6 @@ import type { CartPricing, PricedLine, Suggestion } from "@/lib/cart/model";
 import { readPartner, writePartner } from "@/lib/cart/partner";
 import { trackCart, trackCartViewOnce } from "@/lib/cart/track";
 import { formatUsd } from "@/lib/catalog";
-import { productSamples } from "@/lib/sample-data";
 
 type Loaded = { pricing: CartPricing; suggestions: Suggestion[] };
 
@@ -316,7 +315,7 @@ function Line({ l, i, onRemove }: { l: PricedLine; i: number; onRemove: () => vo
 
 function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
   const [sample, setSample] = useState(false);
-  const rows = (productSamples[l.categorySlug] ?? []).slice(0, 3);
+  const rows = l.sample ?? [];
   const grp = `pkg-${l.slug}`;
   return (
     <article className="rounded-3xl border border-sand-200 bg-white p-5 transition-shadow duration-200 hover:shadow-[0_18px_40px_-30px_rgba(15,42,29,0.5)] sm:p-6">
@@ -369,7 +368,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
             <thead className="bg-sand-100 text-forest-900"><tr><th className="px-3 py-2">Business</th><th className="px-3 py-2">City</th><th className="px-3 py-2">Email</th><th className="px-3 py-2">Phone</th></tr></thead>
             <tbody className="divide-y divide-sand-200">{rows.map((r) => <tr key={r.business}><td className="px-3 py-2">{r.business}</td><td className="px-3 py-2">{r.city}</td><td className="px-3 py-2 font-mono">{r.email}</td><td className="px-3 py-2 font-mono">{r.phone}</td></tr>)}</tbody>
           </table>
-          <p className="border-t border-sand-200 px-3 py-2 text-xs">Fictional example rows with masked details. <Link className="underline" href={`/sample?product=${l.slug}`}>Request a free sample</Link>.</p>
+          <p className="border-t border-sand-200 px-3 py-2 text-xs">Real rows from a list, with emails and phone numbers masked. <Link className="underline" href={`/sample?product=${l.slug}`}>Request a free sample</Link>.</p>
         </div>
       )}
       {!l.purchasable && <p role="status" className="mt-4 rounded-xl bg-sand-100 px-4 py-2.5 text-sm">{l.reason}</p>}

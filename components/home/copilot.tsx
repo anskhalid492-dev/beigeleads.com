@@ -2,44 +2,30 @@
 
 import { ArrowUp } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { formatUsd, getCategories, getCities, getCountries, startingPriceCents, type Product } from "@/lib/catalog";
-import { customListHref, searchCatalog } from "@/lib/search";
+import { formatUsd } from "@/lib/catalog";
+import type { Discovery, Lite } from "@/lib/discover";
+import { customListHref } from "@/lib/search";
 
-// Lead discovery co-pilot. This is a STRUCTURED search over the real catalog (lib/search.ts), not an AI model.
+// Lead discovery co-pilot. A STRUCTURED search over every product on the site (/api/discover, lib/discover.ts), not an AI model.
 // It never invents availability, counts or prices; placeholder product data is not shown as fact.
 
 const EXAMPLES = ["dentists in California", "restaurants in New York", "5k ski shops in Denver", "10,000 real estate agents in Texas"];
 const CHIPS = ["Dentists in the United States", "Restaurants in Chicago", "Ski shops in Denver"];
 
-function suggestionsFor(q: string): string[] {
-  const t = q.trim().toLowerCase();
-  if (t.length < 2) return [];
-  const out: string[] = [];
-  for (const c of getCategories()) {
-    out.push(c.name);
-    for (const k of getCountries()) {
-      out.push(`${c.name} in ${k.name}`);
-      for (const city of getCities(k.slug)) out.push(`${c.name} in ${city.name}`);
-    }
-  }
-  return out.filter((s) => s.toLowerCase().includes(t) && s.toLowerCase() !== t).slice(0, 5);
-}
-
-function ProductCard({ p, note }: { p: Product; note?: string }) {
-  const price = startingPriceCents(p);
+function ProductCard({ p, note }: { p: Lite; note?: string }) {
   return (
     <li className="rounded-2xl border border-sand-200 bg-white p-5 text-left shadow-sm transition-shadow hover:shadow-md">
-      <h3 className="text-lg font-bold text-forest-900">{p.name}</h3>
-      <p className="text-sm">{p.title}</p>
+      <h3 className="text-lg font-bold text-forest-900"><Link href={`/lists/${p.slug}`} className="hover:underline">{p.name}</Link></h3>
+      <p className="text-sm">{p.categoryName} · {p.countryName}{p.region ? `, ${p.region}` : ""}</p>
       {note && <p className="mt-2 text-sm font-medium text-forest-900">{note}</p>}
       <p className="mt-2 text-sm">
-        Fields: {p.fields.join(", ")}.{" "}
-        {p.placeholderData ? "Record count and prices are shown on the list page." : `${p.recordCount?.toLocaleString("en-US") ?? ""} records${price ? `, from ${formatUsd(price)}` : ""}.`}
+        {p.fields.length ? `Fields: ${p.fields.join(", ")}. ` : ""}
+        {p.records ? `${p.records.toLocaleString("en-US")} records${p.fromCents ? `, from ${formatUsd(p.fromCents)}` : ""}.` : "Record count and prices are on the list page."}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>View list</Link></Button>
+        <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>{p.forSale ? "View list" : "View details"}</Link></Button>
         <Button asChild size="sm" variant="secondary"><Link href={`/sample?product=${p.slug}`}>Free sample</Link></Button>
       </div>
     </li>
@@ -66,11 +52,34 @@ export function Copilot() {
     return () => clearInterval(id);
   }, []);
 
-  const suggestions = useMemo(() => suggestionsFor(value), [value]);
-  const result = useMemo(() => (submitted ? searchCatalog(submitted) : null), [submitted]);
-  // Real event for the popup system: a search that found no exact match (it carries the custom-list link).
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [result, setResult] = useState<(Discovery & { q: string }) | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const typeCtl = useRef<AbortController | null>(null);
+  const searchCtl = useRef<AbortController | null>(null);
+  // Type-ahead over every product (debounced in the change handler, cancelled when the text changes).
+  function typeAhead(t: string) {
+    typeCtl.current?.abort();
+    if (t.trim().length < 2) { setSuggestions([]); return; }
+    const ctl = new AbortController(); typeCtl.current = ctl;
+    setTimeout(() => {
+      if (ctl.signal.aborted) return;
+      fetch(`/api/discover?suggest=1&q=${encodeURIComponent(t.trim())}`, { signal: ctl.signal }).then((r) => r.json() as Promise<{ suggestions?: string[] }>).then((d) => setSuggestions((d.suggestions ?? []).filter((x) => x.toLowerCase() !== t.trim().toLowerCase()))).catch(() => undefined);
+    }, 180);
+  }
+  // Search every product when a search is submitted.
+  function search(q: string) {
+    searchCtl.current?.abort();
+    const ctl = new AbortController(); searchCtl.current = ctl;
+    setBusy(true); setFailed(false);
+    fetch(`/api/discover?q=${encodeURIComponent(q)}`, { signal: ctl.signal }).then((r) => r.json() as Promise<Discovery>).then((d) => { setResult({ ...d, q }); setBusy(false); })
+      .catch((e: unknown) => { if ((e as Error).name !== "AbortError") { setFailed(true); setBusy(false); } });
+  }
+  // Real event for the popup system: a search that found nothing (it carries the custom-list link).
   useEffect(() => {
-    if (result && result.exact.length === 0) window.dispatchEvent(new CustomEvent("bl:search-noresults", { detail: { query: result.parsed.raw, href: customListHref(result.parsed.raw) } }));
+    if (result && result.exact.length + result.close.length === 0) window.dispatchEvent(new CustomEvent("bl:search-noresults", { detail: { query: result.q, href: customListHref(result.q) } }));
   }, [result]);
 
   function run(q: string) {
@@ -81,6 +90,7 @@ export function Copilot() {
     }
     setValue(t);
     setSubmitted(t);
+    search(t);
     setOpen(false);
     setActive(-1);
   }
@@ -127,6 +137,7 @@ export function Copilot() {
             value={value}
             onChange={(e) => {
               setValue(e.target.value.replace(/\n/g, " "));
+              typeAhead(e.target.value);
               setOpen(true);
               setActive(-1);
             }}
@@ -178,34 +189,37 @@ export function Copilot() {
       </p>
 
       <div aria-live="polite" className="mt-8 text-center">
-        {result && (
+        {busy && <p className="text-sand-100">Searching every list...</p>}
+        {failed && <p className="rounded-xl bg-sand-50 p-4 text-forest-900">The search is not available right now. <Link href="/lists" className="font-semibold underline underline-offset-4">Browse all lists</Link>.</p>}
+        {result && !busy && (
           <div className="space-y-6 rounded-2xl bg-sand-50 p-5 text-forest-900 shadow-xl sm:p-6">
+            {(result.categories.length > 0 || result.countries.length > 0) && (
+              <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+                {result.categories.map((c) => <Link key={c.slug} href={`/lists/${c.slug}`} className="rounded-full bg-white px-3 py-1 font-semibold shadow-sm hover:bg-purple-100">{c.name}</Link>)}
+                {result.countries.map((c) => <Link key={c.slug} href={`/lists?country=${c.slug}`} className="rounded-full border border-sand-300 px-3 py-1 hover:bg-purple-100">{c.name}</Link>)}
+              </div>
+            )}
             {result.exact.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-forest-900">
-                  {result.exact.length === 1 ? "We have this list" : `We have ${result.exact.length} matching lists`}
-                </h2>
+                <h2 className="text-xl font-bold text-forest-900">{result.exact.length === 1 ? "We have this list" : result.total > result.exact.length ? `Top ${result.exact.length} matching lists` : `We have ${result.exact.length} matching lists`}</h2>
                 <ul className="mt-4 grid gap-4 text-left">{result.exact.map((p) => <ProductCard key={p.slug} p={p} />)}</ul>
+                {result.total > result.exact.length && <p className="mt-4 text-sm"><Link href={`/lists?q=${encodeURIComponent(result.q)}`} className="font-semibold underline underline-offset-4">See all matching lists</Link></p>}
               </div>
             )}
             {result.close.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-forest-900">{result.exact.length ? "Close alternatives" : "Closest list we have"}</h2>
-                <ul className="mt-4 grid gap-4 text-left">{result.close.map((c) => <ProductCard key={c.product.slug} p={c.product} note={c.note} />)}</ul>
+                <h2 className="text-xl font-bold text-forest-900">Closest lists we have</h2>
+                <ul className="mt-4 grid gap-4 text-left">{result.close.map((p) => <ProductCard key={p.slug} p={p} note="Matches part of your search." />)}</ul>
               </div>
             )}
-            {result.exact.length === 0 && (
+            {result.exact.length + result.close.length === 0 && (
               <div className="rounded-2xl border-2 border-forest-900 bg-forest-100 p-6">
                 <h2 className="display text-3xl text-forest-900">Not seeing your ideal prospects? We can help you build it.</h2>
-                <p className="mx-auto mt-2 max-w-lg">
-                  We couldn&apos;t find an exact match for &ldquo;{result.parsed.raw}&rdquo;. Send us your requirements and we will check whether we can source it. Your search is carried over.
-                </p>
-                <Button asChild size="lg" className="mt-4"><Link href={customListHref(result.parsed.raw)}>Build my custom list</Link></Button>
+                <p className="mx-auto mt-2 max-w-lg">We couldn&apos;t find a match for &ldquo;{result.q}&rdquo;. Send us your requirements and we will check whether we can source it. Your search is carried over.</p>
+                <Button asChild size="lg" className="mt-4"><Link href={customListHref(result.q)}>Build my custom list</Link></Button>
               </div>
             )}
-            {result.exact.length > 0 && (
-              <p className="text-sm">Not what you need? <Link href={customListHref(result.parsed.raw)} className="font-semibold underline underline-offset-4">Build a custom list</Link>.</p>
-            )}
+            {result.exact.length > 0 && <p className="text-sm">Not what you need? <Link href={customListHref(result.q)} className="font-semibold underline underline-offset-4">Build a custom list</Link>.</p>}
           </div>
         )}
       </div>

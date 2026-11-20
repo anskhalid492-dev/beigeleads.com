@@ -1,7 +1,7 @@
 import { AtSign, CircleHelp, Server, ShieldCheck } from "lucide-react";
 
 const stages = [
-  { icon: AtSign, t: "An address", d: "j***@example.com (fictional, masked)" },
+  { icon: AtSign, t: "An address", d: "j***@•••••.com (masked illustration)" },
   { icon: Server, t: "Mail server lookup", d: "We find the server that handles that domain's mail." },
   { icon: ShieldCheck, t: "SMTP check", d: "We ask the server whether it accepts the address. No message is sent." },
   { icon: CircleHelp, t: "A result", d: "Accepted, rejected, accepts everything, or no answer." },

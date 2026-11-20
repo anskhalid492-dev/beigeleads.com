@@ -55,12 +55,12 @@ export function DeliveryEmail({ listTitle }: { listTitle: string }) {
     <div className="rounded-2xl border border-sand-200 bg-white shadow-[0_20px_50px_-32px_rgba(15,42,29,0.5)]">
       <div className="flex items-center gap-2 border-b border-sand-200 px-5 py-3 text-sm">
         <Mail className="size-4 text-forest-500" aria-hidden /><span className="font-semibold text-forest-900">Example delivery email</span>
-        <span className="ml-auto rounded-full bg-sand-100 px-2 py-0.5 text-xs">Fictional details</span>
+        <span className="ml-auto rounded-full bg-sand-100 px-2 py-0.5 text-xs">Illustration</span>
       </div>
       <div className="space-y-3 px-5 py-4 text-sm">
         <p><span className="font-semibold text-forest-900">To:</span> you@yourcompany.example</p>
         <p><span className="font-semibold text-forest-900">Order:</span> EXAMPLE-0000 · {listTitle}</p>
-        <p className="rounded-xl bg-forest-100/60 px-4 py-3 font-semibold text-forest-900 hover:bg-forest-100"><ArrowRight className="mr-1 inline size-4" aria-hidden />https://files.example.com/your-list</p>
+        <p className="rounded-xl bg-forest-100/60 px-4 py-3 font-semibold text-forest-900 hover:bg-forest-100"><ArrowRight className="mr-1 inline size-4" aria-hidden />Your secure file link appears here</p>
         <p>Formats: CSV, Excel or TXT. Open the link as often as you need.</p>
         <p className="text-xs">The real email also links to the lawful-use policy, the replacement policy and an opt-out page.</p>
       </div>

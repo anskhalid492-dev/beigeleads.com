@@ -30,6 +30,8 @@ export type PricedLine = {
   /** false = cannot be bought right now (product not on sale, or checkout closed); `reason` says why */
   purchasable: boolean; reason: string;
   hasSample: boolean;
+  /** real masked rows (own sample or the site-wide default), filled in by the price API */
+  sample?: { business: string; city: string; email: string; phone: string }[];
 };
 export type CartPricing = {
   lines: PricedLine[];

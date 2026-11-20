@@ -4,12 +4,13 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SampleForm, type SampleOption } from "@/components/sample/form";
 import { SamplePreview, type PreviewSheet } from "@/components/sample/preview";
 import { Benefits, Steps, Trust, WhatYouReceive } from "@/components/sample/sections";
-import { getCategories, getCategory, getCountry, getProduct, getProducts } from "@/lib/catalog";
-import { productSamples } from "@/lib/sample-data";
+import { hydrateCatalog } from "@/lib/catalog-db";
+import { sampleRowsOf, getCategories, getCategory, getCountry, getProduct, getProducts } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/site";
 
 const DESC = "Explore how BeigeLeads business contact lists are structured, see available fields, and request a free masked sample before purchasing.";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Free sample of business contact lists | BeigeLeads",
   description: DESC,
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
 export default async function SamplePage({ searchParams }: PageProps<"/sample">) {
+  await hydrateCatalog();
   const sp = await searchParams;
   const products = getProducts();
   const cats = getCategories();
@@ -46,8 +48,8 @@ export default async function SamplePage({ searchParams }: PageProps<"/sample">)
   const sheets = cats
     .map((c): PreviewSheet | null => {
       const p = products.find((x) => x.categorySlug === c.slug);
-      const rows = p ? productSamples[c.slug] : undefined;
-      if (!p || !rows) return null;
+      const rows = p ? sampleRowsOf(p.slug) : [];
+      if (!p || !rows.length) return null;
       return {
         slug: c.slug,
         label: c.name,
@@ -56,7 +58,9 @@ export default async function SamplePage({ searchParams }: PageProps<"/sample">)
         rows: rows.slice(0, 5).map((r) => ({ business: r.business, city: r.city, website: r.website, email: r.email, phone: r.phone })),
       };
     })
-    .filter((s): s is PreviewSheet => !!s);
+    .filter((s): s is PreviewSheet => !!s)
+    .filter((s, i, a) => a.findIndex((x) => JSON.stringify(x.rows) === JSON.stringify(s.rows)) === i) // one tab per distinct real sample
+    .slice(0, 4);
 
   return (
     <>

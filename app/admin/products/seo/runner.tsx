@@ -5,7 +5,7 @@ import { seoApplyAction, seoFinishAction, seoIdsAction, seoPreviewAction } from 
 type Row = { id: number; from: string; to: string; name: string; seoTitle: string };
 
 export function Runner() {
-  const [o, setO] = useState({ slugs: true, names: true, titles: true });
+  const [o, setO] = useState({ slugs: true, names: true, titles: true, categories: true });
   const [rows, setRows] = useState<Row[]>([]); const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const [confirm, setConfirm] = useState(false);
 
   async function preview() {
@@ -39,6 +39,7 @@ export function Runner() {
       <div className="rounded-2xl border border-sand-200 bg-white p-5 space-y-2">
         {box("slugs", "New slugs (old links redirect; delivery links, promotions and page SEO move along; built-in products keep their slug)")}
         {box("names", "New product names / H1 titles")}
+        {box("categories", "Move products from catch-all categories (General Targeted Lists, Job Titles) into a category named after what the list is about; new categories are created when needed")}
         {box("titles", "New SEO titles and meta descriptions")}
         <div className="flex flex-wrap gap-2 pt-2">
           <button disabled={busy} onClick={preview} className="rounded-full border border-forest-700 px-4 py-2 font-semibold">Preview</button>

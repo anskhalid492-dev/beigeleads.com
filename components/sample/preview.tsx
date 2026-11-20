@@ -46,7 +46,7 @@ export function SamplePreview({ sheets }: { sheets: readonly PreviewSheet[] }) {
 
       <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${sheet.slug}`} className="mt-4 overflow-x-auto rounded-xl border border-sand-200">
         <table className="w-full min-w-[46rem] text-left text-sm">
-          <caption className="sr-only">Example rows for {sheet.label}. Fictional businesses with masked contact details.</caption>
+          <caption className="sr-only">Sample rows for {sheet.label} with masked contact details.</caption>
           <thead className="bg-forest-900 text-sand-100">
             <tr>
               {cols.map((c) => (
@@ -71,8 +71,7 @@ export function SamplePreview({ sheets }: { sheets: readonly PreviewSheet[] }) {
       </div>
 
       <p className="mt-3 text-sm">
-        <strong className="text-forest-900">Example records.</strong> These are fictional businesses shown to explain the layout. Email and phone are masked
-        (<span className="font-mono">o***@example.com</span>) the same way real samples are.
+        <strong className="text-forest-900">Real rows, masked.</strong> Email addresses and phone numbers are partly hidden here. The sample file we send you is masked the same way.
       </p>
       <p className="mt-2 text-sm font-semibold text-forest-900">
         Want to explore a specific industry?{" "}

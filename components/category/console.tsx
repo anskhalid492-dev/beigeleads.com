@@ -20,8 +20,8 @@ export type ConsoleProps = {
 };
 
 const MASK: Record<string, string> = {
-  "Business name": "Example Business (fictional)", Address: "12 Example Street", City: "Your city", Country: "", Phone: "+•• ••• •••• 42",
-  Email: "i•••@example.com", Website: "example.com", "Contact name": "J••• M•••", "Job title": "Chief Executive",
+  "Business name": "Name of the business", Address: "Street address", City: "Your city", Country: "", Phone: "Phone number",
+  Email: "Business email", Website: "Website address", "Contact name": "Contact name", "Job title": "Job title",
 };
 
 /** The hero's working preview: choose a prospect group, see the fields, see the honest status and the next action. */
@@ -58,7 +58,7 @@ export function TargetConsole(p: ConsoleProps) {
       <div className="mt-4 overflow-x-auto rounded-xl border border-sand-300">
         <table className="w-full min-w-[20rem] text-left text-sm"><thead className="bg-sand-100 text-forest-900"><tr>{cols.map((c) => <th key={c} className="px-3 py-2 font-bold">{c}</th>)}</tr></thead>
           <tbody><tr>{cols.map((c) => <td key={c} className="whitespace-nowrap px-3 py-2.5">{c === "Country" ? (p.placeName || "Your country") : c === "City" && where ? where : MASK[c] ?? "•••"}</td>)}</tr></tbody></table>
-        <p className="border-t border-sand-200 bg-sand-50 px-3 py-1.5 text-xs">Fictional, masked example row.</p>
+        <p className="border-t border-sand-200 bg-sand-50 px-3 py-1.5 text-xs">Field layout. Real masked rows are on each list page.</p>
       </div>
       <p className="mt-4 flex items-start gap-2 text-sm font-semibold text-forest-900"><span className={`mt-1.5 size-2 shrink-0 rounded-full ${p.status.live ? "bg-forest-500" : "bg-purple-600"}`} aria-hidden />{p.status.text}</p>
       <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">

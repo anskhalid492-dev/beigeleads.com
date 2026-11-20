@@ -6,12 +6,12 @@ import { join } from "node:path";
 import { getPlatformProxy, type PlatformProxy } from "wrangler";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { FIXTURE } from "./import-fixture";
-import { getProduct } from "@/lib/catalog";
+import { getProduct, sampleRowsOf, getDefaultSample } from "@/lib/catalog";
 import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
-import { applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
+import { saveDefaultSample, applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
 import { maskRows } from "@/lib/product-samples";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { getStaticProducts } from "@/lib/catalog";
@@ -154,6 +154,21 @@ describe("catalog import", () => {
     const second = await renameProduct(db, c.id!, "plumbers-list");
     expect(second.changed).toBe(true);
     expect((await db.select().from(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, old)))[0].newSlug).toBe("plumbers-list");
+  });
+  it("one real default sample is shown on every product without its own, and recategorizes catch-all products", async () => {
+    const db = getDbFromEnv(env);
+    await hydrateCatalog(env, true);
+    expect(getDefaultSample().length).toBe(0);
+    await saveDefaultSample(db, maskRows([{ business: "Real Dental", city: "Austin", email: "jane@realdental.com", phone: "+1 512 555 0142" }]), "t");
+    await env.CACHE.delete("catalog:imp:v2"); await hydrateCatalog(env, true);
+    expect(getDefaultSample().length).toBe(1);
+    expect(getDefaultSample()[0].email.startsWith("j***@")).toBe(true);
+    expect(JSON.stringify(getDefaultSample())).not.toContain("jane@");
+    expect(sampleRowsOf("dentists-us").length).toBe(1);
+    const c = await createProduct(db, { name: "Roofers Sales Leads USA", title: "", description: "", seoTitle: "", metaDescription: "", recordCount: 10, dataFields: [], fileFormats: "", coverage: "", lastUpdated: "", placeholder: false, forSale: true, packages: [{ name: "Starter", records: 10, priceUsdCents: 500 }], categoryName: "General Targeted Lists", countryName: "United States", countryCode: "US", region: "", channel: "business-email" });
+    await applySeo(db, [c.id!], { slugs: false, names: false, titles: false, categories: true });
+    const row = (await getProductRow(db, c.id!))!;
+    expect(row.categoryName).toBe("Roofers"); expect(row.categorySlug).toBe("roofers");
   });
   it("rollback removes only unpublished, never-ordered imports", async () => {
     const db = getDbFromEnv(env);

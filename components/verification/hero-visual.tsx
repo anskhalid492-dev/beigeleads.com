@@ -48,10 +48,10 @@ export function HeroVisual() {
 
       {/* Floating cards, moving at different speeds on scroll */}
       <div className="parallax-up absolute -right-2 top-[2%] hidden w-44 rounded-2xl border border-white/15 bg-forest-900/90 p-3 text-xs shadow-xl backdrop-blur sm:block">
-        <p className="font-semibold text-sand-50">Example record</p>
-        <p className="mt-1 text-sand-300">Fictional, masked</p>
+        <p className="font-semibold text-sand-50">Record check</p>
+        <p className="mt-1 text-sand-300">Illustration, masked</p>
         <dl className="mt-2 space-y-1 text-sand-100">
-          <div className="flex justify-between gap-2"><dt className="text-sand-300">Email</dt><dd>j***@example.com</dd></div>
+          <div className="flex justify-between gap-2"><dt className="text-sand-300">Email</dt><dd>j***@•••••.com</dd></div>
           <div className="flex justify-between gap-2"><dt className="text-sand-300">SMTP</dt><dd className="text-forest-300">accepted</dd></div>
         </dl>
       </div>

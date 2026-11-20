@@ -5,7 +5,8 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { DbBadge } from "@/components/shared/db-icon";
 import { fieldMeta, fmtDate, fmtNum } from "@/components/product/meta";
 import { FIELDS, formatUsd, getCategory, getCities, getCountry, getProduct, startingPriceCents, type Product } from "@/lib/catalog";
-import { productSamples, type ProductSampleRow } from "@/lib/sample-data";
+import { sampleRowsOf } from "@/lib/catalog";
+import type { ProductSampleRow } from "@/lib/sample-data";
 import { getFocus } from "@/lib/solution-focus";
 import { solutions, type Solution } from "@/lib/solutions";
 import { SolutionIcon } from "./icons";
@@ -49,7 +50,8 @@ export function primaryProduct(s: Solution): Product | undefined {
 export function PreviewPanel({ s }: { s: Solution }) {
   const p = primaryProduct(s);
   if (!p) return null;
-  const rows = (productSamples[p.categorySlug] ?? []).slice(0, 5);
+  const rows = sampleRowsOf(p.slug).slice(0, 5);
+  if (!rows.length) return null;
   const shown = cols.filter((c) => p.fields.includes(c.field));
   return (
     <Panel id="preview">
@@ -82,7 +84,6 @@ export function PreviewPanel({ s }: { s: Solution }) {
           <Button asChild size="lg"><Link href={`/lists/${p.slug}`}>Get full access</Link></Button>
           <Button asChild size="lg" variant="secondary"><Link href="/sample">Request free sample</Link></Button>
         </div>
-        {p.placeholderData && <p className="text-center text-sm text-forest-500">Example rows with fictional businesses, shown to demonstrate the layout.</p>}
       </div>
     </Panel>
   );
