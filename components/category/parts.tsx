@@ -44,11 +44,11 @@ export function DatabaseRow({ p }: { p: ShopProduct }) {
           <h3 className="display text-[1.7rem] leading-[1.05] text-forest-900">{p.name}</h3>
           <p className="mt-1 flex items-center gap-1.5 text-sm"><Flag code={p.countryCode} className="h-3 w-[18px]" />{p.countryName}</p>
           <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Data fields">
-            {p.fields.map((f) => <li key={f} className="inline-flex items-center gap-1 rounded-full bg-sand-100 px-2.5 py-1 text-xs font-medium text-forest-900"><Check className="size-3 text-forest-500" aria-hidden />{f}</li>)}
+            {p.fields.slice(0, 6).map((f) => <li key={f} className="inline-flex items-center gap-1 rounded-full bg-sand-100 px-2.5 py-1 text-xs font-medium text-forest-900"><Check className="size-3 text-forest-500" aria-hidden />{f}</li>)}
+            {p.fields.length > 6 && <li className="inline-flex items-center rounded-full bg-sand-100 px-2.5 py-1 text-xs font-bold text-forest-900">+{p.fields.length - 6} more</li>}
           </ul>
           <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-forest-900"><span className={`size-2 rounded-full ${buyable ? "bg-forest-500" : "bg-sand-300"}`} aria-hidden />{buyable ? "Available to buy" : "Preview only. Not for sale yet"}</span>
-            <span>Masked sample available</span>
+            <span className="inline-flex items-center gap-1.5 font-semibold text-forest-900"><span className={`size-2 rounded-full ${buyable ? "bg-forest-500" : "bg-sand-300"}`} aria-hidden />{buyable ? "Available" : "Preview"}</span>
             {p.recordCount ? <span>{p.recordCount.toLocaleString("en-US")} records</span> : null}
             {p.fromCents ? <span className="font-semibold text-forest-900">One-time, from {formatUsd(p.fromCents)}</span> : null}
           </p>

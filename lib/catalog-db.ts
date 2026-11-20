@@ -1,5 +1,6 @@
 // Loads the PUBLISHED imported products (section 91) into the code catalog for the current isolate. One KV value (60 s), never a D1 read per visit.
 // Download links are NEVER part of this payload. Any failure leaves the code catalog exactly as it was.
+import { categoryForSubject, subjectOf } from "@/lib/import/seo-text";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { and, eq, ne } from "drizzle-orm";
@@ -25,6 +26,11 @@ export const DEFAULT_SAMPLE_KEY = "sample.default";
 
 export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Record<string, string> = {}, defaultSample: SampleRowData[] = []): { products: Product[]; categories: Category[]; countries: Country[]; hidden: string[]; aliases: Record<string, string>; defaultSample: SampleRowData[] } {
   const cats = new Map<string, Category>(), ctry = new Map<string, Country>();
+  // Group lists by audience: every dentist list sits under Dentists whatever the country (owner request, 20 Nov 2026).
+  list = list.map((p) => {
+    const c = categoryForSubject(subjectOf({ name: p.name, categoryName: p.categoryName, channel: p.channel, countryName: p.countryName, region: p.region, recordCount: p.recordCount, placeholder: false }));
+    return c ? { ...p, categorySlug: c.slug, categoryName: c.name } : p;
+  });
   const products = list.map((p): Product => {
     if (!cats.has(p.categorySlug)) cats.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, description: `${p.categoryName} contact lists.`, buyers: [], singular: p.categoryName, reachLabel: p.categoryName.toLowerCase(), useCases: [], imported: true });
     if (!ctry.has(p.countrySlug)) ctry.set(p.countrySlug, { slug: p.countrySlug, code: p.countryCode, name: p.countryName });

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SampleTable } from "@/components/shared/sample-table";
@@ -46,9 +47,9 @@ export function IndustryPage({ c, products, geo }: { c: Category; products: Shop
         ];
       })}
       <Block title={`Explore Available ${c.name} Databases`}>
-        <div className="space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
+        <div className="space-y-3">{products.slice(0, 8).map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
+        {products.length > 8 && <p className="mt-5"><Link href={`/lists?industry=${c.slug}`} className="inline-flex h-11 items-center rounded-full border border-forest-900 px-6 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">See every {c.name} database</Link></p>}
         {full && !full.placeholderData && <ul className="mt-5 flex flex-wrap gap-2">{full.packages.map((k) => <li key={k.name} className="rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900">{k.name}: {k.records.toLocaleString("en-US")} records, {formatUsd(k.priceUsdCents)}</li>)}</ul>}
-        {full?.placeholderData && <p className="mt-4 text-sm">Package sizes and prices appear here once this list goes on sale.</p>}
       </Block>
       {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}
       <Block title={`About ${c.name} Email Lists`}><div className="max-w-[68ch] space-y-4 text-[1.05rem] leading-relaxed">{view.whatIs.map((x, i) => <p key={i}>{x}</p>)}</div></Block>

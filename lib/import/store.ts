@@ -5,7 +5,7 @@ import { getCategories, getCategory, getCountries, getCountry, getStaticProducts
 import { cleanStored, type SampleRowData } from "@/lib/product-samples";
 import { schema } from "@/lib/db";
 import { reservedSlugs } from "./reserved";
-import { seoText } from "./seo-text";
+import { categoryForSubject, seoText } from "./seo-text";
 import { publishBlockers } from "./woo";
 
 type Db = ReturnType<typeof import("@/lib/db").getDbFromEnv>;
@@ -347,7 +347,7 @@ export async function renameProduct(db: Db, id: number, base: string): Promise<{
 }
 
 export type SeoOptions = { slugs: boolean; names: boolean; titles: boolean; categories?: boolean };
-const GENERIC_CATS = new Set(["general targeted lists", "job titles"]);
+const GENERIC_CATS = new Set(["general targeted lists", "job titles", "healthcare professionals", "targeted email lists"]);
 const catKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/(ies)$/, "y").replace(/s$/, "");
 /** Regenerate slug / name+H1 / SEO title+meta for products (never touches restricted flags or packages). */
 export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false): Promise<{ changed: number; slugChanged: number; sample: { id: number; from: string; to: string; name: string; seoTitle: string }[] }> {
@@ -365,7 +365,9 @@ export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false
       if (o.names) { set.name = t.name; set.title = t.title; }
       if (o.titles) { set.seoTitle = t.seoTitle; set.metaDescription = t.metaDescription; }
       // Products sitting in a catch-all category move into a real one named after what the list is about.
-      if (o.categories && GENERIC_CATS.has(r.categoryName.toLowerCase()) && t.subject && !/^business$/i.test(t.subject)) {
+      const shared = o.categories ? categoryForSubject(t.subject) : null;
+      if (shared) { set.categoryName = shared.name; set.categorySlug = shared.slug; }
+      else if (o.categories && GENERIC_CATS.has(r.categoryName.toLowerCase()) && t.subject && !/^business$/i.test(t.subject)) {
         const k = catKey(t.subject); let c = cats.get(k);
         if (!c) { let slug = slugify(t.subject); if (taken.has(slug)) slug = `${slug}-lists`; c = { slug, name: t.subject }; cats.set(k, c); taken.add(slug); }
         set.categoryName = c.name; set.categorySlug = c.slug;

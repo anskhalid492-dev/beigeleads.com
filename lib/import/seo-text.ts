@@ -41,3 +41,25 @@ export function seoText(i: SeoInput): SeoText {
   if (meta.length > 158) meta = meta.slice(0, 155).replace(/\s+\S*$/, "") + "...";
   return { subject, suffix, place, name, title, slugBase, seoTitle, metaDescription: meta };
 }
+
+/** Subjects that belong in ONE shared category, whatever country the list is for (so every dentist list sits under Dentists). */
+const CATEGORY_RULES: [RegExp, string, string][] = [
+  [/dentist|dental|orthodont|endodont|periodont|prosthodont|oral surg/i, "dentists", "Dentists"],
+  [/restaurant|pizza|catering|diner|bistro/i, "restaurants", "Restaurants"],
+  [/\bski\b|snowboard/i, "ski-shops", "Ski Shops"],
+  [/chiropract/i, "chiropractors", "Chiropractors"],
+  [/veterinar|animal hospital|vet clinic|\bvets?\b/i, "veterinarians", "Veterinarians"],
+  [/pharmac/i, "pharmacies", "Pharmacies"],
+  [/optom|optician|ophthalm|eye care/i, "eye-care-providers", "Eye Care Providers"],
+  [/psycholog|psychiatr|therapist|social worker|counsel|mental health/i, "mental-health-professionals", "Mental Health Professionals"],
+  [/\bnurs|midwi|caregiver/i, "nurses", "Nurses"],
+  [/hospital|clinic|surgery cent|ambulatory|urgent care|medical spa|medspa|med spa/i, "clinics-and-hospitals", "Clinics and Hospitals"],
+  [/physician|doctor|general practi|family medicine|internal medicine|surgeon|urolog|dermat|cardiolog|endocrin|gynec|obstetric|oncolog|orthop|neurolog|pediatr|radiolog|anesthes|gastro|pulmon|rheumat|nephrolog|podiat/i, "doctors-and-specialists", "Doctors and Specialists"],
+  [/physical therap|acupunct|massage|wellness|health and wellness|yoga/i, "wellness-providers", "Wellness Providers"],
+];
+
+/** The shared category a list belongs in, decided from its audience; null = keep the category it already has. */
+export function categoryForSubject(subject: string): { slug: string; name: string } | null {
+  for (const [re, slug, name] of CATEGORY_RULES) if (re.test(subject)) return { slug, name };
+  return null;
+}

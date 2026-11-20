@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PromoBanner } from "@/components/promos/banner";
 import Link from "next/link";
-import { ArrowRight, Download, Eye, FileText, Mail, Search, ShieldCheck, Users, Wallet } from "lucide-react";
+import { ArrowRight, Check, Download, Eye, FileText, Mail, Search, ShieldCheck, Users, Wallet } from "lucide-react";
 import { Copilot } from "@/components/home/copilot";
 import { hydrateCatalog } from "@/lib/catalog-db";
 import { ledgerSheets } from "@/lib/home-ledger";
@@ -234,18 +234,52 @@ export default async function Home() {
       {/* 8. Ready-made vs custom */}
       <section aria-labelledby="paths" className="mx-auto max-w-6xl px-4 py-24">
         <h2 id="paths" className={`${h2} text-center`}>Ready-made or custom</h2>
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col rounded-[2rem] border-2 border-forest-900 bg-white p-8">
-            <h3 className="display text-4xl text-forest-900">Ready-made lists</h3>
-            <p className="mt-3 text-lg">Browse existing databases, inspect the fields and the masked sample, and buy in one payment.</p>
-            <Button asChild size="lg" className="mt-auto self-start"><Link href="/lists">Browse lists</Link></Button>
-          </div>
-          <div className="flex flex-col rounded-[2rem] bg-forest-900 p-8 text-sand-100">
-            <h3 className="display text-4xl text-sand-50">Custom list builder</h3>
+        <p className="mx-auto mt-4 max-w-2xl text-center text-lg">Start with a list that already exists, or tell us exactly who you need. Either way you pay once and get a file you keep.</p>
+        <div className="mt-12 grid gap-5 lg:grid-cols-2">
+          <article className="flex flex-col rounded-[2rem] border-2 border-forest-900 bg-white p-7 sm:p-9">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-forest-100 px-3 py-1 text-sm font-bold text-forest-900"><Download className="size-4" aria-hidden /> Buy today</span>
+            <h3 className="display mt-4 text-4xl text-forest-900 sm:text-5xl">Ready-made lists</h3>
+            <p className="mt-3 text-lg">Browse databases that are already built, inspect the fields and the masked sample, and buy in one payment.</p>
+            <ul className="mt-6 space-y-3">
+              {[
+                ["Masked sample on every list page", "See real record layouts with emails and phone numbers hidden before you pay."],
+                ["48+ data fields per record", "Business, location, contact, online presence and operations details."],
+                ["Pay once in crypto", "No subscription, no seats, no credits and no account."],
+                ["CSV, Excel or TXT by email", "Delivery is mostly instant, in some cases up to 12 hours."],
+                ["Replacement promise", "If more than 5% of emails bounce, we replace them or refund proportionally."],
+              ].map(([h, d]) => (
+                <li key={h} className="flex gap-3"><span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-900"><Check className="size-3.5" aria-hidden /></span><span><strong className="text-forest-900">{h}.</strong> {d}</span></li>
+              ))}
+            </ul>
+            <div className="mt-6 rounded-2xl bg-sand-100 p-4 text-sm"><strong className="text-forest-900">Best when</strong> your target is an industry, a country or a state we already cover and you want the file today.</div>
+            <div className="mt-auto flex flex-wrap items-center gap-3 pt-7">
+              <Button asChild size="lg"><Link href="/lists">Browse lists</Link></Button>
+              <Link href="/sample" className="inline-flex h-11 items-center rounded-full px-2 text-sm font-semibold text-forest-900 underline underline-offset-4">Request a free sample</Link>
+            </div>
+          </article>
+          <article className="flex flex-col rounded-[2rem] bg-forest-900 p-7 text-sand-100 sm:p-9">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-bold text-sand-50"><FileText className="size-4" aria-hidden /> Built for you</span>
+            <h3 className="display mt-4 text-4xl text-sand-50 sm:text-5xl">Custom list builder</h3>
             <p className="mt-3 text-lg">Tell us the industry, place, quantity and fields you need. We reply by email with what is possible.</p>
-            <Button asChild variant="secondary" size="lg" className="mt-auto self-start"><Link href="/custom-list">Build a custom list</Link></Button>
-          </div>
+            <ul className="mt-6 space-y-3">
+              {[
+                ["Four short steps", "Prospects, location, data fields and a review, then you send the request."],
+                ["Any industry or place", "Niches and regions that are not in the catalog are welcome."],
+                ["Choose your fields", "Say which fields matter, such as job titles, website or social links."],
+                ["Quoted separately", "No price is promised on the form. We confirm what can be sourced first."],
+                ["A reference number", "Every request gets one, so you can follow up by email."],
+              ].map(([h, d]) => (
+                <li key={h} className="flex gap-3"><span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-forest-300/25 text-forest-300"><Check className="size-3.5" aria-hidden /></span><span><strong className="text-sand-50">{h}.</strong> {d}</span></li>
+              ))}
+            </ul>
+            <div className="mt-6 rounded-2xl bg-white/10 p-4 text-sm"><strong className="text-sand-50">Best when</strong> you need a specific mix of niche, role or region that no ready-made list covers.</div>
+            <div className="mt-auto flex flex-wrap items-center gap-3 pt-7">
+              <Button asChild variant="secondary" size="lg"><Link href="/custom-list">Build a custom list</Link></Button>
+              <Link href="/help-center" className="inline-flex h-11 items-center rounded-full px-2 text-sm font-semibold text-sand-50 underline underline-offset-4">How requests work</Link>
+            </div>
+          </article>
         </div>
+        <p className="mt-6 text-center text-sm">Not sure which one fits? <Link href="/sample" className="font-semibold text-forest-900 underline underline-offset-4">Start with a free masked sample</Link>. No payment details needed.</p>
       </section>
 
       {/* 9. Who is it for */}
