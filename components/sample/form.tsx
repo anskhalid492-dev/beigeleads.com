@@ -116,7 +116,7 @@ export function SampleForm({ options, initialProduct, initialCustom }: { options
               <Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />
               <p>
                 <strong className="text-forest-900">{selected.label}</strong>
-                <span className="block">{selected.group} · {selected.fields} fields · <Link href={`/product/${selected.value}`} className="font-semibold underline underline-offset-4">View list details</Link></span>
+                <span className="block">{selected.group} · {selected.fields} fields · <Link href={`/lists/${selected.value}`} className="font-semibold underline underline-offset-4">View list details</Link></span>
               </p>
             </div>
           )}

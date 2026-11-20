@@ -26,7 +26,7 @@ export function GeoPage({ d }: { d: GeoPageData }) {
           <div><dt className="font-bold text-forest-900">Formats</dt><dd>CSV, Excel or TXT</dd></div>
         </dl>
         <div className="mt-8 flex flex-wrap gap-3">
-          {product && <Button asChild size="lg"><Link href={`/product/${product.slug}`}>See the {k.name} list</Link></Button>}
+          {product && <Button asChild size="lg"><Link href={`/lists/${product.slug}`}>See the {k.name} list</Link></Button>}
           <Button asChild variant="secondary" size="lg"><Link href={sampleHref}>Get a free sample</Link></Button>
           {!records && <Button asChild variant="secondary" size="lg"><Link href={custom}>Request a custom list</Link></Button>}
         </div>

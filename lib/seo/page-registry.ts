@@ -15,7 +15,7 @@ export function sitePages(): SitePage[] {
     ...getCategories().map((c) => ({ path: `/lists/${c.slug}`, label: c.name, group: "List categories" })),
     ...TAXONOMY.flatMap((g) => [{ path: `/lists/${g.slug}`, label: g.name, group: "List types" }, ...g.children.map((c) => ({ path: `/lists/${g.slug}/${c.slug}`, label: c.name, group: "List types" }))]),
     ...getCategories().flatMap((c) => getCountries().map((k) => ({ path: `/lists/${c.slug}/${k.slug}`, label: `${c.name} in ${k.name}`, group: "Country pages" }))),
-    ...getProducts().map((p) => ({ path: `/product/${p.slug}`, label: p.name ?? p.slug, group: "Products" })),
+    ...getProducts().map((p) => ({ path: `/lists/${p.slug}`, label: p.name ?? p.slug, group: "Products" })),
     ...solutions.map((s) => ({ path: `/solutions/${s.slug}`, label: s.slug, group: "Solutions" })),
     ...comparisons.map((c) => ({ path: `/compare/beigeleads-vs-${c.slug}`, label: `BeigeLeads vs ${c.slug}`, group: "Comparisons" })),
     ...helpCategories.map((c) => ({ path: `/help/${c.slug}`, label: `Help: ${c.slug}`, group: "Help Center" })),

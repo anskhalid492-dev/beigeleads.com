@@ -31,7 +31,7 @@ export function productOverview(p: Product, c: Category, k: Country) {
 }
 
 export function productJsonLd(p: Product, c: Category, k: Country, forSale: boolean) {
-  const url = `${SITE_URL}/product/${p.slug}`;
+  const url = `${SITE_URL}/lists/${p.slug}`;
   const start = startingPriceCents(p);
   const priced = forSale && !p.placeholderData && start !== null;
   return {

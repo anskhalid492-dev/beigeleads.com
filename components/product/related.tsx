@@ -34,7 +34,7 @@ export function RelatedProducts({ items }: { items: readonly Product[] }) {
                   </div>
                 </dl>
                 <Button asChild variant="secondary" className="mt-6">
-                  <Link href={`/product/${r.slug}`}>
+                  <Link href={`/lists/${r.slug}`}>
                     View database <ArrowRight className="size-4" aria-hidden />
                   </Link>
                 </Button>

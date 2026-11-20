@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GeoPage } from "@/components/geo/geo-page";
 import { loadGeoPage } from "@/lib/geo/page-data";
-import { permanentRedirect } from "next/navigation";
-import { GeoShopPage, geoShopPath } from "@/components/category/geo-shop";
+import { GeoShopPage } from "@/components/category/geo-shop";
 import { countryFromFlat, geoShopMetadata } from "@/lib/geo-shop";
-import { isPlacePrototype } from "@/lib/category-view";
 import { TaxonomyPage } from "@/components/lists/taxonomy-page";
 import { loadListsData } from "@/lib/lists-data";
 import { isTaxGroup, resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
@@ -28,8 +26,6 @@ export default async function CountryPage(props: PageProps<"/lists/[category]/[c
   const flat = countryFromFlat(category);
   if (flat && country === "cities") return <GeoShopPage country={flat} products={(await loadListsData()).products} view="cities" />;
   if (await isTaxGroup(category)) {
-    // Countries with real shopping inventory live at one canonical URL.
-    if (isPlacePrototype(category, "international-business-databases", country)) { const f = countryFromFlat(`${country}-business-email-lists`); if (f) permanentRedirect(geoShopPath(f.slug)); }
     const t = await resolveTax(category, country);
     if (!t) notFound();
     return <TaxonomyPage {...t} products={(await loadListsData()).products} industries={taxIndustries()} />;

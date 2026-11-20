@@ -68,7 +68,7 @@ export function DataExplorer({ sheets }: { sheets: readonly ExplorerSheet[] }) {
         </table>
       </div>
       <p className="mt-3 text-sm"><strong className="text-forest-900">Example records.</strong> Fictional businesses on example domains, shown to explain the layout. Real samples mask email, phone and street address the same way. Available fields vary by product.</p>
-      <p className="mt-2 text-sm"><Link href={`/product/${sheet.productSlug}`} className="font-semibold text-forest-900 underline underline-offset-4">See the {sheet.label} list</Link> · <Link href="/lists" className="font-semibold text-forest-900 underline underline-offset-4">Browse all lists</Link></p>
+      <p className="mt-2 text-sm"><Link href={`/lists/${sheet.productSlug}`} className="font-semibold text-forest-900 underline underline-offset-4">See the {sheet.label} list</Link> · <Link href="/lists" className="font-semibold text-forest-900 underline underline-offset-4">Browse all lists</Link></p>
     </div>
   );
 }

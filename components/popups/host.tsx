@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { pageTypeOf, pickCampaign } from "@/lib/popups/engine";
+import { isProductPath, pageTypeOf, pickCampaign } from "@/lib/popups/engine";
 import type { Campaign, Visitor } from "@/lib/popups/types";
 import type { CatalogLite } from "./blocks";
 import { PopupView } from "./popup-view";
@@ -52,7 +52,7 @@ export function PopupHost() {
     if (admin || !visitor.current) return;
     const v = visitor.current;
     v.pages += 1;
-    if (path.startsWith("/product/")) v.productViews += 1;
+    if (isProductPath(path)) v.productViews += 1;
     if (path.startsWith("/checkout/")) v.checkoutStarted = true;
     save();
     done.current = false; seconds.current = 0; scroll.current = 0; exit.current = false; signals.current = new Set(); query.current = "";
@@ -94,7 +94,7 @@ export function PopupHost() {
 
   if (admin || !shown || !data) return null;
   const slug = /^\/product\/([^/?#]+)/.exec(path)?.[1] ?? "";
-  const href = (raw: string) => raw.replace("{product_url}", `/product/${slug}`).replace("{product_slug}", slug).replace("{custom_href}", extra.custom);
+  const href = (raw: string) => raw.replace("{product_url}", `/lists/${slug}`).replace("{product_slug}", slug).replace("{custom_href}", extra.custom);
   const secondary = shown.secondary ? href(shown.secondary.href) : null;
   const mark = (k: "dismissedAt" | "converted") => { const v = visitor.current; if (!v) return; const s = v.popups[shown.id] ?? { n: 1, last: Date.now() }; v.popups[shown.id] = { ...s, ...(k === "dismissedAt" ? { dismissedAt: Date.now() } : { converted: true }) }; save(); };
   const catalog: CatalogLite = data.catalog ?? { categories: [], countries: [], products: [], samples: {} };

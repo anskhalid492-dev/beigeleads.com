@@ -20,8 +20,14 @@ export type GeoRegionNode = { slug: string; name: string; cats: string[] };
 export type GeoCountryNode = { slug: string; name: string; code: string; regions: GeoRegionNode[]; cities: GeoCityNode[] };
 export type GeoTree = GeoCountryNode[];
 
+/** What kind of database a product is: a whole country, one city, or one industry. */
+export type Kind = "" | "country" | "city" | "industry";
+export const KINDS: readonly Kind[] = ["country", "city", "industry"];
+export const productKind = (p: Pick<ShopProduct, "scope" | "categorySlug">): Exclude<Kind, ""> => (p.scope === "city" ? "city" : p.categorySlug === "business" ? "country" : "industry");
+
 export type Filters = {
   type: "b2b" | "b2c";
+  kind: Kind;
   q: string;
   industries: string[]; countries: string[];
   state: string; city: string;
@@ -31,7 +37,7 @@ export type Filters = {
   minPrice: number | null; maxPrice: number | null; // whole USD
   sort: Sort; page: number;
 };
-export const EMPTY: Filters = { type: "b2b", q: "", industries: [], countries: [], state: "", city: "", fields: [], avail: "", minRecords: null, maxRecords: null, minPrice: null, maxPrice: null, sort: "relevance", page: 1 };
+export const EMPTY: Filters = { type: "b2b", kind: "", q: "", industries: [], countries: [], state: "", city: "", fields: [], avail: "", minRecords: null, maxRecords: null, minPrice: null, maxPrice: null, sort: "relevance", page: 1 };
 
 type SP = Record<string, string | string[] | undefined>;
 const slugList = (v: string) => [...new Set(v.split(",").map((s) => s.trim().toLowerCase()).filter((s) => /^[a-z0-9-]{1,60}$/.test(s)))].slice(0, 12);
@@ -43,6 +49,7 @@ export function parseFilters(sp: SP | URLSearchParams): Filters {
   const avail = one("avail");
   return {
     type: one("type") === "b2c" ? "b2c" : "b2b",
+    kind: (KINDS as readonly string[]).includes(one("kind")) ? (one("kind") as Kind) : "",
     q: one("q").trim().slice(0, 80),
     industries: slugList(one("industry")), countries: slugList(one("country")),
     state: slugList(one("state"))[0] ?? "", city: slugList(one("city"))[0] ?? "",
@@ -58,6 +65,7 @@ export function parseFilters(sp: SP | URLSearchParams): Filters {
 export function listsHref(f: Partial<Filters>): string {
   const u = new URLSearchParams();
   if (f.type && f.type !== "b2b") u.set("type", f.type);
+  if (f.kind) u.set("kind", f.kind);
   if (f.q) u.set("q", f.q);
   if (f.industries?.length) u.set("industry", f.industries.join(","));
   if (f.countries?.length) u.set("country", f.countries.join(","));
@@ -76,7 +84,7 @@ export function listsHref(f: Partial<Filters>): string {
 }
 
 /** True when anything other than the plain page is selected (such views are noindex and canonical to /shop). */
-export const isFiltered = (f: Filters) => !!(f.q || f.industries.length || f.countries.length || f.state || f.city || f.fields.length || f.avail || f.minRecords != null || f.maxRecords != null || f.minPrice != null || f.maxPrice != null || f.sort !== "relevance" || f.type === "b2c");
+export const isFiltered = (f: Filters) => !!(f.q || f.kind || f.industries.length || f.countries.length || f.state || f.city || f.fields.length || f.avail || f.minRecords != null || f.maxRecords != null || f.minPrice != null || f.maxPrice != null || f.sort !== "relevance" || f.type === "b2c");
 
 // ---------- places ----------
 const countryNode = (tree: GeoTree, slug: string) => tree.find((c) => c.slug === slug);
@@ -162,6 +170,7 @@ export function applyFilters(data: ShopData, f: Filters, featured: string[] = []
   const price = (p: ShopProduct) => p.fromCents ?? Number.MAX_SAFE_INTEGER;
   const live = (p: ShopProduct) => (p.status === "live" ? 0 : 1);
   let list = data.products.filter((p) => {
+    if (f.kind && productKind(p) !== f.kind) return false;
     if (industries.length && !industries.includes(p.categorySlug)) return false;
     if (countries.length && !countries.includes(p.countrySlug)) return false;
     if ((state || city) && !inPlace(p, data.tree, { state, city })) return false;
@@ -217,6 +226,7 @@ export type Chip = { key: string; label: string; remove: Partial<Filters> };
 export function chips(f: Filters, data: ShopData): Chip[] {
   const out: Chip[] = [];
   if (f.q) out.push({ key: "q", label: `Search: ${f.q}`, remove: { q: "" } });
+  if (f.kind) out.push({ key: "kind", label: { country: "Country databases", city: "City databases", industry: "Industry databases" }[f.kind], remove: { kind: "" } });
   for (const s of f.industries) out.push({ key: `i-${s}`, label: data.industries.find((i) => i.slug === s)?.name ?? s, remove: { industries: f.industries.filter((x) => x !== s) } });
   for (const s of f.countries) out.push({ key: `c-${s}`, label: data.countries.find((i) => i.slug === s)?.name ?? s, remove: { countries: f.countries.filter((x) => x !== s), state: "", city: "" } });
   if (f.state) out.push({ key: "st", label: stateOptions(data.tree, { countries: [] }).find((x) => x.slug === f.state)?.name ?? f.state, remove: { state: "", city: "" } });

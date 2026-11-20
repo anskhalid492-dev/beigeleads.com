@@ -3,7 +3,8 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState, useEffect } from "react";
-import { DbBadge } from "@/components/shared/db-icon";
+import { CategoryBasket } from "@/components/lists/category-basket";
+import type { BasketLabel } from "@/lib/hero-basket";
 import { listsHref, type GeoTree } from "@/lib/shop";
 
 const RECENT_KEY = "bl-lists-recent-v1";
@@ -16,10 +17,10 @@ function Mark({ text, q }: { text: string; q: string }) {
   return <>{text.slice(0, i)}<mark className="bg-purple-100 text-forest-900">{text.slice(i, i + q.length)}</mark>{text.slice(i + q.length)}</>;
 }
 
-type Props = { audience: "b2b" | "b2c"; industries: { slug: string; name: string }[]; countries: { slug: string; name: string; code: string }[]; tree: GeoTree; niches: { name: string }[] };
+type Props = { audience: "b2b" | "b2c"; industries: { slug: string; name: string }[]; countries: { slug: string; name: string; code: string }[]; tree: GeoTree; niches: { name: string }[]; basket: BasketLabel[] };
 
 /** Compact, light hero: headline, search with autocomplete from REAL industries and places, audience tabs, popular searches. */
-export function ListsHero({ audience, industries, countries, tree, niches }: Props) {
+export function ListsHero({ audience, industries, countries, tree, niches, basket }: Props) {
   const router = useRouter();
   const id = useId();
   const [q, setQ] = useState("");
@@ -49,25 +50,15 @@ export function ListsHero({ audience, industries, countries, tree, niches }: Pro
     router.push(`${listsHref({ q: v, type: audience })}#databases`);
   };
   const popular = industries.slice(0, 3).map((i) => i.name);
-  const tab = (a: "b2b" | "b2c", label: string) => <Link role="tab" aria-selected={audience === a} href={a === "b2b" ? "/lists" : "/lists?type=b2c"} className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${audience === a ? "bg-forest-900 text-sand-50" : "text-forest-900 hover:bg-white"}`}>{label}</Link>;
 
   return (
     <section className="mx-auto max-w-7xl px-4 pt-2">
       <div className="relative overflow-hidden rounded-[2rem] border border-sand-200 bg-sand-100 px-6 py-9 sm:px-12 sm:py-12">
-        {/* restrained composition: a fan of real industry index tabs */}
-        <div className="pointer-events-none absolute -right-6 top-6 hidden w-[19rem] lg:block" aria-hidden>
-          {industries.slice(0, 3).map((i, n) => (
-            <div key={i.slug} className="absolute right-0 flex w-60 items-center gap-3 rounded-2xl border border-sand-300 bg-white p-3 shadow-[0_10px_30px_-18px_rgba(15,42,29,.5)]" style={{ top: `${n * 62}px`, transform: `translateX(${(n % 2 ? 26 : 0)}px) rotate(${n === 1 ? 1.5 : -1.5}deg)` }}>
-              <DbBadge category={i.slug} size="sm" /><span className="text-sm font-bold text-forest-900">{i.name}</span><span className="ml-auto h-2 w-10 rounded-full bg-purple-100" />
-            </div>
-          ))}
-        </div>
         <h1 className="display max-w-3xl text-5xl leading-[0.95] text-forest-900 sm:text-6xl">Find the Right Contacts. Own the List.</h1>
         <p className="mt-4 max-w-2xl text-lg">Explore targeted business contact databases by industry and location. Preview available data, choose your prospects, and purchase once.</p>
 
-        <div role="tablist" aria-label="Prospect type" className="mt-6 inline-flex rounded-full border border-sand-300 bg-sand-50 p-1">{tab("b2b", "B2B databases")}{tab("b2c", "B2C databases")}</div>
 
-        <div ref={box} className="relative mt-4 max-w-2xl">
+        <div ref={box} className="relative mt-7 max-w-2xl">
           <form role="search" onSubmit={(e) => { e.preventDefault(); go(active >= 0 && list[active] ? list[active] : q); }} className="flex gap-2 rounded-2xl border-2 border-forest-900 bg-white p-1.5 shadow-[4px_4px_0_0_var(--color-forest-900)]">
             <label htmlFor={`${id}-q`} className="sr-only">Search lists by industry or location</label>
             <Search className="ml-3 size-5 shrink-0 self-center text-forest-700" aria-hidden />
@@ -91,6 +82,7 @@ export function ListsHero({ audience, industries, countries, tree, niches }: Pro
           {popular.map((p) => <button key={p} type="button" onClick={() => go(p)} className="rounded-full border border-forest-900/30 bg-white px-3.5 py-1.5 font-semibold text-forest-900 hover:border-forest-900">{p}</button>)}
           <Link href="/custom-list" className="rounded-full border border-forest-900/30 bg-white px-3.5 py-1.5 font-semibold text-forest-900 hover:border-forest-900">Custom list</Link>
         </div>
+        <div className="mt-6 xl:mt-0"><CategoryBasket labels={basket} /></div>
       </div>
     </section>
   );

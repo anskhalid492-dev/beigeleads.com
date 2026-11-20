@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/help-center` },
     ...help.categories.map((c) => ({ url: `${SITE_URL}/help/${c.slug}` })),
     ...help.articles.filter((a) => !a.noindex).map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
-    ...getProducts().map((p) => ({ url: `${SITE_URL}/product/${p.slug}` })),
+    ...getProducts().map((p) => ({ url: `${SITE_URL}/lists/${p.slug}` })),
   ];
   return all.filter((e) => !excluded.has(e.url.replace(SITE_URL, "") || "/"));
 }

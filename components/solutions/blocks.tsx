@@ -79,7 +79,7 @@ export function PreviewPanel({ s }: { s: Solution }) {
       </div>
       <div className="mt-8 flex flex-col items-center gap-3">
         <div className="flex flex-wrap justify-center gap-3">
-          <Button asChild size="lg"><Link href={`/product/${p.slug}`}>Get full access</Link></Button>
+          <Button asChild size="lg"><Link href={`/lists/${p.slug}`}>Get full access</Link></Button>
           <Button asChild size="lg" variant="secondary"><Link href="/sample">Request free sample</Link></Button>
         </div>
         {p.placeholderData && <p className="text-center text-sm text-forest-500">Example rows with fictional businesses, shown to demonstrate the layout.</p>}
@@ -182,7 +182,7 @@ export function ListsPanel({ s }: { s: Solution }) {
               {p.lastVerified && <div className="col-span-2"><dt className="text-forest-500">Last verified</dt><dd className="font-bold text-forest-900">{fmtDate(p.lastVerified)}</dd></div>}
             </dl>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Button asChild size="sm"><Link href={`/product/${p.slug}`}>View database</Link></Button>
+              <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>View database</Link></Button>
               <Button asChild size="sm" variant="secondary"><Link href="/sample">Free sample</Link></Button>
             </div>
           </li>

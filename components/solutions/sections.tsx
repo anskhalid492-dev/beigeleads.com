@@ -218,7 +218,7 @@ export function RecommendedDatabases({ s, heading = "Recommended databases" }: {
                   </dl>
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Button asChild size="sm">
-                      <Link href={`/product/${p!.slug}`}>
+                      <Link href={`/lists/${p!.slug}`}>
                         View database <ArrowRight className="size-4" aria-hidden />
                       </Link>
                     </Button>

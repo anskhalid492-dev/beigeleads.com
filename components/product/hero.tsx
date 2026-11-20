@@ -76,7 +76,7 @@ export function ProductHero({
       <Breadcrumbs wide items={[
         { name: "Lists", href: "/lists" },
         ...(general ? [{ name: `${country.name} Business Email Lists`, href: `/lists/${country.slug}-business-email-lists` }] : [{ name: category.name, href: `/lists/${category.slug}` }]),
-        { name: product.name, href: `/product/${product.slug}` },
+        { name: product.name, href: `/lists/${product.slug}` },
       ]} />
       <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-14 pt-6 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-14 lg:px-8 lg:pb-20 lg:pt-8">
         <div>

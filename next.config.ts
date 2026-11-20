@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
       { source: "/shop", has: [{ type: "query", key: "category", value: "(?<category>.+)" }], destination: "/lists?industry=:category", permanent: true },
       { source: "/shop", destination: "/lists", permanent: true },
       { source: "/shop/:path*", destination: "/lists", permanent: true },
+      // Product pages moved from /product/<slug> to /lists/<slug> (owner decision, 20 Nov 2026).
+      { source: "/product/:slug", destination: "/lists/:slug", permanent: true },
       { source: "/help", destination: "/help-center", permanent: false },
     ];
   },

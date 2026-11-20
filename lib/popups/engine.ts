@@ -1,3 +1,4 @@
+import { getProduct } from "@/lib/catalog";
 import type { Campaign, PageType, Stage, Visitor } from "./types";
 
 export type Ctx = { pageType: PageType; path: string; seconds: number; scrollPct: number; exitIntent: boolean; signals: ReadonlySet<string>; visitor: Visitor; now: number };
@@ -53,10 +54,13 @@ export function pickCampaign(list: Campaign[], x: Ctx): Campaign | null {
   return ok[0] ?? null;
 }
 
+/** A product page lives at /lists/<product-slug>; every other /lists/... path is a category or place page. */
+export const isProductPath = (path: string) => { const p = path.split(/[?#]/)[0].split("/"); return p[1] === "lists" && p.length === 3 && !!getProduct(p[2]); };
+
 export function pageTypeOf(path: string): PageType {
   if (path === "/") return "home";
+  if (isProductPath(path)) return "product";
   if (path === "/lists" || path.startsWith("/lists/")) return "lists";
-  if (path.startsWith("/product/")) return "product";
   if (path === "/blog" || path.startsWith("/blog/")) return "blog";
   if (path.startsWith("/help")) return "help";
   if (path.startsWith("/checkout") || path === "/cart") return "checkout"; // no popups on the cart either

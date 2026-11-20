@@ -102,7 +102,7 @@ describe("selection", () => {
   });
   it("maps paths to page types", () => {
     expect(pageTypeOf("/")).toBe("home");
-    expect(pageTypeOf("/product/dentists")).toBe("product");
+    expect(pageTypeOf("/lists/dentists-us")).toBe("product");
     expect(pageTypeOf("/checkout/abc")).toBe("checkout");
     expect(pageTypeOf("/help/payments/x")).toBe("help");
     expect(pageTypeOf("/admin")).toBe("other");

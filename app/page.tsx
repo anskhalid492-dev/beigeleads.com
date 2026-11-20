@@ -142,7 +142,7 @@ export default function Home() {
                     {p.placeholderData ? <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold">Placeholder figures</span> : null}
                   </p>
                   <div className="mt-auto flex flex-wrap gap-2 pt-5">
-                    <Button asChild size="sm"><Link href={`/product/${p.slug}`}>View list</Link></Button>
+                    <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>View list</Link></Button>
                     <Button asChild size="sm" variant="secondary"><Link href={`/sample?product=${p.slug}`}>Free sample</Link></Button>
                   </div>
                 </li>

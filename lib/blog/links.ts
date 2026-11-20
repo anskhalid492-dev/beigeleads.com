@@ -17,7 +17,7 @@ export function internalTargets(help: readonly Pick<HelpArticle, "category" | "s
     { url: "/data-sources", title: "Where the data comes from", keywords: ["data sources", "data source"] },
     ...getCategories().map((c) => ({ url: `/lists/${c.slug}`, title: `${c.name} lists`, keywords: [c.name, c.singular] })),
     ...getCategories().flatMap((c) => getCountries().map((k) => ({ url: `/lists/${c.slug}/${k.slug}`, title: `${c.name} in ${k.name}`, keywords: [`${c.singular} email list`, `${c.name} in ${k.name}`] }))),
-    ...getProducts().map((p) => ({ url: `/product/${p.slug}`, title: p.name, keywords: [p.name] })),
+    ...getProducts().map((p) => ({ url: `/lists/${p.slug}`, title: p.name, keywords: [p.name] })),
     ...solutions.map((s) => ({ url: `/solutions/${s.slug}`, title: s.name, keywords: [s.name] })),
     ...comparisons.map((c) => ({ url: `/compare/beigeleads-vs-${c.slug}`, title: `BeigeLeads vs ${c.name}`, keywords: [c.name] })),
     ...help.slice(0, 60).map((a) => ({ url: articleHref(a), title: a.title, keywords: [] })),

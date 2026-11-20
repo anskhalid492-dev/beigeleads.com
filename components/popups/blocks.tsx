@@ -32,7 +32,7 @@ function Picker({ ctx, matcher }: { ctx: BlockCtx; matcher?: boolean }) {
         <input className={`${field} mt-1 font-normal`} value={place} maxLength={60} onChange={(e) => setPlace(e.target.value)} placeholder="Country, state or city" />
       </label>}
       {cat && (matches.length
-        ? <ul className="space-y-1 text-sm">{matches.map((p) => <li key={p.slug}><Link onClick={ctx.onNavigate} className="font-semibold text-forest-900 underline underline-offset-4" href={`/product/${p.slug}`}>{p.title}</Link></li>)}</ul>
+        ? <ul className="space-y-1 text-sm">{matches.map((p) => <li key={p.slug}><Link onClick={ctx.onNavigate} className="font-semibold text-forest-900 underline underline-offset-4" href={`/lists/${p.slug}`}>{p.title}</Link></li>)}</ul>
         : <p className="text-sm text-forest-700">No ready-made list for this yet. <Link onClick={ctx.onNavigate} className="font-semibold underline underline-offset-4" href={custom}>Request a custom list</Link>.</p>)}
       {!matcher && cat && matches.length > 0 && place.trim() && <p className="text-xs text-forest-700">Need a different place? <Link onClick={ctx.onNavigate} className="font-semibold underline underline-offset-4" href={custom}>Request it as a custom list</Link>.</p>}
     </div>
@@ -96,7 +96,7 @@ export function Block({ kind, ctx }: { kind: string; ctx: BlockCtx }) {
       const here = catalog.products.find((p) => p.slug === ctx.productSlug);
       const list = catalog.products.filter((p) => p.slug !== ctx.productSlug && (!here || p.category !== here.category)).slice(0, 3);
       if (!list.length) return null;
-      return <ul className="space-y-1.5 text-sm">{list.map((p) => <li key={p.slug}><Link onClick={ctx.onNavigate} href={`/product/${p.slug}`} className="font-semibold text-forest-900 underline underline-offset-4">{p.title}</Link></li>)}</ul>;
+      return <ul className="space-y-1.5 text-sm">{list.map((p) => <li key={p.slug}><Link onClick={ctx.onNavigate} href={`/lists/${p.slug}`} className="font-semibold text-forest-900 underline underline-offset-4">{p.title}</Link></li>)}</ul>;
     }
     default: return null;
   }

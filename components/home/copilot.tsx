@@ -39,7 +39,7 @@ function ProductCard({ p, note }: { p: Product; note?: string }) {
         {p.placeholderData ? "Record count and prices are shown on the list page." : `${p.recordCount?.toLocaleString("en-US") ?? ""} records${price ? `, from ${formatUsd(price)}` : ""}.`}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link href={`/product/${p.slug}`}>View list</Link></Button>
+        <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>View list</Link></Button>
         <Button asChild size="sm" variant="secondary"><Link href={`/sample?product=${p.slug}`}>Free sample</Link></Button>
       </div>
     </li>

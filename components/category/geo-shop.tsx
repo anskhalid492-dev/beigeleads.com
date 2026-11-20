@@ -31,11 +31,11 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
   const full = products.find((p) => p.countrySlug === country.slug && p.scope === "country" && p.categorySlug === "business");
   const cityProducts = products.filter((p) => p.countrySlug === country.slug && p.scope === "city");
   const others = products.filter((p) => p.countrySlug === country.slug && p.scope !== "city" && p !== full);
-  const cities: CityItem[] = cityProducts.map((p) => ({ slug: p.slug, city: p.name.replace(/ Business Email List$/, ""), name: p.name, title: p.title, description: p.description ?? p.title, fields: p.fields, recordCount: p.recordCount, coverage: `${p.name.replace(/ Business Email List$/, "")}, ${k}`, href: `/product/${p.slug}`, forSale: p.status === "live" }));
+  const cities: CityItem[] = cityProducts.map((p) => ({ slug: p.slug, city: p.name.replace(/ Business Email List$/, ""), name: p.name, title: p.title, description: p.description ?? p.title, fields: p.fields, recordCount: p.recordCount, coverage: `${p.name.replace(/ Business Email List$/, "")}, ${k}`, href: `/lists/${p.slug}`, forSale: p.status === "live" }));
   const rows = productSamples[full?.categorySlug ?? "business"] ?? [];
   const industry = getCategory("business");
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: `${k} Business Email Lists`, href: path }, ...(view === "cities" ? [{ name: "Cities", href: `${path}/cities` }] : [])];
-  const primary = full ? { label: `Get the Full ${k} Database`, href: `/product/${full.slug}` } : { label: `Browse ${k} Lists by City`, href: "#cities" };
+  const primary = full ? { label: `Get the Full ${k} Database`, href: `/lists/${full.slug}` } : { label: `Browse ${k} Lists by City`, href: "#cities" };
   const fmt = (n: number | null) => (n === null ? "Count to be confirmed" : n.toLocaleString("en-US"));
   return (
     <>
@@ -81,7 +81,7 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
                 <div className="flex items-baseline justify-between gap-3"><dt>Masked preview</dt><dd className="font-semibold text-forest-900">Available</dd></div>
                 <div className="flex items-baseline justify-between gap-3"><dt>Status</dt><dd className="font-semibold text-forest-900">{full.status === "live" ? "Available to buy" : "Preview only"}</dd></div>
               </dl>
-              <Link href={`/product/${full.slug}`} className="inline-flex h-12 items-center justify-center rounded-full bg-purple-600 px-6 font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Get the Full {k} Database</Link>
+              <Link href={`/lists/${full.slug}`} className="inline-flex h-12 items-center justify-center rounded-full bg-purple-600 px-6 font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Get the Full {k} Database</Link>
             </div>
           </div>
         </div></section>
@@ -98,7 +98,7 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
 
       {others.length > 0 && view === "main" && (
         <Block title={`More ${k} Databases`} lead="Databases for a specific industry or region.">
-          <ul className="grid gap-3 sm:grid-cols-2">{others.map((p) => <li key={p.slug}><Link href={`/product/${p.slug}`} className="block rounded-2xl border border-sand-300 bg-white p-4 font-semibold text-forest-900 hover:border-forest-900">{p.name}</Link></li>)}</ul>
+          <ul className="grid gap-3 sm:grid-cols-2">{others.map((p) => <li key={p.slug}><Link href={`/lists/${p.slug}`} className="block rounded-2xl border border-sand-300 bg-white p-4 font-semibold text-forest-900 hover:border-forest-900">{p.name}</Link></li>)}</ul>
         </Block>
       )}
 
@@ -109,7 +109,7 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
           <SolutionFaq name={`${k} Business Lists`} items={faqs(k, !!full)} />
         </>
       )}
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${k} Business Email Lists`, url: `https://beigeleads.com${path}`, mainEntity: { "@type": "ItemList", itemListElement: [...(full ? [full] : []), ...cityProducts].map((p, i) => ({ "@type": "ListItem", position: i + 1, url: `https://beigeleads.com/product/${p.slug}`, name: p.name })) } }} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${k} Business Email Lists`, url: `https://beigeleads.com${path}`, mainEntity: { "@type": "ItemList", itemListElement: [...(full ? [full] : []), ...cityProducts].map((p, i) => ({ "@type": "ListItem", position: i + 1, url: `https://beigeleads.com/lists/${p.slug}`, name: p.name })) } }} />
     </>
   );
 }

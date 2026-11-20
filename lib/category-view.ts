@@ -5,10 +5,6 @@
 import type { Category } from "@/lib/catalog";
 import { FIELDS } from "@/lib/catalog";
 
-/** Prototype gate: the redesign is shown on exactly these pages until the owner approves a roll-out. */
-export const isRolePrototype = (group: string, child?: string) => group === "job-title-lists" && child === "ceos";
-export const isPlacePrototype = (group: string, child: string | undefined, country: string | undefined) => group === "geographic-databases" && child === "international-business-databases" && country === "germany";
-export const isIndustryPrototype = (slug: string) => slug === "dentists";
 
 export type Tier = { title: string; note: string; roles: { slug: string; name: string }[] };
 

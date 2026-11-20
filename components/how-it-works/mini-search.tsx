@@ -33,7 +33,7 @@ export function MiniSearch({ examples }: { examples: readonly string[] }) {
           <ul className="space-y-2">
             {res.exact.map((p) => (
               <li key={p.slug}>
-                <Link href={`/product/${p.slug}`} className="flex items-center justify-between gap-3 rounded-xl border border-forest-100 bg-forest-100/60 px-4 py-3 font-semibold text-forest-900 hover:bg-forest-100">
+                <Link href={`/lists/${p.slug}`} className="flex items-center justify-between gap-3 rounded-xl border border-forest-100 bg-forest-100/60 px-4 py-3 font-semibold text-forest-900 hover:bg-forest-100">
                   <span>{p.title}<span className="block text-xs font-normal">{getCategory(p.categorySlug)?.blurb}</span></span>
                   <ArrowRight className="size-4 shrink-0" aria-hidden />
                 </Link>
@@ -45,7 +45,7 @@ export function MiniSearch({ examples }: { examples: readonly string[] }) {
           <ul className="space-y-2">
             {res.close.map(({ product, note }) => (
               <li key={product.slug} className="rounded-xl border border-sand-300 bg-sand-50 px-4 py-3">
-                <Link href={`/product/${product.slug}`} className="font-semibold text-forest-900 underline underline-offset-4">{product.title}</Link>
+                <Link href={`/lists/${product.slug}`} className="font-semibold text-forest-900 underline underline-offset-4">{product.title}</Link>
                 <span className="block">{note}</span>
               </li>
             ))}

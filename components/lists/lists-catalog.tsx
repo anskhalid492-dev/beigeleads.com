@@ -33,7 +33,7 @@ export function ListsCatalog({ data, initial, featured }: { data: ShopData & { n
   const active = chips(f, data);
   const it = useMemo(() => (f.q ? interpret(f.q, data.industries, data.tree) : {}), [f.q, data]);
   const readsAs = [it.industry && `Industry: ${it.industry.name}`, it.country && `Country: ${it.country.name}`, it.state && `State: ${it.state.name}`, it.city && `City: ${it.city.name}`].filter(Boolean) as string[];
-  const clear = () => setF({ ...f, q: "", industries: [], countries: [], state: "", city: "", fields: [], avail: "", minRecords: null, maxRecords: null, minPrice: null, maxPrice: null, page: 1 });
+  const clear = () => setF({ ...f, q: "", kind: "", industries: [], countries: [], state: "", city: "", fields: [], avail: "", minRecords: null, maxRecords: null, minPrice: null, maxPrice: null, page: 1 });
   const sorts = SORTS.filter((s) => !s.startsWith("price") || !!fac.price);
   const extra = !!(fac.records || fac.price || fac.fields.length || fac.hasAvailability);
   const num = (x: string) => (x === "" ? null : Math.max(0, Number(x) || 0));
@@ -41,11 +41,16 @@ export function ListsCatalog({ data, initial, featured }: { data: ShopData & { n
 
   return (
     <section id="databases" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><h2 className="display text-4xl text-forest-900">Browse ready-made lists</h2><p className="mt-1 max-w-xl text-sm">Every list has a masked sample, a one-time price and delivery by email.</p></div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div><h2 className="display text-[2rem] leading-none text-forest-900 sm:text-[2.6rem]">Shop ready-made databases</h2><p className="mt-2 max-w-xl text-sm">Each database has its own page with a masked sample, packages and a one-time price. Delivery by email.</p></div>
+        <div role="tablist" aria-label="Database type" className="inline-flex max-w-full overflow-x-auto rounded-full border border-sand-300 bg-sand-100 p-1">
+          {([["", "All"], ["country", "Country"], ["city", "City"], ["industry", "Industry"]] as const).map(([k, label]) => (
+            <button key={k} role="tab" type="button" aria-selected={f.kind === k} onClick={() => set({ kind: k })} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${f.kind === k ? "bg-forest-900 text-sand-50" : "text-forest-900 hover:bg-white"}`}>{label}</button>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-6 rounded-[1.4rem] border border-sand-300 bg-white p-4">
+      <div className="mt-6 rounded-[1.4rem] border border-sand-300 bg-sand-100/60 p-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr_auto]">
           <div><label htmlFor="l-q" className="mb-1 block text-xs font-bold text-forest-900">Search</label><input id="l-q" value={f.q} onChange={(e) => set({ q: e.target.value.slice(0, 80) })} placeholder="Industry, country or place" className={sel} /></div>
           <div><label htmlFor="l-i" className="mb-1 block text-xs font-bold text-forest-900">Industry</label><select id="l-i" value={f.industries[0] ?? ""} onChange={(e) => set({ industries: e.target.value ? [e.target.value] : [] })} className={sel}><option value="">All industries</option>{data.industries.map((i) => <option key={i.slug} value={i.slug}>{i.name}</option>)}</select></div>

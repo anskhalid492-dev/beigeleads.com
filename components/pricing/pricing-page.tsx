@@ -62,7 +62,7 @@ function ProductCard({ p }: { p: Product }) {
   if (!c || !k || start === null) return null;
   return (
     <li>
-      <Link href={`/product/${p.slug}#pricing`} className="group flex h-full flex-col rounded-3xl border border-sand-300 bg-sand-50 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_24px_50px_-28px_rgba(15,42,29,0.55)]">
+      <Link href={`/lists/${p.slug}#pricing`} className="group flex h-full flex-col rounded-3xl border border-sand-300 bg-sand-50 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-forest-900 hover:shadow-[0_24px_50px_-28px_rgba(15,42,29,0.55)]">
         <div className="flex items-center gap-3">
           <DbBadge category={c.slug} country={k.code} size="md" />
           <p className="text-sm text-forest-500">{c.name} · {k.name}</p>
@@ -215,7 +215,7 @@ export function PricingPage() {
           "@context": "https://schema.org", "@type": "ItemList",
           itemListElement: items.map((p, i) => ({
             "@type": "ListItem", position: i + 1,
-            item: { "@type": "Product", name: p.name, url: `${SITE_URL}/product/${p.slug}`, offers: { "@type": "Offer", priceCurrency: "USD", price: lowFor(p).toFixed(2), availability: "https://schema.org/InStock", url: `${SITE_URL}/product/${p.slug}` } },
+            item: { "@type": "Product", name: p.name, url: `${SITE_URL}/lists/${p.slug}`, offers: { "@type": "Offer", priceCurrency: "USD", price: lowFor(p).toFixed(2), availability: "https://schema.org/InStock", url: `${SITE_URL}/lists/${p.slug}` } },
           })),
         }} />
       )}

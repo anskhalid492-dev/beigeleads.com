@@ -26,7 +26,7 @@ export default async function NewCheckout(props: PageProps<"/checkout/new">) {
     <FormPage
       title={`Buy ${product.name}`}
       intro={`${pkg.name} package: ${pkg.records.toLocaleString("en-US")} records for ${formatUsd(pkg.priceUsdCents)}. One payment in crypto, no account. We email your download link to the address below.`}
-      crumbs={[{ name: product.name, href: `/product/${product.slug}` }, { name: "Checkout", href: "/checkout/new" }]}
+      crumbs={[{ name: product.name, href: `/lists/${product.slug}` }, { name: "Checkout", href: "/checkout/new" }]}
     >
       <ApiForm
         endpoint="/api/checkout"

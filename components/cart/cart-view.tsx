@@ -169,7 +169,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
         <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-forest-900 text-forest-300"><IndustryIcon slug={l.categorySlug} className="size-7" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
-            <h3 className="text-lg font-bold leading-snug text-forest-900"><Link href={`/product/${l.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{l.name}</Link></h3>
+            <h3 className="text-lg font-bold leading-snug text-forest-900"><Link href={`/lists/${l.slug}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-purple-600">{l.name}</Link></h3>
             <p className="display text-3xl leading-none text-forest-900" aria-label={`Price ${formatUsd(l.priceCents)}`}>{formatUsd(l.priceCents)}</p>
           </div>
           <p className="mt-1 text-sm">{l.categoryName} · {l.coverage}</p>
@@ -191,7 +191,7 @@ function LineCard({ l, onRemove }: { l: PricedLine; onRemove: () => void }) {
         </div>
         <div className="flex items-center gap-1 text-sm">
           {rows.length > 0 && <button type="button" onClick={() => setSample(!sample)} aria-expanded={sample} className="inline-flex h-10 items-center gap-1.5 rounded-full px-3 font-semibold text-forest-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600"><Eye className="size-4" aria-hidden /> {sample ? "Hide sample" : "Masked sample"}</button>}
-          <Link href={`/product/${l.slug}`} className="inline-flex h-10 items-center rounded-full px-3 font-semibold text-forest-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600">Details</Link>
+          <Link href={`/lists/${l.slug}`} className="inline-flex h-10 items-center rounded-full px-3 font-semibold text-forest-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600">Details</Link>
           <button type="button" onClick={onRemove} aria-label={`Remove ${l.name} from cart`} className="inline-flex h-10 items-center gap-1.5 rounded-full px-3 font-semibold text-forest-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600"><Trash2 className="size-4" aria-hidden /> Remove</button>
         </div>
       </div>
@@ -217,7 +217,7 @@ function CrossSell({ items, count }: { items: Suggestion[]; count: number }) {
       <ul className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((s) => (
           <li key={s.slug} className="flex flex-col rounded-2xl border border-sand-200 bg-sand-50 p-4">
-            <p className="font-bold text-forest-900"><Link href={`/product/${s.slug}`} className="hover:underline">{s.name}</Link></p>
+            <p className="font-bold text-forest-900"><Link href={`/lists/${s.slug}`} className="hover:underline">{s.name}</Link></p>
             <p className="mt-0.5 text-xs">{s.categoryName} · {s.coverage}</p>
             <p className="mt-2 text-sm">{s.packageName} package · {s.records.toLocaleString("en-US")} records</p>
             <p className="mt-1 text-sm">{s.reason}</p>

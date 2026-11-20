@@ -33,7 +33,7 @@ export function buildBrief(i: { keyword: string; intent: Intent; category?: stri
   const where = i.place || k?.name || "";
   const links: Brief["links"] = [{ url: "/lists", title: "Browse all lists" }, { url: "/custom-list", title: "Custom list builder" }, { url: "/sample", title: "Free sample" }];
   if (c) links.push({ url: `/lists/${c.slug}`, title: `${c.name} lists` });
-  if (c && k) { links.push({ url: `/lists/${c.slug}/${k.slug}`, title: `${c.name} in ${k.name}` }); const p = getProductFor(c.slug, k.slug); if (p) links.push({ url: `/product/${p.slug}`, title: p.name }); }
+  if (c && k) { links.push({ url: `/lists/${c.slug}/${k.slug}`, title: `${c.name} in ${k.name}` }); const p = getProductFor(c.slug, k.slug); if (p) links.push({ url: `/lists/${p.slug}`, title: p.name }); }
   links.push({ url: "/verification", title: "How data is verified" }, { url: "/legal/lawful-use", title: "Lawful use policy" });
   const common = ["Say plainly what exists today and what does not. Never state a count or price that is not real.", "One primary keyword, used naturally. No keyword stuffing.", "End with one clear next step: sample, list page or custom list."];
   if (i.intent === "informational") return {

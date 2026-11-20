@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { Flag } from "@/components/shared/db-icon";
 import { Faq } from "@/components/shared/faq";
-import { ListCard } from "@/components/lists/list-card";
 import { ListsCatalog } from "@/components/lists/lists-catalog";
 import { ListsDirectory } from "@/components/lists/lists-directory";
+import { TypeRail } from "@/components/lists/type-rail";
+import { basketLabels } from "@/lib/hero-basket";
 import { ListsHero } from "@/components/lists/lists-hero";
 import { Button } from "@/components/ui/button";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -40,22 +40,16 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
   const productCats: Record<string, string[]> = {};
   for (const p of data.products) { const l = (productCats[p.countrySlug] ??= []); if (!l.includes(p.categorySlug)) l.push(p.categorySlug); }
 
-  // Collections that would only repeat the catalog stay hidden until there is enough real inventory.
-  const showPopular = data.products.length > 6;
-  const popular = showPopular ? [...data.products].sort((a, b) => (featured.indexOf(a.categorySlug) + 1 || 999) - (featured.indexOf(b.categorySlug) + 1 || 999)).slice(0, 8) : [];
-  const shown = new Set(popular.map((p) => p.slug));
-  const international = data.products.filter((p) => p.countrySlug !== "united-states" && !shown.has(p.slug));
-  const catName = new Map(data.industries.map((c) => [c.slug, c.name]));
-  const cityTiles = data.tree.flatMap((c) => c.cities.flatMap((ct) => ct.cats.map((cat) => ({ key: `${c.slug}/${ct.regionSlug ?? ""}/${ct.slug}/${cat}`, cat, name: ct.name, code: c.code, href: `/lists/${cat}/${c.slug}/${ct.regionSlug ? `${ct.regionSlug}/` : ""}${ct.slug}` })))).slice(0, 12);
   const guides = await relatedGuides(env, ["email list", "lead", ...data.industries.map((i) => i.name)], 3);
+  const tax = await getTax();
 
   return (
     <>
       <div className="mx-auto max-w-7xl px-4"><Breadcrumbs items={[{ name: "Lists", href: "/lists" }]} /></div>
-      <ListsHero audience={f.type} industries={data.industries} countries={data.countries} tree={data.tree} niches={data.niches.map((n) => ({ name: n.name }))} />
+      <ListsHero audience={f.type} industries={data.industries} countries={data.countries} tree={data.tree} niches={data.niches.map((n) => ({ name: n.name }))} basket={basketLabels(data.industries, tax)} />
       <ul className="mx-auto mt-5 flex max-w-7xl flex-wrap justify-center gap-x-8 gap-y-2 px-4 text-sm font-semibold text-forest-900">{TRUST.map((t) => <li key={t} className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-forest-500" aria-hidden />{t}</li>)}</ul>
 
-      <ListsDirectory tax={await getTax()} industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} products={data.products} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
+      <TypeRail tax={tax} products={data.products} />
 
       {f.type === "b2c" ? (
         <section id="databases" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-14">
@@ -64,25 +58,10 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
           <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link href="/custom-list">Build My Custom List</Link></Button><Button asChild variant="secondary" size="lg"><Link href="/lists">Browse B2B Lists</Link></Button></div>
         </section>
       ) : (
-        <ListsCatalog data={data} initial={f} featured={featured} />
+        <ListsCatalog key={listsHref(f)} data={data} initial={f} featured={featured} />
       )}
 
-      {f.type !== "b2c" && popular.length > 0 && !isFiltered(f) && (
-        <section className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-7xl px-4">
-          <h2 className="display text-4xl text-forest-900">Popular databases</h2>
-          <ul className="mt-6 flex snap-x gap-5 overflow-x-auto pb-4 [&>li]:w-[20rem] [&>li]:shrink-0 [&>li]:snap-start">{popular.map((p) => <ListCard key={p.slug} p={p} />)}</ul>
-        </div></section>
-      )}
-      {f.type !== "b2c" && international.length > 0 && !isFiltered(f) && (
-        <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-7xl px-4"><h2 className="display text-4xl text-forest-900">International business lists</h2><ul className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{international.map((p) => <ListCard key={p.slug} p={p} />)}</ul></div></section>
-      )}
-      {f.type !== "b2c" && cityTiles.length > 0 && !isFiltered(f) && (
-        <section className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-7xl px-4">
-          <h2 className="display text-4xl text-forest-900">City-specific databases</h2>
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{cityTiles.map((t) => <li key={t.key}><Link href={t.href} className="flex items-center gap-3 rounded-2xl border border-sand-300 bg-white px-4 py-3 text-sm font-semibold text-forest-900 hover:border-forest-900"><Flag code={t.code} className="h-4 w-6" />{catName.get(t.cat)} in {t.name}</Link></li>)}</ul>
-          <p className="mt-4 text-sm">City pages are views of the national list for that industry.</p>
-        </div></section>
-      )}
+      <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} products={data.products} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
 
       {guides.length > 0 && (
         <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-7xl px-4">

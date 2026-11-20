@@ -55,8 +55,8 @@ export function DatabaseRow({ p }: { p: ShopProduct }) {
         </div>
       </div>
       <div className="flex gap-2 md:flex-col">
-        <Link href={`/product/${p.slug}`} className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-purple-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">View List &amp; Pricing</Link>
-        <Link href={`/product/${p.slug}#sample`} className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-sand-300 px-5 text-sm font-semibold text-forest-900 hover:border-forest-900">Preview sample</Link>
+        <Link href={`/lists/${p.slug}`} className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-purple-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">View Database</Link>
+        <Link href={`/lists/${p.slug}#sample`} className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-sand-300 px-5 text-sm font-semibold text-forest-900 hover:border-forest-900">Preview sample</Link>
       </div>
     </div>
   );
