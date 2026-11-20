@@ -65,7 +65,6 @@ export default async function CaseStudiesIndex(props: { searchParams: Promise<Re
           </div>
         </header>
 
-        <p className="mx-auto mt-6 max-w-3xl text-center text-sm">Studies marked <strong className="text-forest-900">Illustrative use case</strong> are composite scenarios that show how data can be used. They are not reports about named customers and contain no invented results.</p>
 
         {!data ? (
           <p className="mt-16 text-center">Case studies are not available right now. Please check back soon.</p>
