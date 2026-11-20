@@ -427,25 +427,14 @@ summary::-webkit-details-marker {
 
 /* Header menus: short fade + rise. Transform/opacity only; off under reduced motion. */
 @keyframes mega-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
 }
-.mega-in { animation: mega-in 160ms ease-out both; }
-@keyframes isl-in-f { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
-@keyframes isl-in-b { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
-@keyframes isl-out-f { from { opacity: 1; } to { opacity: 0; transform: translateX(-28px); } }
-@keyframes isl-out-b { from { opacity: 1; } to { opacity: 0; transform: translateX(28px); } }
-.isl-in-f { animation: isl-in-f 200ms cubic-bezier(0.22, 0.7, 0.2, 1) both; }
-.isl-in-b { animation: isl-in-b 200ms cubic-bezier(0.22, 0.7, 0.2, 1) both; }
-.isl-out-f { animation: isl-out-f 160ms ease-in both; pointer-events: none; }
-.isl-out-b { animation: isl-out-b 160ms ease-in both; pointer-events: none; }
-@keyframes mega-sub { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
-@keyframes mega-item { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-.mega-sub { animation: mega-sub 180ms ease-out both; }
-.mega-item { animation: mega-item 180ms ease-out both; animation-delay: calc(var(--i, 0) * 22ms); }
+.mega-in { animation: mega-in 150ms ease-out both; }
+@keyframes sub-in { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+.sub-in { animation: sub-in 150ms ease-out both; }
 @media (prefers-reduced-motion: reduce) {
-  .mega-in, .mega-sub, .mega-item, .isl-in-f, .isl-in-b { animation: none; }
-  .isl-out-f, .isl-out-b { display: none; }
+  .mega-in, .sub-in { animation: none; }
 }
 
 /* Home: staggered hero entrance, drifting background blobs, process line. Transform/opacity only. */
