@@ -1,18 +1,20 @@
 "use client";
 import { useState } from "react";
-import { bulkStatusAction } from "../import/actions";
+import { bulkStatusAction, bulkStatusByFilterAction } from "../import/actions";
 
 type R = { id: number; slug: string; name: string; status: string; category: string; country: string; channel: string; packages: string; restricted: string[]; flags: number };
 
-export function Table({ rows }: { rows: R[] }) {
+export type F = { q?: string; status?: string; channel?: string; restricted?: "yes" | "no"; flag?: string; importId?: number };
+export function Table({ rows, total, filters }: { rows: R[]; total: number; filters: F }) {
+  const [all, setAll] = useState(false);
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [msg, setMsg] = useState(""); const [refused, setRefused] = useState<{ slug: string; reasons: string[] }[]>([]); const [busy, setBusy] = useState(false); const [askPub, setAskPub] = useState(false); const [override, setOverride] = useState(false);
   const toggle = (id: number) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   async function go(to: "draft" | "published" | "archived") {
-    if (!sel.size) return;
+    if (!sel.size && !all) return;
     setAskPub(false); setMsg("Working..."); setRefused([]); setBusy(true);
     try {
-      const r = await bulkStatusAction([...sel], to, to === "published" && override); setMsg(r.message); setRefused(r.refused ?? []); setSel(new Set());
+      const r = all ? await bulkStatusByFilterAction(filters, to, to === "published" && override) : await bulkStatusAction([...sel], to, to === "published" && override); setMsg(r.message); setRefused(r.refused ?? []); setSel(new Set()); setAll(false);
       if (r.ok) setTimeout(() => location.reload(), r.refused?.length ? 4000 : 900);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
@@ -20,9 +22,11 @@ export function Table({ rows }: { rows: R[] }) {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 border-b border-sand-200 p-3 text-sm">
-        <span>{sel.size} selected</span>
-        {(["published", "draft", "archived"] as const).map((s) => <button key={s} disabled={busy || !sel.size} onClick={() => (s === "published" ? setAskPub(true) : go(s))} className="rounded-full border border-forest-900 px-3 py-1 font-semibold disabled:opacity-40">{s === "published" ? "Publish" : s === "draft" ? "Back to draft" : "Archive"}</button>)}
-        {askPub && <span className="flex items-center gap-2 rounded-lg bg-sand-100 px-3 py-1">Publish {sel.size} product(s)? They become visible and buyable.
+        <span>{all ? `All ${total} matching selected` : `${sel.size} selected`}</span>
+        {!all && total > rows.length && <button onClick={() => setAll(true)} className="underline">Select all {total} matching the filter (all pages)</button>}
+        {all && <button onClick={() => setAll(false)} className="underline">Clear</button>}
+        {(["published", "draft", "archived"] as const).map((s) => <button key={s} disabled={busy || (!sel.size && !all)} onClick={() => (s === "published" ? setAskPub(true) : go(s))} className="rounded-full border border-forest-900 px-3 py-1 font-semibold disabled:opacity-40">{s === "published" ? "Publish" : s === "draft" ? "Back to draft" : "Archive"}</button>)}
+        {askPub && <span className="flex items-center gap-2 rounded-lg bg-sand-100 px-3 py-1">Publish {all ? total : sel.size} product(s)? They become visible and buyable.
           <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} /> Also publish restricted products (phone, consumer, sensitive). I confirm I may lawfully sell this data.</label>
           <button onClick={() => go("published")} className="rounded-full bg-forest-900 px-3 py-1 font-semibold text-sand-50">Yes, publish</button>
           <button onClick={() => setAskPub(false)} className="underline">Cancel</button></span>}

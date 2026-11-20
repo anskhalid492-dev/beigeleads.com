@@ -135,8 +135,8 @@ export const rowFlags = (r: Pick<Row, "flagsJson">) => parse<string[]>(r.flagsJs
 
 export type Filters = { q?: string; status?: string; channel?: string; country?: string; restricted?: "yes" | "no"; flag?: string; importId?: number };
 const PAGE = 50;
-export async function listProducts(db: Db, f: Filters, page: number) {
-  const w = and(
+function whereOf(f: Filters) {
+  return and(
     f.q ? or(like(schema.catalogProducts.name, `%${f.q}%`), like(schema.catalogProducts.slug, `%${f.q}%`)) : undefined,
     f.status ? eq(schema.catalogProducts.status, f.status as "draft") : undefined,
     f.channel ? eq(schema.catalogProducts.channel, f.channel) : undefined,
@@ -145,6 +145,15 @@ export async function listProducts(db: Db, f: Filters, page: number) {
     f.flag ? like(schema.catalogProducts.flagsJson, `%${f.flag}%`) : undefined,
     f.importId ? eq(schema.catalogProducts.importId, f.importId) : undefined,
   );
+}
+
+/** Every product id matching the filters (capped), for "select all N" across pages. */
+export async function listIds(db: Db, f: Filters, cap = 2000): Promise<number[]> {
+  return (await db.select({ id: schema.catalogProducts.id }).from(schema.catalogProducts).where(whereOf(f)).orderBy(desc(schema.catalogProducts.id)).limit(cap)).map((r) => r.id);
+}
+
+export async function listProducts(db: Db, f: Filters, page: number) {
+  const w = whereOf(f);
   const [[{ total }], rows] = await Promise.all([
     db.select({ total: count() }).from(schema.catalogProducts).where(w),
     db.select().from(schema.catalogProducts).where(w).orderBy(desc(schema.catalogProducts.id)).limit(PAGE).offset((Math.max(1, page) - 1) * PAGE),

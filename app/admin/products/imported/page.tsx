@@ -37,7 +37,7 @@ export default async function ImportedPage({ searchParams }: { searchParams: Pro
       </form>
       <Panel title={`${list.total} products`}>
         {list.rows.length === 0 ? <Empty title="No products match" /> : (
-          <Table rows={list.rows.map((r) => ({ id: r.id, slug: r.slug, name: r.name, status: r.status, category: r.categoryName, country: r.countryName, channel: r.channel, packages: rowPackages(r).map((p) => `${p.name} $${(p.priceUsdCents / 100).toFixed(0)}`).join(", "), restricted: rowRestricted(r), flags: rowFlags(r).length }))} />
+          <Table total={list.total} filters={{ q: sp.q || undefined, status: sp.status || undefined, channel: sp.channel || undefined, restricted: sp.restricted === "yes" || sp.restricted === "no" ? sp.restricted : undefined, flag: sp.flag || undefined, importId: Number(sp.import) || undefined }} rows={list.rows.map((r) => ({ id: r.id, slug: r.slug, name: r.name, status: r.status, category: r.categoryName, country: r.countryName, channel: r.channel, packages: rowPackages(r).map((p) => `${p.name} $${(p.priceUsdCents / 100).toFixed(0)}`).join(", "), restricted: rowRestricted(r), flags: rowFlags(r).length }))} />
         )}
         <p className="flex items-center justify-between p-4 text-sm"><span>Page {list.page} of {list.pages}</span><span className="flex gap-3">{list.page > 1 && <Link className="underline" href={q({ page: String(list.page - 1) })}>Previous</Link>}{list.page < list.pages && <Link className="underline" href={q({ page: String(list.page + 1) })}>Next</Link>}</span></p>
       </Panel>

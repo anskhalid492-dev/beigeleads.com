@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin/require-admin";
 import { clearImportedCache } from "@/lib/catalog-db";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { reservedSlugs } from "@/lib/import/reserved";
-import { applyBatch, finishImport, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { applyBatch, finishImport, listIds, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -72,4 +72,23 @@ export async function bulkStatusAction(idsIn: unknown, to: unknown, allowRestric
   await audit(a.email, `${r.changed} product(s) set to ${st.data}${r.refused.length ? `, ${r.refused.length} refused` : ""}${override && st.data === "published" ? " (restricted override ticked by the owner)" : ""}`);
   await refresh();
   return { ok: true, message: `${r.changed} product(s) set to ${st.data}.${r.refused.length ? ` ${r.refused.length} could not be published.` : ""}${r.noLink.length ? ` Warning: ${r.noLink.length} published without a delivery link yet. Add links in Delivery Links, because paid orders for them wait until a link exists.` : ""}`, refused: r.refused.slice(0, 50) };
+}
+
+/** Apply a status to EVERY product matching the admin's filters (all pages), in chunks. Same rules as bulkStatusAction. */
+export async function bulkStatusByFilterAction(filtersIn: unknown, to: unknown, allowRestricted: unknown = false): Promise<{ ok: boolean; message: string; refused?: { slug: string; reasons: string[] }[] }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const f = z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), importId: z.number().int().optional() }).safeParse(filtersIn);
+  const st = z.enum(["draft", "published", "archived"]).safeParse(to);
+  if (!f.success || !st.success) return { ok: false, message: "Those filters were not valid." };
+  const override = allowRestricted === true;
+  const ids = await listIds(db(), f.data);
+  if (!ids.length) return { ok: false, message: "No products match the filters." };
+  let changed = 0; const refused: { slug: string; reasons: string[] }[] = []; const noLink: string[] = [];
+  for (let i = 0; i < ids.length; i += 40) {
+    const r = await setStatus(db(), ids.slice(i, i + 40), st.data, { allowRestricted: override });
+    changed += r.changed; refused.push(...r.refused); noLink.push(...r.noLink);
+  }
+  await audit(a.email, `${changed} of ${ids.length} filtered product(s) set to ${st.data}${refused.length ? `, ${refused.length} refused` : ""}${override && st.data === "published" ? " (restricted override ticked by the owner)" : ""}`);
+  await refresh();
+  return { ok: true, message: `${changed} of ${ids.length} product(s) set to ${st.data}.${refused.length ? ` ${refused.length} could not be published (for example no price).` : ""}${noLink.length ? ` ${noLink.length} have no delivery link yet: add links in Delivery Links, paid orders wait until then.` : ""}`, refused: refused.slice(0, 50) };
 }
