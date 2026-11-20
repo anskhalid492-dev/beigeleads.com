@@ -42,7 +42,7 @@ async function managedRedirect(request: Request, env: CloudflareEnv): Promise<Re
  */
 async function cachedBlog(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
-  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/") || url.pathname === "/guides" || url.pathname.startsWith("/guides/") || url.pathname === "/help-center" || url.pathname.startsWith("/help/") || url.pathname.startsWith("/lists/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
+  const cacheable = request.method === "GET" && (url.pathname === "/blog" || url.pathname.startsWith("/blog/") || url.pathname === "/guides" || url.pathname.startsWith("/guides/") || url.pathname === "/glossary" || url.pathname.startsWith("/glossary/") || url.pathname === "/help-center" || url.pathname.startsWith("/help/") || url.pathname.startsWith("/lists/")) && !url.searchParams.has("q") && !request.headers.has("cookie") && !request.headers.has("rsc") && !url.searchParams.has("_rsc");
   if (!cacheable) return handler.fetch(request, env, ctx);
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(request);
@@ -65,7 +65,7 @@ async function withPageSeo(request: Request, env: CloudflareEnv, res: Response):
   try {
     if (request.method !== "GET" || res.status !== 200 || !(res.headers.get("content-type") ?? "").includes("text/html")) return res;
     const url = new URL(request.url);
-    if (isProtected(url.pathname) || url.pathname.startsWith("/blog/") || url.pathname.startsWith("/guides/") || request.headers.has("rsc") || url.searchParams.has("_rsc")) return res;
+    if (isProtected(url.pathname) || url.pathname.startsWith("/blog/") || url.pathname.startsWith("/guides/") || url.pathname.startsWith("/glossary/") || request.headers.has("rsc") || url.searchParams.has("_rsc")) return res;
     const now = Date.now();
     if (!pageSeo || now - pageSeo.at > 30_000) {
       let map: PageOverrideMap | null = null;

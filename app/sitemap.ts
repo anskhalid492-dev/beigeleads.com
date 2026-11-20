@@ -13,6 +13,7 @@ import { solutions } from "@/lib/solutions";
 import { articleHref } from "@/lib/help/data";
 import { loadHelp } from "@/lib/help/store";
 import { comparisons } from "@/lib/compare-data";
+import { sitemapPaths as glossaryPaths } from "@/lib/glossary/store";
 
 export const dynamic = "force-dynamic"; // blog articles come from D1 at request time
 
@@ -27,9 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const geoPaths = await geoSitemapPaths(getDbFromEnv(getCloudflareContext().env));
   const help = await loadHelp(getCloudflareContext().env);
   const tax = await getTax();
+  const glossary = await glossaryPaths(getDbFromEnv(getCloudflareContext().env));
   const all: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/blog` },
     { url: `${SITE_URL}/guides` },
+    ...(glossary.length ? [{ url: `${SITE_URL}/glossary` }] : []),
+    ...glossary.filter((g) => !g.thin).map((g) => ({ url: `${SITE_URL}/glossary/${g.slug}`, lastModified: g.updatedAt })),
     ...blog,
     ...authors,
     { url: `${SITE_URL}/` },

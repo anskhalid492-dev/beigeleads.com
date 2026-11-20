@@ -51,6 +51,7 @@ const columns: Column[] = [
       ["Case Studies", "/case-studies"],
       ["Blog", "/blog"],
       ["Guides", "/guides"],
+      ["Glossary", "/glossary"],
       ["Media Kit", "/media-kit"],
       ["Help Center", "/help-center"],
     ],

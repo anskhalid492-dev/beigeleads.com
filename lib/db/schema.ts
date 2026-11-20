@@ -874,3 +874,32 @@ export const taxonomyNodes = sqliteTable("taxonomy_nodes", {
   productSlugs: text("product_slugs").notNull().default("[]"),
   updatedAt: integer("updated_at").notNull().default(0),
 });
+
+// Glossary Library (migration 0032). Related lists are stored as text (separated by ";").
+export const glossaryTerms = sqliteTable("glossary_terms", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  term: text("term").notNull(),
+  categorySlug: text("category_slug").notNull().default(""),
+  shortDefinition: text("short_definition").notNull().default(""),
+  content: text("content").notNull().default(""),
+  whyItMatters: text("why_it_matters").notNull().default(""),
+  example: text("example").notNull().default(""),
+  relatedTerms: text("related_terms").notNull().default(""),
+  relatedGuides: text("related_guides").notNull().default(""),
+  relatedProducts: text("related_products").notNull().default(""),
+  seoTitle: text("seo_title").notNull().default(""),
+  metaDescription: text("meta_description").notNull().default(""),
+  keywords: text("keywords").notNull().default(""),
+  status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+  featured: integer("featured").notNull().default(0),
+  createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch())`),
+  publishedAt: integer("published_at"),
+});
+export const glossaryCategories = sqliteTable("glossary_categories", {
+  slug: text("slug").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
