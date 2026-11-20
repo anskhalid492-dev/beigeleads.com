@@ -9,7 +9,6 @@ import { basketLabels } from "@/lib/hero-basket";
 import { ListsHero } from "@/components/lists/lists-hero";
 import { Button } from "@/components/ui/button";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { relatedGuides } from "@/lib/lists-guides";
 import { getTax } from "@/lib/taxonomy-route";
 import { loadListsData } from "@/lib/lists-data";
 import { parseSlugList, getPublicSettings } from "@/lib/settings/service";
@@ -40,7 +39,6 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
   const productCats: Record<string, string[]> = {};
   for (const p of data.products) { const l = (productCats[p.countrySlug] ??= []); if (!l.includes(p.categorySlug)) l.push(p.categorySlug); }
 
-  const guides = await relatedGuides(env, ["email list", "lead", ...data.industries.map((i) => i.name)], 3);
   const tax = await getTax();
 
   return (
@@ -62,13 +60,6 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
       )}
 
       <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} products={data.products} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
-
-      {guides.length > 0 && (
-        <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-7xl px-4">
-          <h2 className="display text-4xl text-forest-900">Guides for choosing and using a list</h2>
-          <ul className="mt-6 grid gap-4 md:grid-cols-3">{guides.map((g) => <li key={`${g.kind}-${g.slug}`}><Link href={`/${g.kind === "guide" ? "guides" : "blog"}/${g.slug}`} className="flex h-full flex-col rounded-[1.3rem] border border-sand-300 bg-white p-5 hover:border-forest-500"><span className="text-xs font-bold text-forest-500">{g.kind === "guide" ? "Guide" : "Article"}</span><span className="display mt-1 text-2xl leading-tight text-forest-900">{g.title}</span><span className="mt-2 line-clamp-3 text-sm">{g.excerpt}</span></Link></li>)}</ul>
-        </div></section>
-      )}
 
       <section className="border-t border-sand-200 bg-forest-900 py-14 text-sand-50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4">
         <div><h2 className="display text-3xl !text-sand-50">Can&apos;t find your list?</h2><p className="mt-1 text-sand-200">Describe the industry, place and size you need.</p></div>
