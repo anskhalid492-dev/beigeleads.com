@@ -26,7 +26,7 @@ export function SalesHero({ eyebrow, h1, sub, primary, secondary, points, childr
 export function Block({ title, lead, children, tone }: { title: string; lead?: string; children: React.ReactNode; tone?: "sand" }) {
   return (
     <section className={tone === "sand" ? "border-y border-sand-200 bg-sand-100 py-12 sm:py-14" : "py-12 sm:py-14"}>
-      <div className={wrap}><h2 className={h2}>{title}</h2>{lead && <p className="mt-3 max-w-[60ch]">{lead}</p>}<div className="mt-8">{children}</div></div>
+      <div className={wrap}>{title && <h2 className={h2}>{title}</h2>}{title && lead && <p className="mt-3 max-w-[60ch]">{lead}</p>}<div className={title ? "mt-8" : ""}>{children}</div></div>
     </section>
   );
 }
@@ -36,9 +36,7 @@ export function UseCases({ items }: { items: readonly (readonly [string, string]
   return <ul className="grid border-t border-sand-300 md:grid-cols-2 md:gap-x-12">{items.map(([a, b]) => <li key={a} className="border-b border-sand-300 py-5"><p className="display text-2xl text-forest-900">{a}</p><p className="mt-1">{b}</p></li>)}</ul>;
 }
 
-export function Steps({ items }: { items: readonly (readonly [string, string])[] }) {
-  return <ol className="grid gap-6 md:grid-cols-4">{items.map(([a, b], i) => <li key={a} className="relative border-t-2 border-forest-900 pt-4"><span className="display text-4xl text-purple-600">{i + 1}</span><p className="mt-1 text-lg font-bold text-forest-900">{a}</p><p className="mt-1 text-sm">{b}</p></li>)}</ol>;
-}
+export { Steps } from "@/components/category/steps";
 
 export function Why({ items }: { items: readonly (readonly [string, string])[] }) {
   return <ul className="grid gap-x-12 gap-y-6 md:grid-cols-2">{items.map(([a, b]) => <li key={a} className="flex gap-3"><span className="mt-1 grid size-6 shrink-0 place-items-center rounded-full bg-forest-900 text-forest-300"><Check className="size-3.5" aria-hidden /></span><div><p className="font-bold text-forest-900">{a}</p><p className="mt-0.5">{b}</p></div></li>)}</ul>;

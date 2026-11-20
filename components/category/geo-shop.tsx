@@ -3,7 +3,6 @@ import { Check, FileSpreadsheet, MapPin } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { Flag } from "@/components/shared/db-icon";
-import { RelatedGuides } from "@/components/lists/related-guides";
 import { SolutionFaq } from "@/components/solutions/sections";
 import { CityCollection, type CityItem } from "@/components/category/city-collection";
 import { Block, UseCases } from "@/components/category/blocks";
@@ -105,7 +104,6 @@ export function GeoShopPage({ country, products, view = "main" }: { country: { s
       {view === "main" && (
         <>
           <Block title={`Who Buys ${k} Business Data`} tone="sand"><UseCases items={(industry?.useCases ?? []).map((u) => [u.name, u.text] as const)} /></Block>
-          <RelatedGuides terms={[k, "country", "city", "email list"]} />
           <SolutionFaq name={`${k} Business Lists`} items={faqs(k, !!full)} />
         </>
       )}

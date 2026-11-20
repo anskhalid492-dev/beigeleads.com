@@ -3,8 +3,7 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Faq } from "@/components/shared/faq";
 import { Button } from "@/components/ui/button";
 import type { GeoPageData } from "@/lib/geo/page-data";
-import { PlaceDirectory } from "./city-directory";
-import { RelatedGuides } from "@/components/lists/related-guides";
+import { PlaceSection } from "@/components/category/place-section";
 
 const n = (x: number) => x.toLocaleString("en-US");
 
@@ -35,14 +34,12 @@ export function GeoPage({ d }: { d: GeoPageData }) {
 
       {!view && regions.length > 0 && (
         <section className="border-t border-sand-200 bg-sand-100 py-14"><div className="mx-auto max-w-6xl px-4">
-          <h2 className="display text-4xl text-forest-900">Browse {c.name.toLowerCase()} by state or region</h2>
-          <div className="mt-6"><PlaceDirectory places={regions} label="Search states or regions" empty="No state or region matches." /></div>
+          <PlaceSection title={`${c.name} Email Lists by States`} lead={`Pick a state or region in ${k.name} to see the recorded inventory there.`} places={regions} noun="states" />
         </div></section>
       )}
       {places.length > 0 && (
         <section className="border-t border-sand-200 py-14"><div className="mx-auto max-w-6xl px-4">
-          <h2 className="display text-4xl text-forest-900">{view ? `Cities in ${view.area.name}` : `Browse ${c.name.toLowerCase()} by city`}</h2>
-          <div className="mt-6"><PlaceDirectory places={places} label="Search cities" empty="No city matches." /></div>
+          <PlaceSection title={view ? `${c.name} Email Lists in ${view.area.name} by Cities` : `${c.name} Email Lists by Cities`} lead="Pick a city to see the recorded inventory there." places={places} noun="cities" />
         </div></section>
       )}
       {view && siblings.length > 0 && (
@@ -57,7 +54,6 @@ export function GeoPage({ d }: { d: GeoPageData }) {
           <ul className="mt-5 flex flex-wrap gap-2">{otherCategories.map((o) => <li key={o.slug}><Link href={`${d.path.replace(`/lists/${c.slug}`, `/lists/${o.slug}`)}`} className="inline-flex rounded-full border border-sand-300 bg-sand-50 px-4 py-1.5 text-sm font-semibold text-forest-900 hover:border-forest-900">{o.name}{o.records ? ` (${n(o.records)})` : ""}</Link></li>)}</ul>
         </div></section>
       )}
-      <RelatedGuides terms={[c.name, view?.area.name ?? k.name, "by city"]} heading="Guides for building this prospect list" />
       <Faq heading={`${copy.h1}: questions`} items={copy.faqs} />
     </>
   );

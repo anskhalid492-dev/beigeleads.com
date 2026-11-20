@@ -1,16 +1,15 @@
 import Link from "next/link";
-import { Check, FileSpreadsheet, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { Flag } from "@/components/shared/db-icon";
-import { RelatedGuides } from "@/components/lists/related-guides";
+import { SampleTable } from "@/components/shared/sample-table";
 import { TaxIconSvg } from "@/components/lists/tax-icon";
 import { SolutionFaq } from "@/components/solutions/sections";
 import { Block, Steps, UseCases, Why, WHY_BEIGE } from "@/components/category/blocks";
 import { DatabaseRow, StatusPanel, wrap } from "@/components/category/parts";
 import { fallbackCopy, GROUP_COPY, SHOP_STEPS } from "@/lib/category-copy";
-import { FIELD_NOTES, STANDARD_FIELDS } from "@/lib/category-view";
-import { productSamples } from "@/lib/sample-data";
+import { productSamples, sampleSheets } from "@/lib/sample-data";
 import { COMPLIANCE_NOTE, STATUS_LABEL, childHref, industryChildren, nodeFaqs, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 import type { ShopProduct } from "@/lib/shop";
 
@@ -48,6 +47,7 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: group.name, href: base }, ...(child ? [{ name: child.name, href: `${base}/${child.slug}` }] : []), ...(country ? [{ name: country.name, href: path }] : [])];
 
   const rows = (productSamples.business ?? []).slice(0, 5);
+  const sheet = sampleSheets[products[0]?.categorySlug ?? ""] ?? sampleSheets.dentists;
   const countries = [...new Map(products.map((p) => [p.countrySlug, p])).values()];
   const inds = [...new Map(products.filter((p) => p.scope !== "city" && p.categorySlug !== "business").map((p) => [p.categorySlug, p])).values()];
   const cities = products.filter((p) => p.scope === "city");
@@ -129,9 +129,7 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
         </Block>
       )}
 
-      <Block title="What's Inside the Data" lead="Every ready-made list carries the fields below. Not every business publishes every detail, so some cells can be empty." tone="sand">
-        <div className="grid gap-x-12 gap-y-3 md:grid-cols-2">{STANDARD_FIELDS.map((f) => <p key={f} className="flex items-baseline justify-between gap-4 border-b border-sand-300 py-2"><span className="flex items-center gap-2 font-bold text-forest-900"><FileSpreadsheet className="size-4 text-forest-500" aria-hidden />{f}</span><span className="text-right text-sm">{FIELD_NOTES[f]}</span></p>)}</div>
-      </Block>
+      {sheet && <Block title="What's Inside the Data" lead="A masked example. Real files hold full contact details." tone="sand"><SampleTable rows={sheet.rows} /></Block>}
 
       <Block title={`About ${title}`}>
         <div className="max-w-[68ch] space-y-4 text-[1.05rem] leading-relaxed">
@@ -158,7 +156,6 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
         </Block>
       )}
 
-      <RelatedGuides terms={[node.name, group.name, "email list"]} />
       <SolutionFaq name={title} items={faqs} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: title, description: child ? child.blurb : group.blurb, url: `https://beigeleads.com${path}`, ...(products.length ? { mainEntity: { "@type": "ItemList", itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, url: `https://beigeleads.com/lists/${p.slug}`, name: p.name })) } } : {}) }} />
     </>
