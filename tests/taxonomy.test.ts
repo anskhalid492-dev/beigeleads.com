@@ -4,7 +4,7 @@ import { getCategories } from "@/lib/catalog";
 
 describe("list-type taxonomy", () => {
   it("has the eight groups with unique slugs that never collide with catalog industries", () => {
-    expect(TAXONOMY.map((g) => g.slug)).toEqual(["email-lists", "phone-number-lists", "whatsapp-number-lists", "job-title-lists", "job-function-lists", "industry-databases", "geographic-databases"]);
+    expect(TAXONOMY.map((g) => g.slug)).toEqual(["email-lists", "phone-number-lists", "whatsapp-number-lists", "job-title-lists", "job-function-lists", "management-levels", "industry-databases", "geographic-databases"]);
     const slugs = new Set(TAXONOMY.map((g) => g.slug));
     expect(slugs.size).toBe(8);
     for (const c of getCategories()) expect(slugs.has(c.slug)).toBe(false);
