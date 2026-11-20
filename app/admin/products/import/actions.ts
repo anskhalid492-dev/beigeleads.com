@@ -30,7 +30,9 @@ export async function planAction(rowsIn: unknown, pol: unknown): Promise<{ ok: b
 export async function startImportAction(filename: string, total: number): Promise<{ ok: boolean; importId?: number; message?: string }> {
   const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
   if (!(await importReady(db()))) return { ok: false, message: NOT_READY };
-  const id = await startImport(db(), String(filename ?? "").slice(0, 200), Math.max(0, Math.min(5000, Number(total) || 0)));
+  let id: number;
+  try { id = await startImport(db(), String(filename ?? "").slice(0, 200), Math.max(0, Math.min(5000, Number(total) || 0))); }
+  catch (e) { return { ok: false, message: `The import table is not set up correctly (${e instanceof Error ? e.message.slice(0, 160) : "database error"}). Re-run migration 0035 statement 1 exactly as in drizzle/0035_catalog_import.sql.` }; }
   await audit(a.email, `import ${id} started (${filename}, ${total} products)`);
   return { ok: true, importId: id };
 }

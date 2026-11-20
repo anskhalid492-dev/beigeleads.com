@@ -44,6 +44,9 @@ export function Wizard() {
     setMap(detectMapping(parseWoo(t).headers));
   }
   async function check() {
+    try { await checkInner(); } catch (e) { setMsg(`Check stopped: ${e instanceof Error ? e.message : "the server did not answer"}.`); setBusy(false); }
+  }
+  async function checkInner() {
     setBusy(true); setMsg(""); const items: PlanItem[] = [];
     for (let i = 0; i < rows.length; i += BATCH) {
       const r = await planAction(rows.slice(i, i + BATCH), policy);
@@ -53,6 +56,9 @@ export function Wizard() {
     setPlan(items); setBusy(false);
   }
   async function run() {
+    try { await runInner(); } catch (e) { setMsg(`Import stopped: ${e instanceof Error ? e.message : "the server did not answer"}. Nothing was lost; you can run it again.`); setBusy(false); }
+  }
+  async function runInner() {
     setBusy(true); setMsg(""); setErrs([]);
     const s = await startImportAction(file, rows.length);
     if (!s.ok || !s.importId) { setMsg(s.message ?? "Could not start."); setBusy(false); return; }
