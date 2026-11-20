@@ -4,7 +4,6 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Faq } from "@/components/shared/faq";
 import { ListsCatalog } from "@/components/lists/lists-catalog";
 import { ListsDirectory } from "@/components/lists/lists-directory";
-import { TypeRail } from "@/components/lists/type-rail";
 import { basketLabels } from "@/lib/hero-basket";
 import { ListsHero } from "@/components/lists/lists-hero";
 import { Button } from "@/components/ui/button";
@@ -46,8 +45,6 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
       <div className="mx-auto max-w-7xl px-4"><Breadcrumbs items={[{ name: "Lists", href: "/lists" }]} /></div>
       <ListsHero audience={f.type} industries={data.industries} countries={data.countries} tree={data.tree} niches={data.niches.map((n) => ({ name: n.name }))} basket={basketLabels(data.industries, tax)} />
       <ul className="mx-auto mt-5 flex max-w-7xl flex-wrap justify-center gap-x-8 gap-y-2 px-4 text-sm font-semibold text-forest-900">{TRUST.map((t) => <li key={t} className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-forest-500" aria-hidden />{t}</li>)}</ul>
-
-      <TypeRail tax={tax} products={data.products} />
 
       {f.type === "b2c" ? (
         <section id="databases" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-14">
