@@ -8,7 +8,7 @@ import { classifyLocal, LOCAL_NAME, LOCAL_SLUG } from "./local-business";
 
 type Db = ReturnType<typeof import("@/lib/db").getDbFromEnv>;
 const movesReady = async (db: Db) => { try { await db.select({ n: sql<number>`count(*)` }).from(schema.catalogCategoryMoves); return true; } catch { return false; } };
-export type DestKey = "local" | "healthcare" | "webmail" | "crypto";
+export type DestKey = "local" | "healthcare" | "webmail" | "crypto" | "exhibitors";
 export type Dest = { slug: string; name: string };
 export type Confidence = "high" | "review" | "none";
 export type Verdict = { dest: DestKey | null; confidence: Confidence; reason: string };
@@ -18,12 +18,14 @@ export const DEFAULT_DESTS: Record<DestKey, Dest> = {
   healthcare: { slug: "healthcare-lists", name: "Healthcare Lists" },
   webmail: { slug: "webmail-lists", name: "Webmail Lists" },
   crypto: { slug: "crypto-blockchain", name: "Crypto & Blockchain" },
+  exhibitors: { slug: "exhibitors-email-lists", name: "Exhibitors Email Lists" },
 };
 /** Categories a moved product must keep: the load-time audience remap and the SEO category pass must not pull it back out. */
-export const PROTECTED_CATS = new Set([LOCAL_SLUG, "healthcare-lists", "webmail-lists", "crypto-blockchain"]);
+export const PROTECTED_CATS = new Set([LOCAL_SLUG, "healthcare-lists", "webmail-lists", "crypto-blockchain", "exhibitors-email-lists"]);
 export const GTL_NAME = /^general targeted lists$/i;
 
 const WEBMAIL = /\b(gmail|g-?mail|yahoo|hotmail|outlook|aol|webmail|icloud|protonmail|gmx|msn|live\.com|mail\.ru|yandex mail)\b/i;
+export const EXHIBITOR = /\bexhibitors?\b/i;
 const CRYPTO = /\b(crypto\w*|bitcoin|btc|ethereum|altcoins?|blockchain|web3|defi|nfts?|dogecoin|binance|coinbase|metaverse)\b/i;
 const HEALTH_HIGH = /\b(dentists?|dental|orthodontists?|physicians?|doctors?|surgeons?|nurses?|nursing|medical|clinics?|hospitals?|pharmac\w+|therapists?|physiotherap\w+|chiropract\w+|veterinar\w+|vets?|optometr\w+|opticians?|psycholog\w+|psychiatr\w+|dermatolog\w+|cardiolog\w+|pediatric\w*|oncolog\w+|radiolog\w+|orthop\w+|neurolog\w+|midwi\w+|acupunct\w+|rehab\w*|healthcare|health care)\b/i;
 const HEALTH_SOFT = /\b(health|wellness|medspa|med spa|caregivers?|senior care)\b/i;
@@ -34,6 +36,7 @@ const BIZ = /\b(business|businesses|company|companies|b2b|ceo|owners?|founders?|
 export function classifyGeneral(p: { name: string; categoryName: string; channel: string; grp?: string; countryName: string; region?: string | null }): Verdict {
   const subject = subjectOf({ name: p.name, categoryName: p.categoryName, channel: p.channel, countryName: p.countryName, region: p.region ?? "", recordCount: null, placeholder: false });
   const t = `${subject} ${p.name}`;
+  if (EXHIBITOR.test(p.name)) return { dest: "exhibitors", confidence: "high", reason: "Trade show exhibitor list" };
   if (WEBMAIL.test(t)) return BIZ.test(subject) ? { dest: "webmail", confidence: "review", reason: "Names a webmail provider but also a business audience" } : { dest: "webmail", confidence: "high", reason: `Targets webmail users (${t.match(WEBMAIL)![0]})` };
   if (CRYPTO.test(t)) return { dest: "crypto", confidence: "high", reason: `Crypto or blockchain audience (${t.match(CRYPTO)![0]})` };
   if (HEALTH_HIGH.test(t)) return HEALTH_NOT.test(t) ? { dest: "healthcare", confidence: "review", reason: "Healthcare word mixed with software, insurance, marketing or supplies" } : { dest: "healthcare", confidence: "high", reason: `Healthcare audience (${t.match(HEALTH_HIGH)![0]})` };
@@ -52,7 +55,7 @@ export async function resolveDests(db: Db): Promise<{ dests: Record<DestKey, Des
   const dests = { ...DEFAULT_DESTS }; const reused: DestKey[] = [];
   const cats = await db.selectDistinct({ s: schema.catalogProducts.categorySlug, n: schema.catalogProducts.categoryName }).from(schema.catalogProducts);
   const find = (re: RegExp) => cats.find((c) => re.test(c.n) && !GTL_NAME.test(c.n));
-  for (const [k, re] of [["healthcare", /^healthcare( lists)?$/i], ["webmail", /^webmail/i], ["crypto", /^crypto/i]] as [DestKey, RegExp][]) {
+  for (const [k, re] of [["healthcare", /^healthcare( lists)?$/i], ["webmail", /^webmail/i], ["crypto", /^crypto/i], ["exhibitors", /^exhibitors?/i]] as [DestKey, RegExp][]) {
     const c = find(re); if (c) { dests[k] = { slug: c.s, name: c.n }; reused.push(k); }
   }
   return { dests, reused };
@@ -72,11 +75,12 @@ export async function scanGeneral(db: Db): Promise<GScan> {
   for (const r of all) {
     if (r.status === "archived") continue;
     const eff = effectiveCategory(r);
-    if (!GTL_NAME.test(eff)) continue;
+    if (r.categorySlug === DEFAULT_DESTS.exhibitors.slug) continue;
+    if (!GTL_NAME.test(eff) && !EXHIBITOR.test(r.name)) continue;
     const v = classifyGeneral({ name: r.name, categoryName: r.categoryName, channel: r.channel, grp: r.grp, countryName: r.countryName, region: r.region });
     rows.push({ ...v, id: r.id, slug: r.slug, name: r.name, status: r.status, countryName: r.countryName, currentCategory: eff, destName: v.dest ? dests[v.dest].name : "General Targeted Lists", alreadyMoved: false });
   }
-  const high = { local: 0, healthcare: 0, webmail: 0, crypto: 0 } as Record<DestKey, number>;
+  const high = { local: 0, healthcare: 0, webmail: 0, crypto: 0, exhibitors: 0 } as Record<DestKey, number>;
   for (const r of rows) if (r.dest && r.confidence === "high") high[r.dest]++;
   return { rows, scanned: all.length, inGeneral: rows.length, high, review: rows.filter((r) => r.confidence === "review").length, keep: rows.filter((r) => r.confidence === "none").length, dests, reused };
 }

@@ -36,7 +36,7 @@ export function Runner() {
       {msg && <p role="status" className="rounded-xl border border-sand-200 bg-white p-3 text-sm">{msg}</p>}
       {s && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-          {([["All products", s.scanned], ["In General Targeted", s.inGeneral], ["Local", s.high.local], ["Healthcare", s.high.healthcare], ["Webmail", s.high.webmail], ["Crypto", s.high.crypto], ["Manual review", s.review], ["Stay", s.keep]] as const).map(([k, v]) => (
+          {([["All products", s.scanned], ["In General Targeted", s.inGeneral], ["Local", s.high.local], ["Healthcare", s.high.healthcare], ["Webmail", s.high.webmail], ["Crypto", s.high.crypto], ["Exhibitors", s.high.exhibitors], ["Manual review", s.review], ["Stay", s.keep]] as const).map(([k, v]) => (
             <div key={k} className="rounded-xl border border-sand-200 bg-white p-3"><div className="text-2xl font-semibold">{v}</div><div className="text-xs text-forest-700">{k}</div></div>
           ))}
         </div>
@@ -44,7 +44,7 @@ export function Runner() {
       {s && s.reused.length > 0 && <p className="text-sm text-forest-700">Existing categories reused: {s.reused.map((k) => s.dests[k].name).join(", ")}. Others are created by the move (no duplicates).</p>}
       <div className="flex flex-wrap items-center gap-2">
         {([["high", "Proposed moves"], ["review", "Manual review"], ["keep", "Stay"]] as const).map(([v, l]) => <button key={v} onClick={() => setView(v)} className={`rounded-full border px-3 py-1 text-sm ${view === v ? "bg-forest-900 text-sand-50" : "bg-white"}`}>{l}</button>)}
-        <select value={dest} onChange={(e) => setDest(e.target.value)} className="rounded-lg border border-sand-200 bg-white px-2 py-1.5 text-sm"><option value="all">All destinations</option><option value="local">Local</option><option value="healthcare">Healthcare</option><option value="webmail">Webmail</option><option value="crypto">Crypto</option></select>
+        <select value={dest} onChange={(e) => setDest(e.target.value)} className="rounded-lg border border-sand-200 bg-white px-2 py-1.5 text-sm"><option value="all">All destinations</option><option value="local">Local</option><option value="healthcare">Healthcare</option><option value="webmail">Webmail</option><option value="crypto">Crypto</option><option value="exhibitors">Exhibitors</option></select>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="rounded-lg border border-sand-200 bg-white px-3 py-1.5 text-sm" />
         <button onClick={download} className="ml-auto rounded-lg border px-3 py-1.5 text-sm">Download audit report (CSV)</button>
       </div>

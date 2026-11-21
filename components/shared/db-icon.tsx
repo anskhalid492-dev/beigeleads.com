@@ -54,7 +54,7 @@ const industry: Record<string, { Icon: IconCmp; label: string }> = {
 /** Most related icon for categories that have no entry above: first keyword rule that matches the category slug wins. */
 const KEYWORD_ICONS: [RegExp, IconCmp][] = [
   [/whatsapp/, MessageCircle], [/phone number|phone-number|mobile number|telemarket/, Phone], [/cafe|coffee/, Coffee], [/bakery|bakeries/, Croissant], [/gym|fitness cent/, Dumbbell], [/consumer email|consumer-email|consumers?\b/, Users],
-  [/dentist|dental|orthodont/, Tooth], [/dermat|cosmetic|beauty|salon|spas?(?=-|$)|skin/, Scissors], [/ophthalm|optom|eye/, Eye], [/psycholog|psychiat|therap|mental|social-worker|counsel/, Brain],
+  [/exhibitor|trade-?show|expo\b/, Building2], [/dentist|dental|orthodont/, Tooth], [/dermat|cosmetic|beauty|salon|spas?(?=-|$)|skin/, Scissors], [/ophthalm|optom|eye/, Eye], [/psycholog|psychiat|therap|mental|social-worker|counsel/, Brain],
   [/cardio|heart/, Heart], [/orthop|chiropract|physical|physio|bone/, Bone], [/pediatric|obstet|gyneco|midwi|maternity|baby/, Baby], [/pharma|drug/, Pill], [/surgeon|surgery|urolog|endocrin|acupunct|medical|clinic|doctor|physician|nurs|health|hospital|veterinar|vets?(?=-|$)/, Stethoscope],
   [/labs?(?=-|$)|laborator|biotech|research|scien/, Microscope], [/real-estate|realtor|property|mortgage|housing|home/, Home], [/construction|contractor|roof|remodel|builder|engineer/, HardHat], [/hvac|plumb|electric|repair|restoration|maintenance/, Wrench],
   [/crypto|blockchain|bitcoin|nft/, Bitcoin], [/forex|trading|stock|invest|crowdfund|wealth/, TrendingUp], [/bank|loan|credit|debt|financ|insur|account/, Landmark], [/payment|debit|wallet/, Wallet], [/ecom|e-com|shopify|woocommerce|store|retail|wholesale|shop/, ShoppingCart],
