@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, CircleCheck, CircleX, Copy, FileSpreadsheet, FileText, FileType2, Layers, LockKeyhole, ShieldAlert, ShieldCheck, Sparkles, Trash2, TriangleAlert, UserCheck, Wand2, type LucideIcon } from "lucide-react";
+import { Check, CircleCheck, CircleX, Copy, FileSpreadsheet, FileText, FileType2, Layers, Mail, LockKeyhole, ShieldAlert, ShieldCheck, Sparkles, Trash2, TriangleAlert, UserCheck, Wand2, type LucideIcon } from "lucide-react";
 import type { EvSettings } from "@/lib/ev/settings";
 import { EV_BENEFITS_HERO, EV_FORMATS, EV_PRIVACY, EV_STATUSES, EV_STEPS, EV_WHY } from "@/lib/ev/content";
 import { PricingCards } from "./pricing-cards";
@@ -27,19 +27,41 @@ export function EvHero() {
             <a href="#how-it-works" className={`${btn} border border-sand-50/30 text-sand-50 hover:border-sand-50 hover:bg-sand-50/10`}>How It Works</a>
           </div>
         </div>
-        <figure className="hero-in rounded-3xl border border-forest-500/40 bg-forest-700/40 p-5 backdrop-blur" style={{ animationDelay: "150ms" }} aria-label="Illustration: an email list sorted by verification result">
+        <figure className="hero-in rounded-3xl border border-forest-500/40 bg-forest-700/40 p-5 backdrop-blur" style={{ animationDelay: "150ms" }} aria-label="Animated illustration: an email list being checked and sorted by verification result">
           <div className="rounded-2xl bg-sand-50 p-4 text-forest-900">
             <div className="flex items-center justify-between border-b border-sand-200 pb-3 text-xs font-semibold"><span>your-list.csv</span><span>Illustration, not real data</span></div>
-            <ul className="mt-2 divide-y divide-sand-200 text-sm">
-              {rows.map(([e, k], i) => (
-                <li key={i} className="flex items-center justify-between gap-3 py-2.5">
-                  <span className="flex min-w-0 items-center gap-2">{k === "ok" ? <CircleCheck className="size-4 shrink-0 text-forest-500" aria-hidden /> : k === "bad" ? <CircleX className="size-4 shrink-0 text-forest-700" aria-hidden /> : k === "risk" ? <TriangleAlert className="size-4 shrink-0 text-purple-600" aria-hidden /> : <Copy className="size-4 shrink-0 text-forest-500" aria-hidden />}<span className="truncate font-mono text-xs">{e}</span></span>
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${tone[k][1]}`}>{tone[k][0]}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="relative">
+              <ul className="mt-2 divide-y divide-sand-200 text-sm">
+                {rows.map(([e, k], i) => (
+                  <li key={i} className="flex items-center justify-between gap-3 py-2.5" style={{ "--i": i } as React.CSSProperties}>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="relative size-4 shrink-0">
+                        <Mail className="ev-check absolute inset-0 size-4 text-forest-300" aria-hidden />
+                        <span className="ev-res absolute inset-0">{k === "ok" ? <CircleCheck className="size-4 text-forest-500" aria-hidden /> : k === "bad" ? <CircleX className="size-4 text-forest-700" aria-hidden /> : k === "risk" ? <TriangleAlert className="size-4 text-purple-600" aria-hidden /> : <Copy className="size-4 text-forest-500" aria-hidden />}</span>
+                      </span>
+                      <span className="truncate font-mono text-xs">{e}</span>
+                    </span>
+                    <span className="relative grid h-6 w-[5.5rem] shrink-0 place-items-end">
+                      <span className="ev-check absolute right-0 top-0 inline-flex h-6 items-center gap-1 rounded-full bg-sand-100 px-2.5 text-xs font-semibold text-forest-700"><i className="ev-dot" /><i className="ev-dot" /><i className="ev-dot" /></span>
+                      <span className={`ev-res absolute right-0 top-0 inline-flex h-6 items-center rounded-full px-2.5 text-xs font-semibold ${tone[k][1]}`}>{tone[k][0]}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="ev-beam pointer-events-none absolute inset-x-0" aria-hidden />
+            </div>
+            <div className="mt-3 border-t border-sand-200 pt-3" aria-hidden>
+              <div className="flex h-2 gap-1">
+                {rows.map(([, k], i) => <span key={i} className={`ev-seg flex-1 rounded-full ${k === "ok" ? "bg-forest-500" : k === "risk" ? "bg-purple-600" : k === "bad" ? "bg-forest-900" : "bg-sand-300"}`} style={{ "--i": i } as React.CSSProperties} />)}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.7rem] font-semibold text-forest-700">
+                <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-forest-500" />Valid</span>
+                <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-purple-600" />Risky</span>
+                <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-forest-900" />Invalid</span>
+                <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-sand-300" />Duplicate</span>
+              </div>
+            </div>
           </div>
-          <figcaption className="mt-3 text-center text-xs text-sand-200">Sample addresses are invented for illustration.</figcaption>
         </figure>
       </div>
     </section>

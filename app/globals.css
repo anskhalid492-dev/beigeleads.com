@@ -730,3 +730,24 @@ summary::-webkit-details-marker {
   .pl-dock[data-pose="leap"] .pl-rig, .pl-dock[data-pose="return"] .pl-rig { animation: none !important; }
 }
 .pl[data-motion="still"] * { animation: none !important; }
+
+/* Email verification hero: rows are checked one by one by a scanning beam, then sorted into results (9 s loop, CSS only). */
+.ev-check, .ev-res, .ev-seg, .ev-beam { --t: 9s; }
+.ev-check { animation: ev-check var(--t) linear infinite backwards; animation-delay: calc(var(--i, 0) * 0.9s); }
+.ev-res { animation: ev-res var(--t) cubic-bezier(.2,.9,.3,1.2) infinite backwards; animation-delay: calc(var(--i, 0) * 0.9s); transform-origin: right center; }
+li > span > .ev-res, li > .relative > .ev-res { opacity: 0; }
+.ev-seg { transform-origin: left center; animation: ev-seg var(--t) cubic-bezier(.2,.9,.3,1) infinite backwards; animation-delay: calc(var(--i, 0) * 0.9s); }
+.ev-beam { top: 0; height: 2.75rem; background: linear-gradient(to bottom, transparent, rgba(124,58,237,0.16) 70%, rgba(124,58,237,0.55)); border-bottom: 2px solid rgba(124,58,237,0.7); animation: ev-beam var(--t) linear infinite; opacity: 0; }
+.ev-dot { width: 4px; height: 4px; border-radius: 9999px; background: currentColor; animation: ev-dot 0.9s ease-in-out infinite; }
+.ev-dot:nth-child(2) { animation-delay: .15s; } .ev-dot:nth-child(3) { animation-delay: .3s; }
+@keyframes ev-check { 0%, 4% { opacity: 1; } 5%, 96% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes ev-res { 0%, 4% { opacity: 0; transform: scale(.7); } 6% { opacity: 1; transform: scale(1.08); } 8%, 90% { opacity: 1; transform: scale(1); } 96%, 100% { opacity: 0; transform: scale(1); } }
+@keyframes ev-seg { 0%, 4% { transform: scaleX(0); opacity: 1; } 8%, 90% { transform: scaleX(1); opacity: 1; } 96%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes ev-beam { 0% { top: 0; opacity: 0; } 2% { opacity: 1; } 48% { top: calc(100% - 2.75rem); opacity: 1; } 52%, 100% { top: calc(100% - 2.75rem); opacity: 0; } }
+@keyframes ev-dot { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ev-check, .ev-beam { display: none; }
+  .ev-res { animation: none; opacity: 1 !important; transform: none; }
+  .ev-seg { animation: none; }
+  .ev-dot { animation: none; }
+}

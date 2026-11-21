@@ -6,7 +6,7 @@ export const EV_TITLE = "Bulk Email List Verification Service | BeigeLeads";
 export const EV_DESC = "Verify 5,000 to 1 million+ email addresses with BeigeLeads. Choose a package, securely upload your list, and receive organized verification results.";
 
 export const EV_BENEFITS_HERO = [
-  "Verification packages from 5K to 1M emails",
+  "Verify Emails from 5K to 1M Emails",
   "CSV, XLSX, and TXT supported",
   "Secure file submission",
   "Manual processing by our team",
