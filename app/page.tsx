@@ -3,6 +3,8 @@ import { PromoBanner } from "@/components/promos/banner";
 import Link from "next/link";
 import { ArrowRight, Check, Download, Eye, FileText, Mail, Search, ShieldCheck, Users, Wallet } from "lucide-react";
 import { Copilot } from "@/components/home/copilot";
+import { BrowseSection } from "@/components/home/browse";
+import { CompareMatrix } from "@/components/home/compare-matrix";
 import { hydrateCatalog } from "@/lib/catalog-db";
 import { ledgerSheets } from "@/lib/home-ledger";
 import { SampleLedger } from "@/components/home/sample-ledger";
@@ -64,14 +66,6 @@ const trust = [
   { Icon: ShieldCheck, t: "If emails bounce", d: "Above 5% bounces we replace emails until the list is back at 95% verified, or refund proportionally.", href: "/legal/refund-replacement", cta: "Replacement policy" },
 ] as const;
 
-const compareRows = [
-  ["What you pay for", "Ongoing access, seats or credits", "One list, once"],
-  ["Cost of staying", "Keeps renewing", "Nothing renews"],
-  ["If you stop paying", "Access ends", "The file is yours"],
-  ["Preview", "Varies by tool", "Masked sample on every list page"],
-  ["Best for", "Prospecting every week", "A list for a campaign"],
-] as const;
-
 const faq = [
   ["How does BeigeLeads pricing work?", "Each list has its own page with fixed packages. You see the price before checkout and pay once. There are no seats, credits or renewals."],
   ["Is this a subscription?", "No. You buy a list once and download the file. Nothing renews and there is nothing to cancel."],
@@ -102,8 +96,8 @@ export default async function Home() {
     return out;
   })();
   const countries = getCountries();
-  // Full grid rows only: a wide first tile needs exactly five tiles, otherwise three equal ones.
-  const tiles = categories.length >= 5 ? categories.slice(0, 5) : categories.slice(0, 3);
+  const browseCats = categories.slice(0, 6).map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb }));
+  const browsePlaces = countries.slice(0, 4).map((k) => ({ slug: k.slug, code: k.code, name: k.name, cities: getCities(k.slug).slice(0, 6).map((c) => ({ slug: c.slug, name: c.name })) }));
   return (
     <>
       <PromoBanner place="home" className="mt-4 mx-4" />
@@ -230,32 +224,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 7. Browse by industry and location */}
-      <section aria-labelledby="browse" className="border-y border-sand-200 bg-sand-100 py-20 sm:py-24">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="browse" className="display text-4xl text-forest-900 sm:text-6xl">Browse by industry and place.</h2>
-            <Link href="/lists" className="inline-flex items-center gap-2 font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">All industries <ArrowRight className="size-4" aria-hidden /></Link>
-          </div>
-          <ul className="mt-10 grid gap-4 md:grid-cols-3">
-            {tiles.map((c, i) => (
-              <li key={c.slug} className={i === 0 && tiles.length === 5 ? "md:col-span-2" : ""}>
-                <Link href={`/lists/${c.slug}`} className={`group flex h-full flex-col justify-between rounded-[1.4rem] border p-6 transition-all hover:-translate-y-0.5 hover:shadow-md ${i === 0 ? "border-forest-900 bg-forest-900 text-sand-100" : "border-sand-300 bg-white hover:border-forest-900"}`}>
-                  <span className="flex items-center gap-4"><DbBadge category={c.slug} country="US" size="lg" /><span className={`display ${i === 0 ? "text-4xl text-sand-50 sm:text-5xl" : "text-3xl text-forest-900"}`}>{c.name}</span></span>
-                  <span className="mt-6 flex items-center justify-between gap-4 text-sm">{c.blurb}<ArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden /></span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-8 flex flex-wrap items-center gap-2" aria-label="Locations">
-            {countries.slice(0, 6).flatMap((k) => [
-              <Link key={k.slug} href="/lists" className="rounded-full bg-forest-900 px-4 py-1.5 text-sm font-medium text-sand-50">{k.name}</Link>,
-              ...getCities(k.slug).slice(0, 6).map((city) => <Link key={city.slug} href="/lists" className="rounded-full border border-sand-300 bg-white px-4 py-1.5 text-sm font-medium text-forest-900 hover:bg-purple-100">{city.name}</Link>),
-            ])}
-          </div>
-          <p className="mt-6">Another industry or place? <Link href="/custom-list" className="font-semibold underline underline-offset-4">We can source it for you</Link> or <Link href="/request-category" className="font-semibold underline underline-offset-4">request a category</Link>.</p>
-        </div>
-      </section>
+      {/* 7. Browse by industry and place */}
+      <BrowseSection categories={browseCats} places={browsePlaces} />
 
       {/* 8. Ready-made vs custom */}
       <section aria-labelledby="paths" className="mx-auto max-w-6xl px-4 py-24">
@@ -341,23 +311,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 11. Comparison with subscription tools */}
-      <section aria-labelledby="vs" className="border-y border-sand-200 bg-sand-100 py-24">
-        <div className="mx-auto max-w-4xl px-4">
-          <h2 id="vs" className={`${h2} text-center`}>One purchase vs a subscription</h2>
-          <div className="mt-10 overflow-hidden rounded-2xl border border-sand-200 bg-white">
-            <table className="w-full text-left text-sm sm:text-base">
-              <thead><tr className="text-forest-900"><th className="px-4 py-3" /><th className="bg-sand-100 px-4 py-3">Subscription tools</th><th className="bg-forest-900 px-4 py-3 text-sand-50">BeigeLeads</th></tr></thead>
-              <tbody className="divide-y divide-sand-200">
-                {compareRows.map(([a, b, c]) => (
-                  <tr key={a}><th scope="row" className="px-4 py-3 font-semibold text-forest-900">{a}</th><td className="px-4 py-3">{b}</td><td className="bg-forest-100/50 px-4 py-3">{c}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-6 text-center"><Button asChild variant="secondary"><Link href="/compare">See all comparisons</Link></Button></div>
-        </div>
-      </section>
+      {/* 11. Comparison with named providers */}
+      <CompareMatrix />
 
       {/* 12. FAQ */}
       <SolutionFaq name="BeigeLeads" items={faq} />
