@@ -1,4 +1,5 @@
 import { poolFor } from "@/lib/taxonomy-products";
+import { Paged } from "@/components/shared/paged";
 import Link from "next/link";
 import { Check, ShieldCheck } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -102,7 +103,7 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
           <>
             <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{`${node.name}: Ready-Made Databases`}</h2>
             <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} ready-made databases. Each has a masked sample, its fields and packages.` : "Each database has its own page with a masked sample, the fields it includes and packages."}</p>
-            <div className="mt-8 space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
+            <Paged className="mt-8 space-y-4" items={products.map((p) => <DatabaseRow key={p.slug} p={p} />)} />
           </>
         ) : (
           <StatusPanel title={country ? `Request ${title.toLowerCase()} for this place` : `Browse ${title}`} text={country ? `Yes, we sell these. Tell us what you need for ${country.name} and we will build it.` : "Yes, we sell this. Browse the ready-made lists, or tell us what you need and we will build it."}>

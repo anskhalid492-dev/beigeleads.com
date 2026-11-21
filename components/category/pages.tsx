@@ -1,4 +1,5 @@
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { Paged } from "@/components/shared/paged";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SampleTable } from "@/components/shared/sample-table";
 import { PlaceSection, type PlaceItem } from "@/components/category/place-section";
@@ -46,7 +47,7 @@ export function IndustryPage({ c, products, geo }: { c: Category; products: Shop
         ];
       })}
       <Block title={`Explore Available ${c.name} Databases`}>
-        <div className="space-y-3">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
+        <Paged className="space-y-3" items={products.map((p) => <DatabaseRow key={p.slug} p={p} />)} />
         {full && !full.placeholderData && <ul className="mt-5 flex flex-wrap gap-2">{full.packages.map((k) => <li key={k.name} className="rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900">{k.name}: {k.records.toLocaleString("en-US")} records, {formatUsd(k.priceUsdCents)}</li>)}</ul>}
       </Block>
       {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Paged } from "@/components/shared/paged";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SolutionFaq } from "@/components/solutions/sections";
@@ -42,7 +43,7 @@ export function ImportedCategoryPage({ c, products }: { c: Category; products: S
         </Block>
       )}
       <Block title={`Available ${base} Databases`}>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{products.map((p) => <ListCard key={p.slug} p={p} />)}</ul>
+        <Paged as="ul" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" items={products.map((p) => <ListCard key={p.slug} p={p} />)} />
       </Block>
       <SolutionFaq name={label} items={faqs} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: label, description: `Ready-made ${base.toLowerCase()} lists with a masked sample on every list page.`, url: `https://beigeleads.com${path}` }} />

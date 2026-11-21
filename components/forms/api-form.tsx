@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 export type Field =
@@ -23,6 +23,8 @@ type Props = {
   hidden?: Record<string, unknown>;
   /** Called when a valid submit starts (for example to count a checkout start). */
   onSubmitStart?: () => void;
+  /** Optional custom layout. Gets the same pieces the default layout uses (spam check, error, submit button, honeypot), so behaviour is identical. */
+  render?: (p: { id: (name: string) => string; sending: boolean; turnstile: ReactNode; error: ReactNode; submit: (label?: string) => ReactNode; honeypot: ReactNode }) => ReactNode;
 };
 
 // Cloudflare's published always-passes test key; used only if no real key is configured (local dev).
@@ -40,7 +42,7 @@ declare global {
 const inputClass =
   "w-full rounded-lg border border-sand-300 bg-white px-4 py-3 text-base text-forest-900 placeholder:text-forest-500/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 
-export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, failText, defaults = {}, hidden = {}, onSubmitStart }: Props) {
+export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, failText, defaults = {}, hidden = {}, onSubmitStart, render }: Props) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || TEST_SITE_KEY;
   const formId = useId();
   const [ref, setRef] = useState("");
@@ -112,9 +114,35 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
     );
   }
 
+  const honeypot = (
+    /* Honeypot: hidden from people, bots fill it. */
+    <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+      <label>
+        Leave this empty
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+      </label>
+    </div>
+  );
+  const turnstile = (
+    <>
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onReady={mountWidget} />
+      <div ref={widgetRef} />
+    </>
+  );
+  const errorEl = error ? (
+    <p role="alert" className="rounded-lg border border-forest-900 bg-sand-100 px-4 py-3 text-sm font-medium text-forest-900">
+      {error}
+    </p>
+  ) : null;
+  const submitEl = (label?: string) => (
+    <Button type="submit" size="lg" disabled={state === "sending"} className={render ? "w-full" : undefined}>
+      {state === "sending" ? "Sending..." : label ?? submitLabel}
+    </Button>
+  );
+
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-5">
-      {fields.map((f) => {
+      {render ? render({ id: (n) => `${formId}-${n}`, sending: state === "sending", turnstile, error: errorEl, submit: submitEl, honeypot }) : <>{fields.map((f) => {
         const id = `${formId}-${f.name}`;
         if (f.type === "checkbox") {
           return (
@@ -147,27 +175,10 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
           </div>
         );
       })}
-
-      {/* Honeypot: hidden from people, bots fill it. */}
-      <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-        <label>
-          Leave this empty
-          <input type="text" name="website" tabIndex={-1} autoComplete="off" />
-        </label>
-      </div>
-
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onReady={mountWidget} />
-      <div ref={widgetRef} />
-
-      {error && (
-        <p role="alert" className="rounded-lg border border-forest-900 bg-sand-100 px-4 py-3 text-sm font-medium text-forest-900">
-          {error}
-        </p>
-      )}
-
-      <Button type="submit" size="lg" disabled={state === "sending"}>
-        {state === "sending" ? "Sending..." : submitLabel}
-      </Button>
+      {honeypot}
+      {turnstile}
+      {errorEl}
+      {submitEl()}</>}
     </form>
   );
 }

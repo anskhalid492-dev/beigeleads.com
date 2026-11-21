@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Paged } from "@/components/shared/paged";
 import { Building2, MapPin, ShieldCheck, Mail, FileDown, RefreshCw } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -97,7 +98,7 @@ export function LocalBusinessesPage({ products }: { products: ShopProduct[] }) {
       {has && (
         <section id="databases" className="scroll-mt-24 py-12 sm:py-14"><div className={wrap}>
           <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">Available Local Business Databases</h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{products.map((p) => <ListCard key={p.slug} p={p} />)}</ul>
+          <Paged as="ul" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" items={products.map((p) => <ListCard key={p.slug} p={p} />)} />
         </div></section>
       )}
 
