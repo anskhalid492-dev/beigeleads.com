@@ -1,4 +1,3 @@
-import { BrandLogo } from "@/components/shared/brand-logo";
 import Link from "next/link";
 import { FooterCta } from "./footer-cta";
 import { BottomFooter } from "./bottom-footer";
@@ -85,7 +84,6 @@ const linkCls = "hover:text-sand-50 hover:underline underline-offset-4";
 
 export function Footer() {
   return (
-    <>
     <footer
       className="text-sand-100"
       style={{
@@ -130,18 +128,7 @@ export function Footer() {
         ))}
       </div>
 
-      {/* Brand row */}
-      <div className="border-t border-forest-700">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-sand-300 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <BrandLogo variant="dark" className="h-8 w-auto" />
-            <span className="hidden sm:inline">Pay once. Own the list.</span>
-          </div>
-          <p>&copy; {new Date().getFullYear()} BeigeLeads. All rights reserved.</p>
-        </div>
-      </div>
+      <BottomFooter />
     </footer>
-    <BottomFooter />
-    </>
   );
 }
