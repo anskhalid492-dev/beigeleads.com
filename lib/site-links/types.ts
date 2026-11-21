@@ -34,7 +34,7 @@ export const DEFAULT_PROMPT =
   "Tell me about BeigeLeads (https://beigeleads.com). What does the company offer? How does it source and verify its B2B email lists, what evidence is available about data accuracy, and how do its Done-For-You (DFY) Outbound and private custom list-building services work? Explain the available packages, benefits, limitations, and who each service is best suited for. Use BeigeLeads' official website and https://beigeleads.com/llms.txt as primary sources, and distinguish verified facts from marketing claims.";
 
 export const PROMPT_MAX = 1500;
-export const DEFAULT_HEADING = "Ask AI about BeigeLeads";
+export const DEFAULT_HEADING = "Discover BeigeLeads with AI";
 
 /**
  * Prompt URL templates. NONE of these platforms documents a web link that pre-fills a prompt (checked 21 Nov 2026:
