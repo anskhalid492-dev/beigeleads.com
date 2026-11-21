@@ -80,13 +80,11 @@ export function AiFinder() {
           <div className="mt-8"><OpenPilo ask="Help me find a database." className={primary}>Find My Database</OpenPilo></div>
         </div>
         <figure className={panel} aria-label="Illustration of how a request is understood">
-          <p className="text-xs font-semibold text-purple-700">Example request</p>
-          <p className="mt-2 rounded-2xl bg-sand-100 px-4 py-3 text-forest-900">&ldquo;I need 100,000 business contacts in France.&rdquo;</p>
+          <p className="rounded-2xl bg-sand-100 px-4 py-3 text-forest-900">&ldquo;I need 100,000 business contacts in France.&rdquo;</p>
           <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
             {[["Country", "France"], ["Database type", "Business contacts"], ["Quantity", "100,000"]].map(([k, v]) => <div key={k} className="rounded-xl border border-sand-200 p-3"><dt className="text-xs text-forest-500">{k}</dt><dd className="mt-1 font-semibold text-forest-900">{v}</dd></div>)}
           </dl>
           <p className="mt-4 text-sm">BeigePilot then looks for matching lists in the real catalog. The results, packages and prices you see in the chat come from our product data.</p>
-          <figcaption className="mt-3 text-xs">Illustration of how a request is read. No products are shown here.</figcaption>
         </figure>
       </div>
     </section>
@@ -98,7 +96,6 @@ export function AiCart() {
     <section id="cart" className="bg-sand-50 py-20 lg:py-24">
       <div className={`${wrap} grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16`}>
         <figure className={`${panel} order-2 lg:order-1`} aria-label="Illustration of a product card in the chat">
-          <p className="text-xs font-semibold text-purple-700">Example product card</p>
           <div className="mt-3 rounded-2xl border border-sand-200 p-4">
             <p className="font-bold text-forest-900">Database name</p>
             <p className="mt-1 text-sm">Choose a package, then press Add to Cart.</p>
@@ -111,7 +108,6 @@ export function AiCart() {
             </div>
           </div>
           <p className="mt-3 rounded-xl bg-forest-100 px-4 py-2.5 text-sm text-forest-900">Added to your cart. <span className="font-semibold">View Cart</span> or <span className="font-semibold">Continue Shopping</span>.</p>
-          <figcaption className="mt-3 text-xs">Illustration. Real names, packages and prices come from the catalog in the live chat.</figcaption>
         </figure>
         <div className="order-1 lg:order-2">
           <h2 className={h2}>From Conversation to Cart in Just a Few Clicks</h2>
