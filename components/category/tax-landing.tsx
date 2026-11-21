@@ -8,7 +8,7 @@ import { Flag } from "@/components/shared/db-icon";
 import { SampleTable } from "@/components/shared/sample-table";
 import { TaxIconSvg } from "@/components/lists/tax-icon";
 import { SolutionFaq } from "@/components/solutions/sections";
-import { Block, Steps, UseCases, Why, WHY_BEIGE } from "@/components/category/blocks";
+import { AboutUses, Block, Steps, Why, WHY_BEIGE } from "@/components/category/blocks";
 import { DatabaseRow, StatusPanel, wrap } from "@/components/category/parts";
 import { fallbackCopy, GROUP_COPY, SHOP_STEPS } from "@/lib/category-copy";
 import { realSamples, sheetRows } from "@/lib/real-sheet";
@@ -137,15 +137,7 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
 
       {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}
 
-      <Block title={`About ${title}`}>
-        <div className="max-w-[68ch] space-y-4 text-[1.05rem] leading-relaxed">
-          {copy.whatIs.map((x, i) => <p key={i}>{x}</p>)}
-          {paragraphs.map((x, i) => <p key={`c${i}`}>{x}</p>)}
-          {country && <p>This is a view of the category for {country.name}. Ready-made lists are national unless a place page says otherwise.</p>}
-        </div>
-      </Block>
-
-      <Block title={`Who Uses ${node.name}`} tone="sand"><UseCases items={copy.uses} /></Block>
+      <AboutUses title={`About ${title}`} usesTitle={`Who Uses ${node.name}`} paragraphs={[...copy.whatIs, ...paragraphs, ...(country ? [`This is a view of the category for ${country.name}. Ready-made lists are national unless a place page says otherwise.`] : [])]} uses={copy.uses} />
       <Block title="How to Choose"><Why items={copy.choose} /></Block>
       <Block title="Why Buy From BeigeLeads" tone="sand"><Why items={WHY_BEIGE} /></Block>
       <Block title="How It Works"><Steps items={SHOP_STEPS} /></Block>

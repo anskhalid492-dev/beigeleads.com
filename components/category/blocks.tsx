@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { BadgeCheck, Briefcase, Check, Megaphone, Search, ShieldCheck, Target, Users } from "lucide-react";
 import { h2, wrap } from "@/components/category/parts";
 
 export function SalesHero({ eyebrow, h1, sub, primary, secondary, points, children, tone = "sand" }: { eyebrow: string; h1: string; sub: string; primary: { label: string; href: string }; secondary: { label: string; href: string }; points: string[]; children: React.ReactNode; tone?: "sand" | "forest" }) {
@@ -34,6 +34,52 @@ export function Block({ title, lead, children, tone }: { title: string; lead?: s
 /** Prospect rows: who, and how they would use the data. A ruled grid, not cards. */
 export function UseCases({ items }: { items: readonly (readonly [string, string])[] }) {
   return <ul className="grid border-t border-sand-300 md:grid-cols-2 md:gap-x-12">{items.map(([a, b]) => <li key={a} className="border-b border-sand-300 py-5"><p className="display text-2xl text-forest-900">{a}</p><p className="mt-1">{b}</p></li>)}</ul>;
+}
+
+
+const USE_ICONS = [Users, Megaphone, Target, Briefcase, Search];
+const iconFor = (name: string, i: number) => {
+  const n = name.toLowerCase();
+  if (/agenc|market|advert|seo/.test(n)) return Megaphone;
+  if (/recruit|hiring|staff/.test(n)) return Search;
+  if (/sales|sdr|outbound|business develop/.test(n)) return Target;
+  if (/founder|owner|start/.test(n)) return Briefcase;
+  return USE_ICONS[i % USE_ICONS.length];
+};
+
+/** "About" and "Who uses it" as ONE section: story on the left, the people who use the data on the right. */
+export function AboutUses({ title, usesTitle, paragraphs, uses }: { title: string; usesTitle: string; paragraphs: readonly string[]; uses: readonly (readonly [string, string])[] }) {
+  const [lead, ...rest] = paragraphs;
+  return (
+    <section className="py-12 sm:py-14">
+      <div className={wrap}>
+        <div className="grid gap-10 overflow-hidden rounded-[2rem] border border-sand-300 bg-sand-100 p-6 sm:p-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14 lg:p-12">
+          <div>
+            <h2 className={h2}>{title}</h2>
+            {lead && <p className="mt-5 text-xl leading-snug text-forest-900">{lead}</p>}
+            {rest.length > 0 && <div className="mt-4 space-y-3 leading-relaxed">{rest.map((x, i) => <p key={i}>{x}</p>)}</div>}
+            <ul className="mt-6 flex flex-wrap gap-2">
+              {["Pay once, no subscription", "5% replacement promise", "Masked sample first"].map((t, i) => (
+                <li key={t} className="inline-flex items-center gap-1.5 rounded-full border border-sand-300 bg-white px-3 py-1.5 text-sm font-semibold text-forest-900">{i === 0 ? <ShieldCheck className="size-4 text-forest-500" aria-hidden /> : <BadgeCheck className="size-4 text-forest-500" aria-hidden />}{t}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="display text-2xl text-forest-900 sm:text-3xl">{usesTitle}</h3>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+              {uses.map(([a, b], i) => { const Icon = iconFor(a, i); return (
+                <li key={a} className="group rounded-2xl border border-sand-300 bg-white p-5 transition-colors hover:border-forest-900">
+                  <span className="grid size-10 place-items-center rounded-xl bg-forest-100 text-forest-700 transition-colors group-hover:bg-forest-900 group-hover:text-sand-50"><Icon className="size-5" aria-hidden /></span>
+                  <p className="display mt-4 text-xl text-forest-900">{a}</p>
+                  <p className="mt-1 text-sm leading-relaxed">{b}</p>
+                </li>
+              ); })}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export { Steps } from "@/components/category/steps";

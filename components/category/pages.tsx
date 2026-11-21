@@ -5,7 +5,7 @@ import { SampleTable } from "@/components/shared/sample-table";
 import { PlaceSection, type PlaceItem } from "@/components/category/place-section";
 import { SolutionFaq } from "@/components/solutions/sections";
 import { TargetConsole } from "@/components/category/console";
-import { Block, SalesHero, Steps, UseCases, Why, WHY_BEIGE } from "@/components/category/blocks";
+import { AboutUses, Block, SalesHero, Steps, Why, WHY_BEIGE } from "@/components/category/blocks";
 import { DatabaseRow } from "@/components/category/parts";
 import { industryView, STANDARD_FIELDS } from "@/lib/category-view";
 import { formatUsd, getProduct, type Category } from "@/lib/catalog";
@@ -51,8 +51,7 @@ export function IndustryPage({ c, products, geo }: { c: Category; products: Shop
         {full && !full.placeholderData && <ul className="mt-5 flex flex-wrap gap-2">{full.packages.map((k) => <li key={k.name} className="rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900">{k.name}: {k.records.toLocaleString("en-US")} records, {formatUsd(k.priceUsdCents)}</li>)}</ul>}
       </Block>
       {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}
-      <Block title={`About ${c.name} Email Lists`}><div className="max-w-[68ch] space-y-4 text-[1.05rem] leading-relaxed">{view.whatIs.map((x, i) => <p key={i}>{x}</p>)}</div></Block>
-      <Block title={`Who Uses ${c.singular} Data`} tone="sand"><UseCases items={c.useCases.map((u) => [u.name, u.text] as const)} /></Block>
+      <AboutUses title={`About ${c.name} Email Lists`} usesTitle={`Who Uses ${c.singular} Data`} paragraphs={view.whatIs} uses={c.useCases.map((u) => [u.name, u.text] as const)} />
       <Block title="How to Choose"><Why items={view.choose} /></Block>
       <Block title="Why Buy From BeigeLeads" tone="sand"><Why items={WHY_BEIGE} /></Block>
       <Block title="How It Works"><Steps items={[["Choose your prospects", "Pick the list and the place."], ["Review the data", "Check the masked sample or request a free one."], ["Select your package", "Choose the size that fits."], ["Pay once, get your list", "Pay in crypto and receive your file by email."]]} /></Block>
