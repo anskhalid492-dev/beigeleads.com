@@ -68,14 +68,14 @@ const trust = [
 ] as const;
 
 const faq = [
-  ["How does BeigeLeads pricing work?", "Each list has its own page with fixed packages. You see the price before checkout and pay once. There are no seats, credits or renewals."],
-  ["Is this a subscription?", "No. You buy a list once and download the file. Nothing renews and there is nothing to cancel."],
-  ["Can I see data before I pay?", "Yes. Every list page has a masked sample, and you can request a free sample by email. It needs no payment details."],
-  ["How fresh is the data?", "BeigeLeads refreshes its databases every 90 days."],
-  ["What happens after I pay?", "Payment is confirmed on the blockchain, then we email you the link to your file. You do not need an account."],
-  ["What format is the file?", "A spreadsheet-style contact file you can open in a spreadsheet app or import into your email tool. The list page shows the fields."],
-  ["Can I request a custom list?", "Yes. Describe the industry, place, quantity and fields on the custom list page. We reply by email after checking whether we can source it. Sending a request is free."],
-  ["How do I pay?", "In cryptocurrency (BTC, USDT, USDC or ETH). Card payments may come later."],
+  ["What is BeigeLeads?", "BeigeLeads sells ready-made business contact databases. You pick a list for the industry and place you want to reach, pay once, and receive the file by email. There is no platform to log in to and no account to create."],
+  ["Is this a subscription?", "No. Every list is a one-time purchase. Nothing renews, there are no seats or credits, and there is nothing to cancel."],
+  ["Can I see the data before I pay?", "Yes. Every list page shows a sample, and you can request a free sample by email. Neither needs payment details."],
+  ["What is in each record?", "Each record carries more than 40 data fields, such as business name, address, phone, website and email. The list page shows what is included for that database."],
+  ["How do I pay, and how do I get the file?", "You pay in cryptocurrency, and checkout shows the coins that are open. Once the payment is confirmed on the blockchain we email you the download link. Delivery is usually instant and can take up to 12 hours. The file comes as CSV, Excel or TXT."],
+  ["How fresh is the data, and what if emails bounce?", "BeigeLeads refreshes its databases every 90 days. If more than 5% of the emails bounce, we replace them until the list is back at 95% verified, or refund you proportionally. The replacement policy page has the details."],
+  ["What if I need something you do not list?", "Describe the industry, place, quantity and fields on the custom list page. We check whether we can source it and reply by email. Sending a request is free and does not commit you to buy."],
+  ["Can I use the data for any outreach?", "Use it for lawful business outreach only. You are responsible for following the rules that apply where you send, and anyone can ask to be removed. See the lawful use policy before you buy."],
 ] as const;
 
 export const dynamic = "force-dynamic"; // reads the full catalog and the real sample

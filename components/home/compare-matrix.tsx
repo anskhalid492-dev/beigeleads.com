@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
-import { CHECKED_LABEL } from "@/lib/compare-data";
 
 /**
  * Home: BeigeLeads next to four named data providers. Every provider cell restates a fact from that vendor's OWN
  * pages, as recorded in lib/compare-data.ts (sources + CHECKED date). No accuracy, quality or "better than" claims;
  * where a vendor's page said nothing the cell is left out of the text (never guessed).
  */
-// Slugs that have an official logo file at public/compare-logos/<slug>.svg. Add a slug here after adding its file;
-// the name is shown for any provider without one.
-const LOGOS = new Set<string>([]);
-const hasLogo = (slug: string) => LOGOS.has(slug);
+// Logo files in public/compare-logos (supplied by the owner). Providers without a file show the name only.
+const LOGOS: Record<string, string> = { beigeleads: "beigeleads.svg", apollo: "apollo.webp", zoominfo: "zoominfo.webp", lusha: "lusha.png", uplead: "uplead.png" };
+function Mark({ slug, name }: { slug: string; name: string }) {
+  const f = LOGOS[slug];
+  if (!f) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/compare-logos/${f}`} alt="" aria-hidden width={40} height={40} className="size-10 shrink-0 rounded-lg object-contain" data-logo={name} />;
+}
 
 type Vendor = { slug: string; name: string; kind: string; cells: [string, string, string, string, string] };
 
@@ -71,18 +74,13 @@ export function CompareMatrix() {
               <tr>
                 <th scope="col" className="sticky left-0 z-10 w-36 bg-white px-5 py-5" />
                 <th scope="col" className="bg-forest-900 px-5 py-5 align-bottom text-sand-50 first:rounded-tl-none">
-                  <span className="display block text-2xl leading-none">BeigeLeads</span>
-                  <span className="mt-1 block text-sm font-normal text-sand-200">Ready-made lists, bought once</span>
+                  <span className="flex items-center gap-3"><Mark slug="beigeleads" name="BeigeLeads" /><span className="display block text-2xl leading-none">BeigeLeads</span></span>
+                  <span className="mt-2 block text-sm font-normal text-sand-200">Ready-made lists, bought once</span>
                 </th>
                 {VENDORS.map((v) => (
                   <th key={v.slug} scope="col" className="px-5 py-5 align-bottom">
-                    {hasLogo(v.slug) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`/compare-logos/${v.slug}.svg`} alt={v.name} className="h-7 w-auto max-w-[8rem] object-contain object-left" />
-                    ) : (
-                      <span className="display block text-2xl leading-none text-forest-900">{v.name}</span>
-                    )}
-                    <span className="mt-1 block text-sm font-normal text-forest-700">{v.kind}</span>
+                    <span className="flex items-center gap-3"><Mark slug={v.slug} name={v.name} /><span className="display block text-2xl leading-none text-forest-900">{v.name}</span></span>
+                    <span className="mt-2 block text-sm font-normal text-forest-700">{v.kind}</span>
                   </th>
                 ))}
               </tr>
@@ -121,11 +119,6 @@ export function CompareMatrix() {
             <h3 className="text-lg font-bold text-sand-50">BeigeLeads fits better if</h3>
             <p className="mt-2">You need a list for one campaign, want to inspect a sample first, and prefer to pay once instead of renewing.</p>
           </div>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
-          <p>Provider details come from each provider&apos;s own public pages, checked {CHECKED_LABEL}. Plans and prices change, and BeigeLeads is a competitor of these providers.</p>
-          <Link href="/compare" className="inline-flex items-center gap-2 font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">See all comparisons <ArrowRight className="size-4" aria-hidden /></Link>
         </div>
       </div>
     </section>
