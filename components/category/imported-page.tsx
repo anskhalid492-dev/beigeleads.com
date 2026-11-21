@@ -7,7 +7,6 @@ import { ListCard } from "@/components/lists/list-card";
 import type { Category } from "@/lib/catalog";
 import type { ShopProduct } from "@/lib/shop";
 
-const SHOWN = 48;
 export const listsLabel = (name: string) => (/\blists?$/i.test(name.trim()) ? name.trim() : `${name.trim()} Lists`);
 
 /** Category page for an imported industry (section 91). Says only what is known: the products, their places and packages are on each list page. */
@@ -43,8 +42,7 @@ export function ImportedCategoryPage({ c, products }: { c: Category; products: S
         </Block>
       )}
       <Block title={`Available ${base} Databases`}>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{products.slice(0, SHOWN).map((p) => <ListCard key={p.slug} p={p} />)}</ul>
-        {products.length > SHOWN && <p className="mt-5 text-sm"><Link className="font-semibold underline" href={`/lists?industry=${c.slug}`}>See all {base.toLowerCase()} lists in the catalog</Link></p>}
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{products.map((p) => <ListCard key={p.slug} p={p} />)}</ul>
       </Block>
       <SolutionFaq name={label} items={faqs} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: label, description: `Ready-made ${base.toLowerCase()} lists with a masked sample on every list page.`, url: `https://beigeleads.com${path}` }} />

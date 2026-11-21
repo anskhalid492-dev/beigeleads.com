@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SampleTable } from "@/components/shared/sample-table";
@@ -47,8 +46,7 @@ export function IndustryPage({ c, products, geo }: { c: Category; products: Shop
         ];
       })}
       <Block title={`Explore Available ${c.name} Databases`}>
-        <div className="space-y-3">{products.slice(0, 8).map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
-        {products.length > 8 && <p className="mt-5"><Link href={`/lists?industry=${c.slug}`} className="inline-flex h-11 items-center rounded-full border border-forest-900 px-6 text-sm font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">See every {c.name} database</Link></p>}
+        <div className="space-y-3">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
         {full && !full.placeholderData && <ul className="mt-5 flex flex-wrap gap-2">{full.packages.map((k) => <li key={k.name} className="rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900">{k.name}: {k.records.toLocaleString("en-US")} records, {formatUsd(k.priceUsdCents)}</li>)}</ul>}
       </Block>
       {sheet && <Block title="What's Inside the Data" lead="Real rows from a list, with emails and phone numbers masked. Full files hold complete contact details." tone="sand"><SampleTable rows={sheet} /></Block>}

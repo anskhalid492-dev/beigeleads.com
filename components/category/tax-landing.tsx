@@ -41,17 +41,16 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
   const pool = ruled?.length ? ruled : mappedPool.length ? mappedPool : allProducts; // stale mapping (renamed slugs) falls back to every real product
   const scoped = country ? pool.filter((p) => p.countrySlug === country.slug) : pool;
   const rank = (p: ShopProduct) => Number(p.status === "live") * 2 + Number(p.recordCount != null);
-  const products = [...scoped].sort((a, b) => rank(b) - rank(a)).slice(0, 12); // the full catalog lives on /lists
+  const products = [...scoped].sort((a, b) => rank(b) - rank(a)); // every product of the category is listed (owner, 21 Nov 2026)
   const base = `/lists/${group.slug}`;
   const path = `${base}${child ? `/${child.slug}` : ""}${country ? `/${country.slug}` : ""}`;
   const title = country ? `${child?.name ?? group.name} in ${country.name}` : node.name;
   const paragraphs = (node.content ?? "").split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
   const kids = group.slug === "industry-databases" ? industryChildren(industries, tax) : group.children;
-  const live = products.filter((p) => p.status === "live").length > 0;
   const custom = `/custom-list?categoryText=${encodeURIComponent(title)}`;
   const crumbs = [{ name: "Lists", href: "/lists" }, { name: group.name, href: base }, ...(child ? [{ name: child.name, href: `${base}/${child.slug}` }] : []), ...(country ? [{ name: country.name, href: path }] : [])];
 
-  const slugs = products.map((p) => p.slug);
+  const slugs = products.slice(0, 12).map((p) => p.slug); // samples come from the first few only, to keep the page light
   const rows = (realSamples(slugs)?.rows ?? []).slice(0, 5); // real, masked rows only
   const sheet = sheetRows(slugs);
   const countries = [...new Map(scoped.map((p) => [p.countrySlug, p])).values()];
@@ -104,7 +103,6 @@ export function TaxLanding({ group, child, country, tax, products: allProducts, 
             <h2 className="display text-[2.1rem] leading-[1.02] text-forest-900 sm:text-[2.9rem]">{`${node.name}: Ready-Made Databases`}</h2>
             <p className="mt-3 max-w-[60ch]">{status === "upcoming" && !ruled?.length ? `${title} ready-made databases. Each has a masked sample, its fields and packages.` : "Each database has its own page with a masked sample, the fields it includes and packages."}</p>
             <div className="mt-8 space-y-4">{products.map((p) => <DatabaseRow key={p.slug} p={p} />)}</div>
-            {scoped.length > products.length && <p className="mt-6"><Link href="/lists#databases" className={ghost}>Browse every ready-made list</Link></p>}
           </>
         ) : (
           <StatusPanel title={country ? `Request ${title.toLowerCase()} for this place` : `Browse ${title}`} text={country ? `Yes, we sell these. Tell us what you need for ${country.name} and we will build it.` : "Yes, we sell this. Browse the ready-made lists, or tell us what you need and we will build it."}>
