@@ -5,7 +5,7 @@ import { BrandLogo } from "@/components/shared/brand-logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListsMegaPanel, ListsMobile } from "@/components/layout/lists-mega";
 import { SolutionIcon } from "@/components/solutions/icons";
@@ -173,41 +173,48 @@ export function Header({ lists }: { lists: ListsMenuData }) {
             onMouseLeave={hoverClose}
           >
             {open === "solutions" ? (
-              <div id="menu-solutions" className="mega-in grid gap-6 rounded-3xl border border-sand-200 bg-white p-6 shadow-2xl lg:grid-cols-[repeat(3,1fr)_15rem]">
-                {GROUPS.map((g) => (
-                  <div key={g.heading}>
-                    <p className="mb-3 text-sm font-bold text-forest-900">{g.heading}</p>
-                    <ul className="space-y-1">
-                      {g.slugs.map((slug) => {
-                        const s = getSolution(slug);
-                        if (!s) return null;
-                        return (
-                          <li key={slug}>
-                            <Link href={`/solutions/${slug}`} onClick={close} className="group flex gap-3 rounded-xl p-2 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600">
-                              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-forest-900 text-forest-300 transition-transform group-hover:-translate-y-0.5">
-                                <SolutionIcon name={s.icon} className="size-4" />
-                              </span>
-                              <span className="min-w-0">
-                                <span className="block text-sm font-semibold text-forest-900">{s.navName}</span>
-                                <span className="line-clamp-2 block text-xs">{s.tagline}</span>
-                              </span>
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
+              <div id="menu-solutions" className="mega-in grid overflow-hidden rounded-[1.6rem] border border-sand-200 bg-sand-50 shadow-[0_14px_36px_-22px_rgba(15,42,29,0.3)] lg:grid-cols-[17rem_minmax(0,1fr)]">
+                <div className="relative flex flex-col overflow-hidden border-r border-sand-200 bg-sand-100 px-7 py-7">
+                  <span aria-hidden className="intro-glow pointer-events-none absolute -bottom-12 -right-12 size-44 rounded-full bg-purple-100 opacity-80 blur-2xl" />
+                  <h3 className="display intro-rise relative text-[1.7rem] leading-[1.05] text-forest-900" style={{ "--d": 0 } as React.CSSProperties}>
+                    Start from the job you need <span className="relative inline-block">done.<span aria-hidden className="intro-draw absolute inset-x-0 -bottom-0.5 h-[3px] rounded-full bg-purple-600" /></span>
+                  </h3>
+                  <p className="intro-rise relative mt-3 text-[0.95rem] text-forest-700" style={{ "--d": 1 } as React.CSSProperties}>Pick a use case, a team or an industry. Each page shows the real lists that fit.</p>
+                  <p className="intro-rise relative mt-3 text-[0.8rem] leading-5 text-forest-700/80" style={{ "--d": 2 } as React.CSSProperties}>Masked sample on every list page.</p>
+                  <div className="intro-rise relative mt-auto flex flex-col items-start gap-2 pt-5" style={{ "--d": 3 } as React.CSSProperties}>
+                    <Link href="/solutions" onClick={close} className="group/all inline-flex items-center gap-2 rounded-full bg-purple-600 px-[1.1rem] py-2.5 text-sm font-semibold text-white shadow-[0_6px_16px_-8px_rgba(124,58,237,0.7)] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+                      All solutions <ArrowRight className="size-4 transition-transform duration-200 group-hover/all:translate-x-0.5" aria-hidden />
+                    </Link>
+                    <Link href="/#find-leads" onClick={close} className="group/cp inline-flex items-center gap-2 rounded-full border border-forest-900/25 bg-white px-[1.1rem] py-2.5 text-sm font-semibold text-forest-900 transition-[border-color,color,transform] duration-200 hover:-translate-y-0.5 hover:border-purple-600 hover:text-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+                      Or try the co-pilot <ArrowRight className="size-4 transition-transform duration-200 group-hover/cp:translate-x-0.5" aria-hidden />
+                    </Link>
                   </div>
-                ))}
-                <Link href="/#find-leads" onClick={close} className="flex flex-col justify-between rounded-2xl bg-forest-900 p-5 text-sand-50 transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-purple-600">
-                  <span>
-                    <Sparkles className="size-5 text-sand-300" aria-hidden />
-                    <span className="display mt-3 block text-2xl">Lead discovery co-pilot</span>
-                    <span className="mt-2 block text-sm text-sand-200">Describe your prospects and we search the catalog for a match.</span>
-                  </span>
-                  <span className="mt-4 text-sm font-semibold text-sand-50 underline underline-offset-4">Try it</span>
-                </Link>
-                <div className="border-t border-sand-200 pt-3 lg:col-span-4">
-                  <Link href="/solutions" onClick={close} className="text-sm font-semibold text-forest-700 underline-offset-4 hover:underline">All solutions &rarr;</Link>
+                </div>
+                <div className="grid grid-cols-3">
+                  {GROUPS.map((g) => (
+                    <div key={g.heading} className="flex flex-col justify-center py-7 pl-6 pr-3">
+                      <p className="mb-4 text-[0.8rem] font-semibold text-forest-700/80">{g.heading}</p>
+                      <ul className="flex flex-col gap-5">
+                        {g.slugs.map((slug) => {
+                          const s = getSolution(slug);
+                          if (!s) return null;
+                          return (
+                            <li key={slug}>
+                              <Link href={`/solutions/${slug}`} onClick={close} className="group flex gap-3.5 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+                                <span className="grid size-[2.4rem] shrink-0 place-items-center rounded-full border border-sand-300 text-forest-700 transition-[transform,color,border-color] duration-200 group-hover:-translate-y-0.5 group-hover:border-purple-600 group-hover:text-purple-600">
+                                  <SolutionIcon name={s.icon} className="size-[1.15rem]" />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block text-[0.97rem] font-bold leading-6 text-forest-900 transition-colors duration-200 group-hover:text-purple-700">{s.navName}</span>
+                                  <span className="mt-0.5 block truncate text-[0.84rem] leading-5 text-forest-700/80">{s.tagline}</span>
+                                </span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : (

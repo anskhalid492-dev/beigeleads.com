@@ -5,6 +5,7 @@ import { articlesC } from "./articles-c";
 import { newA } from "./new/a";
 import { newB } from "./new/b";
 import { newC } from "./new/c";
+import { withExtraFaqs } from "./faqs";
 import type { Block, HelpArticle } from "./types";
 
 export { helpCategories };
@@ -23,7 +24,7 @@ export const HELP_REVIEW_NOTES: Record<string, string> = {
   "dfy-outbound/what-is-the-optional-infrastructure-ownership-fee": "The ownership transfer agreement text is not written yet; confirm scope and what may be promised.",
 };
 const NEW: readonly HelpArticle[] = [...newA, ...newB, ...newC].map((a) => (HELP_REVIEW_NOTES[`${a.category}/${a.slug}`] ? { ...a, status: "draft" as const } : a));
-export const helpArticles: readonly HelpArticle[] = [...articlesA, ...articlesB, ...articlesC, ...NEW];
+export const helpArticles: readonly HelpArticle[] = [...articlesA, ...articlesB, ...articlesC, ...NEW].map(withExtraFaqs);
 
 export const articleId = (a: HelpArticle) => `${a.category}/${a.slug}`;
 export const articleHref = (a: HelpArticle) => `/help/${a.category}/${a.slug}`;

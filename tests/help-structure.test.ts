@@ -22,7 +22,7 @@ describe("help structure", () => {
   });
   it("reading time, plain text and FAQs include the new block types", () => {
     const a = getArticle("getting-started", "what-is-beigeleads")!;
-    expect(faqsOf(a).length).toBe(3);
+    expect(faqsOf(a).length).toBeGreaterThanOrEqual(5);
     expect(plainText(a)).toContain("masked sample");
     expect(readingMinutes(a)).toBeGreaterThanOrEqual(1);
   });
