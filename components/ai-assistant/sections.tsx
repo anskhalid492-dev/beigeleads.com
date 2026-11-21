@@ -303,7 +303,7 @@ export function AiDfy() {
       <div className={`${wrap} text-center`}>
         <h2 className={`${h2} mx-auto max-w-3xl`}>Need More Than Leads? Let Pilo Handle Your Outbound Questions.</h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg">Ask Pilo how DFY Outbound works, which package fits your lead volume, and what ownership means.</p>
-        <p className="mt-4 font-semibold text-forest-900">Starter $299/mo · Growth $599/mo · Scale $999/mo</p>
+        <p className="mt-4 font-semibold text-forest-900">Starter $299 · Growth $599 · Scale $999, all one-time</p>
         <ul className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2 text-sm">
           {["Package differences", "Lead and send volumes", "Infrastructure ownership", "Setup process", "Reporting", "Custom quote"].map((t) => <li key={t} className="rounded-full border border-sand-300 bg-white px-3 py-1.5">{t}</li>)}
         </ul>

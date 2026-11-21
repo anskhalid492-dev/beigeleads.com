@@ -3,7 +3,7 @@ import { loadPublished } from "@/lib/bundles/store";
 import { EV_SLUG, loadEvSettings } from "@/lib/ev/settings";
 import { evInsertRow } from "@/lib/ev/store";
 import { DFY_OWN_SLUG, DFY_SLUG, loadDfySettings } from "@/lib/dfy/settings";
-import { dfyInsertRow, getDfy } from "@/lib/dfy/store";
+import { dfyInsertRow } from "@/lib/dfy/store";
 import { and, eq, gt } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { MAX_CART_ITEMS, priceCart } from "@/lib/cart/model";
@@ -22,7 +22,7 @@ import { loadSalesSettings } from "@/lib/sales/settings";
 export class CheckoutError extends Error {}
 
 /** `option` is a key of OPTIONS, e.g. "BTC", "USDT-TRC20", "USDT-ERC20", "USDC-ERC20", "ETH". */
-export type CreateInput = { /** DFY Outbound: package NAME and the ownership choice (the server reads prices and allocations from its own settings) */ dfy?: { pkg: string; ownership: boolean }; /** pay the next month of an existing DFY order (by id; only the order's own email may do this) */ dfyRenewal?: string; email: string; items: { productSlug: string; packageName: string }[]; option: string; /** optional partner discount code; valid only with the approved partner's own email */ discountCode?: string; /** curated bundles (slugs); the server reads each bundle's lists and price */ bundles?: string[]; /** Email Verification package NAME (the server reads its price and limit from its own settings) */ verification?: string };
+export type CreateInput = { /** DFY Outbound: package NAME and the ownership choice (the server reads prices and allocations from its own settings) */ dfy?: { pkg: string; ownership: boolean }; email: string; items: { productSlug: string; packageName: string }[]; option: string; /** optional partner discount code; valid only with the approved partner's own email */ discountCode?: string; /** curated bundles (slugs); the server reads each bundle's lists and price */ bundles?: string[]; /** Email Verification package NAME (the server reads its price and limit from its own settings) */ verification?: string };
 
 const on = (v: string | undefined) => v === "true";
 const WINDOW_MS = 7 * 24 * 3600 * 1000; // amounts stay reserved while late payments can still arrive
@@ -41,7 +41,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   if (!on(env.CHECKOUT_ENABLED)) throw new CheckoutError("Checkout is not open yet.");
   await hydrateCatalog(env, true);
   const bundleSlugs = [...new Set(input.bundles ?? [])];
-  if (input.items.length === 0 && bundleSlugs.length === 0 && !input.verification && !input.dfy && !input.dfyRenewal) throw new CheckoutError("Your cart is empty.");
+  if (input.items.length === 0 && bundleSlugs.length === 0 && !input.verification && !input.dfy) throw new CheckoutError("Your cart is empty.");
   if (input.items.length > MAX_CART_ITEMS) throw new CheckoutError(`You can buy up to ${MAX_CART_ITEMS} lists in one order.`);
   const slugs = input.items.map((i) => i.productSlug);
   if (new Set(slugs).size !== slugs.length) throw new CheckoutError("Each list can be in an order only once.");
@@ -60,18 +60,10 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   const bundleDefs = bundleSlugs.length ? await loadPublished(env, true) : [];
   const ev = await loadEvSettings(env);
   if (input.verification && !ev.packages.some((x) => x.name === input.verification)) throw new CheckoutError("The verification package in your cart does not exist any more. Review your cart.");
-  // DFY Outbound: a new service (package from the server settings) or the next month of an existing order (price snapshot of that order).
+  // DFY Outbound: a new service (package from the server settings) (one-time since 21 Nov 2026).
   const dfySet = await loadDfySettings(env);
-  let renewalOf: Awaited<ReturnType<typeof getDfy>> | null = null;
   let dfyCtx: Parameters<typeof priceCart>[1]["dfy"];
-  if (input.dfyRenewal) {
-    renewalOf = await getDfy(db, input.dfyRenewal);
-    if (!renewalOf || renewalOf.email.toLowerCase() !== input.email.toLowerCase()) throw new CheckoutError("We could not find that service for this email.");
-    if (!renewalOf.paidAt || ["cancelled", "completed", "awaiting_payment"].includes(renewalOf.status)) throw new CheckoutError("This service cannot be renewed.");
-    if (renewalOf.cancelRequested) throw new CheckoutError("This service is set to cancel and is not renewed.");
-    if (input.items.length || bundleSlugs.length || input.verification || input.dfy) throw new CheckoutError("A renewal is paid on its own.");
-    dfyCtx = { pkg: renewalOf.packageName, ownership: false, enabled: true, ownershipEnabled: false, ownershipCents: 0, packages: [{ name: renewalOf.packageName, monthlyCents: renewalOf.monthlyCents, leads: renewalOf.leads, initialSends: renewalOf.initialSends, followups: renewalOf.followups, domainsMin: Number(renewalOf.domainsEst.split("–")[0]) || 0, domainsMax: Number(renewalOf.domainsEst.split("–").pop()) || 0, inboxesMin: Number(renewalOf.inboxesEst.split("–")[0]) || 0, inboxesMax: Number(renewalOf.inboxesEst.split("–").pop()) || 0 }] };
-  } else if (input.dfy) {
+  if (input.dfy) {
     if (!dfySet.packages.some((x) => x.name === input.dfy?.pkg)) throw new CheckoutError("The DFY Outbound package in your cart does not exist any more. Review your cart.");
     dfyCtx = { pkg: input.dfy.pkg, ownership: input.dfy.ownership, enabled: dfySet.enabled, ownershipEnabled: dfySet.ownershipEnabled, ownershipCents: dfySet.ownershipCents, packages: dfySet.packages };
   }
@@ -124,7 +116,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   const quote = buildQuote(spec, totalCents, rate, now);
 
   // Same buyer, same cart, same coin within 10 minutes: hand back the order that is still open (no second order, no second payment session).
-  const dedupeKey = `co:${await sha256Hex(`${input.email}|${input.option}|${priced.lines.map((l) => `${l.slug}:${l.packageName}`).sort().join(",")}|${priced.discountCode}|${priced.totalCents}|${priced.bundles.map((b) => b.slug).sort().join(",")}|${priced.service?.name ?? ""}|${priced.dfy?.name ?? ""}:${priced.dfy?.ownership ?? ""}:${input.dfyRenewal ?? ""}`)}`;
+  const dedupeKey = `co:${await sha256Hex(`${input.email}|${input.option}|${priced.lines.map((l) => `${l.slug}:${l.packageName}`).sort().join(",")}|${priced.discountCode}|${priced.totalCents}|${priced.bundles.map((b) => b.slug).sort().join(",")}|${priced.service?.name ?? ""}|${priced.dfy?.name ?? ""}:${priced.dfy?.ownership ?? ""}:`)}`;
   const prev = await env.CACHE.get(dedupeKey).catch(() => null);
   if (prev) {
     const [o] = await db.select({ status: schema.orders.status }).from(schema.orders).where(eq(schema.orders.id, prev));
@@ -132,9 +124,8 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
     if (o?.status === "pending" && at?.st === "open" && at.exp.getTime() > now + 60_000) return prev;
   }
   const orderId = crypto.randomUUID();
-  const dfyPkg = priced.dfy && !renewalOf ? dfySet.packages.find((x) => x.name === priced.dfy?.name) : undefined;
+  const dfyPkg = priced.dfy ? dfySet.packages.find((x) => x.name === priced.dfy?.name) : undefined;
   const dfyIns = dfyPkg && priced.dfy ? await dfyInsertRow(env, orderId, input.email, dfyPkg, { selected: priced.dfy.ownership, cents: priced.dfy.ownershipCents }) : null;
-  const renewalCycle = renewalOf && priced.dfy ? { orderId, dfyId: renewalOf.id, cycle: renewalOf.cycle + 1, kind: "renewal", amountCents: priced.dfy.priceCents } : null;
   const evRow = priced.service ? await evInsertRow(env, orderId, input.email, { name: priced.service.name, limit: priced.service.limit, priceCents: priced.service.priceCents }) : null;
 
   /** Removes a half-created order (the order_bundles table is touched only when the order has a bundle). */
@@ -142,7 +133,6 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
     if (priced.bundles.length) await db.delete(schema.orderBundles).where(eq(schema.orderBundles.orderId, orderId));
     if (evRow) await db.delete(schema.evOrders).where(eq(schema.evOrders.orderId, orderId));
     if (dfyIns) { await db.delete(schema.dfyCycles).where(eq(schema.dfyCycles.orderId, orderId)); await db.delete(schema.dfyOrders).where(eq(schema.dfyOrders.orderId, orderId)); }
-    if (renewalCycle) await db.delete(schema.dfyCycles).where(eq(schema.dfyCycles.orderId, orderId));
     await db.batch([
       db.delete(schema.paymentAttempts).where(eq(schema.paymentAttempts.orderId, orderId)),
       db.delete(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)),
@@ -166,7 +156,6 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
       ...(priced.bundles.length ? [db.insert(schema.orderBundles).values(bundleRows(orderId))] : []),
       ...(evRow ? [db.insert(schema.evOrders).values(evRow)] : []),
       ...(dfyIns ? [db.insert(schema.dfyOrders).values(dfyIns.row), db.insert(schema.dfyCycles).values(dfyIns.cycle)] : []),
-      ...(renewalCycle ? [db.insert(schema.dfyCycles).values(renewalCycle)] : []),
     ];
     await db.batch(writes as unknown as Parameters<typeof db.batch>[0]);
     // Two buyers can race for the same amount. Keep exactly one: if we are not alone, undo ours and pick again.

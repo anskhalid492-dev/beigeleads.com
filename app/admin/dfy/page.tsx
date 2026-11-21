@@ -37,14 +37,14 @@ export default async function DfyOrders({ searchParams }: { searchParams: Promis
       <Panel>
         {list.length === 0 ? <Empty title="No DFY orders" text="Orders appear when a customer starts checkout with a DFY package." /> : (
           <div className="overflow-x-auto"><table className="w-full min-w-[1000px] text-left text-sm">
-            <thead className="border-b border-sand-200 text-xs text-forest-700"><tr>{["Order", "Customer", "Package", "Monthly", "Ownership", "Stage", "Capacity", "Cycle", "Renews", "Created"].map((h) => <th key={h} className="px-3 py-2">{h}</th>)}</tr></thead>
+            <thead className="border-b border-sand-200 text-xs text-forest-700"><tr>{["Order", "Customer", "Package", "Price", "Ownership", "Stage", "Capacity", "Created"].map((h) => <th key={h} className="px-3 py-2">{h}</th>)}</tr></thead>
             <tbody className="divide-y divide-sand-200">{list.map((r) => (
               <tr key={r.id} className="hover:bg-sand-50">
                 <td className="px-3 py-2.5"><Link className="font-mono font-semibold text-forest-900 underline" href={`/admin/dfy/${r.id}`}>{r.id}</Link></td>
                 <td className="px-3 py-2.5">{r.email}</td><td className="px-3 py-2.5">{r.packageName}</td><td className="px-3 py-2.5">{usd(r.monthlyCents)}</td>
                 <td className="px-3 py-2.5">{r.ownership ? `Yes (${usd(r.ownershipCents)})` : "No"}</td>
                 <td className="px-3 py-2.5"><Badge tone={r.status === "campaign_active" ? "good" : r.status === "paused" || r.status === "cancelled" ? "bad" : "info"}>{isStage(r.status) ? LABEL[r.status] : r.status}</Badge></td>
-                <td className="px-3 py-2.5">{r.capacityApproved ? "Approved" : r.paidAt ? "Needs review" : "—"}</td><td className="px-3 py-2.5">{r.cycle}</td><td className="px-3 py-2.5">{d(r.renewsAt)}</td><td className="px-3 py-2.5">{d(r.createdAt)}</td>
+                <td className="px-3 py-2.5">{r.capacityApproved ? "Approved" : r.paidAt ? "Needs review" : "—"}</td><td className="px-3 py-2.5">{d(r.createdAt)}</td>
               </tr>))}</tbody>
           </table></div>
         )}

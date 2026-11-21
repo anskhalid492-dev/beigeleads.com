@@ -149,7 +149,7 @@ describe("checkout and payment", () => {
     expect(await deliverOrder(env, orderId)).toBe("no-lists");
     expect(await deliverOrder(env, orderId)).toBe("no-lists");
     const d = await q("SELECT status, paid_at AS p, renews_at AS r FROM dfy_orders WHERE order_id = ?", orderId);
-    expect(d?.status).toBe("awaiting_onboarding"); expect(Number(d?.r) - Number(d?.p)).toBe(30 * 86400);
+    expect(d?.status).toBe("awaiting_onboarding"); expect(d?.r).toBeNull();
     expect(sent.filter((m) => /Payment Is Confirmed/.test(m.subject))).toHaveLength(1);
     expect(sent.filter((m) => /Next Step: Tell Us/.test(m.subject))).toHaveLength(1);
     expect((await q("SELECT COUNT(*) AS n FROM deliveries WHERE order_id = ?", orderId))?.n).toBe(0);
@@ -226,40 +226,32 @@ describe("onboarding, gates, copy approval, reports", () => {
   });
 });
 
-describe("renewals, pause, cancel", () => {
-  it("renewal is a separate order at the SNAPSHOT price; paying it extends the term; unpaid term pauses the service", async () => {
+describe("one-time service: no renewals, reminders or automatic pauses", () => {
+  it("renewal checkout is gone; the cron never pauses or emails; pause/resume stay manual", async () => {
     mockMail(); sent.length = 0;
     const { orderId, email } = await newOrder("Starter", true);
     await pay(orderId); await S.fulfillOnPaid(env, orderId);
     const id = (await q("SELECT id FROM dfy_orders WHERE order_id = ?", orderId))!.id as string;
-    // price changes later must not change this customer's renewal
-    await saveDfySettings(env, { ...DEFAULT_DFY, packages: DEFAULT_DFY.packages.map((p) => (p.name === "Starter" ? { ...p, monthlyCents: 39_900 } : p)) }, "t");
-    await base.CACHE.delete("dfy:settings:v1");
-    const r1 = await createOrder(env, { email, items: [], option: "BTC", dfyRenewal: id });
-    expect((await q("SELECT total_usd_cents AS t FROM orders WHERE id = ?", r1))?.t).toBe(29_900); // no ownership fee, old price
-    expect((await q("SELECT COUNT(*) AS n FROM order_items WHERE order_id = ? AND product_slug = 'dfy-ownership'", r1))?.n).toBe(0);
-    await expect(createOrder(env, { email: "other@test.dev", items: [], option: "BTC", dfyRenewal: id })).rejects.toThrow(/could not find/);
-    const before = Number((await q("SELECT renews_at AS r FROM dfy_orders WHERE id = ?", id))?.r);
-    await pay(r1); await deliverOrder(env, r1);
-    const after = await q("SELECT renews_at AS r, cycle FROM dfy_orders WHERE id = ?", id);
-    expect(Number(after?.r)).toBe(before + 30 * 86400); expect(after?.cycle).toBe(2);
-    await S.fulfillOnPaid(env, r1); // idempotent
-    expect(Number((await q("SELECT renews_at AS r FROM dfy_orders WHERE id = ?", id))?.r)).toBe(before + 30 * 86400);
-    // term ends unpaid -> pause once + payment problem email
+    expect((await q("SELECT renews_at AS r FROM dfy_orders WHERE id = ?", id))?.r).toBeNull();
+    // a renewal order can no longer be created, whatever the input
+    await expect(createOrder(env, { email, items: [], option: "BTC", dfyRenewal: id } as never)).rejects.toThrow();
+    // old rows with a past renewal date are NOT paused and no reminder or payment-problem email goes out
     await base.DB.prepare("UPDATE dfy_orders SET renews_at = unixepoch() - 10, status = 'campaign_active' WHERE id = ?").bind(id).run();
     await S.sweepDfy(env); await S.sweepDfy(env);
-    expect((await q("SELECT status FROM dfy_orders WHERE id = ?", id))?.status).toBe("paused");
-    expect(sent.filter((m) => /Problem With Your DFY Payment/.test(m.subject))).toHaveLength(1);
-    expect((await S.resume(env, id, "a")).ok).toBe(false); // term ended
-  });
-  it("reminder goes out once per cycle; pause/resume work", async () => {
-    mockMail(); sent.length = 0;
-    const { orderId } = await newOrder("Scale", false); await pay(orderId); await S.fulfillOnPaid(env, orderId);
-    const id = (await q("SELECT id FROM dfy_orders WHERE order_id = ?", orderId))!.id as string;
-    await base.DB.prepare("UPDATE dfy_orders SET renews_at = unixepoch() + 3 * 86400 WHERE id = ?").bind(id).run();
-    await S.sweepDfy(env); await S.sweepDfy(env);
-    expect(sent.filter((m) => /Renewal Is Due Soon/.test(m.subject))).toHaveLength(1);
+    expect((await q("SELECT status FROM dfy_orders WHERE id = ?", id))?.status).toBe("campaign_active");
+    expect(sent.filter((m) => /Renewal|Problem With Your DFY Payment/.test(m.subject))).toHaveLength(0);
     expect((await S.pause(env, id, "a", "customer request")).ok).toBe(true);
     expect((await S.resume(env, id, "a")).ok).toBe(true);
+  });
+  it("paying twice does not extend or restart anything (idempotent)", async () => {
+    const { orderId } = await newOrder("Growth", false); await pay(orderId);
+    expect(await S.fulfillOnPaid(env, orderId)).toBe(true);
+    expect(await S.fulfillOnPaid(env, orderId)).toBe(false);
+  });
+  it("stored settings that still describe monthly billing are replaced by the one-time wording", async () => {
+    await saveDfySettings(env, { ...DEFAULT_DFY, billingTerms: "Each month is paid in advance in crypto." }, "t");
+    await base.CACHE.delete("dfy:settings:v1");
+    const { loadDfySettings } = await import("@/lib/dfy/settings");
+    expect((await loadDfySettings(env)).billingTerms).toMatch(/one-time/i);
   });
 });

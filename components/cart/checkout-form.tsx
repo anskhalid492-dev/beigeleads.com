@@ -150,13 +150,13 @@ export function CartCheckout({ options }: { options: Option[] }) {
             ))}
             {pricing.dfy && (
               <li className="flex justify-between gap-4 py-3 text-sm">
-                <span><span className="block font-semibold text-forest-900">DFY Outbound — {pricing.dfy.name}</span><span className="text-forest-500">First month · renews monthly, paid manually</span></span>
+                <span><span className="block font-semibold text-forest-900">DFY Outbound — {pricing.dfy.name}</span><span className="text-forest-500">One-time payment, no renewals</span></span>
                 <span className="font-semibold text-forest-900">{formatUsd(pricing.dfy.monthlyCents)}</span>
               </li>
             )}
             {pricing.dfy?.ownership && (
               <li className="flex justify-between gap-4 py-3 text-sm">
-                <span><span className="block font-semibold text-forest-900">Infrastructure ownership</span><span className="text-forest-500">One-time fee, never part of a renewal</span></span>
+                <span><span className="block font-semibold text-forest-900">Infrastructure ownership</span><span className="text-forest-500">One-time fee</span></span>
                 <span className="font-semibold text-forest-900">{formatUsd(pricing.dfy.ownershipCents)}</span>
               </li>
             )}

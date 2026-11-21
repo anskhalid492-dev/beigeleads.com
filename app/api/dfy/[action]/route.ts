@@ -1,12 +1,10 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
-import { CheckoutError, createOrder } from "@/lib/checkout/create";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { sha256Hex } from "@/lib/forms/hash";
 import { isRateLimited } from "@/lib/forms/rate-limit";
 import { notifyOwner } from "@/lib/forms/email";
-import { OPTION_IDS } from "@/lib/payments/options";
 import { getDfyByToken, log, reviewCopy, submitOnboarding, adminUrl } from "@/lib/dfy/store";
 
 const json = (status: number, b: unknown) => new Response(JSON.stringify(b), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -42,13 +40,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ action: string
     await db.update(schema.dfyOrders).set({ cancelRequested: 1, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.dfyOrders.id, row.id));
     await log(db, row.id, "customer", "cancel_requested");
     await notifyOwner(env, `DFY cancellation requested: ${row.id}`, `Open ${adminUrl(row.id)} and confirm it.`).catch(() => undefined);
-    return json(200, { ok: true, message: "Cancellation requested. No further renewals will be invoiced. Our team will confirm by email." });
-  }
-  if (action === "renew") {
-    const coin = z.enum(OPTION_IDS).safeParse(body.coin);
-    if (!coin.success) return json(400, { ok: false, error: "Choose how you want to pay." });
-    try { return json(200, { ok: true, redirect: `/checkout/${await createOrder(env, { email: row.email, items: [], option: coin.data, dfyRenewal: row.id })}` }); }
-    catch (e) { return e instanceof CheckoutError ? json(409, { ok: false, error: e.message }) : json(500, { ok: false, error: "Something went wrong. Try again in a minute." }); }
+    return json(200, { ok: true, message: "Cancellation requested. Our team will confirm by email." });
   }
   return json(404, { ok: false, error: "Unknown action." });
 }

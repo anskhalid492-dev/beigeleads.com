@@ -25,17 +25,19 @@ export default async function DfyPage() {
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: DFY_FAQS.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "DFY Outbound", url: `${SITE_URL}/dfy-outbound`, description: DFY_DESC }} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "Service", name: "Done-for-you cold email outbound", serviceType: "Cold email outbound management", provider: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL }, url: `${SITE_URL}/dfy-outbound`, description: DFY_DESC, offers: s.packages.map((p) => ({ "@type": "Offer", name: `${p.name} DFY Outbound package`, price: (p.monthlyCents / 100).toFixed(2), priceCurrency: "USD", url: `${SITE_URL}/dfy-outbound#packages` })) }} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: SITE_URL }, { "@type": "ListItem", position: 2, name: "DFY Outbound", item: `${SITE_URL}/dfy-outbound` }] }} />
       <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "DFY Outbound", href: "/dfy-outbound" }]} /></div>
-      <DfyHero from={`Packages starting at $${(low / 100).toLocaleString("en-US")}/month.`} />
+      <DfyHero low={low} />
       <DfyServices />
       <DfyWho />
       <DfySteps />
-      <section id="packages" className="scroll-mt-24 bg-sand-50 py-16 lg:py-20"><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><h2 className="display text-4xl text-forest-900 sm:text-5xl">Pick your package</h2><div className="mt-10"><DfyPricing s={s} /></div></div></section>
+      <section id="packages" className="scroll-mt-24 bg-sand-50 py-16 lg:py-20"><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><h2 className="display text-4xl text-forest-900 sm:text-5xl">Pick your one-time package</h2><div className="mt-10"><DfyPricing s={s} /></div></div></section>
       <DfyCompare s={s} />
       <DfyOwnership s={s} />
       <DfyDetails />
       <SolutionFaq name="DFY Outbound" items={DFY_FAQS} />
-      <DfyFinalCta />
+      <DfyFinalCta low={low} />
     </>
   );
 }

@@ -54,18 +54,11 @@ export function CopyReview({ token }: { token: string }) {
   );
 }
 
-export function RenewCancel({ token, canRenew, options, cancelRequested }: { token: string; canRenew: boolean; options: { id: string; label: string }[]; cancelRequested: boolean }) {
-  const r = useRouter(); const [coin, setCoin] = useState(options[0]?.id ?? ""); const [m, setM] = useState<{ ok: boolean; text: string } | null>(null); const [busy, setBusy] = useState(false);
-  async function renew() { setBusy(true); const res = await post("renew", { token, coin }); setBusy(false); if (res.ok && res.redirect) r.push(res.redirect); else setM({ ok: false, text: res.error ?? "Try again." }); }
-  async function cancel() { if (!confirm("Cancel this service? No further renewals will be invoiced.")) return; setBusy(true); const res = await post("cancel", { token }); setBusy(false); setM({ ok: !!res.ok, text: res.message ?? res.error ?? "" }); if (res.ok) r.refresh(); }
+export function CancelRequest({ token, cancelRequested }: { token: string; cancelRequested: boolean }) {
+  const r = useRouter(); const [m, setM] = useState<{ ok: boolean; text: string } | null>(null); const [busy, setBusy] = useState(false);
+  async function cancel() { if (!confirm("Ask our team to cancel this service?")) return; setBusy(true); const res = await post("cancel", { token }); setBusy(false); setM({ ok: !!res.ok, text: res.message ?? res.error ?? "" }); if (res.ok) r.refresh(); }
   return (
     <div className="space-y-4">
-      {canRenew && (
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="text-sm font-medium text-forest-900">Pay with<select value={coin} onChange={(e) => setCoin(e.target.value)} className="mt-1 block rounded-xl border border-sand-300 bg-white px-3 py-2 text-sm">{options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select></label>
-          <button disabled={busy} onClick={renew} className="inline-flex h-11 items-center rounded-full bg-purple-600 px-6 font-semibold text-white disabled:opacity-60">Pay next month</button>
-        </div>
-      )}
       {!cancelRequested && <button disabled={busy} onClick={cancel} className="text-sm font-semibold text-forest-700 underline underline-offset-2">Request cancellation</button>}
       <Msg m={m} />
     </div>

@@ -54,16 +54,16 @@ const COMMON = ["Domain purchasing and configuration", "Inbox setup and warm-up"
 export const DEFAULT_DFY: DfySettings = {
   enabled: true,
   packages: [
-    { name: "Starter", monthlyCents: 29_900, leads: 10_000, initialSends: 10_000, followups: 3, domainsMin: 3, domainsMax: 5, inboxesMin: 15, inboxesMax: 20, reporting: "monthly", support: "Email support", cta: "Start Outbound — $299/mo", featured: false, features: [...COMMON, "Monthly reporting", "Email support"] },
-    { name: "Growth", monthlyCents: 59_900, leads: 50_000, initialSends: 50_000, followups: 5, domainsMin: 10, domainsMax: 15, inboxesMin: 35, inboxesMax: 40, reporting: "weekly", support: "Priority support", cta: "Grow My Outbound — $599/mo", featured: true, features: [...COMMON, "Weekly reporting", "Priority support"] },
-    { name: "Scale", monthlyCents: 99_900, leads: 100_000, initialSends: 100_000, followups: 7, domainsMin: 20, domainsMax: 30, inboxesMin: 50, inboxesMax: 60, reporting: "weekly", support: "Dedicated account manager", cta: "Scale My Outbound — $999/mo", featured: false, features: [...COMMON, "Weekly reporting", "Priority support", "Dedicated account manager"] },
+    { name: "Starter", monthlyCents: 29_900, leads: 10_000, initialSends: 10_000, followups: 3, domainsMin: 3, domainsMax: 5, inboxesMin: 15, inboxesMax: 20, reporting: "monthly", support: "Email support", cta: "Start Outbound", featured: false, features: [...COMMON, "Monthly reporting", "Email support"] },
+    { name: "Growth", monthlyCents: 59_900, leads: 50_000, initialSends: 50_000, followups: 5, domainsMin: 10, domainsMax: 15, inboxesMin: 35, inboxesMax: 40, reporting: "weekly", support: "Priority support", cta: "Grow My Outbound", featured: true, features: [...COMMON, "Weekly reporting", "Priority support"] },
+    { name: "Scale", monthlyCents: 99_900, leads: 100_000, initialSends: 100_000, followups: 7, domainsMin: 20, domainsMax: 30, inboxesMin: 50, inboxesMax: 60, reporting: "weekly", support: "Dedicated account manager", cta: "Scale My Outbound", featured: false, features: [...COMMON, "Weekly reporting", "Priority support", "Dedicated account manager"] },
   ],
   ownershipEnabled: true, ownershipCents: 10_000,
   ownershipLabel: "I want to own my outbound infrastructure — +$100 one-time",
   ownershipDescription: "Choose this option if you want the agreed sending domains, inboxes, and associated infrastructure accounts to be transferred to or registered under your ownership, subject to provider transfer rules.",
   ownershipAgreement: "",
   perInboxDaily: 30, sendingDaysPerMonth: 22, renewalReminderDays: 7,
-  billingTerms: "Each month is paid in advance in crypto. Your first payment is confirmed on the network; later months are invoiced about a week before they are due, and the service pauses if a renewal is not paid. The ownership fee is charged once and is never part of a renewal.",
+  billingTerms: "DFY Outbound is a one-time purchase paid in crypto. There is no subscription and nothing renews. The optional ownership fee is charged once, together with your package.",
   supportEmail: "",
   upsellEnabled: true,
   upsellHeadline: "Got the Leads? Let Us Handle the Outreach. 🚀",
@@ -77,6 +77,12 @@ export const isDfySlug = (s: string) => s === DFY_SLUG || s === DFY_OWN_SLUG;
 const KEY = "dfy:settings:v1";
 const DB_KEY = "dfy.settings";
 
+/** DFY is one-time since 21 Nov 2026: stored texts that still describe monthly billing are replaced by the current wording. */
+function oneTime(s: DfySettings): DfySettings {
+  const old = (t: string) => /each month|per month|monthly|renew|\/mo\b/i.test(t);
+  return { ...s, billingTerms: old(s.billingTerms) ? DEFAULT_DFY.billingTerms : s.billingTerms, upsellDescription: old(s.upsellDescription) ? DEFAULT_DFY.upsellDescription : s.upsellDescription, upsellHeadline: old(s.upsellHeadline) ? DEFAULT_DFY.upsellHeadline : s.upsellHeadline };
+}
+
 export async function loadDfySettings(env: CloudflareEnv): Promise<DfySettings> {
   try {
     const hit = await env.CACHE.get(KEY);
@@ -85,7 +91,7 @@ export async function loadDfySettings(env: CloudflareEnv): Promise<DfySettings> 
   try {
     const [r] = await getDbFromEnv(env).select().from(schema.systemSettings).where(eq(schema.systemSettings.key, DB_KEY));
     const p = r ? dfySettingsSchema.safeParse({ ...DEFAULT_DFY, ...(JSON.parse(r.value) as object) }) : null;
-    const out = p?.success ? p.data : DEFAULT_DFY;
+    const out = oneTime(p?.success ? p.data : DEFAULT_DFY);
     await env.CACHE.put(KEY, JSON.stringify(out), { expirationTtl: 60 }).catch(() => undefined);
     return out;
   } catch { return DEFAULT_DFY; }

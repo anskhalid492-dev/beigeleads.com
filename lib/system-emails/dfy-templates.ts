@@ -14,11 +14,11 @@ const rows: [key: string, name: string, event: string, subject: string, heading:
   ["dfy_campaign_approved", "DFY: campaign approved", "The customer approves the copy.", "Your Campaign Copy Is Approved", "Approval received", "Thanks for approving your copy. Our team will confirm everything is ready before launch. {{dfy_detail}}", "Open Your Order Page"],
   ["dfy_campaign_launched", "DFY: campaign launched", "An admin starts the campaign after all launch checks pass.", "Your Campaign Has Launched", "Your campaign is live", "Your campaign has started. Sending is managed by our team and follows your approved plan. We cannot promise replies, meetings or revenue. {{dfy_detail}}", "Open Your Order Page"],
   ["dfy_report_available", "DFY: report available", "An admin publishes a report.", "Your Outbound Report Is Available", "A new report is available", "Your latest campaign report is on your order page.", "View Your Report"],
-  ["dfy_renewal_reminder", "DFY: renewal reminder", "A renewal is due soon (about a week before).", "Your DFY Outbound Renewal Is Due Soon", "Your renewal is coming up", "Your {{package_name}} service renews on {{renewal_date}}. Renewals are paid manually in crypto: open your order page to pay. The service pauses if the renewal is not paid.", "Open Your Order Page"],
+  ["dfy_renewal_reminder", "DFY: renewal reminder", "Not used: DFY is a one-time purchase and has no renewals.", "Your DFY Outbound Renewal Is Due Soon", "Your renewal is coming up", "Your {{package_name}} service renews on {{renewal_date}}.", "Open Your Order Page"],
   ["dfy_ownership_ready", "DFY: ownership transfer ready", "An admin marks the transfer as ready.", "Your Infrastructure Transfer Is Ready", "Your transfer is ready", "The transfer of the agreed infrastructure is ready, subject to provider rules. We will never send passwords by email. {{dfy_detail}}", "Open Your Order Page"],
   ["dfy_ownership_done", "DFY: ownership transfer completed", "An admin marks the transfer as completed.", "Your Infrastructure Transfer Is Complete", "Your transfer is complete", "The agreed infrastructure has been transferred or registered under your ownership, subject to provider rules. {{dfy_detail}}", "Open Your Order Page"],
-  ["dfy_payment_failed", "DFY: payment problem", "A renewal payment is overdue or a payment could not be matched.", "There Is a Problem With Your DFY Payment", "Your payment needs attention", "We could not confirm a payment for your {{package_name}} service. Your service may be paused until it is resolved. {{dfy_detail}}", "Open Your Order Page"],
-  ["dfy_cancelled", "DFY: cancellation confirmed", "An admin confirms a cancellation.", "Your DFY Outbound Service Is Cancelled", "Your service is cancelled", "Your {{package_name}} DFY Outbound service has been cancelled. No further renewals will be invoiced. {{dfy_detail}}", "Open Your Order Page"],
+  ["dfy_payment_failed", "DFY: payment problem", "Not used: DFY is a one-time purchase, so nothing is paused for a late renewal.", "There Is a Problem With Your DFY Payment", "Your payment needs attention", "We could not confirm a payment for your {{package_name}} service. Your service may be paused until it is resolved. {{dfy_detail}}", "Open Your Order Page"],
+  ["dfy_cancelled", "DFY: cancellation confirmed", "An admin confirms a cancellation.", "Your DFY Outbound Service Is Cancelled", "Your service is cancelled", "Your {{package_name}} DFY Outbound service has been cancelled. {{dfy_detail}}", "Open Your Order Page"],
 ];
 
 export const DFY_TEMPLATES: TemplateDef[] = rows.map(([key, name, event, subject, heading, text, cta]): TemplateDef => ({
@@ -29,4 +29,5 @@ export const DFY_TEMPLATES: TemplateDef[] = rows.map(([key, name, event, subject
     blocks: [{ t: "p", text }, { t: "note", text: "Never share your private order link. BeigeLeads will never ask for passwords by email." }],
     cta: { label: cta, url: "{{dfy_url}}" }, signoff: "The BeigeLeads team",
   },
-}));
+}))
+  .map((t) => (["dfy_renewal_reminder", "dfy_payment_failed"].includes(t.key) ? { ...t, connection: "not_connected" as const } : t));

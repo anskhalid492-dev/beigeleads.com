@@ -1,4 +1,4 @@
-// DFY Outbound: orders, stages, onboarding, capacity approval, infrastructure/lead/copy/metrics tracking, ownership, renewals.
+// DFY Outbound: orders, stages, onboarding, capacity approval, infrastructure/lead/copy/metrics tracking, ownership. One-time since 21 Nov 2026.
 // Everything operational is MANUAL work by the BeigeLeads team: no step here buys a domain, creates an inbox, verifies a lead or sends a message.
 // A gate only opens from a real admin entry (verified assets, approved capacity) or a real customer action (copy approval).
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
@@ -7,7 +7,7 @@ import { notifyOwner } from "@/lib/forms/email";
 import { sendOnce } from "@/lib/system-emails/triggers";
 import { checkCapacity } from "./capacity";
 import { onboardingSchema } from "./onboarding";
-import { loadDfySettings, messageCeiling, range, type DfyPackage } from "./settings";
+import { messageCeiling, range, type DfyPackage } from "./settings";
 import { LAUNCH_STAGES, LABEL, canMove, isStage, live, type Stage } from "./state";
 import { dfyToken, dfyTokenHash } from "./token";
 
@@ -15,7 +15,6 @@ export const SITE = "https://beigeleads.com";
 type Db = ReturnType<typeof getDbFromEnv>;
 export type DfyRow = typeof schema.dfyOrders.$inferSelect;
 const now = () => Math.floor(Date.now() / 1000);
-const DAY = 86400;
 export const CYCLE_DAYS = 30;
 export const pageUrl = (t: string) => `${SITE}/dfy-outbound/order/${t}`;
 export const adminUrl = (id: string) => `${SITE}/admin/dfy/${id}`;
@@ -55,7 +54,7 @@ async function mail(env: CloudflareEnv, d: DfyRow, key: string, reference: strin
 
 // ------------------------------------------------------------------------------------------------ payment
 
-/** Called when a BeigeLeads order is paid (and by the cron). Idempotent. First payment starts onboarding; a paid renewal extends the term. */
+/** Called when a BeigeLeads order is paid (and by the cron). Idempotent. One-time payment starts onboarding (no renewals since 21 Nov 2026). */
 export async function fulfillOnPaid(env: CloudflareEnv, orderId: string): Promise<boolean> {
   try {
     const db = getDbFromEnv(env);
@@ -69,18 +68,12 @@ export async function fulfillOnPaid(env: CloudflareEnv, orderId: string): Promis
     const d = await getDfy(db, cy.dfyId);
     if (!d) return false;
     if (cy.kind === "initial") {
-      const moved = await db.update(schema.dfyOrders).set({ status: "awaiting_onboarding", paidAt: stamp, renewsAt: stamp + CYCLE_DAYS * DAY, updatedAt: stamp }).where(and(eq(schema.dfyOrders.id, d.id), eq(schema.dfyOrders.status, "awaiting_payment"))).returning();
-      await log(db, d.id, "system", "paid", `First payment confirmed (${usd(cy.amountCents)})`);
+      const moved = await db.update(schema.dfyOrders).set({ status: "awaiting_onboarding", paidAt: stamp, renewsAt: null, updatedAt: stamp }).where(and(eq(schema.dfyOrders.id, d.id), eq(schema.dfyOrders.status, "awaiting_payment"))).returning();
+      await log(db, d.id, "system", "paid", `Payment confirmed (${usd(cy.amountCents)})`);
       const fresh = moved[0] ?? (await getDfy(db, d.id)) ?? d;
       await mail(env, fresh, "dfy_payment_confirmed", `${d.id}:paid`);
       await mail(env, fresh, "dfy_onboarding_invite", `${d.id}:invite`);
       await notifyOwner(env, `New DFY Outbound order ${d.id}`, `${d.packageName} is paid. Open ${adminUrl(d.id)}. Operational work has not started: confirm capacity first.`).catch(() => undefined);
-    } else {
-      const base = Math.max(d.renewsAt ?? stamp, stamp);
-      const resume = d.status === "paused" ? (isStage(d.pausedFrom) ? d.pausedFrom : "infrastructure_planning") : d.status === "renewal_pending" ? "campaign_active" : d.status;
-      await db.update(schema.dfyOrders).set({ renewsAt: base + CYCLE_DAYS * DAY, cycle: cy.cycle, status: resume, pausedFrom: "", updatedAt: stamp }).where(eq(schema.dfyOrders.id, d.id));
-      await log(db, d.id, "system", "renewal_paid", `Cycle ${cy.cycle} paid (${usd(cy.amountCents)})`);
-      await mail(env, { ...d, renewsAt: base + CYCLE_DAYS * DAY }, "dfy_payment_confirmed", `${d.id}:cycle${cy.cycle}`);
     }
     return true;
   } catch { return false; }
@@ -158,7 +151,6 @@ export async function pause(env: CloudflareEnv, id: string, actor: string, reaso
 export async function resume(env: CloudflareEnv, id: string, actor: string): Promise<Res> {
   const db = getDbFromEnv(env); const d = await getDfy(db, id);
   if (!d || d.status !== "paused") return { ok: false, error: "The order is not paused." };
-  if (d.renewsAt && d.renewsAt < now()) return { ok: false, error: "The current term has ended. Resume after the renewal is paid." };
   const to = isStage(d.pausedFrom) ? d.pausedFrom : "infrastructure_planning";
   await db.update(schema.dfyOrders).set({ status: to, pausedFrom: "", updatedAt: now() }).where(eq(schema.dfyOrders.id, id));
   await log(db, id, actor, "resumed", LABEL[to]); return { ok: true, message: `Resumed at ${LABEL[to]}.` };
@@ -287,26 +279,13 @@ export async function saveOwnership(env: CloudflareEnv, id: string, f: Ownership
 
 // ------------------------------------------------------------------------------------------------ cron
 
-/** Every 15 minutes: renewal reminders (once per cycle) and a pause when a term ended unpaid. */
+/** Every 15 minutes: safety net for paid orders whose hook did not run. DFY is one-time: no renewals, reminders or pauses. */
 export async function sweepDfy(env: CloudflareEnv): Promise<void> {
   try {
-    const db = getDbFromEnv(env); const s = await loadDfySettings(env); const t = now();
+    const db = getDbFromEnv(env);
     // Safety net: a paid order whose first-payment hook did not run (idempotent).
     const unpaid = await db.all<{ order_id: string }>(sql`SELECT c.order_id FROM dfy_cycles c JOIN orders o ON o.id = c.order_id WHERE c.paid_at IS NULL AND o.status = 'paid' LIMIT 20`);
     for (const u of unpaid) await fulfillOnPaid(env, u.order_id);
-    const due = await db.select().from(schema.dfyOrders).where(and(sql`${schema.dfyOrders.renewsAt} is not null`, sql`${schema.dfyOrders.paidAt} is not null`, sql`${schema.dfyOrders.status} not in ('cancelled','completed','awaiting_payment','paused')`));
-    for (const d of due) {
-      const renews = d.renewsAt as number;
-      if (d.cancelRequested) continue;
-      if (renews - s.renewalReminderDays * DAY <= t && d.reminderSentFor < d.cycle + 1) {
-        const r = await mail(env, d, "dfy_renewal_reminder", `${d.id}:renew:${d.cycle + 1}`);
-        if (r === "sent" || r === "already-sent") { await db.update(schema.dfyOrders).set({ reminderSentFor: d.cycle + 1 }).where(eq(schema.dfyOrders.id, d.id)); await log(db, d.id, "system", "renewal_reminder", dateStr(renews)); }
-      }
-      if (renews < t) {
-        const up = await db.update(schema.dfyOrders).set({ status: "paused", pausedFrom: d.status, updatedAt: t }).where(and(eq(schema.dfyOrders.id, d.id), eq(schema.dfyOrders.renewsAt, renews), sql`${schema.dfyOrders.status} <> 'paused'`)).returning();
-        if (up[0]) { await log(db, d.id, "system", "paused_unpaid", "Renewal not paid by the end of the term"); await mail(env, up[0], "dfy_payment_failed", `${d.id}:unpaid:${d.cycle + 1}`, "The renewal was not paid in time."); await notifyOwner(env, `DFY paused (renewal unpaid): ${d.id}`, adminUrl(d.id)).catch(() => undefined); }
-      }
-    }
   } catch { /* the next run tries again */ }
 }
 export { live, LABEL };

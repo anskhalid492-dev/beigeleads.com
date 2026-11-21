@@ -36,10 +36,10 @@ export default async function DfyDetail({ params }: { params: Promise<{ id: stri
   const token = await dfyToken(env, d.id);
   return (
     <>
-      <PageHeader title={`${d.id} · ${d.packageName}`} text={`${d.email} · ${usd(d.monthlyCents)}/month · cycle ${d.cycle}`} actions={<Link className="text-sm font-semibold underline" href="/admin/dfy">Back to orders</Link>} />
+      <PageHeader title={`${d.id} · ${d.packageName}`} text={`${d.email} · ${usd(d.monthlyCents)} one-time`} actions={<Link className="text-sm font-semibold underline" href="/admin/dfy">Back to orders</Link>} />
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel title="Summary"><dl className="grid grid-cols-2 gap-2 p-4 text-sm">
-          <dt>Stage</dt><dd><Badge tone="info">{LABEL[stage]}</Badge></dd><dt>Paid</dt><dd>{dt(d.paidAt)}</dd><dt>Renews</dt><dd>{dt(d.renewsAt)}{d.cancelRequested ? " (cancel requested)" : ""}</dd>
+          <dt>Stage</dt><dd><Badge tone="info">{LABEL[stage]}</Badge></dd><dt>Paid</dt><dd>{dt(d.paidAt)}</dd><dt>Cancellation</dt><dd>{d.cancelRequested ? "Requested by customer" : "—"}</dd>
           <dt>Leads / initial / follow-ups</dt><dd>{d.leads.toLocaleString("en-US")} / {d.initialSends.toLocaleString("en-US")} / {d.followups}</dd>
           <dt>Theoretical ceiling</dt><dd>{d.ceiling.toLocaleString("en-US")} messages (not a promise)</dd><dt>Estimates</dt><dd>{d.domainsEst} domains, {d.inboxesEst} inboxes</dd>
           <dt>Ownership</dt><dd>{d.ownership ? `Yes, ${usd(d.ownershipCents)} one-time` : "No"}</dd><dt>Reporting</dt><dd className="capitalize">{d.reporting}</dd>

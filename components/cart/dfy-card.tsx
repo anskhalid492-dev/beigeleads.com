@@ -24,7 +24,7 @@ export function DfyUpsellCard({ offer, className = "" }: { offer: DfyUpsell; cla
         <div className="min-w-0">
           <h3 id="dfy-upsell" className="text-lg font-bold text-forest-900">{offer.headline}</h3>
           <p className="mt-1 text-sm">{offer.description}</p>
-          <p className="mt-2 text-sm font-semibold text-forest-900">DFY Outbound starts at {usd0(Math.min(...offer.packages.map((p) => p.monthlyCents)))}/month.</p>
+          <p className="mt-2 text-sm font-semibold text-forest-900">DFY Outbound starts at {usd0(Math.min(...offer.packages.map((p) => p.monthlyCents)))}, one-time.</p>
         </div>
       </div>
       <fieldset className="mt-4">
@@ -49,7 +49,7 @@ export function DfyUpsellCard({ offer, className = "" }: { offer: DfyUpsell; cla
         <Button onClick={() => { cartActions.setDfy({ pkg, own: offer.ownershipEnabled && own }); trackCart("add_to_cart", 1); }}>Add DFY to Cart</Button>
         <Link href="/dfy-outbound" className="text-sm font-semibold text-forest-700 underline underline-offset-2">View Full Service</Link>
       </div>
-      <p className="mt-3 text-xs">Optional monthly service, paid manually each month. Not added unless you click Add DFY to Cart.</p>
+      <p className="mt-3 text-xs">Optional one-time service. Not added unless you click Add DFY to Cart.</p>
     </section>
   );
 }
@@ -66,7 +66,7 @@ export function DfyLine({ dfy, offer, onRemove }: { dfy: PricedDfy; offer: DfyUp
             <p className="text-sm">{n(dfy.leads)} leads · {n(dfy.initialSends)} initial sends · {dfy.followups} follow-ups · est. {dfy.domains} domains, {dfy.inboxes} inboxes</p>
           </div>
         </div>
-        <p className="shrink-0 text-right font-bold text-forest-900">{formatUsd(dfy.monthlyCents)}<span className="block text-xs font-normal">per month</span></p>
+        <p className="shrink-0 text-right font-bold text-forest-900">{formatUsd(dfy.monthlyCents)}<span className="block text-xs font-normal">one-time</span></p>
       </div>
       {dfy.ownership && <p className="mt-2 flex justify-between text-sm"><span>Infrastructure ownership (one-time)</span><span className="font-semibold text-forest-900">{formatUsd(dfy.ownershipCents)}</span></p>}
       {!dfy.purchasable && dfy.reason && <p role="status" className="mt-3 rounded-xl bg-sand-100 px-3 py-2 text-sm">{dfy.reason}</p>}
@@ -74,7 +74,7 @@ export function DfyLine({ dfy, offer, onRemove }: { dfy: PricedDfy; offer: DfyUp
         {offer && offer.packages.length > 1 ? (
           <label className="flex items-center gap-2 text-sm"><span className="font-semibold text-forest-900">Package</span>
             <select value={dfy.name} onChange={(e) => cartActions.setDfy({ pkg: e.target.value, own: dfy.ownership })} className="rounded-lg border border-sand-300 bg-white px-2 py-1.5 text-sm">
-              {offer.packages.map((p) => <option key={p.name} value={p.name}>{p.name} · {usd0(p.monthlyCents)}/mo</option>)}
+              {offer.packages.map((p) => <option key={p.name} value={p.name}>{p.name} · {usd0(p.monthlyCents)} one-time</option>)}
             </select></label>
         ) : <span />}
         <div className="flex items-center gap-4">
@@ -82,7 +82,7 @@ export function DfyLine({ dfy, offer, onRemove }: { dfy: PricedDfy; offer: DfyUp
           <button type="button" onClick={onRemove} className="inline-flex items-center gap-1.5 text-sm font-semibold text-forest-700 underline underline-offset-2"><Trash2 className="size-4" aria-hidden /> Remove</button>
         </div>
       </div>
-      <p className="mt-3 text-xs">Monthly service paid in advance in crypto. Your first payment today covers month one{dfy.ownership ? " plus the one-time ownership fee" : ""}; later months are invoiced about a week before they are due. Not included in database discounts.</p>
+      <p className="mt-3 text-xs">One-time payment in crypto{dfy.ownership ? ", including the one-time ownership fee" : ""}. No monthly charges or renewals. Not included in database discounts.</p>
     </li>
   );
 }
