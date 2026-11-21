@@ -3,7 +3,8 @@
 // `catalog_category_moves` (reversible by batch), ambiguous products are only flagged.
 import { and, eq, sql } from "drizzle-orm";
 import { schema } from "@/lib/db";
-import { categoryForSubject, subjectOf } from "@/lib/import/seo-text";
+import { categoryForSubject, slugify, subjectOf } from "@/lib/import/seo-text";
+import { reservedSlugs } from "@/lib/import/reserved";
 import { classifyLocal, LOCAL_NAME, LOCAL_SLUG } from "./local-business";
 
 type Db = ReturnType<typeof import("@/lib/db").getDbFromEnv>;
@@ -47,8 +48,8 @@ export function classifyGeneral(p: { name: string; categoryName: string; channel
   return { dest: null, confidence: "none", reason: "Stays in General Targeted Lists" };
 }
 
-export type GRow = Verdict & { id: number; slug: string; name: string; status: string; countryName: string; currentCategory: string; destName: string; alreadyMoved: boolean };
-export type GScan = { rows: GRow[]; scanned: number; inGeneral: number; high: Record<DestKey, number>; review: number; keep: number; dests: Record<DestKey, Dest>; reused: DestKey[] };
+export type GRow = Verdict & { own: Dest | null; id: number; slug: string; name: string; status: string; countryName: string; currentCategory: string; destName: string; alreadyMoved: boolean };
+export type GScan = { own: number; rows: GRow[]; scanned: number; inGeneral: number; high: Record<DestKey, number>; review: number; keep: number; dests: Record<DestKey, Dest>; reused: DestKey[] };
 
 /** Reuse an existing category (same meaning) instead of creating a duplicate. */
 export async function resolveDests(db: Db): Promise<{ dests: Record<DestKey, Dest>; reused: DestKey[] }> {
@@ -72,17 +73,31 @@ export async function scanGeneral(db: Db): Promise<GScan> {
   const all = await db.select().from(schema.catalogProducts);
   const { dests, reused } = await resolveDests(db);
   const rows: GRow[] = [];
+  // Own categories for products that match no destination: named after the list's audience; an existing category with the same meaning is reused.
+  const key = (x: string) => x.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/(ies)$/, "y").replace(/s$/, "");
+  const cats = new Map<string, Dest>();
+  for (const c of all) if (!GTL_NAME.test(c.categoryName) && !/^(job titles|healthcare professionals|targeted email lists)$/i.test(c.categoryName)) cats.set(key(c.categoryName), { slug: c.categorySlug, name: c.categoryName });
+  const taken = reservedSlugs();
+  const ownFor = (r: (typeof all)[number]): Dest | null => {
+    const subject = subjectOf({ name: r.name, categoryName: r.categoryName, channel: r.channel, countryName: r.countryName, region: r.region ?? "", recordCount: r.recordCount, placeholder: false });
+    if (!subject || /^business$/i.test(subject)) return null;
+    const shared = categoryForSubject(subject); if (shared) return shared;
+    let c = cats.get(key(subject));
+    if (!c) { let slug = slugify(subject); if (!slug) return null; if (taken.has(slug)) slug = `${slug}-lists`; c = { slug, name: subject }; cats.set(key(subject), c); taken.add(slug); }
+    return c;
+  };
   for (const r of all) {
     if (r.status === "archived") continue;
     const eff = effectiveCategory(r);
     if (r.categorySlug === DEFAULT_DESTS.exhibitors.slug) continue;
     if (!GTL_NAME.test(eff) && !EXHIBITOR.test(r.name)) continue;
     const v = classifyGeneral({ name: r.name, categoryName: r.categoryName, channel: r.channel, grp: r.grp, countryName: r.countryName, region: r.region });
-    rows.push({ ...v, id: r.id, slug: r.slug, name: r.name, status: r.status, countryName: r.countryName, currentCategory: eff, destName: v.dest ? dests[v.dest].name : "General Targeted Lists", alreadyMoved: false });
+    const own = v.dest ? null : ownFor(r);
+    rows.push({ ...v, own, id: r.id, slug: r.slug, name: r.name, status: r.status, countryName: r.countryName, currentCategory: eff, destName: v.dest ? dests[v.dest].name : own ? own.name : "General Targeted Lists", alreadyMoved: false });
   }
   const high = { local: 0, healthcare: 0, webmail: 0, crypto: 0, exhibitors: 0 } as Record<DestKey, number>;
   for (const r of rows) if (r.dest && r.confidence === "high") high[r.dest]++;
-  return { rows, scanned: all.length, inGeneral: rows.length, high, review: rows.filter((r) => r.confidence === "review").length, keep: rows.filter((r) => r.confidence === "none").length, dests, reused };
+  return { own: rows.filter((r) => r.own).length, rows, scanned: all.length, inGeneral: rows.length, high, review: rows.filter((r) => r.confidence === "review").length, keep: rows.filter((r) => r.confidence === "none").length, dests, reused };
 }
 
 export async function applyGeneral(db: Db, picks: { slug: string }[], opts: { batch: string; includeReview: boolean }): Promise<{ moved: number; skipped: number }> {
@@ -91,11 +106,12 @@ export async function applyGeneral(db: Db, picks: { slug: string }[], opts: { ba
   const want = new Set(picks.map((p) => p.slug));
   const now = Math.floor(Date.now() / 1000); let moved = 0;
   for (const r of scan.rows) {
-    if (!want.has(r.slug) || !r.dest || (r.confidence !== "high" && !(opts.includeReview && r.confidence === "review"))) continue;
-    const to = scan.dests[r.dest]; const row = (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.id, r.id)))[0];
+    const ok = r.own ? true : !!r.dest && (r.confidence === "high" || (opts.includeReview && r.confidence === "review"));
+    if (!want.has(r.slug) || !ok) continue;
+    const to = r.dest ? scan.dests[r.dest] : r.own!; const row = (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.id, r.id)))[0];
     if (!row) continue;
     await db.batch([
-      db.insert(schema.catalogCategoryMoves).values({ batch: opts.batch, productId: r.id, productSlug: r.slug, fromCategorySlug: row.categorySlug, fromCategoryName: row.categoryName, toCategorySlug: to.slug, reason: `${r.reason} [${r.confidence}]`.slice(0, 200), movedAt: now }),
+      db.insert(schema.catalogCategoryMoves).values({ batch: opts.batch, productId: r.id, productSlug: r.slug, fromCategorySlug: row.categorySlug, fromCategoryName: row.categoryName, toCategorySlug: to.slug, reason: `${r.own ? "Own category by audience" : r.reason} [${r.own ? "own" : r.confidence}]`.slice(0, 200), movedAt: now }),
       db.update(schema.catalogProducts).set({ categorySlug: to.slug, categoryName: to.name, updatedAt: now }).where(and(eq(schema.catalogProducts.id, r.id))),
     ]);
     moved++;

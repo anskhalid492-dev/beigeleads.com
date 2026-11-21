@@ -15,7 +15,7 @@ export function Runner() {
   useEffect(() => { const t = setTimeout(() => { void load(); }, 0); return () => clearTimeout(t); }, []);
 
   const rows = useMemo(() => (d?.scan?.rows ?? []).filter((r) => (view === "high" ? r.confidence === "high" : view === "review" ? r.confidence === "review" : r.confidence === "none") && (dest === "all" || r.dest === dest) && (!q || r.name.toLowerCase().includes(q.toLowerCase()))), [d, view, q, dest]);
-  const movable = (d?.scan?.rows ?? []).filter((r) => r.dest && (r.confidence === "high" || (includeReview && r.confidence === "review")));
+  const movable = (d?.scan?.rows ?? []).filter((r) => r.own || r.dest && (r.confidence === "high" || (includeReview && r.confidence === "review")));
   const chosen = movable.filter((r) => sel.has(r.slug));
   const s = d?.scan;
 
@@ -36,7 +36,7 @@ export function Runner() {
       {msg && <p role="status" className="rounded-xl border border-sand-200 bg-white p-3 text-sm">{msg}</p>}
       {s && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-          {([["All products", s.scanned], ["In General Targeted", s.inGeneral], ["Local", s.high.local], ["Healthcare", s.high.healthcare], ["Webmail", s.high.webmail], ["Crypto", s.high.crypto], ["Exhibitors", s.high.exhibitors], ["Manual review", s.review], ["Stay", s.keep]] as const).map(([k, v]) => (
+          {([["All products", s.scanned], ["In General Targeted", s.inGeneral], ["Local", s.high.local], ["Healthcare", s.high.healthcare], ["Webmail", s.high.webmail], ["Crypto", s.high.crypto], ["Exhibitors", s.high.exhibitors], ["Own category", s.own], ["Manual review", s.review], ["Stay", s.keep]] as const).map(([k, v]) => (
             <div key={k} className="rounded-xl border border-sand-200 bg-white p-3"><div className="text-2xl font-semibold">{v}</div><div className="text-xs text-forest-700">{k}</div></div>
           ))}
         </div>
@@ -51,12 +51,12 @@ export function Runner() {
       <div className="overflow-x-auto rounded-xl border border-sand-200 bg-white">
         <table className="w-full text-left text-sm">
           <thead className="bg-sand-100 text-xs"><tr><th className="w-8 p-2">
-            {view !== "keep" && <input type="checkbox" aria-label="Select all shown" checked={rows.length > 0 && rows.every((r) => sel.has(r.slug))} onChange={(e) => setSel((p) => { const n = new Set(p); rows.forEach((r) => (e.target.checked ? n.add(r.slug) : n.delete(r.slug))); return n; })} />}
+            {<input type="checkbox" aria-label="Select all shown" checked={rows.length > 0 && rows.every((r) => sel.has(r.slug))} onChange={(e) => setSel((p) => { const n = new Set(p); rows.forEach((r) => (e.target.checked ? n.add(r.slug) : n.delete(r.slug))); return n; })} />}
           </th><th className="p-2">ID</th><th className="p-2">Product</th><th className="p-2">Current</th><th className="p-2">Proposed</th><th className="p-2">Reason</th><th className="p-2">Confidence</th></tr></thead>
           <tbody>
             {rows.slice(0, 300).map((r) => (
               <tr key={r.slug} className="border-t border-sand-100">
-                <td className="p-2">{view !== "keep" && (view === "high" || includeReview) && <input type="checkbox" aria-label={`Select ${r.name}`} checked={sel.has(r.slug)} onChange={() => toggle(r.slug)} />}</td>
+                <td className="p-2">{(view === "keep" ? !!r.own : view === "high" || includeReview) && <input type="checkbox" aria-label={`Select ${r.name}`} checked={sel.has(r.slug)} onChange={() => toggle(r.slug)} />}</td>
                 <td className="p-2">{r.id}</td><td className="p-2">{r.name}</td><td className="p-2">{r.currentCategory}</td><td className="p-2">{r.destName}</td><td className="p-2 text-forest-700">{r.reason}</td><td className="p-2">{r.confidence === "none" ? "-" : r.confidence}</td>
               </tr>
             ))}
@@ -69,6 +69,7 @@ export function Runner() {
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={includeReview} onChange={(e) => setIncludeReview(e.target.checked)} /> Allow selecting products from the manual review list</label>
         <div className="flex flex-wrap items-center gap-2">
           <button className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setSel(new Set(movable.filter((r) => r.confidence === "high").map((r) => r.slug)))}>Select all high-confidence moves</button>
+          <button className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setSel((p) => { const n = new Set(p); (d?.scan?.rows ?? []).filter((r) => r.own).forEach((r) => n.add(r.slug)); return n; })}>Select all Stay products (own category)</button>
           {!confirm ? <button disabled={busy || !chosen.length || d?.ready === false} onClick={() => setConfirm(true)} className="rounded-lg bg-forest-900 px-3 py-1.5 text-sm text-sand-50 disabled:opacity-50">Move {chosen.length} selected</button>
             : <><span className="text-sm">Move {chosen.length} product(s) out of General Targeted Lists?</span><button onClick={apply} className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm text-white">Yes, move them</button><button onClick={() => setConfirm(false)} className="rounded-lg border px-3 py-1.5 text-sm">Cancel</button></>}
         </div>

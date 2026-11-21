@@ -30,7 +30,7 @@ describe("reorganize general targeted lists", () => {
     expect(scan.inGeneral).toBe(6);
     expect(scan.keep).toBe(1); expect(scan.review).toBe(1);
     const res = await applyGeneral(db, scan.rows.map((r) => ({ slug: r.slug })), { batch: "g1", includeReview: false });
-    expect(res.moved).toBe(4);
+    expect(res.moved).toBe(5); // 4 destinations + 1 "stay" product into its own category
     const after = await db.select().from(schema.catalogProducts);
     expect(after.length).toBe(before.length);
     const by = (n: string) => after.find((x) => x.name === n)!;
@@ -38,12 +38,12 @@ describe("reorganize general targeted lists", () => {
     expect(by("Bitcoin Investors Email List").categorySlug).toBe("crypto-blockchain");
     expect(by("Plumbers Email List").categorySlug).toBe("local-businesses-database");
     expect(by("Rehab Centers Email List").categorySlug).toBe("healthcare-lists");
-    expect(by("Software Companies Email List").categoryName).toBe("General Targeted Lists");
+    expect(by("Software Companies Email List").categoryName).toBe("Software Companies");
     expect(by("Yahoo Business Owners Email List").categoryName).toBe("General Targeted Lists");
     for (const b of before) { const a = after.find((x) => x.id === b.id)!; expect(a.slug).toBe(b.slug); expect(a.packagesJson).toBe(b.packagesJson); expect(a.name).toBe(b.name); }
     await applySeo(db, after.map((x) => x.id), { slugs: false, names: false, titles: false, categories: true }, false);
     expect((await db.select().from(schema.catalogProducts)).find((x) => x.name === "Gmail Users Email List")!.categorySlug).toBe("webmail-lists");
-    expect(await rollbackLocal(db, "g1")).toBe(4);
-    expect((await scanGeneral(db)).inGeneral).toBeGreaterThanOrEqual(4); // the four are back in General Targeted Lists
+    expect(await rollbackLocal(db, "g1")).toBe(5);
+    expect((await scanGeneral(db)).inGeneral).toBeGreaterThanOrEqual(5); // all are back in General Targeted Lists
   }, 60_000);
 });
