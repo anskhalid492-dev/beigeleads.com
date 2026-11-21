@@ -23,7 +23,6 @@ export const metadata: Metadata = {
 };
 
 const h2 = "display text-4xl text-forest-900 sm:text-6xl";
-const card = "rounded-2xl border border-sand-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md";
 
 const value = [
   { Icon: Wallet, t: "One-time purchase", d: "Pay once per list. No monthly fee, no seats, no credits, nothing to cancel." },
@@ -103,6 +102,8 @@ export default async function Home() {
     return out;
   })();
   const countries = getCountries();
+  // Full grid rows only: a wide first tile needs exactly five tiles, otherwise three equal ones.
+  const tiles = categories.length >= 5 ? categories.slice(0, 5) : categories.slice(0, 3);
   return (
     <>
       <PromoBanner place="home" className="mt-4 mx-4" />
@@ -127,43 +128,49 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 2. Value proposition */}
-      <section aria-labelledby="value" className="mx-auto max-w-6xl px-4 py-24">
-        <h2 id="value" className={`${h2} text-center`}>Business contacts without the subscription.</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-lg">BeigeLeads is a marketplace for ready-made business contact lists. Pick one, check the sample, pay once.</p>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {value.map(({ Icon, t, d }) => (
-            <div key={t} className={card}>
-              <span className="grid size-12 place-items-center rounded-xl bg-forest-900 text-forest-300"><Icon className="size-6" aria-hidden /></span>
-              <h3 className="mt-5 text-xl font-bold text-forest-900">{t}</h3>
-              <p className="mt-2">{d}</p>
-            </div>
-          ))}
+      {/* 2. Value proposition: editorial split, ruled rows instead of cards */}
+      <section aria-labelledby="value" className="mx-auto max-w-6xl px-4 py-20 sm:py-24">
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+          <div>
+            <h2 id="value" className="display text-5xl leading-[0.95] text-forest-900 sm:text-7xl">Business contacts. <span className="text-forest-500">No subscription.</span></h2>
+            <p className="mt-6 max-w-md text-lg">BeigeLeads sells ready-made business contact lists. Pick one, check the masked sample, pay once and keep the file.</p>
+            <Link href="/how-it-works" className="mt-6 inline-flex items-center gap-2 font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">See how it works <ArrowRight className="size-4" aria-hidden /></Link>
+          </div>
+          <ul className="divide-y divide-sand-300 border-y border-sand-300">
+            {value.map(({ Icon, t, d }) => (
+              <li key={t} className="flex gap-5 py-6">
+                <span className="grid size-12 shrink-0 place-items-center rounded-full bg-forest-900 text-forest-300"><Icon className="size-5" aria-hidden /></span>
+                <div><h3 className="text-xl font-bold text-forest-900">{t}</h3><p className="mt-1">{d}</p></div>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* 3. Explore available lists */}
-      <section aria-labelledby="lists" className="border-y border-sand-200 bg-sand-100 py-24">
+      {/* 3. Explore available lists: a directory, one row per list */}
+      <section aria-labelledby="lists" className="border-y border-sand-200 bg-sand-100 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="lists" className={h2}>Explore available lists</h2>
-            <Link href="/lists" className="font-semibold text-forest-700 underline underline-offset-4">All lists</Link>
+            <h2 id="lists" className="display text-4xl text-forest-900 sm:text-6xl">Start with a list that exists.</h2>
+            <Link href="/lists" className="inline-flex items-center gap-2 font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">Browse all lists <ArrowRight className="size-4" aria-hidden /></Link>
           </div>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.map((p) => {
+          <ul className="mt-10 grid overflow-hidden rounded-[1.6rem] border border-sand-300 bg-white lg:grid-cols-2">
+            {featured.map((p, i) => {
               const price = startingPriceCents(p);
               const k = getCountry(p.countrySlug);
               return (
-                <li key={p.slug} className={`${card} flex flex-col`}>
-                  <span className="flex items-center gap-3"><DbBadge category={p.categorySlug} hint={p.name} country={k?.code} region={p.region} size="lg" /><span className="min-w-0"><span className="block text-lg font-bold leading-snug text-forest-900">{p.name}</span><span className="text-sm">{k?.name ?? ""}</span></span></span>
-                  <p className="mt-4 text-sm font-medium text-forest-900">
-                    {!p.placeholderData && p.recordCount ? `${fmtNum(p.recordCount)} records` : "Free sample available"}
-                    {!p.placeholderData && price ? ` · from ${formatUsd(price)}` : null}
-                  </p>
-                  <div className="mt-auto flex flex-wrap gap-2 pt-5">
-                    <Button asChild size="sm"><Link href={`/lists/${p.slug}`}>View list</Link></Button>
-                    <Button asChild size="sm" variant="secondary"><Link href={`/sample?product=${p.slug}`}>Free sample</Link></Button>
+                <li key={p.slug} className={`flex items-center gap-4 border-sand-200 p-5 ${i > 0 ? "border-t" : ""} ${i === 1 ? "lg:border-t-0" : ""} ${i % 2 === 0 ? "lg:border-r" : ""}`}>
+                  <DbBadge category={p.categorySlug} hint={p.name} country={k?.code} region={p.region} size="lg" />
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/lists/${p.slug}`} className="block truncate text-lg font-bold leading-snug text-forest-900 hover:text-purple-700">{p.name}</Link>
+                    <p className="truncate text-sm">
+                      {k?.name ?? ""}
+                      {!p.placeholderData && p.recordCount ? ` · ${fmtNum(p.recordCount)} records` : ""}
+                      {!p.placeholderData && price ? ` · from ${formatUsd(price)}` : ""}
+                    </p>
                   </div>
+                  <Link href={`/sample?product=${p.slug}`} className="hidden shrink-0 text-sm font-semibold text-forest-700 underline underline-offset-4 hover:text-purple-700 sm:block">Free sample</Link>
+                  <Link href={`/lists/${p.slug}`} aria-label={`View ${p.name}`} className="grid size-10 shrink-0 place-items-center rounded-full border border-sand-300 text-forest-900 transition-colors hover:border-purple-600 hover:text-purple-600"><ArrowRight className="size-4" aria-hidden /></Link>
                 </li>
               );
             })}
@@ -171,20 +178,25 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 4. How it works */}
-      <section aria-labelledby="how" className="mx-auto max-w-6xl px-4 py-24">
-        <h2 id="how" className={`${h2} text-center`}>How BeigeLeads works</h2>
-        <ol className="relative mt-14 grid gap-8 md:grid-cols-4">
-          <div aria-hidden className="absolute left-[12%] right-[12%] top-7 hidden h-0.5 bg-sand-300 md:block"><div className="flow-line h-full bg-forest-900" /></div>
-          {steps.map(({ Icon, t, d }, i) => (
-            <li key={t} className="relative text-center">
-              <span className="relative mx-auto grid size-14 place-items-center rounded-full border-2 border-forest-900 bg-white text-forest-900"><Icon className="size-6" aria-hidden /><span className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full bg-forest-900 text-xs font-bold text-sand-50">{i + 1}</span></span>
-              <h3 className="mt-4 text-xl font-bold text-forest-900">{t}</h3>
-              <p className="mx-auto mt-2 max-w-[16rem] text-sm">{d}</p>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-10 text-center text-sm">After payment, delivery is by email link once the transaction confirms. <Link href="/how-it-works" className="font-semibold underline underline-offset-4">Full walkthrough</Link></p>
+      {/* 4. How it works: a real sequence, so numbered; steps step down the page */}
+      <section aria-labelledby="how" className="mx-auto max-w-6xl px-4 py-20 sm:py-24">
+        <div className="grid gap-10 lg:grid-cols-[18rem_1fr]">
+          <div>
+            <h2 id="how" className="display text-4xl text-forest-900 sm:text-6xl">From search to file in four steps.</h2>
+            <p className="mt-4 text-sm">After payment, delivery is by email link once the transaction confirms.</p>
+            <Link href="/how-it-works" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">Full walkthrough <ArrowRight className="size-4" aria-hidden /></Link>
+          </div>
+          <ol className="grid gap-4 sm:grid-cols-2">
+            {steps.map(({ Icon, t, d }, i) => (
+              <li key={t} className={`relative overflow-hidden rounded-[1.4rem] border border-sand-300 bg-white p-6 ${i % 2 ? "sm:mt-10" : ""}`}>
+                <span aria-hidden className="display absolute -right-1 -top-3 text-[6.5rem] leading-none text-sand-200">{i + 1}</span>
+                <span className="relative grid size-11 place-items-center rounded-xl bg-forest-900 text-forest-300"><Icon className="size-5" aria-hidden /></span>
+                <h3 className="relative mt-5 text-xl font-bold text-forest-900">{t}</h3>
+                <p className="relative mt-1 max-w-[16rem]">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* 5. Why BeigeLeads: editorial */}
@@ -219,23 +231,26 @@ export default async function Home() {
       </section>
 
       {/* 7. Browse by industry and location */}
-      <section aria-labelledby="browse" className="border-y border-sand-200 bg-sand-100 py-24">
+      <section aria-labelledby="browse" className="border-y border-sand-200 bg-sand-100 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 id="browse" className={h2}>Browse by industry and location</h2>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 id="browse" className="display text-4xl text-forest-900 sm:text-6xl">Browse by industry and place.</h2>
+            <Link href="/lists" className="inline-flex items-center gap-2 font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">All industries <ArrowRight className="size-4" aria-hidden /></Link>
+          </div>
           <ul className="mt-10 grid gap-4 md:grid-cols-3">
-            {categories.map((c) => (
-              <li key={c.slug}>
-                <Link href={`/lists/${c.slug}`} className="group flex h-full flex-col justify-between rounded-2xl border border-sand-300 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-forest-900 hover:shadow-md">
-                  <span className="flex items-center gap-4"><DbBadge category={c.slug} country="US" size="lg" /><span className="display text-3xl text-forest-900">{c.name}</span></span>
-                  <span className="mt-4 flex items-center justify-between text-sm">{c.blurb}<ArrowRight className="size-4" aria-hidden /></span>
+            {tiles.map((c, i) => (
+              <li key={c.slug} className={i === 0 && tiles.length === 5 ? "md:col-span-2" : ""}>
+                <Link href={`/lists/${c.slug}`} className={`group flex h-full flex-col justify-between rounded-[1.4rem] border p-6 transition-all hover:-translate-y-0.5 hover:shadow-md ${i === 0 ? "border-forest-900 bg-forest-900 text-sand-100" : "border-sand-300 bg-white hover:border-forest-900"}`}>
+                  <span className="flex items-center gap-4"><DbBadge category={c.slug} country="US" size="lg" /><span className={`display ${i === 0 ? "text-4xl text-sand-50 sm:text-5xl" : "text-3xl text-forest-900"}`}>{c.name}</span></span>
+                  <span className="mt-6 flex items-center justify-between gap-4 text-sm">{c.blurb}<ArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden /></span>
                 </Link>
               </li>
             ))}
           </ul>
           <div className="mt-8 flex flex-wrap items-center gap-2" aria-label="Locations">
-            {countries.flatMap((k) => [
+            {countries.slice(0, 6).flatMap((k) => [
               <Link key={k.slug} href="/lists" className="rounded-full bg-forest-900 px-4 py-1.5 text-sm font-medium text-sand-50">{k.name}</Link>,
-              ...getCities(k.slug).map((city) => <Link key={city.slug} href="/lists" className="rounded-full border border-sand-300 bg-white px-4 py-1.5 text-sm font-medium text-forest-900 hover:bg-purple-100">{city.name}</Link>),
+              ...getCities(k.slug).slice(0, 6).map((city) => <Link key={city.slug} href="/lists" className="rounded-full border border-sand-300 bg-white px-4 py-1.5 text-sm font-medium text-forest-900 hover:bg-purple-100">{city.name}</Link>),
             ])}
           </div>
           <p className="mt-6">Another industry or place? <Link href="/custom-list" className="font-semibold underline underline-offset-4">We can source it for you</Link> or <Link href="/request-category" className="font-semibold underline underline-offset-4">request a category</Link>.</p>
@@ -293,17 +308,16 @@ export default async function Home() {
         <p className="mt-6 text-center text-sm">Not sure which one fits? <Link href="/sample" className="font-semibold text-forest-900 underline underline-offset-4">Start with a free masked sample</Link>. No payment details needed.</p>
       </section>
 
-      {/* 9. Who is it for */}
-      <section aria-labelledby="who" className="border-y border-sand-200 bg-sand-100 py-24">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 id="who" className={h2}>Who is BeigeLeads for?</h2>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* 9. Who is it for: ruled list beside the heading */}
+      <section aria-labelledby="who" className="border-y border-sand-200 bg-sand-100 py-20 sm:py-24">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 lg:grid-cols-[18rem_1fr]">
+          <h2 id="who" className="display text-4xl text-forest-900 sm:text-6xl">Built for teams that sell.</h2>
+          <ul className="grid gap-x-10 sm:grid-cols-2">
             {audiences.filter(([slug]) => solutions.some((s) => s.slug === slug)).map(([slug, t, d]) => (
-              <li key={slug}>
-                <Link href={`/solutions/${slug}`} className={`${card} block h-full`}>
-                  <h3 className="text-xl font-bold text-forest-900">{t}</h3>
-                  <p className="mt-2">{d}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-forest-700">Read more <ArrowRight className="size-4" aria-hidden /></span>
+              <li key={slug} className="border-b border-sand-300">
+                <Link href={`/solutions/${slug}`} className="group flex items-start justify-between gap-4 py-5">
+                  <span><span className="block text-xl font-bold text-forest-900 group-hover:text-purple-700">{t}</span><span className="mt-1 block">{d}</span></span>
+                  <ArrowRight className="mt-1.5 size-4 shrink-0 text-forest-500 transition-transform group-hover:translate-x-1" aria-hidden />
                 </Link>
               </li>
             ))}
@@ -312,18 +326,19 @@ export default async function Home() {
       </section>
 
       {/* 10. Trust and transparency */}
-      <section aria-labelledby="trust" className="mx-auto max-w-6xl px-4 py-24">
-        <h2 id="trust" className={h2}>What you should know before you buy</h2>
-        <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {trust.map(({ Icon, t, d, href, cta }) => (
-            <li key={t} className={card}>
-              <Icon className="size-6 text-forest-500" aria-hidden />
-              <h3 className="mt-3 text-lg font-bold text-forest-900">{t}</h3>
-              <p className="mt-2 text-sm">{d}</p>
-              <Link href={href} className="mt-3 inline-block text-sm font-semibold underline underline-offset-4">{cta}</Link>
-            </li>
-          ))}
-        </ul>
+      <section aria-labelledby="trust" className="mx-auto max-w-6xl px-4 py-20 sm:py-24">
+        <div className="grid gap-10 lg:grid-cols-[18rem_1fr]">
+          <h2 id="trust" className="display text-4xl text-forest-900 sm:text-6xl lg:sticky lg:top-28 lg:self-start">Know what you are buying.</h2>
+          <ul className="divide-y divide-sand-300 border-y border-sand-300">
+            {trust.map(({ Icon, t, d, href, cta }) => (
+              <li key={t} className="grid gap-3 py-6 sm:grid-cols-[2.5rem_1fr_auto] sm:items-start sm:gap-5">
+                <Icon className="size-6 text-forest-500" aria-hidden />
+                <div><h3 className="text-lg font-bold text-forest-900">{t}</h3><p className="mt-1">{d}</p></div>
+                <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-forest-900 underline underline-offset-4 hover:text-purple-700">{cta}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* 11. Comparison with subscription tools */}
