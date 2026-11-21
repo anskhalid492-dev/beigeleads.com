@@ -1,0 +1,232 @@
+import Link from "next/link";
+import { ArrowRight, Check, CircleHelp, LifeBuoy, MessageSquare, Search, Send, ShoppingCart, Target, Wallet, type LucideIcon } from "lucide-react";
+import { AI_BENEFITS, AI_BUDGET_PROMPTS, AI_CART_STEPS, AI_LIMITS, AI_PROMPTS, AI_SEARCHES, AI_SEARCH_BY, AI_STEPS, AI_SUPPORT_STEPS } from "@/lib/ai-assistant-content";
+import { HeroChat } from "./hero-chat";
+import { OpenPilo } from "./open-button";
+
+const wrap = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+const h2 = "display text-4xl text-forest-900 sm:text-5xl";
+const head = "mx-auto max-w-3xl text-center";
+const icons: Record<string, LucideIcon> = { message: MessageSquare, search: Search, cart: ShoppingCart, target: Target, life: LifeBuoy };
+const primary = "inline-flex h-12 items-center rounded-full bg-purple-600 px-7 font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
+
+export function AiHero() {
+  return (
+    <section className="relative overflow-hidden bg-forest-900 text-sand-100" style={{ backgroundImage: "radial-gradient(48rem 24rem at 100% 0%, rgba(45,106,79,0.45), transparent 70%)" }}>
+      <div className={`${wrap} grid gap-14 pb-20 pt-16 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-16 lg:pb-28 lg:pt-24`}>
+        <div className="hero-in">
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-forest-300">Meet BeigePilot</p>
+          <h1 className="display mt-4 text-5xl text-sand-50 sm:text-7xl xl:text-[5.25rem]">Meet Your AI Database Shopping Assistant</h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-sand-200">Finding the right business database shouldn&rsquo;t take hours. Tell BeigePilot what you&rsquo;re looking for, and it will help you discover matching databases, explore available packages, shop within your budget, and get support when you need it.</p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <OpenPilo className={primary} fallbackDark>Try BeigePilot Now</OpenPilo>
+            <a href="#how-it-works" className="inline-flex h-12 items-center rounded-full border border-sand-50/30 px-7 font-semibold text-sand-50 transition-colors hover:border-sand-50 hover:bg-sand-50/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">See How It Works</a>
+          </div>
+          <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-[0.95rem] font-semibold text-sand-50">
+            {["Search using everyday language", "Discover real BeigeLeads databases", "Get help while you shop"].map((t) => <li key={t} className="flex items-center gap-2"><Check className="size-5 text-forest-300" aria-hidden />{t}</li>)}
+          </ul>
+        </div>
+        <div className="hero-in" style={{ animationDelay: "150ms" }}><HeroChat /></div>
+      </div>
+    </section>
+  );
+}
+
+export function AiSteps() {
+  return (
+    <section id="how-it-works" className="scroll-mt-24 bg-sand-50 py-20 lg:py-24">
+      <div className={wrap}>
+        <div className={head}>
+          <h2 className={h2}>Finding Your Next Database Is as Easy as Asking</h2>
+          <p className="mt-4 text-lg">Skip endless browsing. Tell BeigePilot what you need, explore relevant options, and continue to checkout.</p>
+        </div>
+        <ol className="relative mt-12 grid gap-5 md:grid-cols-3">
+          {AI_STEPS.map((s, i) => {
+            const Icon = icons[s.icon];
+            return (
+              <li key={s.title} className="relative flex flex-col rounded-3xl border border-sand-300 bg-sand-100 p-7">
+                <div className="flex items-center justify-between">
+                  <span className="grid size-12 place-items-center rounded-xl bg-forest-900 text-forest-300"><Icon className="size-6" aria-hidden /></span>
+                  <span aria-hidden className="display text-5xl text-sand-300">{i + 1}</span>
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-forest-900"><span className="sr-only">Step {i + 1}: </span>{s.title}</h3>
+                <p className="mt-2 leading-relaxed">{s.text}</p>
+                {"example" in s && <p className="mt-4 rounded-xl bg-white px-4 py-2.5 text-sm italic text-forest-900">{s.example}</p>}
+                {i < 2 && <ArrowRight aria-hidden className="absolute -right-4 top-1/2 z-10 hidden size-7 -translate-y-1/2 rounded-full bg-sand-50 p-1 text-forest-500 md:block" />}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+
+const panel = "rounded-3xl border border-sand-300 bg-white p-6 sm:p-8";
+const chip = "rounded-full border border-sand-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900";
+const li = (t: string) => <li key={t} className="flex gap-3"><Check className="mt-1 size-5 shrink-0 text-forest-500" aria-hidden /><span>{t}</span></li>;
+
+export function AiFinder() {
+  return (
+    <section id="finder" className="bg-sand-100 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <div>
+          <h2 className={h2}>Find the Right Database Without Searching Through Hundreds of Products</h2>
+          <p className="mt-4 text-lg leading-relaxed">Simply describe the audience you&rsquo;re targeting. BeigePilot helps locate matching databases from our available catalog.</p>
+          <ul className="mt-6 flex flex-wrap gap-2">{AI_SEARCHES.map(([t]) => <li key={t} className={chip}>{t}</li>)}</ul>
+          <p className="mt-6 font-semibold text-forest-900">Search by</p>
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">{AI_SEARCH_BY.map(li)}</ul>
+          <div className="mt-8"><OpenPilo ask="Help me find a database." className={primary}>Find My Database</OpenPilo></div>
+        </div>
+        <figure className={panel} aria-label="Illustration of how a request is understood">
+          <p className="text-xs font-semibold text-purple-700">Example request</p>
+          <p className="mt-2 rounded-2xl bg-sand-100 px-4 py-3 text-forest-900">&ldquo;I need 100,000 business contacts in France.&rdquo;</p>
+          <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
+            {[["Country", "France"], ["Database type", "Business contacts"], ["Quantity", "100,000"]].map(([k, v]) => <div key={k} className="rounded-xl border border-sand-200 p-3"><dt className="text-xs text-forest-500">{k}</dt><dd className="mt-1 font-semibold text-forest-900">{v}</dd></div>)}
+          </dl>
+          <p className="mt-4 text-sm">BeigePilot then looks for matching lists in the real catalog. The results, packages and prices you see in the chat come from our product data.</p>
+          <figcaption className="mt-3 text-xs">Illustration of how a request is read. No products are shown here.</figcaption>
+        </figure>
+      </div>
+    </section>
+  );
+}
+
+export function AiCart() {
+  return (
+    <section id="cart" className="bg-sand-50 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <figure className={`${panel} order-2 lg:order-1`} aria-label="Illustration of a product card in the chat">
+          <p className="text-xs font-semibold text-purple-700">Example product card</p>
+          <div className="mt-3 rounded-2xl border border-sand-200 p-4">
+            <p className="font-bold text-forest-900">Database name</p>
+            <p className="mt-1 text-sm">Choose a package, then press Add to Cart.</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm">
+              {["Package 1", "Package 2", "Package 3"].map((p, i) => <span key={p} className={`rounded-full border px-3 py-1 font-semibold ${i === 1 ? "border-forest-900 bg-forest-100 text-forest-900" : "border-sand-300 text-forest-700"}`}>{p}</span>)}
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2 text-sm" aria-hidden>
+              <span className="grid h-10 place-items-center rounded-full bg-purple-600 font-semibold text-white">Add to Cart</span>
+              <span className="grid h-10 place-items-center rounded-full border border-forest-900/25 font-semibold text-forest-900">View Details</span>
+            </div>
+          </div>
+          <p className="mt-3 rounded-xl bg-forest-100 px-4 py-2.5 text-sm text-forest-900">Added to your cart. <span className="font-semibold">View Cart</span> or <span className="font-semibold">Continue Shopping</span>.</p>
+          <figcaption className="mt-3 text-xs">Illustration. Real names, packages and prices come from the catalog in the live chat.</figcaption>
+        </figure>
+        <div className="order-1 lg:order-2">
+          <h2 className={h2}>From Conversation to Cart in Just a Few Clicks</h2>
+          <p className="mt-4 text-lg leading-relaxed">Found a database you like? Select your preferred available package and add it directly to your BeigeLeads shopping cart without leaving the conversation.</p>
+          <ol className="mt-6 space-y-3">{AI_CART_STEPS.map((t, i) => <li key={t} className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-forest-900 text-sm font-bold text-sand-50">{i + 1}</span><span className="pt-0.5">{t}</span></li>)}</ol>
+          <p className="mt-5 text-sm">BeigePilot never buys anything for you: you press Add to Cart, and you pay at the normal checkout.</p>
+          <div className="mt-8"><OpenPilo ask="Help me add a database to my cart." className={primary}>Start Shopping with BeigePilot</OpenPilo></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AiBudget() {
+  return (
+    <section id="budget" className="bg-sand-100 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <div>
+          <h2 className={h2}>Find Databases That Fit Your Budget</h2>
+          <p className="mt-4 text-lg leading-relaxed">Tell BeigePilot how much you want to spend, and it will help you explore available databases and packages within your price range.</p>
+          <p className="mt-4">BeigePilot uses current catalog prices. If you ask for several databases, it can suggest combinations and show the Buy More, Save More discount only when checkout really applies it.</p>
+          <div className="mt-8"><OpenPilo ask="I want to shop by budget." className={primary}>Shop by Budget</OpenPilo></div>
+        </div>
+        <div className={panel}>
+          <p className="flex items-center gap-2 font-semibold text-forest-900"><Wallet className="size-5 text-forest-500" aria-hidden />Try asking</p>
+          <ul className="mt-4 space-y-3">{AI_BUDGET_PROMPTS.map((t) => <li key={t} className="rounded-2xl bg-sand-100 px-4 py-3 text-forest-900">&ldquo;{t}&rdquo;</li>)}</ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AiSupport() {
+  return (
+    <section id="support" className="bg-sand-50 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <div className={`${panel} order-2 lg:order-1`}>
+          <p className="flex items-center gap-2 font-semibold text-forest-900"><Send className="size-5 text-forest-500" aria-hidden />How a support request works</p>
+          <ol className="mt-4 space-y-3">{AI_SUPPORT_STEPS.map((t, i) => <li key={t} className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-forest-900 text-sm font-bold text-sand-50">{i + 1}</span><span className="pt-0.5">{t}</span></li>)}</ol>
+        </div>
+        <div className="order-1 lg:order-2">
+          <h2 className={h2}>Need a Real Person? We&rsquo;re Here to Help</h2>
+          <p className="mt-4 text-lg leading-relaxed">Sometimes you need more than an automated answer. If BeigePilot can&rsquo;t resolve your question, you can send a support request directly from the conversation.</p>
+          <p className="mt-4">This is an email handoff to the BeigeLeads support team, not a live chat with an agent. We follow up by email.</p>
+          <div className="mt-8"><OpenPilo action="support" className={primary}>Contact Support Through BeigePilot</OpenPilo></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AiPrompts() {
+  return (
+    <section className="bg-sand-100 py-20 lg:py-24">
+      <div className={wrap}>
+        <div className={head}><h2 className={h2}>Not Sure What to Ask? Start Here.</h2><p className="mt-4 text-lg">Pick a question and BeigePilot opens with it.</p></div>
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {AI_PROMPTS.map(([t, q]) => (
+            <li key={t}>
+              <OpenPilo ask={q} action={t === "Get human help" ? "support" : undefined} className="group block h-full w-full rounded-3xl border border-sand-300 bg-white p-6 text-left transition-colors hover:border-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+                <span className="block text-lg font-bold text-forest-900">{t}</span>
+                <span className="mt-2 block text-forest-700">&ldquo;{q}&rdquo;</span>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-purple-700">Ask BeigePilot <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden /></span>
+              </OpenPilo>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+export function AiBenefits() {
+  return (
+    <section className="bg-sand-50 py-20 lg:py-24">
+      <div className={wrap}>
+        <div className={head}><h2 className={h2}>A Smarter Way to Shop for Business Databases</h2></div>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {AI_BENEFITS.map((b) => {
+            const Icon = icons[b.icon] ?? CircleHelp;
+            return <div key={b.title} className="rounded-3xl border border-sand-300 bg-white p-7"><span className="grid size-12 place-items-center rounded-xl bg-forest-100 text-forest-700"><Icon className="size-6" aria-hidden /></span><h3 className="mt-5 text-xl font-bold text-forest-900">{b.title}</h3><p className="mt-2 leading-relaxed">{b.text}</p></div>;
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AiLimits() {
+  return (
+    <section className="bg-sand-100 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-16`}>
+        <div>
+          <h2 className={h2}>Helpful Answers, Real Product Information</h2>
+          <p className="mt-4 text-lg">BeigePilot is built to stay honest about what it knows. Before you buy, check coverage and quality details on each product page. Prefer to browse yourself? See <Link href="/lists" className="underline">all databases</Link>, our <Link href="/verification" className="underline">verification process</Link> or the <Link href="/help-center" className="underline">Help Center</Link>.</p>
+        </div>
+        <ul className="grid gap-3 rounded-3xl border border-sand-300 bg-white p-6 sm:grid-cols-2 sm:p-8">{AI_LIMITS.map(li)}</ul>
+      </div>
+    </section>
+  );
+}
+
+export function AiFinalCta() {
+  return (
+    <section className="bg-sand-50 pb-20 lg:pb-24">
+      <div className={wrap}>
+        <div className="rounded-[2rem] bg-forest-900 px-6 py-14 text-center sm:px-12 sm:py-16" style={{ backgroundImage: "radial-gradient(36rem 16rem at 50% 0%, rgba(45,106,79,0.5), transparent 70%)" }}>
+          <h2 className="display mx-auto max-w-3xl text-4xl text-sand-50 sm:text-6xl">Your Next Database Is Just a Conversation Away</h2>
+          <p className="mx-auto mt-5 max-w-xl text-lg text-sand-200">Tell BeigePilot what you&rsquo;re looking for and let our AI assistant help you find the right database.</p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <OpenPilo className={primary} fallbackDark>Chat with BeigePilot</OpenPilo>
+            <Link href="/lists" className="inline-flex h-12 items-center rounded-full border border-sand-50/30 px-7 font-semibold text-sand-50 hover:border-sand-50 hover:bg-sand-50/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Browse All Databases</Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

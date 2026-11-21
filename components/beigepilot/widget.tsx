@@ -7,7 +7,8 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pilo, type Mood } from "./pilo";
 import { useGaze } from "./use-gaze";
-import type { Cfg } from "./panel";
+import type { Cfg, Launch } from "./panel";
+import { OPEN_EVENT, type OpenDetail } from "./open";
 
 const Panel = dynamic(() => import("./panel").then((m) => m.BeigePilotPanel), { ssr: false });
 type Pose = "away" | "rest" | "up" | "duck" | "leap" | "return";
@@ -26,6 +27,7 @@ export function BeigePilot() {
   const [pose, setPose] = useState<Pose>("away");
   const [mood, setMood] = useState<Mood>("idle");
   const [hidden, setHidden] = useState(false);
+  const [launch, setLaunch] = useState<Launch | null>(null);
   const hot = useRef(false); // hovering, focused or panel open: the idle scheduler stays quiet
   const rig = useRef<HTMLDivElement>(null);
   const btn = useRef<HTMLButtonElement>(null);
@@ -81,6 +83,21 @@ export function BeigePilot() {
   }, []);
   const leave = useCallback(() => { hot.current = false; setPose("rest"); setMood("idle"); }, []);
 
+  // Landing-page buttons ask the existing assistant to open, optionally with a first question. No second chat exists.
+  useEffect(() => {
+    if (!enabled) return;
+    const on = (e: Event) => {
+      const d = (e as CustomEvent<OpenDetail>).detail;
+      if (!d) return;
+      d.handled = true;
+      setLaunch({ n: Date.now(), ask: d.ask, action: d.action });
+      hot.current = true; setMounted(true); setOpen(true); setMood("excited"); setPose("leap");
+      setTimeout(() => setHidden(true), 560);
+    };
+    window.addEventListener(OPEN_EVENT, on);
+    return () => window.removeEventListener(OPEN_EVENT, on);
+  }, [enabled]);
+
   if (!enabled) return null;
   const name = cfg?.name || "Pilo";
   const onCart = path.startsWith("/cart");
@@ -98,7 +115,7 @@ export function BeigePilot() {
 
   return (
     <>
-      {mounted && cfg && <Panel cfg={cfg} path={path} open={open} onClosed={closed} />}
+      {mounted && cfg && <Panel cfg={cfg} path={path} open={open} launch={launch} onClosed={closed} />}
       {!hidden && (
         <button ref={btn} type="button" data-pose={pose} onClick={openIt} aria-label={`Open ${name}, the BeigeLeads assistant`}
           onPointerEnter={enter} onPointerLeave={leave} onFocus={enter} onBlur={leave}

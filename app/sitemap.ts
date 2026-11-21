@@ -52,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     { url: `${SITE_URL}/partners` },
     { url: `${SITE_URL}/team-purchase-requests` },
+    { url: `${SITE_URL}/ai-assistant` },
     { url: `${SITE_URL}/solutions` },
     ...solutions.map((s) => ({ url: `${SITE_URL}/solutions/${s.slug}` })),
     { url: `${SITE_URL}/compare` },

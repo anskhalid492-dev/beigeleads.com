@@ -50,6 +50,7 @@ const columns: Column[] = [
       ["How It Works", "/how-it-works"],
       ["Request a Sample", "/sample"],
       ["Team Purchase Requests", "/team-purchase-requests"],
+      ["AI Assistant", "/ai-assistant"],
       ["Case Studies", "/case-studies"],
       ["Blog", "/blog"],
       ["Guides", "/guides"],

@@ -22,7 +22,9 @@ const CID = "bp-cid-v1";
 const SEARCH_TOOLS = new Set(["searchProducts", "getProductDetails", "getProductPackages", "getRelatedProducts", "getProductVerificationInfo", "showProductCards"]);
 function chatId(): string { try { let c = sessionStorage.getItem(CID); if (!c) { c = crypto.randomUUID().replace(/-/g, "").slice(0, 24); sessionStorage.setItem(CID, c); } return c; } catch { return `nostorage${Math.random().toString(36).slice(2, 12)}`; } }
 
-export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path: string; open: boolean; onClosed: (clear: boolean) => void }) {
+export type Launch = { n: number; ask?: string; action?: "support" };
+
+export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cfg; path: string; open: boolean; launch?: Launch | null; onClosed: (clear: boolean) => void }) {
   const cart = useCart();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
@@ -147,6 +149,15 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
     if (c.ask) send(c.ask); else input.current?.focus();
   };
   const lastAssistant = msgs.length - 1;
+  // A button elsewhere on the site opened the assistant with a first question or the support form.
+  const doneLaunch = useRef(0);
+  useEffect(() => {
+    if (!launch || doneLaunch.current === launch.n) return;
+    doneLaunch.current = launch.n;
+    const t = setTimeout(() => { if (launch.ask) send(launch.ask); else if (launch.action === "support") pickChip({ action: "support" }); else input.current?.focus(); }, 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [launch]);
 
   return (
     <section ref={panel} tabIndex={-1} role="dialog" aria-label={`${name}, BeigeLeads assistant`} style={open || closing ? undefined : { display: "none" }}
