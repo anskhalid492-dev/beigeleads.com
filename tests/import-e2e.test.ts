@@ -93,6 +93,12 @@ describe("catalog import", () => {
     const zero = await updateProduct(db, pub.id, { ...edit, packages: edit.packages.map((k) => ({ ...k, priceUsdCents: 0 })) });
     expect(zero.ok).toBe(false);
     expect((await updateProduct(db, pub.id, { ...edit, packages: [edit.packages[0], edit.packages[0]] })).ok).toBe(false);
+    // Category editor: a new name creates a category, the choice is remembered, a name used by a site page is refused.
+    expect((await updateProduct(db, pub.id, { ...edit, categoryName: "Zoo Keepers" })).ok).toBe(true);
+    const moved = (await getProductRow(db, pub.id))!;
+    expect(moved.categoryName).toBe("Zoo Keepers"); expect(moved.categorySlug).toBe("zoo-keepers"); expect(JSON.parse(moved.sourceJson).manualCategory).toBe(true);
+    expect((await updateProduct(db, pub.id, { ...edit, categoryName: "Cities" })).ok).toBe(false);
+    expect((await getProductRow(db, pub.id))!.categoryName).toBe("Zoo Keepers");
   });
   it("built-in products become editable rows that replace the code version, and unpublishing hides them", async () => {
     const db = getDbFromEnv(env);

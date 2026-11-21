@@ -6,10 +6,10 @@ import { maskRows, type SampleRowData } from "@/lib/product-samples";
 import { duplicateProductAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
-type Init = { recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
+type Init = { categoryName: string; recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
 
-export function EditForm({ samples, id, origin, status, slug, restricted, flags, initial }: { samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
+export function EditForm({ categories, samples, id, origin, status, slug, restricted, flags, initial }: { categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
   const [f, setF] = useState(initial); const [price, setPrice] = useState(initial.packages.map((k) => (k.priceUsdCents / 100).toString()));
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter(); const [csv, setCsv] = useState(""); const [saved, setSaved] = useState(samples);
   const preview = csv.trim() ? maskRows(tableFromGrid(parseCsv(csv)).rows) : [];
@@ -39,6 +39,11 @@ export function EditForm({ samples, id, origin, status, slug, restricted, flags,
   return (
     <div className="max-w-3xl space-y-5 text-sm">
       {(restricted.length > 0 || flags.length > 0) && <div className="rounded-xl bg-sand-100 p-3 text-xs">{restricted.length > 0 && <p>Restricted: {restricted.join(", ")}</p>}{flags.length > 0 && <p>Flags: {flags.join("; ")}</p>}</div>}
+      <label className="block"><span className="mb-1 block font-semibold">Category</span>
+        <input className={box} list="category-options" value={f.categoryName} maxLength={120} onChange={(e) => set("categoryName", e.target.value)} />
+        <datalist id="category-options">{categories.map((c) => <option key={c} value={c} />)}</datalist>
+        <span className="mt-1 block text-xs">Pick an existing category or type a new name. The page moves to that category (the product URL does not change). Your choice stays even when the automatic grouping would pick another.</span>
+      </label>
       <label className="block"><span className="mb-1 block font-semibold">Name (shown as the page heading)</span><input className={box} value={f.name} maxLength={200} onChange={(e) => set("name", e.target.value)} /></label>
       <label className="block"><span className="mb-1 block font-semibold">Title (short description line)</span><input className={box} value={f.title} maxLength={200} onChange={(e) => set("title", e.target.value)} /></label>
       <label className="block"><span className="mb-1 block font-semibold">Description</span><textarea className={`${box} h-32`} value={f.description} maxLength={2000} onChange={(e) => set("description", e.target.value)} /><span className="text-xs">{f.description.length} / 2000. Say only what is true about this list.</span></label>

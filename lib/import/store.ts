@@ -199,6 +199,7 @@ const isoDate = z.string().refine((v) => v === "" || (/^\d{4}-\d{2}-\d{2}$/.test
 export const productEditSchema = z.object({
   name: z.string().trim().min(1).max(200), title: z.string().trim().max(200), description: z.string().max(2000),
   seoTitle: z.string().trim().max(200), metaDescription: z.string().trim().max(400),
+  categoryName: z.string().trim().min(1).max(120).optional(),
   recordCount: z.number().int().min(0).max(5_000_000_000).nullable(), dataFields: z.array(z.string().trim().min(1).max(60)).max(40),
   fileFormats: z.string().trim().max(80), coverage: z.string().trim().max(160), lastUpdated: isoDate, placeholder: z.boolean(), forSale: z.boolean(),
   packages: z.array(z.object({ name: z.enum(["Starter", "Professional", "Complete"]), records: z.number().int().min(0).max(5_000_000_000), priceUsdCents: z.number().int().min(0).max(100_000_00), highlighted: z.boolean().optional() })).min(1).max(3),
@@ -218,7 +219,21 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
   if (new Set(e.packages.map((k) => k.name)).size !== e.packages.length) return { ok: false, message: "Each package name can be used once." };
   const old = rowPackages(row);
   const packages = e.packages.map((k) => ({ ...k, ...(old.find((o) => o.name === k.name)?.link ? { link: old.find((o) => o.name === k.name)!.link } : {}) }));
+  // Category chosen by hand: reuse an existing category with the same name (so "Dentists" never splits in two), else create one. Kept even when the automatic audience grouping would pick another.
+  let cat: { categorySlug: string; categoryName: string; sourceJson: string } | null = null;
+  const wanted = e.categoryName?.trim();
+  if (wanted && wanted.toLowerCase() !== row.categoryName.toLowerCase()) {
+    const built = getCategories().find((c) => c.name.toLowerCase() === wanted.toLowerCase());
+    const known = (await db.selectDistinct({ s: schema.catalogProducts.categorySlug, n: schema.catalogProducts.categoryName }).from(schema.catalogProducts)).find((c) => c.n.toLowerCase() === wanted.toLowerCase());
+    const found = built ? { slug: built.slug, name: built.name } : known ? { slug: known.s, name: known.n } : null;
+    const slug = found?.slug ?? slugify(wanted);
+    if (!slug) return { ok: false, message: "That category name has no usable letters." };
+    if (!found && reservedSlugs().has(slug)) return { ok: false, message: `"${wanted}" is already used by a page on the site. Pick an existing category from the list or a different name.` };
+    let src: Record<string, unknown> = {}; try { src = JSON.parse(row.sourceJson || "{}") as Record<string, unknown>; } catch { /* keep empty */ }
+    cat = { categorySlug: slug, categoryName: found?.name ?? wanted, sourceJson: j({ ...src, manualCategory: true }) };
+  }
   await db.update(schema.catalogProducts).set({
+    ...(cat ?? {}),
     name: e.name, title: e.title || e.name, description: e.description, seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null,
     recordCount: e.recordCount, dataFieldsJson: j([...new Set(e.dataFields)]), fileFormats: e.fileFormats || null, coverage: e.coverage || null, lastUpdated: e.lastUpdated || null,
     placeholder: e.placeholder ? 1 : 0, forSale: e.forSale ? 1 : 0,

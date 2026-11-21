@@ -19,7 +19,7 @@ export type PubProduct = {
   packages: { name: string; records: number; priceUsdCents: number; highlighted?: boolean }[];
   seoTitle?: string; metaDescription?: string;
   // Section 96 (migration 0036). Missing on payloads read before the migration.
-  dataFields?: string[]; fileFormats?: string; coverage?: string; lastUpdated?: string; placeholder?: boolean; forSale?: boolean; accuracyPct?: number | null;
+  manualCat?: boolean; dataFields?: string[]; fileFormats?: string; coverage?: string; lastUpdated?: string; placeholder?: boolean; forSale?: boolean; accuracyPct?: number | null;
   scope?: "country" | "city" | null; citySlug?: string; samples?: SampleRowData[];
 };
 type Payload = { products: PubProduct[]; hidden: string[]; aliases?: Record<string, string>; defaultSample?: SampleRowData[] };
@@ -30,7 +30,7 @@ export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Re
   // Group lists by audience: every dentist list sits under Dentists whatever the country (owner request, 20 Nov 2026).
   list = list.map((p) => {
     const c = categoryForSubject(subjectOf({ name: p.name, categoryName: p.categoryName, channel: p.channel, countryName: p.countryName, region: p.region, recordCount: p.recordCount, placeholder: false }));
-    return c && !PROTECTED_CATS.has(p.categorySlug) ? { ...p, categorySlug: c.slug, categoryName: c.name } : p; // products moved into Local Businesses keep that category
+    return c && !p.manualCat && !PROTECTED_CATS.has(p.categorySlug) ? { ...p, categorySlug: c.slug, categoryName: c.name } : p; // products moved into Local Businesses keep that category
   });
   const products = list.map((p): Product => {
     if (!cats.has(p.categorySlug)) cats.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, description: `${p.categoryName} contact lists.`, buyers: [], singular: p.categoryName, reachLabel: p.categoryName.toLowerCase(), useCases: [], imported: true });
@@ -59,7 +59,7 @@ async function read(env: CloudflareEnv): Promise<Payload | null> {
     const pub = rows.map((r): PubProduct => {
       const parse = <T,>(v: string | null, d: T): T => { try { return v ? (JSON.parse(v) as T) : d; } catch { return d; } };
       return {
-        ...clean(r), dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
+        ...clean(r), manualCat: !!parse<{ manualCategory?: boolean }>(r.sourceJson, {}).manualCategory, dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
         accuracyPct: r.accuracyPct, scope: r.scope === "city" || r.scope === "country" ? r.scope : null, citySlug: r.scope === "city" ? r.city ?? "" : "", samples: cleanStored(parse<unknown>(r.sampleJson, [])),
       };
     });
