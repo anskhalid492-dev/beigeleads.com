@@ -15,3 +15,13 @@ export function TaxIconSvg({ name, ...p }: { name: TaxIcon } & LucideProps) {
   const I = MAP[name];
   return <I aria-hidden {...p} />;
 }
+
+/** Simple outline "in" mark (rounded square, dot, stem, curve) drawn here; identifies the LinkedIn channel only. */
+export function LinkedInMark({ className, strokeWidth = 1.6 }: LucideProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M8 10.5V16M8 7.8v.01M12 16v-3.2a2.3 2.3 0 0 1 4.6 0V16M12 10.5V16" />
+    </svg>
+  );
+}

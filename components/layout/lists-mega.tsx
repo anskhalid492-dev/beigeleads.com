@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Briefcase, Building2, ChevronDown, ChevronLeft, Crown, Mail, MapPin, Network, Phone, Stethoscope, Store, Users, type LucideIcon } from "lucide-react";
-import { WhatsApp } from "@/components/lists/tax-icon";
+import { ArrowRight, Briefcase, Building2, ChevronDown, ChevronLeft, Crown, Home, Mail, MapPin, Network, Phone, Stethoscope, Store, Users, type LucideIcon } from "lucide-react";
+import { LinkedInMark, WhatsApp } from "@/components/lists/tax-icon";
 import { childHref, industryChildren, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 
 type Named = { slug: string; name: string };
@@ -26,11 +26,13 @@ const COLUMNS: Item[][] = [
     { key: "titles", title: "Job Title Lists", desc: "Decision-makers by role", icon: Briefcase, href: "/lists/job-title-lists", group: "job-title-lists" },
     { key: "whatsapp", title: "WhatsApp Numbers List", desc: "WhatsApp business contacts", icon: WhatsApp as unknown as LucideIcon, href: "/lists/whatsapp-number-lists", group: "whatsapp-number-lists" },
     { key: "levels", title: "Management Levels", desc: "Executives to managers", icon: Crown, href: "/lists/management-levels", group: "management-levels" },
+    { key: "realestate", title: "Real Estate Lists", desc: "Agencies, agents and brokers", icon: Home, href: "/lists/industry-databases/real-estate", group: "" },
   ],
   [
     { key: "places", title: "State & Cities", desc: "Location-specific lists", icon: MapPin, href: "/lists/geographic-databases/browse-by-state-region", group: "geographic-databases", kids: ["browse-by-state-region", "browse-by-city"] },
     { key: "functions", title: "Job Functions", desc: "Teams by department", icon: Network, href: "/lists/job-function-lists", group: "job-function-lists" },
     { key: "health", title: "Healthcare Lists", desc: "Doctors, dentists and clinics", icon: Stethoscope, href: "/lists/healthcare-lists", group: "healthcare-lists" },
+    { key: "linkedin", title: "LinkedIn Lists Databases", desc: "Professionals from LinkedIn", icon: LinkedInMark as unknown as LucideIcon, href: "/lists/linkedin-lists-databases", group: "" },
   ],
 ];
 
