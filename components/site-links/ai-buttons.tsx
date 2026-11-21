@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { aiAction, aiMessage, type AiPlatform } from "@/lib/site-links/types";
-import { AI_TILE, Glyph } from "./icons";
+import { Glyph } from "./icons";
 
 /** Five (or fewer) AI shortcuts. Prefills only with a verified template; otherwise copies the prompt and opens the platform. Never auto-submits. */
 export function AiButtons({ platforms, prompt, preview = false }: { platforms: AiPlatform[]; prompt: string; preview?: boolean }) {
@@ -26,9 +26,8 @@ export function AiButtons({ platforms, prompt, preview = false }: { platforms: A
         {platforms.map((p) => (
           <li key={p.id}>
             <button type="button" onClick={() => go(p)} aria-label={`Ask ${p.name} about BeigeLeads (opens in a new tab)`} title={`Ask ${p.name}`}
-              className="grid h-11 w-11 place-items-center rounded-xl text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-              style={{ background: AI_TILE[p.icon] ?? AI_TILE.custom }}>
-              <Glyph name={p.icon} />
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-sand-50/10 px-4 text-sm font-semibold text-sand-50 ring-1 ring-sand-50/15 transition hover:bg-sand-50 hover:text-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 motion-reduce:transition-none">
+              <Glyph name={p.icon} className="h-4 w-4" />{p.name}
             </button>
           </li>
         ))}

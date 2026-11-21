@@ -76,8 +76,8 @@ export function AiEditor({ initial }: { initial: AiConfig }) {
       </Panel>
 
       <Panel title="Footer preview">
-        <p className="mb-3 text-sm font-semibold text-forest-900">{cfg.heading}</p>
-        <AiButtons platforms={cfg.platforms.filter((p) => p.enabled && p.name)} prompt={cfg.prompt} preview />
+        <div className="rounded-2xl bg-forest-900 p-5"><p className="mb-3 text-base font-semibold text-sand-50">{cfg.heading}</p>
+        <div className="text-sand-300"><AiButtons platforms={cfg.platforms.filter((p) => p.enabled && p.name)} prompt={cfg.prompt} preview /></div></div>
         <p className="mt-2 text-xs text-forest-700">Preview only: clicks here do not open anything. Use Test link above.</p>
       </Panel>
 
