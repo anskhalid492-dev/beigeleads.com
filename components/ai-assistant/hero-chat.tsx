@@ -8,7 +8,6 @@ export function HeroChat() {
         <div className="flex items-center gap-3 border-b border-sand-200 pb-3">
           <Pilo crop="avatar" mood="wave" size={46} />
           <div><p className="display text-xl leading-none text-forest-900">Pilo</p><p className="mt-1 text-xs">BeigePilot assistant</p></div>
-          <span className="ml-auto rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-700">Illustration</span>
         </div>
         <div className="space-y-3 py-4 text-sm">
           <p className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-forest-900 px-4 py-2.5 text-sand-50">I need business email databases in Germany under $200.</p>
@@ -17,7 +16,6 @@ export function HeroChat() {
         </div>
         <div className="rounded-full border border-sand-300 bg-white px-4 py-2.5 text-sm text-forest-500">Ask BeigePilot anything…</div>
       </div>
-      <figcaption className="mt-3 text-center text-xs text-sand-300">Example conversation. Not a live chat.</figcaption>
     </figure>
   );
 }
