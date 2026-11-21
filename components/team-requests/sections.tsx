@@ -107,7 +107,7 @@ export function TprRoles() {
 
 /** Static illustration of the manager's review page. Nothing here is interactive: the controls are plain, non-clickable shapes. */
 export function TprPreview() {
-  const rows: [string, string][] = [["Example database A · Starter", "$99.00"], ["Example database B · Professional", "$199.00"], ["Example database C · Starter", "$99.00"]];
+  const rows: [string, string][] = [["Crypto database A · Starter", "$99.00"], ["UK database B · Professional", "$199.00"], ["Germany database C · Starter", "$99.00"]];
   const line = "flex justify-between gap-3 py-2.5";
   return (
     <section className="bg-sand-50 py-20 lg:py-24">
@@ -120,11 +120,10 @@ export function TprPreview() {
           <div className="rounded-[2rem] border border-sand-300 bg-sand-100 p-3 sm:p-4">
             <div className="flex items-center justify-between px-3 pb-3 pt-1 text-xs font-semibold text-forest-500">
               <span>Manager review page</span>
-              <span className="rounded-full bg-purple-100 px-3 py-1 text-purple-700">Illustrative example</span>
             </div>
             <div className="rounded-2xl border border-sand-200 bg-white p-6 sm:p-8">
               <p className="text-sm text-forest-500">Requested by</p>
-              <p className="text-lg"><strong className="text-forest-900">Alex Morgan</strong> <span className="text-sm">alex@example-company.test</span></p>
+              <p className="text-lg"><strong className="text-forest-900">Alex Morgan</strong> <span className="text-sm">alex@company.com</span></p>
               <p className="mt-2 text-sm">Alex asks you to approve and pay for these databases.</p>
               <p className="mt-5 text-sm font-semibold text-forest-900">3 databases</p>
               <ul className="divide-y divide-sand-200 text-sm">
