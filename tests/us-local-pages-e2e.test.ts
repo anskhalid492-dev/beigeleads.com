@@ -24,7 +24,7 @@ describe("US local landing pages", () => {
   it("creates drafts once, in the category, with 3 packages and no count", async () => {
     const db = getDbFromEnv(env);
     const a = await createUsLocalPages(db);
-    expect(a.created).toBeGreaterThan(40); expect(a.failed).toBe(0);
+    expect(a.created).toBeGreaterThan(99); expect(a.failed).toBe(0);
     const b = await createUsLocalPages(db);
     expect(b.created).toBe(0); expect(b.existing).toBe(a.created);
     const rows = await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.categorySlug, LOCAL_SLUG));
