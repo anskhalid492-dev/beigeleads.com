@@ -25,7 +25,7 @@ export const DEFAULT_DESTS: Record<DestKey, Dest> = {
 export const PROTECTED_CATS = new Set([LOCAL_SLUG, "healthcare-lists", "webmail-lists", "crypto-blockchain", "exhibitors-email-lists"]);
 export const GTL_NAME = /^general targeted lists$/i;
 
-const WEBMAIL = /\b(gmail|g-?mail|yahoo|hotmail|outlook|aol|webmail|icloud|protonmail|gmx|msn|live\.com|mail\.ru|yandex mail)\b/i;
+const WEBMAIL = /\b(gmail|g-?mail|yahoo|hotmail|outlook|aol|webmail|icloud|protonmail|gmx|msn|live\.com|mail\.ru|yandex mail|comcast|xfinity|verizon|sbcglobal|bellsouth|earthlink|optonline|rocketmail|ymail)\b/i;
 export const EXHIBITOR = /\bexhibitors?\b/i;
 const CRYPTO = /\b(crypto\w*|bitcoin|btc|ethereum|altcoins?|blockchain|web3|defi|nfts?|dogecoin|binance|coinbase|metaverse)\b/i;
 const HEALTH_HIGH = /\b(dentists?|dental|orthodontists?|physicians?|doctors?|surgeons?|nurses?|nursing|medical|clinics?|hospitals?|pharmac\w+|therapists?|physiotherap\w+|chiropract\w+|veterinar\w+|vets?|optometr\w+|opticians?|psycholog\w+|psychiatr\w+|dermatolog\w+|cardiolog\w+|pediatric\w*|oncolog\w+|radiolog\w+|orthop\w+|neurolog\w+|midwi\w+|acupunct\w+|rehab\w*|healthcare|health care)\b/i;

@@ -17,3 +17,11 @@ describe("exhibitors", () => {
     expect(v.dest).toBe("exhibitors"); expect(v.confidence).toBe("high");
   });
 });
+
+describe("webmail ISPs and small local professions", () => {
+  const base = { categoryName: "General Targeted Lists", channel: "email", countryName: "United States" };
+  it("comcast users go to webmail", () => { const v = classifyGeneral({ ...base, name: "Comcast Users Email List" }); expect(v.dest).toBe("webmail"); expect(v.confidence).toBe("high"); });
+  it.each(["USA Arborists Email List", "USA Architect Email List", "USA Astrologers Mailing List", "USA Art Dealers & Galleries Mailing List", "USA Auctions Mailing List"])("%s goes to local businesses", (name) => {
+    const v = classifyGeneral({ ...base, name }); expect(v.dest).toBe("local"); expect(v.confidence).toBe("high");
+  });
+});

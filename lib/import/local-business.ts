@@ -25,6 +25,7 @@ const LOCAL: [RegExp, string][] = [
   [/\b(real estate (?:agents?|agencies|agency|brokers?|brokerages?|offices?|companies)|realtors?|property managers?|property management|estate agents?|letting agents?)\b/i, "Real estate agencies and property managers"],
   [/\b(accountants?|accounting|cpas?|bookkeep\w+|tax (?:preparers?|services?)|lawyers?|attorneys?|law firms?|solicitors?|notar\w+|insurance (?:agents?|agencies|agency|brokers?|offices?)|financial advisors?|mortgage brokers?)\b/i, "Local accounting, legal and insurance offices"],
   [/\b(child ?care|daycares?|preschools?|driving schools?|tutor\w*|music (?:schools?|lessons)|funeral homes?|laundr\w+|dry cleaners?|photograph\w+|printing shops?|print shops?|travel agen\w+|storage)\b/i, "Other local service businesses"],
+  [/\b(arborists?|architects?|architectural|astrolog\w+|psychics?|tarot|art dealers?|art galler\w+|galler(?:y|ies)|auctions?|auctioneers?|auction houses?|interior designers?|tailors?|framing|antique (?:dealers?|shops?|stores?))\b/i, "Local professional and creative services"],
 ];
 
 // The audience is a person or role, or is broad: never a local-establishment list on its own.
