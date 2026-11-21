@@ -43,6 +43,13 @@ export const VARIABLES: VarDef[] = [
   { key: "decline_reason", label: "Decline reason", description: "Reason the manager gave, when one was given.", example: "Budget is closed this month." },
   { key: "expiration_date", label: "Expiration date", description: "When the personal offer ends.", example: "5 December 2026" },
   { key: "discount_terms", label: "Offer terms", description: "The real rules of the offer (cap, expiry, one use), generated from the current settings.", example: "Valid on one order of eligible lists. Maximum saving $100." },
+  { key: "submit_url", label: "Submission link", description: "Secure link where the customer pastes or uploads their email list.", example: "https://beigeleads.com/email-verification/submit/EXAMPLE" },
+  { key: "status_url", label: "Order status link", description: "Secure link to the verification order status page.", example: "https://beigeleads.com/email-verification/order/EXAMPLE" },
+  { key: "results_url", label: "Results link", description: "Secure link to download the completed verification files. Only set once result files are uploaded.", example: "https://beigeleads.com/email-verification/order/EXAMPLE" },
+  { key: "submitted_count", label: "Submitted emails", description: "Number of email entries accepted from the customer's file.", example: "12,480" },
+  { key: "max_emails", label: "Package limit", description: "The maximum number of emails the purchased package covers.", example: "50,000" },
+  { key: "action_reason", label: "Reason", description: "What the BeigeLeads team needs from the customer, written by an admin.", example: "The file has two email columns. Please tell us which one to verify." },
+  { key: "customer_email", label: "Customer email", description: "The buyer's email address (admin emails only).", example: "buyer@example.com" },
   { key: "timestamp", label: "Time", description: "When the event happened (UTC).", example: "2026-11-19 10:30 UTC" },
   { key: "details", label: "Details", description: "Short factual details for admin alerts. Never secrets.", example: "Example details" },
   // Added by the system on every send.

@@ -5,6 +5,7 @@ import { notifyOwner, sendEmail } from "@/lib/forms/email";
 import { systemMail } from "@/lib/system-emails/mail";
 import { sendOnce } from "@/lib/system-emails/triggers";
 import { findDeliveryLink } from "./links";
+import { EV_SLUG } from "@/lib/ev/settings";
 
 const MAX_ATTEMPTS = 5;
 const SITE = "https://beigeleads.com";
@@ -49,7 +50,7 @@ export function deliveryEmailMultiText(i: { orderId: string; items: { productNam
   ].join("\n");
 }
 
-export type DeliverResult = "sent" | "already-sent" | "no-link" | "not-paid" | "failed" | "busy";
+export type DeliverResult = "sent" | "already-sent" | "no-link" | "not-paid" | "failed" | "busy" | "no-lists";
 
 /**
  * Emails the owner-configured external link for a PAID order. Idempotent: the unique order_id row is claimed before
@@ -60,9 +61,14 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   const db = getDbFromEnv(env);
   const [order] = await db.select().from(schema.orders).where(eq(schema.orders.id, orderId));
   if (!order || order.status !== "paid") return "not-paid";
-  const items = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).orderBy(schema.orderItems.id);
+  const all = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).orderBy(schema.orderItems.id);
+  // Email Verification is a service: it has no download link. Its own flow (submission link) starts here, and never delays the lists.
+  if (all.some((x) => x.productSlug === EV_SLUG)) {
+    try { const { fulfillOnPaid } = await import("@/lib/ev/store"); await fulfillOnPaid(env, orderId); } catch { /* the cron retries */ }
+  }
+  const items = all.filter((x) => x.productSlug !== EV_SLUG);
   const item = items[0];
-  if (!item) return "not-paid";
+  if (!item) return all.length > 0 ? "no-lists" : "not-paid";
   const multi = items.length > 1;
 
   const [existing] = await db.select().from(schema.deliveries).where(eq(schema.deliveries.orderId, orderId));
@@ -149,6 +155,7 @@ export async function deliverPendingOrders(env: CloudflareEnv): Promise<number> 
   const rows = await db.all<{ id: string }>(sql`
     SELECT o.id FROM orders o
     WHERE o.status = 'paid'
+      AND EXISTS (SELECT 1 FROM order_items i WHERE i.order_id = o.id AND i.product_slug <> ${EV_SLUG})
       AND NOT EXISTS (SELECT 1 FROM deliveries d WHERE d.order_id = o.id AND (d.status = 'sent' OR d.status = 'sending' OR (d.status = 'failed' AND d.attempts >= ${MAX_ATTEMPTS})))
     ORDER BY o.paid_at LIMIT 20`);
   let sent = 0;

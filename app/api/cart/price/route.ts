@@ -11,10 +11,13 @@ import { DISCOUNT_REFUSED, resolveDiscount } from "@/lib/partners/discount";
 import { isPartnerCode } from "@/lib/partners/types";
 import { loadCandidates } from "@/lib/promos/store";
 import { loadSalesSettings } from "@/lib/sales/settings";
+import { loadEvSettings } from "@/lib/ev/settings";
 
 const body = z.object({
   items: cartItemsSchema,
   bundles: bundleSlugsSchema.optional(),
+  // Email Verification package NAME only; the server looks up its price and limit.
+  verification: z.string().trim().max(40).optional(),
   // Optional partner code + the email it must belong to. Validated here; the browser never sets a price.
   code: z.string().trim().max(40).optional(),
   email: z.string().trim().toLowerCase().max(254).optional(),
@@ -49,7 +52,9 @@ export async function POST(req: Request) {
   const sales = await loadSalesSettings(env);
   const bundleSlugs = normalizeBundleSlugs(p.data.bundles ?? []);
   const bundleDefs = bundleSlugs.length ? await loadPublished(env) : [];
+  const ev = await loadEvSettings(env);
   const pricing = priceCart(items, {
+    verification: { pkg: p.data.verification || null, enabled: ev.enabled, packages: ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents })) },
     bundles: { slugs: bundleSlugs, defs: bundleDefs }, checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume,
     promo: { candidates, enteredCode, nowSec: Math.floor(Date.now() / 1000), emailKnown: !!p.data.email },
   }, () => false);
@@ -58,5 +63,8 @@ export async function POST(req: Request) {
   const kept = new Set(pricing.lines.map((l) => l.slug));
   const inBundles = pricing.bundles.flatMap((b) => b.components.map((c) => ({ slug: c.slug, pkg: c.packageName })));
   const basis = [...items.filter((i) => kept.has(i.slug)), ...inBundles];
-  return json(200, { ok: true, pricing, discountError, suggestions: suggestFor(basis, basis.length === 0 ? 4 : 3) });
+  // The optional upsell: shown by the cart only for carts with databases and no verification yet.
+  const upsell = ev.enabled && ev.upsellEnabled ? { headline: ev.upsellHeadline, description: ev.upsellDescription, placement: ev.upsellPlacement, packages: ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents, featured: x.featured })) } : null;
+  const evPackages = ev.enabled ? ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents, featured: x.featured })) : [];
+  return json(200, { ok: true, pricing, discountError, upsell, evPackages, suggestions: suggestFor(basis, basis.length === 0 ? 4 : 3) });
 }

@@ -5,22 +5,24 @@ import { useEffect, useRef, useState } from "react";
 import { EmptyCart } from "@/components/cart/empty-cart";
 import { Flag, IndustryIcon } from "@/components/shared/db-icon";
 import { Button } from "@/components/ui/button";
-import { cartActions, useCart, useCartBundles, useMounted } from "@/lib/cart/client";
+import { cartActions, useCart, useCartBundles, useCartVerification, useMounted } from "@/lib/cart/client";
 import { CartBundleCard } from "@/components/bundles/cart-bundle";
-import type { CartPricing, PricedLine, Suggestion } from "@/lib/cart/model";
+import type { CartPricing, PricedLine, Suggestion, VerificationUpsell } from "@/lib/cart/model";
+import { VerificationLine, VerificationUpsellCard } from "@/components/cart/verification-card";
 import { readPartner, writePartner } from "@/lib/cart/partner";
 import { trackCart, trackCartViewOnce } from "@/lib/cart/track";
 import { formatUsd } from "@/lib/catalog";
 import { TeamRequest } from "@/components/cart/team-request";
 import { VolumeLadder } from "@/components/cart/volume-ladder";
 
-type Loaded = { pricing: CartPricing; suggestions: Suggestion[] };
+type Loaded = { pricing: CartPricing; suggestions: Suggestion[]; upsell: VerificationUpsell | null; evPackages: VerificationUpsell["packages"] };
 
 export function CartView() {
   const cart = useCart();
   const bundleCart = useCartBundles();
   const mounted = useMounted();
-  const empty = cart.length === 0 && bundleCart.length === 0;
+  const verif = useCartVerification();
+  const empty = cart.length === 0 && bundleCart.length === 0 && !verif;
   const [notice, setNotice] = useState("");
   const [open, setOpen] = useState(false); // mobile summary
   const [attempt, setAttempt] = useState(0); // bumped by "Try again"
@@ -28,7 +30,7 @@ export function CartView() {
   const [applied, setApplied] = useState<{ code: string; email: string } | null>(null);
   const [codeMsg, setCodeMsg] = useState<{ ok: boolean; text: string } | null>(null);
   // The result is tied to the cart it was fetched for, so "loading" is derived (no state is set synchronously in an effect).
-  const key = `${JSON.stringify(cart)}#${JSON.stringify(bundleCart)}#${attempt}#${JSON.stringify(applied)}`;
+  const key = `${JSON.stringify(cart)}#${JSON.stringify(bundleCart)}#${verif ?? ""}#${attempt}#${JSON.stringify(applied)}`;
 
   useEffect(() => {
     const saved = readPartner();
@@ -41,17 +43,18 @@ export function CartView() {
   useEffect(() => {
     if (!mounted || empty) return;
     const ac = new AbortController();
-    fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: cart, bundles: bundleCart, ...(applied ? { code: applied.code, email: applied.email } : {}) }), signal: ac.signal })
+    fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: cart, bundles: bundleCart, ...(verif ? { verification: verif } : {}), ...(applied ? { code: applied.code, email: applied.email } : {}) }), signal: ac.signal })
       .then((r) => (r.ok ? (r.json() as Promise<{ ok: boolean; discountError?: string } & Loaded>) : Promise.reject(new Error(r.status === 429 ? "limit" : String(r.status)))))
       .then((j) => {
         if (!j.ok) throw new Error("bad");
-        const loaded = { pricing: j.pricing, suggestions: j.suggestions };
+        const loaded = { pricing: j.pricing, suggestions: j.suggestions, upsell: j.upsell ?? null, evPackages: j.evPackages ?? [] };
         setResult({ key, data: loaded, error: false });
         setLast(loaded);
         if (applied) {
           if (j.discountError) { setCodeMsg({ ok: false, text: j.discountError }); setApplied(null); writePartner(null); }
           else { setCodeMsg({ ok: true, text: appliedMessage(j.pricing) }); writePartner(applied); }
         }
+        if (verif && !j.pricing.service) { cartActions.setVerification(null); setNotice("The email verification package in your cart is no longer available and was removed."); }
         const gone = j.pricing.dropped.length + j.pricing.droppedBundles.length;
         if (gone > 0) {
           // Something in this browser's cart no longer exists in the catalog (or a bundle was unpublished): remove it and say so.
@@ -68,7 +71,7 @@ export function CartView() {
     return () => ac.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, key]);
-  const count = cart.length + bundleCart.length;
+  const count = cart.length + bundleCart.length + (verif ? 1 : 0);
   useEffect(() => { if (mounted) trackCartViewOnce(count); }, [mounted]); // eslint-disable-line react-hooks/exhaustive-deps -- once per session
 
   const current = result?.key === key ? result : null;
@@ -89,23 +92,29 @@ export function CartView() {
   }
   const pricing = data?.pricing;
   if (!pricing) return <Skeleton />;
-  if (pricing.lines.length === 0 && pricing.bundles.length === 0) return <EmptyCart notice={notice} />;
+  if (pricing.lines.length === 0 && pricing.bundles.length === 0 && !pricing.service) return <EmptyCart notice={notice} />;
 
+  const dbCount = pricing.lines.length + pricing.bundles.length;
+  // The offer: only with at least one database in the cart and no verification yet (never on an empty or verification-only cart).
+  const upsell = data?.upsell && dbCount > 0 && !pricing.service ? data.upsell : null;
   return (
     <div className="cart-in pb-28 lg:pb-0">
       {notice && <p role="status" className="mb-6 rounded-2xl bg-forest-100 px-5 py-3 text-sm font-medium text-forest-900">{notice}</p>}
       {state === "error" && <p role="alert" className="mb-6 rounded-2xl border border-sand-300 bg-white px-5 py-3 text-sm">We could not refresh your prices just now. What you see may be out of date. <button className="font-semibold underline" onClick={() => setAttempt(attempt + 1)}>Try again</button></p>}
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
         <section aria-labelledby="sel" className={`transition-opacity duration-200 ${state === "loading" ? "opacity-60" : ""}`} aria-busy={state === "loading"}>
-          <h2 id="sel" className="text-xl font-bold text-forest-900">Your Selected Databases <span className="font-normal text-forest-500">({pricing.lines.length + pricing.bundles.length})</span></h2>
+          <h2 id="sel" className="text-xl font-bold text-forest-900">{dbCount > 0 ? "Your Selected Databases" : "Your Order"} {dbCount > 0 && <span className="font-normal text-forest-500">({dbCount})</span>}</h2>
           <ul className="mt-4">
             {pricing.bundles.map((b, i) => <li key={`bundle-${b.slug}`} className="cart-in pb-4" style={{ "--i": i } as React.CSSProperties}><CartBundleCard b={b} onRemove={() => { cartActions.removeBundle(b.slug); trackCart("remove_from_cart", count - 1); }} /></li>)}
             {pricing.lines.map((l, i) => <Line key={l.slug} l={l} i={i} onRemove={() => { cartActions.remove(l.slug); trackCart("remove_from_cart", cart.length - 1); }} />)}
+            {pricing.service && <VerificationLine service={pricing.service} packages={data?.evPackages ?? []} onRemove={() => { cartActions.setVerification(null); trackCart("remove_from_cart", count - 1); }} />}
           </ul>
+          {upsell && upsell.placement === "after_items" && <VerificationUpsellCard upsell={upsell} className="mt-2" />}
           {data && data.suggestions.length > 0 && <Reach items={data.suggestions} count={count} />}
         </section>
 
         <aside className="lg:sticky lg:top-28" aria-label="Order summary">
+          {upsell && upsell.placement === "in_summary" && <VerificationUpsellCard upsell={upsell} className="mb-4" />}
           <Summary
             pricing={pricing} open={open} setOpen={setOpen} applied={applied} codeMsg={codeMsg} busy={state === "loading"}
             onApply={(code, email) => { setCodeMsg(null); setApplied({ code, email }); }}
@@ -156,7 +165,7 @@ function CheckoutCta({ pricing, count, compact = false }: { pricing: CartPricing
   if (!pricing.canCheckout) return <Button size={compact ? "md" : "lg"} className={compact ? "" : "w-full"} disabled>{pricing.checkoutOpen ? "Review your cart" : "Checkout opens soon"}</Button>;
   return (
     <Button asChild size={compact ? "md" : "lg"} className={`group ${compact ? "" : "w-full"}`}>
-      <Link href="/checkout/cart" onClick={() => trackCart("begin_checkout", count)}><Lock className="size-4" aria-hidden /> Secure My Databases <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden /></Link>
+      <Link href="/checkout/cart" onClick={() => trackCart("begin_checkout", count)}><Lock className="size-4" aria-hidden /> {pricing.lines.length + pricing.bundles.length > 0 ? "Secure My Databases" : "Secure My Order"} <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden /></Link>
     </Button>
   );
 }
@@ -177,9 +186,10 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         <ul className="mt-4 space-y-2 text-sm">
           {pricing.bundles.map((b) => <li key={`b-${b.slug}`} className="flex justify-between gap-3"><span className="min-w-0 truncate">{b.name} <span className="text-forest-500">· bundle of {b.components.length}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(b.priceCents)}</span></li>)}
           {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span className="min-w-0 truncate">{l.name} <span className="text-forest-500">· {l.packageName}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(l.payCents)}</span></li>)}
+          {pricing.service && <li className="flex justify-between gap-3"><span className="min-w-0 truncate">Email Verification <span className="text-forest-500">· {pricing.service.name}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(pricing.service.priceCents)}</span></li>}
         </ul>
         <dl className="mt-4 space-y-2 border-t border-sand-200 pt-4 text-sm">
-          <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents)}</dd></div>
+          <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents + (pricing.service?.priceCents ?? 0))}</dd></div>
           {pricing.bundleSavingsCents > 0 && <div className="flex justify-between gap-3 text-forest-700"><dt>Bundle savings<span className="block text-xs text-forest-500">Already in the bundle price</span></dt><dd className="shrink-0 font-semibold">&minus;{formatUsd(pricing.bundleSavingsCents)}</dd></div>}
           {pricing.applied.map((a) => (
             <div key={`${a.source}-${a.code}-${a.title}`} className="cart-in flex justify-between gap-3 text-forest-700">
@@ -191,15 +201,16 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         </dl>
         <Code pricing={pricing} applied={applied} codeMsg={codeMsg} busy={busy} onApply={onApply} onRemove={onRemoveCode} />
         <VolumeLadder volume={pricing.volume} />
+        {pricing.service && pricing.volume && <p className="mt-2 text-xs">Email verification is not counted in database discounts.</p>}
         <div className={`mt-4 flex items-end justify-between border-t border-sand-200 pt-4 transition-opacity duration-200 ${busy ? "opacity-60" : ""}`}>
           <p className="font-bold text-forest-900">Total</p>
           <p className="display text-5xl leading-none text-forest-900"><Money cents={pricing.totalCents} /></p>
         </div>
         <p className="mt-2 text-xs">Priced in US dollars. You pay in crypto: the exact coin amount is shown at checkout and locked for 30 minutes.</p>
       </div>
-      <div className="mt-5 hidden lg:block"><CheckoutCta pricing={pricing} count={pricing.lines.length + pricing.bundles.length} /></div>
-      {pricing.canCheckout && pricing.bundles.length === 0 && <TeamRequest className="mt-3" items={pricing.lines.map((l) => ({ product: l.slug, package: l.packageName }))} />}
-      {pricing.canCheckout && pricing.bundles.length > 0 && <p className="mt-3 text-center text-xs">Manager approval requests are not available for carts that contain a bundle.</p>}
+      <div className="mt-5 hidden lg:block"><CheckoutCta pricing={pricing} count={pricing.lines.length + pricing.bundles.length + (pricing.service ? 1 : 0)} /></div>
+      {pricing.canCheckout && pricing.bundles.length === 0 && !pricing.service && pricing.lines.length > 0 && <TeamRequest className="mt-3" items={pricing.lines.map((l) => ({ product: l.slug, package: l.packageName }))} />}
+      {pricing.canCheckout && (pricing.bundles.length > 0 || pricing.service) && <p className="mt-3 text-center text-xs">Manager approval requests are not available for carts that contain a {pricing.service ? "verification service" : "bundle"}.</p>}
       {blocked.length > 0 && (
         <p role="status" className="mt-4 rounded-xl bg-sand-100 px-4 py-3 text-sm">{blocked[0].reason}{pricing.checkoutOpen && blocked.length > 0 ? " Remove it from your cart to continue." : " Your cart is saved in this browser."}</p>
       )}

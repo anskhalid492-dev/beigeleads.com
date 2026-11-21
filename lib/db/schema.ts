@@ -1208,3 +1208,63 @@ export const orderBundles = sqliteTable(
   },
   (t) => [index("order_bundles_order_idx").on(t.orderId)],
 );
+
+// Email List Verification Service (migration 0045). Timestamps are plain epoch seconds.
+export const evOrders = sqliteTable("ev_orders", {
+  id: text("id").primaryKey(),
+  orderId: text("order_id").notNull(),
+  email: text("email").notNull(),
+  packageName: text("package_name").notNull(),
+  limitCount: integer("limit_count").notNull(),
+  priceCents: integer("price_cents").notNull(),
+  status: text("status").notNull().default("awaiting_payment"),
+  tokenHash: text("token_hash").notNull(),
+  submittedCount: integer("submitted_count").notNull().default(0),
+  note: text("note").notNull().default(""),
+  actionReason: text("action_reason").notNull().default(""),
+  createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
+  paidAt: integer("paid_at"),
+  submittedAt: integer("submitted_at"),
+  processingAt: integer("processing_at"),
+  completedAt: integer("completed_at"),
+  deliveredAt: integer("delivered_at"),
+  reminderSentAt: integer("reminder_sent_at"),
+  purgedAt: integer("purged_at"),
+});
+export const evFiles = sqliteTable("ev_files", {
+  id: text("id").primaryKey(),
+  evOrderId: text("ev_order_id").notNull(),
+  kind: text("kind").notNull(),
+  state: text("state").notNull().default("pending"),
+  r2Key: text("r2_key").notNull(),
+  filename: text("filename").notNull(),
+  sizeBytes: integer("size_bytes").notNull().default(0),
+  format: text("format").notNull().default(""),
+  source: text("source").notNull().default("upload"),
+  entryCount: integer("entry_count").notNull().default(0),
+  columnLabel: text("column_label").notNull().default(""),
+  candidatesJson: text("candidates_json").notNull().default(""),
+  createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
+  deletedAt: integer("deleted_at"),
+});
+export const evQuotes = sqliteTable("ev_quotes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  reference: text("reference").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  estimatedCount: text("estimated_count").notNull().default(""),
+  requirements: text("requirements").notNull().default(""),
+  status: text("status").notNull().default("new"),
+  note: text("note").notNull().default(""),
+  dedupeKey: text("dedupe_key").notNull(),
+  ownerNotify: text("owner_notify").notNull().default("pending"),
+  createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
+});
+export const evEvents = sqliteTable("ev_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  evOrderId: text("ev_order_id").notNull(),
+  actor: text("actor").notNull(),
+  action: text("action").notNull(),
+  detail: text("detail").notNull().default(""),
+  createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
+});

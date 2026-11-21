@@ -2,13 +2,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, UsersRound, Menu, Package, Send, Settings, ShoppingCart, Wallet, X } from "lucide-react";
+import { Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, UsersRound, Menu, Package, Send, Settings, ShieldCheck, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
   ["Overview", "/admin", BarChart3],
   ["Products", "/admin/products", Package],
   ["Database Bundles", "/admin/bundles", Package],
+  ["Email Verification Orders", "/admin/email-verification", ShieldCheck],
+  ["Email Verification Settings", "/admin/email-verification/settings", ShieldCheck],
   ["Delivery Links", "/admin/delivery", Send],
   ["Orders", "/admin/orders", ShoppingCart],
   ["Cart funnel", "/admin/cart", ShoppingCart],

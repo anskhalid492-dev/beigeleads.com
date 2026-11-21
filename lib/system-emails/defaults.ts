@@ -63,6 +63,123 @@ export const TEMPLATES: TemplateDef[] = [
       signoff: "BeigeLeads",
     },
   },
+  // ---- Email Verification service (section 120) ---------------------------------------------------------
+  {
+    key: "ev_payment_confirmed", name: "Verification: order confirmed", audience: "customer", category: "Email Verification", canDisable: true, connection: "connected",
+    event: "A verification order is really paid (confirmed on the network): confirmation with the secure submission link.",
+    vars: ["order_number", "package_name", "order_total", "max_emails", "submit_url", "status_url"], required: ["submit_url"],
+    content: {
+      subject: "Your Email Verification Order Is Confirmed",
+      preheader: "Your payment is confirmed. Submit your list when you are ready.",
+      heading: "Your order is confirmed",
+      blocks: [
+        { t: "p", text: "Thank you for your order. Your payment is confirmed. The next step is to send us your email list." },
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Package:", value: "{{package_name}} (up to {{max_emails}} emails)" }, { label: "Amount paid:", value: "{{order_total}}" }] },
+        { t: "note", text: "Verification is done by our team and is not instant. Keep this email: the buttons are your private links." },
+      ],
+      cta: { label: "Submit Your List", url: "{{submit_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "ev_file_received", name: "Verification: file received", audience: "customer", category: "Email Verification", canDisable: true, connection: "connected",
+    event: "The customer's list was accepted (count and file checks passed).",
+    vars: ["order_number", "package_name", "submitted_count", "max_emails", "status_url"], required: ["order_number"],
+    content: {
+      subject: "We've Received Your Email List",
+      preheader: "Your list is queued for manual verification.",
+      heading: "We have your list",
+      blocks: [
+        { t: "p", text: "Your list passed our file checks and is queued for manual processing by our team." },
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Package:", value: "{{package_name}}" }, { label: "Emails submitted:", value: "{{submitted_count}} of {{max_emails}}" }] },
+        { t: "p", text: "We will email you when processing starts and again when your results are ready." },
+      ],
+      cta: { label: "View Order Status", url: "{{status_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "ev_admin_new_order", name: "Verification: new order (admin)", audience: "admin", category: "Email Verification", connection: "connected",
+    event: "A customer submitted a list for a paid verification order. No list is attached.",
+    vars: ["order_number", "customer_email", "package_name", "submitted_count", "payment_status", "admin_url"], required: ["admin_url"],
+    content: {
+      subject: "New Verification Order — {{order_number}}",
+      preheader: "A list is waiting for manual verification.",
+      heading: "New verification order",
+      blocks: [
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Customer:", value: "{{customer_email}}" }, { label: "Package:", value: "{{package_name}}" }, { label: "Emails submitted:", value: "{{submitted_count}}" }, { label: "Payment:", value: "{{payment_status}}" }] },
+        { t: "note", text: "The list is stored privately. Open the order in the admin to download it." },
+      ],
+      cta: { label: "Open order", url: "{{admin_url}}" },
+      signoff: "No customer list is attached to this email.",
+    },
+  },
+  {
+    key: "ev_processing", name: "Verification: processing started", audience: "customer", category: "Email Verification", canDisable: true, connection: "connected",
+    event: "An admin marks the verification job Processing.",
+    vars: ["order_number", "package_name", "submitted_count", "status_url"], required: ["order_number"],
+    content: {
+      subject: "Your Email Verification Is in Progress",
+      preheader: "Our team has started working on your list.",
+      heading: "Verification is in progress",
+      blocks: [
+        { t: "p", text: "Our team has started verifying your list. We will email you as soon as your results are ready to download." },
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Emails submitted:", value: "{{submitted_count}}" }] },
+      ],
+      cta: { label: "View Order Status", url: "{{status_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "ev_results_ready", name: "Verification: results ready", audience: "customer", category: "Email Verification", canDisable: true, connection: "connected",
+    event: "An admin uploaded result files and marked the job Completed.",
+    vars: ["order_number", "package_name", "submitted_count", "results_url"], required: ["results_url"],
+    content: {
+      subject: "Your Verified Email List Is Ready!",
+      preheader: "Your results are ready to download.",
+      heading: "Your results are ready",
+      blocks: [
+        { t: "p", text: "Our team finished verifying your list. Open your order page, confirm your email address and download your files." },
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Emails submitted:", value: "{{submitted_count}}" }] },
+        { t: "note", text: "Results are estimates based on the checks available at the time. They do not guarantee future deliverability." },
+      ],
+      cta: { label: "Download Your Results", url: "{{results_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "ev_action_needed", name: "Verification: replacement file needed", audience: "customer", category: "Email Verification", canDisable: true, connection: "connected",
+    event: "An admin asks the customer for a replacement or corrected file.",
+    vars: ["order_number", "action_reason", "submit_url"], required: ["submit_url", "action_reason"],
+    content: {
+      subject: "Action Required: Your Verification File",
+      preheader: "We need a corrected file to continue.",
+      heading: "We need a corrected file",
+      blocks: [
+        { t: "p", text: "We could not continue with the file you sent." },
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Reason:", value: "{{action_reason}}" }] },
+        { t: "p", text: "Please submit a replacement file with the button below. Your package limit stays the same." },
+      ],
+      cta: { label: "Submit Replacement File", url: "{{submit_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "ev_submit_reminder", name: "Verification: submission reminder", audience: "customer", category: "Email Verification", canDisable: true, connection: "connected",
+    event: "A paid verification order has no accepted file after the reminder time set in the admin (sent once).",
+    vars: ["order_number", "package_name", "max_emails", "submit_url"], required: ["submit_url"],
+    content: {
+      subject: "Your Verification Package Is Waiting for Your List",
+      preheader: "You paid for a verification package. Send us your list to start.",
+      heading: "Your package is waiting",
+      blocks: [
+        { t: "p", text: "You have a paid email verification package with no list yet. Paste or upload your emails to get started." },
+        { t: "kv", rows: [{ label: "Order:", value: "{{order_number}}" }, { label: "Package:", value: "{{package_name}} (up to {{max_emails}} emails)" }] },
+      ],
+      cta: { label: "Submit Your List", url: "{{submit_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
   // ---- Sales Features: Team Purchase Requests (section 114) ----------------------------------------------
   {
     key: "team_request_sent", name: "Team request: sent to requester", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",

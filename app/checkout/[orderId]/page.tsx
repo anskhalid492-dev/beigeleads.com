@@ -9,6 +9,9 @@ import { TriangleAlert } from "lucide-react";
 import { formatUsd, getProduct } from "@/lib/catalog";
 import { getDb, schema } from "@/lib/db";
 import { CheckoutLive } from "./live";
+import { EV_SLUG } from "@/lib/ev/settings";
+
+const itemName = (slug: string) => (slug === EV_SLUG ? "Email Verification" : getProduct(slug)?.name ?? slug);
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -49,13 +52,13 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
           <li key={b.id} className="border-b border-sand-200 pb-2">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4"><span className="font-semibold text-forest-900">{b.bundleName} <span className="font-normal">· bundle</span></span><span>{formatUsd(b.priceCents)}</span></div>
             <ul className="mt-1 space-y-0.5 pl-4 text-forest-700">
-              {items.filter((i) => bundleSlugs(b).includes(i.productSlug)).map((it) => <li key={it.id} className="list-disc">{getProduct(it.productSlug)?.name ?? it.productSlug} · {it.packageName} package</li>)}
+              {items.filter((i) => bundleSlugs(b).includes(i.productSlug)).map((it) => <li key={it.id} className="list-disc">{itemName(it.productSlug)} · {it.packageName} package</li>)}
             </ul>
           </li>
         ))}
         {singles.map((it) => (
           <li key={it.id} className="flex flex-wrap items-baseline justify-between gap-x-4">
-            <span className="font-semibold text-forest-900">{getProduct(it.productSlug)?.name ?? it.productSlug} <span className="font-normal">· {it.packageName} package{it.records > 0 ? `, ${it.records.toLocaleString("en-US")} records` : ""}</span></span>
+            <span className="font-semibold text-forest-900">{itemName(it.productSlug)} <span className="font-normal">· {it.packageName} package{it.records > 0 ? (it.productSlug === EV_SLUG ? `, up to ${it.records.toLocaleString("en-US")} emails` : `, ${it.records.toLocaleString("en-US")} records`) : ""}</span></span>
             <span>{formatUsd(it.priceUsdCents)}</span>
           </li>
         ))}
@@ -67,7 +70,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
         </p>
       )}
 
-      <div className="mt-6"><CheckoutLive orderId={order.id} expiresAt={a.expiresAt.getTime()} initial={order.status} slugs={items.map((i) => i.productSlug)} bundles={bundleRows.map((b) => b.bundleSlug)} /></div>
+      <div className="mt-6"><CheckoutLive orderId={order.id} expiresAt={a.expiresAt.getTime()} initial={order.status} slugs={items.map((i) => i.productSlug)} verification={items.some((i) => i.productSlug === EV_SLUG)} lists={items.some((i) => i.productSlug !== EV_SLUG)} bundles={bundleRows.map((b) => b.bundleSlug)} /></div>
 
       <section aria-label="Payment details" className="mt-6 grid gap-6 rounded-3xl border border-sand-200 bg-white p-6 sm:grid-cols-[auto_1fr] sm:p-8">
         <div className="mx-auto" role="img" aria-label="QR code for the payment address and amount" dangerouslySetInnerHTML={{ __html: qr }} />

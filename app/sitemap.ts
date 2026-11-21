@@ -56,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...bundles.map((b) => ({ url: `${SITE_URL}/bundles/${b.slug}` })),
     { url: `${SITE_URL}/partners` },
     { url: `${SITE_URL}/team-purchase-requests` },
+    { url: `${SITE_URL}/email-verification` },
     { url: `${SITE_URL}/ai-assistant` },
     { url: `${SITE_URL}/solutions` },
     ...solutions.map((s) => ({ url: `${SITE_URL}/solutions/${s.slug}` })),

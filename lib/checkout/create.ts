@@ -1,5 +1,7 @@
 import { hydrateCatalog } from "@/lib/catalog-db";
 import { loadPublished } from "@/lib/bundles/store";
+import { EV_SLUG, loadEvSettings } from "@/lib/ev/settings";
+import { evInsertRow } from "@/lib/ev/store";
 import { and, eq, gt } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { MAX_CART_ITEMS, priceCart } from "@/lib/cart/model";
@@ -18,7 +20,7 @@ import { loadSalesSettings } from "@/lib/sales/settings";
 export class CheckoutError extends Error {}
 
 /** `option` is a key of OPTIONS, e.g. "BTC", "USDT-TRC20", "USDT-ERC20", "USDC-ERC20", "ETH". */
-export type CreateInput = { email: string; items: { productSlug: string; packageName: string }[]; option: string; /** optional partner discount code; valid only with the approved partner's own email */ discountCode?: string; /** curated bundles (slugs); the server reads each bundle's lists and price */ bundles?: string[] };
+export type CreateInput = { email: string; items: { productSlug: string; packageName: string }[]; option: string; /** optional partner discount code; valid only with the approved partner's own email */ discountCode?: string; /** curated bundles (slugs); the server reads each bundle's lists and price */ bundles?: string[]; /** Email Verification package NAME (the server reads its price and limit from its own settings) */ verification?: string };
 
 const on = (v: string | undefined) => v === "true";
 const WINDOW_MS = 7 * 24 * 3600 * 1000; // amounts stay reserved while late payments can still arrive
@@ -37,7 +39,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   if (!on(env.CHECKOUT_ENABLED)) throw new CheckoutError("Checkout is not open yet.");
   await hydrateCatalog(env, true);
   const bundleSlugs = [...new Set(input.bundles ?? [])];
-  if (input.items.length === 0 && bundleSlugs.length === 0) throw new CheckoutError("Your cart is empty.");
+  if (input.items.length === 0 && bundleSlugs.length === 0 && !input.verification) throw new CheckoutError("Your cart is empty.");
   if (input.items.length > MAX_CART_ITEMS) throw new CheckoutError(`You can buy up to ${MAX_CART_ITEMS} lists in one order.`);
   const slugs = input.items.map((i) => i.productSlug);
   if (new Set(slugs).size !== slugs.length) throw new CheckoutError("Each list can be in an order only once.");
@@ -54,9 +56,11 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   const sales = await loadSalesSettings(env);
   // Curated bundles are read fresh from the database (never from the browser or a cache) and priced by the same pure code as the cart.
   const bundleDefs = bundleSlugs.length ? await loadPublished(env, true) : [];
+  const ev = await loadEvSettings(env);
+  if (input.verification && !ev.packages.some((x) => x.name === input.verification)) throw new CheckoutError("The verification package in your cart does not exist any more. Review your cart.");
   const priced = priceCart(
     input.items.map((i) => ({ slug: i.productSlug, pkg: i.packageName })),
-    { bundles: { slugs: bundleSlugs, defs: bundleDefs }, checkoutOpen: true, allowPlaceholder: on(env.CHECKOUT_ALLOW_PLACEHOLDER), discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume, promo: { candidates, enteredCode: typed && !discount ? typed : undefined, nowSec: Math.floor(Date.now() / 1000), emailKnown: true } },
+    { verification: { pkg: input.verification ?? null, enabled: ev.enabled, packages: ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents })) }, bundles: { slugs: bundleSlugs, defs: bundleDefs }, checkoutOpen: true, allowPlaceholder: on(env.CHECKOUT_ALLOW_PLACEHOLDER), discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume, promo: { candidates, enteredCode: typed && !discount ? typed : undefined, nowSec: Math.floor(Date.now() / 1000), emailKnown: true } },
   );
   if (priced.dropped.length > 0) throw new CheckoutError("A list or package in your cart does not exist any more. Review your cart.");
   if (priced.droppedBundles.length > 0) throw new CheckoutError("A bundle in your cart is not available any more. Review your cart.");
@@ -67,12 +71,15 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   if (priced.lines.length + priced.bundles.reduce((n, b) => n + b.components.length, 0) > 40) throw new CheckoutError("This order is too large. Remove something from your cart.");
   // A code the buyer typed that does not apply stops the order: they must not pay a price they did not expect.
   if (typed && !discount && priced.codeError) throw new CheckoutError(priced.codeError);
+  if (priced.service && !priced.service.purchasable) throw new CheckoutError(priced.service.reason || "Email verification is not available right now.");
   const totalCents = priced.totalCents;
   // One order item per list. A bundle's lists carry their share of the bundle price, so the items always add up to the amount paid
   // (refunds and reports use what was actually paid, never the list price).
   const itemRows = (orderId: string) => [
     ...priced.lines.map((l) => ({ orderId, productSlug: l.slug, packageName: l.packageName, records: l.records, priceUsdCents: l.payCents })),
     ...priced.bundles.flatMap((b) => b.components.map((c) => ({ orderId, productSlug: c.slug, packageName: c.packageName, records: c.records, priceUsdCents: c.shareCents }))),
+    // The verification service is a normal order line (full price, never discounted), recognised by its fixed slug.
+    ...(priced.service ? [{ orderId, productSlug: EV_SLUG, packageName: priced.service.name, records: priced.service.limit, priceUsdCents: priced.service.priceCents }] : []),
   ];
   const bundleRows = (orderId: string) => priced.bundles.map((b) => ({ orderId, bundleSlug: b.slug, bundleName: b.name, priceCents: b.priceCents, listCents: b.listCents, itemsJson: JSON.stringify(b.components.map((c) => ({ slug: c.slug, name: c.name, pkg: c.packageName, records: c.records, listCents: c.listCents, shareCents: c.shareCents }))) }));
   if (itemRows("x").reduce((n, r) => n + r.priceUsdCents, 0) !== totalCents) throw new Error("Order items do not add up to the order total.");
@@ -96,7 +103,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   const quote = buildQuote(spec, totalCents, rate, now);
 
   // Same buyer, same cart, same coin within 10 minutes: hand back the order that is still open (no second order, no second payment session).
-  const dedupeKey = `co:${await sha256Hex(`${input.email}|${input.option}|${priced.lines.map((l) => `${l.slug}:${l.packageName}`).sort().join(",")}|${priced.discountCode}|${priced.totalCents}|${priced.bundles.map((b) => b.slug).sort().join(",")}`)}`;
+  const dedupeKey = `co:${await sha256Hex(`${input.email}|${input.option}|${priced.lines.map((l) => `${l.slug}:${l.packageName}`).sort().join(",")}|${priced.discountCode}|${priced.totalCents}|${priced.bundles.map((b) => b.slug).sort().join(",")}|${priced.service?.name ?? ""}`)}`;
   const prev = await env.CACHE.get(dedupeKey).catch(() => null);
   if (prev) {
     const [o] = await db.select({ status: schema.orders.status }).from(schema.orders).where(eq(schema.orders.id, prev));
@@ -104,10 +111,12 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
     if (o?.status === "pending" && at?.st === "open" && at.exp.getTime() > now + 60_000) return prev;
   }
   const orderId = crypto.randomUUID();
+  const evRow = priced.service ? await evInsertRow(env, orderId, input.email, { name: priced.service.name, limit: priced.service.limit, priceCents: priced.service.priceCents }) : null;
 
   /** Removes a half-created order (the order_bundles table is touched only when the order has a bundle). */
   const undo = async () => {
     if (priced.bundles.length) await db.delete(schema.orderBundles).where(eq(schema.orderBundles.orderId, orderId));
+    if (evRow) await db.delete(schema.evOrders).where(eq(schema.evOrders.orderId, orderId));
     await db.batch([
       db.delete(schema.paymentAttempts).where(eq(schema.paymentAttempts.orderId, orderId)),
       db.delete(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)),
@@ -129,6 +138,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
         expectedAmount: amount, lockedRate: quote.rate, expiresAt: new Date(quote.expiresAt), status: "open",
       }),
       ...(priced.bundles.length ? [db.insert(schema.orderBundles).values(bundleRows(orderId))] : []),
+      ...(evRow ? [db.insert(schema.evOrders).values(evRow)] : []),
     ];
     await db.batch(writes as unknown as Parameters<typeof db.batch>[0]);
     // Two buyers can race for the same amount. Keep exactly one: if we are not alone, undo ours and pick again.

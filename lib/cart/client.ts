@@ -64,7 +64,32 @@ function writeBundles(slugs: string[]) {
   window.dispatchEvent(new Event(EVT));
 }
 
+// Email Verification service: at most one package name (nothing personal). The server validates it against its own settings.
+const VKEY = "bl-cart-verification-v1";
+let vcache: { raw: string | null; pkg: string | null } = { raw: null, pkg: null };
+let vmemory: { pkg: string | null } | null = null;
+function readVerification(): string | null {
+  if (vmemory) return vmemory.pkg;
+  let raw: string | null = null;
+  try { raw = localStorage.getItem(VKEY); } catch { return vcache.pkg; }
+  if (raw === vcache.raw) return vcache.pkg;
+  const pkg = raw && raw.length <= 40 ? raw : null;
+  vcache = { raw, pkg };
+  return pkg;
+}
+function writeVerification(pkg: string | null) {
+  const next = pkg && pkg.trim().length <= 40 ? pkg.trim() : null;
+  try {
+    if (next) localStorage.setItem(VKEY, next); else localStorage.removeItem(VKEY);
+    vmemory = null;
+    vcache = { raw: next, pkg: next };
+  } catch { vmemory = { pkg: next }; }
+  window.dispatchEvent(new Event(EVT));
+}
+
 export const cartActions = {
+  /** Add, change or (null) remove the Email Verification service. One line only: choosing again replaces the package. */
+  setVerification(pkg: string | null) { writeVerification(pkg); },
   /** Adds several lists at once (Build Your Own Bundle). All or nothing: if they do not fit in the cart, nothing is added. */
   addMany(items: CartItem[]): "ok" | "full" {
     const cur = read();
@@ -97,7 +122,7 @@ export const cartActions = {
   remove(slug: string) { write(read().filter((i) => i.slug !== slug)); },
   setPackage(slug: string, pkg: string) { write(read().map((i) => (i.slug === slug ? { ...i, pkg } : i))); },
   replaceAll(items: CartItem[]) { write(items); },
-  clear() { write([]); writeBundles([]); },
+  clear() { write([]); writeBundles([]); writeVerification(null); },
 };
 
 export function useCart(): CartItem[] {
@@ -106,8 +131,11 @@ export function useCart(): CartItem[] {
 export function useCartBundles(): string[] {
   return useSyncExternalStore(subscribe, readBundles, () => NO_BUNDLES);
 }
-/** Number of cart lines: single lists plus bundles. */
-export const useCartCount = () => useCart().length + useCartBundles().length;
+export function useCartVerification(): string | null {
+  return useSyncExternalStore(subscribe, readVerification, () => null);
+}
+/** Number of cart lines: single lists, bundles and the verification service. */
+export const useCartCount = () => useCart().length + useCartBundles().length + (useCartVerification() ? 1 : 0);
 
 /** false on the server and during hydration, true afterwards (so the cart is only drawn once the browser's own cart is known). */
 export const useMounted = () => useSyncExternalStore(() => () => undefined, () => true, () => false);
