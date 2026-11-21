@@ -85,7 +85,7 @@ const linkCls = "hover:text-sand-50 hover:underline underline-offset-4";
 export function Footer() {
   return (
     <footer
-      className="overflow-hidden rounded-t-[2rem] text-sand-100 sm:rounded-t-[3rem]"
+      className="mx-2 mb-2 overflow-hidden rounded-[2rem] border border-sand-300 text-sand-100 sm:mx-3 sm:mb-3 sm:rounded-[3rem]"
       style={{
         backgroundColor: "var(--color-forest-900)",
         backgroundImage:

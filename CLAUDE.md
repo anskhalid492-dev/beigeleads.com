@@ -1312,3 +1312,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - HONEST LIMITS: glossary entries are about 130-300 words (the brief asked 500-900); many help articles are shorter than 700 words; the glossary keeps the brief's term "Target Audience" although the site writes "Prospects"; nothing was browser-tested or run on production D1.
 - AI footer buttons (21 Nov 2026): ChatGPT, Perplexity, Grok and Claude now open with the prompt prefilled via `?q=` links (`PREFILL` in `lib/site-links/types.ts`). These links are NOT officially documented by the platforms and may change; Gemini has no known link and still copies + opens. The footer top corners are rounded (`rounded-t-[2rem] sm:rounded-t-[3rem]`).
 - Tests: `tests/help-expansion.test.ts`; older glossary/help tests updated for drafts and removed duplicates. Full suite 720 passing, lint 0 errors, build OK.
+
+## 131. Footer fully rounded (21 Nov 2026) — amends section 129/130
+
+- Owner request: round the whole footer. `components/layout/footer.tsx` is now an inset card (`mx-2 mb-2 sm:mx-3 sm:mb-3`) with `rounded-[2rem] sm:rounded-[3rem]`, `overflow-hidden` and a 1px `sand-300` border, so the light "Discover BeigeLeads with AI" band's bottom corners are visible against the sand page. Not browser-screenshotted.
