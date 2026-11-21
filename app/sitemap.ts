@@ -11,6 +11,7 @@ import { excludedSitemapPaths } from "@/lib/seo/sitemap";
 import { SITE_URL } from "@/lib/site";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { hydrateCatalog } from "@/lib/catalog-db";
+import { loadBundlesView } from "@/lib/bundles/public";
 import { solutions } from "@/lib/solutions";
 import { articleHref } from "@/lib/help/data";
 import { loadHelp } from "@/lib/help/store";
@@ -34,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const help = await loadHelp(getCloudflareContext().env);
   const tax = await getTax();
   const glossary = await glossaryPaths(getDbFromEnv(getCloudflareContext().env));
+  const bundles = (await loadBundlesView(getCloudflareContext().env).catch(() => ({ bundles: [] }))).bundles; // only bundles whose lists are all really on sale
   const all: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/blog` },
     { url: `${SITE_URL}/guides` },
@@ -50,6 +52,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...importedCountryPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     ...taxonomyPaths(tax).map((p) => ({ url: `${SITE_URL}${p}` })),
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
+    { url: `${SITE_URL}/bundles` },
+    ...bundles.map((b) => ({ url: `${SITE_URL}/bundles/${b.slug}` })),
     { url: `${SITE_URL}/partners` },
     { url: `${SITE_URL}/team-purchase-requests` },
     { url: `${SITE_URL}/ai-assistant` },

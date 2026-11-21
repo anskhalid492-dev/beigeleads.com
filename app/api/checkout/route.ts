@@ -13,7 +13,8 @@ const schema = z.object({
   // Either one list (product + package) or a cart (items). Prices are never accepted from the browser.
   product: z.string().trim().min(1).max(80).optional(),
   package: z.string().trim().min(1).max(40).optional(),
-  items: z.array(z.object({ product: z.string().trim().min(1).max(80), package: z.string().trim().min(1).max(40) })).min(1).max(10).optional(),
+  items: z.array(z.object({ product: z.string().trim().min(1).max(80), package: z.string().trim().min(1).max(40) })).max(10).optional(),
+  bundles: z.array(z.string().trim().min(1).max(80)).max(5).optional(),
   discountCode: z.string().trim().max(40).optional(),
   coin: z.enum(OPTION_IDS, "Choose how you want to pay."),
 });
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
   const ipHash = await sha256Hex(`${env.HASH_SALT ?? ""}:ip:${ip}`);
   if (await isRateLimited(env.CACHE, "checkout", ipHash, 10, 3600)) return json(429, { ok: false, error: "Too many requests. Try again later." });
   try {
-    const orderId = await createOrder(env, { email: p.data.email, items: orderItems(p.data), option: p.data.coin, discountCode: p.data.discountCode });
+    const orderId = await createOrder(env, { email: p.data.email, items: orderItems(p.data), option: p.data.coin, discountCode: p.data.discountCode, bundles: p.data.bundles });
     return json(200, { ok: true, redirect: `/checkout/${orderId}` });
   } catch (e) {
     if (e instanceof CheckoutError) return json(409, { ok: false, error: e.message });

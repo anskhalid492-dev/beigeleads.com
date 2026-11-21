@@ -14,7 +14,7 @@ const label: Record<string, { title: string; text: string }> = {
 };
 
 /** Countdown + status poll (every 12s). Only reads; never trusts the browser for payment state. */
-export function CheckoutLive({ orderId, expiresAt, initial, slugs = [] }: { orderId: string; expiresAt: number; initial: string; slugs?: string[] }) {
+export function CheckoutLive({ orderId, expiresAt, initial, slugs = [], bundles = [] }: { orderId: string; expiresAt: number; initial: string; slugs?: string[]; bundles?: string[] }) {
   const [now, setNow] = useState<number | null>(null);
   const [status, setStatus] = useState<Status>({ status: initial, attempt: null, expiresAt });
 
@@ -36,6 +36,7 @@ export function CheckoutLive({ orderId, expiresAt, initial, slugs = [] }: { orde
     if (status.status !== "paid") return;
     window.dispatchEvent(new CustomEvent("bl:purchased"));
     for (const slug of slugs) cartActions.remove(slug); // the cart keeps its lists until payment is really confirmed
+    for (const b of bundles) cartActions.removeBundle(b);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status.status]);
   const l = label[effective] ?? label.pending;

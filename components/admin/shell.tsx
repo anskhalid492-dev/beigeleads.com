@@ -8,6 +8,7 @@ import { ToastProvider } from "./toast";
 const NAV = [
   ["Overview", "/admin", BarChart3],
   ["Products", "/admin/products", Package],
+  ["Database Bundles", "/admin/bundles", Package],
   ["Delivery Links", "/admin/delivery", Send],
   ["Orders", "/admin/orders", ShoppingCart],
   ["Cart funnel", "/admin/cart", ShoppingCart],

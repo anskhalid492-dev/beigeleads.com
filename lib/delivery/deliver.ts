@@ -30,14 +30,14 @@ export function deliveryEmailText(i: { orderId: string; packageName: string; rec
   ].join("\n");
 }
 
-export function deliveryEmailMultiText(i: { orderId: string; items: { productName: string; packageName: string; records: number; url: string }[] }): string {
+export function deliveryEmailMultiText(i: { orderId: string; items: { productName: string; packageName: string; records: number; url: string; bundle?: string }[] }): string {
   return [
     "Thank you for your order. Your payment is confirmed.",
     "",
     `Order: ${i.orderId}`,
     `You bought ${i.items.length} lists. Each one has its own download link:`,
     "",
-    ...i.items.flatMap((x, n) => [`${n + 1}. ${x.productName}, ${x.packageName} package (${x.records.toLocaleString("en-US")} records)`, x.url, ""]),
+    ...i.items.flatMap((x, n) => [`${n + 1}. ${x.productName}, ${x.packageName} package${x.records > 0 ? ` (${x.records.toLocaleString("en-US")} records)` : ""}${x.bundle ? ` - part of the ${x.bundle} bundle` : ""}`, x.url, ""]),
     "Permitted use: you may use these lists for your own lawful business outreach. You must not use them for spam, fraud, harassment or unlawful processing, and you must not resell or publish them.",
     `Lawful use policy: ${SITE}/legal/lawful-use`,
     `Replacement and refund policy: ${SITE}/legal/refund-replacement`,
@@ -104,6 +104,13 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
     if (upd.length === 0) return "busy";
   }
 
+  // Lists bought inside a curated bundle are named in the email (a snapshot kept with the order; missing table = no bundles).
+  const bundleOf = new Map<string, string>();
+  try {
+    for (const b of await db.select().from(schema.orderBundles).where(eq(schema.orderBundles.orderId, orderId))) {
+      for (const x of JSON.parse(b.itemsJson) as { slug: string }[]) bundleOf.set(x.slug, b.bundleName);
+    }
+  } catch { /* orders without bundles never need this */ }
   const { getProduct } = await import("@/lib/catalog");
   const nameOf = (slug: string) => getProduct(slug)?.name ?? slug;
   let mail;
@@ -112,7 +119,7 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
     mail = {
       to: order.email,
       subject: `Your BeigeLeads lists (${items.length})`,
-      text: deliveryEmailMultiText({ orderId, items: items.map((x, n) => ({ productName: nameOf(x.productSlug), packageName: x.packageName, records: x.records, url: links[n] as string })) }),
+      text: deliveryEmailMultiText({ orderId, items: items.map((x, n) => ({ productName: nameOf(x.productSlug), packageName: x.packageName, records: x.records, url: links[n] as string, bundle: bundleOf.get(x.productSlug) })) }),
     };
   } else {
     const productName = nameOf(item.productSlug);

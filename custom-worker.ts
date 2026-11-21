@@ -68,7 +68,7 @@ async function withPageSeo(request: Request, env: CloudflareEnv, res: Response):
   try {
     if (request.method !== "GET" || res.status !== 200 || !(res.headers.get("content-type") ?? "").includes("text/html")) return res;
     const url = new URL(request.url);
-    if (isProtected(url.pathname) || url.pathname.startsWith("/blog/") || url.pathname.startsWith("/guides/") || url.pathname.startsWith("/case-studies/") || url.pathname.startsWith("/glossary/") || request.headers.has("rsc") || url.searchParams.has("_rsc")) return res;
+    if (isProtected(url.pathname) || url.pathname.startsWith("/blog/") || url.pathname.startsWith("/guides/") || url.pathname.startsWith("/case-studies/") || url.pathname.startsWith("/glossary/") || url.pathname.startsWith("/bundles/") || request.headers.has("rsc") || url.searchParams.has("_rsc")) return res;
     const now = Date.now();
     if (!pageSeo || now - pageSeo.at > 30_000) {
       let map: PageOverrideMap | null = null;

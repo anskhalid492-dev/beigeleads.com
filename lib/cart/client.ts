@@ -1,6 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { MAX_CART_ITEMS, normalizeItems, type CartItem } from "./model";
+import { MAX_CART_ITEMS, normalizeBundleSlugs, normalizeItems, type CartItem } from "./model";
 
 const KEY = "bl-cart-v1";
 const EVT = "bl-cart-change";
@@ -38,7 +38,54 @@ function subscribe(cb: () => void) {
   return () => { window.removeEventListener(EVT, cb); window.removeEventListener("storage", cb); };
 }
 
+// Curated bundles live in their own key (slugs only). Same rules: nothing personal, memory fallback, synced across tabs.
+const BKEY = "bl-cart-bundles-v1";
+const NO_BUNDLES: string[] = [];
+let bcache: { raw: string | null; items: string[] } = { raw: null, items: NO_BUNDLES };
+let bmemory: string[] | null = null;
+function readBundles(): string[] {
+  if (bmemory) return bmemory;
+  let raw: string | null = null;
+  try { raw = localStorage.getItem(BKEY); } catch { return bcache.items; }
+  if (raw === bcache.raw) return bcache.items;
+  let items = NO_BUNDLES;
+  try { items = raw ? normalizeBundleSlugs(JSON.parse(raw)) : NO_BUNDLES; } catch { items = NO_BUNDLES; }
+  bcache = { raw, items: items.length ? items : NO_BUNDLES };
+  return bcache.items;
+}
+function writeBundles(slugs: string[]) {
+  const next = normalizeBundleSlugs(slugs);
+  try {
+    const raw = next.length ? JSON.stringify(next) : null;
+    if (raw) localStorage.setItem(BKEY, raw); else localStorage.removeItem(BKEY);
+    bmemory = null;
+    bcache = { raw, items: next.length ? next : NO_BUNDLES };
+  } catch { bmemory = next.length ? next : NO_BUNDLES; }
+  window.dispatchEvent(new Event(EVT));
+}
+
 export const cartActions = {
+  /** Adds several lists at once (Build Your Own Bundle). All or nothing: if they do not fit in the cart, nothing is added. */
+  addMany(items: CartItem[]): "ok" | "full" {
+    const cur = read();
+    const fresh = items.filter((i) => !cur.some((c) => c.slug === i.slug));
+    if (cur.length + new Set(fresh.map((i) => i.slug)).size > MAX_CART_ITEMS) return "full";
+    const map = new Map(cur.map((c) => [c.slug, c]));
+    for (const i of items) map.set(i.slug, i);
+    write([...map.values()]);
+    return "ok";
+  },
+  /** A curated bundle is one cart line. Adding it again changes nothing. */
+  addBundle(slug: string): "added" | "exists" | "full" {
+    const cur = readBundles();
+    if (cur.includes(slug)) return "exists";
+    const next = normalizeBundleSlugs([...cur, slug]);
+    if (next.length === cur.length) return "full";
+    writeBundles(next);
+    return "added";
+  },
+  removeBundle(slug: string) { writeBundles(readBundles().filter((s) => s !== slug)); },
+  replaceBundles(slugs: string[]) { writeBundles(slugs); },
   /** One line per product: adding a product that is already in the cart changes its package instead of duplicating it. Returns "added" | "updated" | "full". */
   add(slug: string, pkg: string): "added" | "updated" | "full" {
     const cur = read();
@@ -50,13 +97,17 @@ export const cartActions = {
   remove(slug: string) { write(read().filter((i) => i.slug !== slug)); },
   setPackage(slug: string, pkg: string) { write(read().map((i) => (i.slug === slug ? { ...i, pkg } : i))); },
   replaceAll(items: CartItem[]) { write(items); },
-  clear() { write([]); },
+  clear() { write([]); writeBundles([]); },
 };
 
 export function useCart(): CartItem[] {
   return useSyncExternalStore(subscribe, read, () => EMPTY);
 }
-export const useCartCount = () => useCart().length;
+export function useCartBundles(): string[] {
+  return useSyncExternalStore(subscribe, readBundles, () => NO_BUNDLES);
+}
+/** Number of cart lines: single lists plus bundles. */
+export const useCartCount = () => useCart().length + useCartBundles().length;
 
 /** false on the server and during hydration, true afterwards (so the cart is only drawn once the browser's own cart is known). */
 export const useMounted = () => useSyncExternalStore(() => () => undefined, () => true, () => false);

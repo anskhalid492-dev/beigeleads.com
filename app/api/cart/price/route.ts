@@ -4,7 +4,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { sha256Hex } from "@/lib/forms/hash";
 import { isRateLimited } from "@/lib/forms/rate-limit";
-import { cartItemsSchema, normalizeItems, priceCart, suggestFor } from "@/lib/cart/model";
+import { bundleSlugsSchema, cartItemsSchema, normalizeBundleSlugs, normalizeItems, priceCart, suggestFor } from "@/lib/cart/model";
+import { loadPublished } from "@/lib/bundles/store";
 import { getDbFromEnv } from "@/lib/db";
 import { DISCOUNT_REFUSED, resolveDiscount } from "@/lib/partners/discount";
 import { isPartnerCode } from "@/lib/partners/types";
@@ -13,6 +14,7 @@ import { loadSalesSettings } from "@/lib/sales/settings";
 
 const body = z.object({
   items: cartItemsSchema,
+  bundles: bundleSlugsSchema.optional(),
   // Optional partner code + the email it must belong to. Validated here; the browser never sets a price.
   code: z.string().trim().max(40).optional(),
   email: z.string().trim().toLowerCase().max(254).optional(),
@@ -45,12 +47,16 @@ export async function POST(req: Request) {
   }
   const candidates = await loadCandidates(db, p.data.email || undefined);
   const sales = await loadSalesSettings(env);
+  const bundleSlugs = normalizeBundleSlugs(p.data.bundles ?? []);
+  const bundleDefs = bundleSlugs.length ? await loadPublished(env) : [];
   const pricing = priceCart(items, {
-    checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume,
+    bundles: { slugs: bundleSlugs, defs: bundleDefs }, checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume,
     promo: { candidates, enteredCode, nowSec: Math.floor(Date.now() / 1000), emailKnown: !!p.data.email },
   }, () => false);
   for (const l of pricing.lines) { const rs = sampleRowsOf(l.slug).slice(0, 3); l.hasSample = rs.length > 0; l.sample = rs.map((r) => ({ business: r.business, city: r.city || r.address, email: r.email, phone: r.phone })); }
   if (!discountError && enteredCode) discountError = pricing.codeError;
   const kept = new Set(pricing.lines.map((l) => l.slug));
-  return json(200, { ok: true, pricing, discountError, suggestions: suggestFor(items.filter((i) => kept.has(i.slug)), items.length === 0 ? 4 : 3) });
+  const inBundles = pricing.bundles.flatMap((b) => b.components.map((c) => ({ slug: c.slug, pkg: c.packageName })));
+  const basis = [...items.filter((i) => kept.has(i.slug)), ...inBundles];
+  return json(200, { ok: true, pricing, discountError, suggestions: suggestFor(basis, basis.length === 0 ? 4 : 3) });
 }

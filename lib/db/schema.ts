@@ -1153,3 +1153,58 @@ export const purchaseRequests = sqliteTable("purchase_requests", {
   requesterEmailStatus: text("requester_email_status").notNull().default("pending"),
   managerEmailStatus: text("manager_email_status").notNull().default("pending"),
 });
+
+// Database Bundles (migration 0044, CLAUDE.md section 119). order_items is NOT changed: a bundle's lists are ordinary order items
+// with their share of the bundle price; order_bundles keeps the bundle identity and a snapshot of what was sold.
+export const bundleCategories = sqliteTable(
+  "bundle_categories",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => [uniqueIndex("bundle_categories_slug_uq").on(t.slug)],
+);
+
+export const bundles = sqliteTable(
+  "bundles",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    shortDescription: text("short_description").notNull().default(""),
+    description: text("description").notNull().default(""),
+    categorySlug: text("category_slug").notNull().default(""),
+    label: text("label").notNull().default(""),
+    image: text("image").notNull().default(""),
+    itemsJson: text("items_json").notNull().default("[]"),
+    priceMode: text("price_mode", { enum: ["percent", "fixed"] }).notNull().default("percent"),
+    discountPercent: integer("discount_percent").notNull().default(0),
+    fixedPriceCents: integer("fixed_price_cents").notNull().default(0),
+    featured: integer("featured").notNull().default(0),
+    status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+    excludedJson: text("excluded_json").notNull().default("[]"),
+    seoTitle: text("seo_title").notNull().default(""),
+    metaDescription: text("meta_description").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => [uniqueIndex("bundles_slug_uq").on(t.slug)],
+);
+
+export const orderBundles = sqliteTable(
+  "order_bundles",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    orderId: text("order_id").notNull(),
+    bundleSlug: text("bundle_slug").notNull(),
+    bundleName: text("bundle_name").notNull(),
+    priceCents: integer("price_cents").notNull(),
+    listCents: integer("list_cents").notNull(),
+    itemsJson: text("items_json").notNull().default("[]"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("order_bundles_order_idx").on(t.orderId)],
+);

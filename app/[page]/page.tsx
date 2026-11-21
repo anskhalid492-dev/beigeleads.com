@@ -6,7 +6,6 @@ import { ComingSoon } from "@/components/shared/coming-soon";
 // (pricing/compare/use-cases/blog/etc.: phase 5).
 const pages: Record<string, { title: string; note: string }> = {
   compare: { title: "Compare", note: "Honest comparisons with other list providers are being written." },
-  bundles: { title: "Bundles", note: "Bundles are on the way." },
   creators: { title: "Creators", note: "Creator and influencer lists are on the way." },
 };
 
