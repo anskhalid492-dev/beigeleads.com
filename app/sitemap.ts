@@ -60,5 +60,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...help.articles.filter((a) => !a.noindex).map((a) => ({ url: `${SITE_URL}${articleHref(a)}` })),
     ...getProducts().map((p) => ({ url: `${SITE_URL}/lists/${p.slug}` })),
   ];
-  return all.filter((e) => !excluded.has(e.url.replace(SITE_URL, "") || "/"));
+  const seen = new Set<string>(); // a category slug can also be a list-type page (e.g. healthcare-lists): list it once
+  return all.filter((e) => !excluded.has(e.url.replace(SITE_URL, "") || "/") && !seen.has(e.url) && !!seen.add(e.url));
 }

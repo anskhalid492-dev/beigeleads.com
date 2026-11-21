@@ -5,7 +5,7 @@ import { getCategory, getCountries, getProduct } from "@/lib/catalog";
 import { ProductPageView, productMetadata } from "@/components/product/product-page";
 import { getDb } from "@/lib/db";
 import { IndustryPage } from "@/components/category/pages";
-import { ImportedCategoryPage } from "@/components/category/imported-page";
+import { ImportedCategoryPage, listsLabel } from "@/components/category/imported-page";
 import { GeoShopPage } from "@/components/category/geo-shop";
 import { countryFromFlat, geoShopMetadata } from "@/lib/geo-shop";
 import { TaxonomyPage } from "@/components/lists/taxonomy-page";
@@ -34,8 +34,8 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
   const c = getCategory(category);
   if (!c) return {};
   return {
-    title: c.imported ? `${c.name} Lists` : `${c.name} contact lists`,
-    description: c.imported ? `Ready-made ${c.name.toLowerCase()} lists. See a masked sample first, then pay once and download the file.` : `${c.description} See a masked sample first, then pay once and download the file.`,
+    title: c.imported ? listsLabel(c.name) : `${c.name} contact lists`,
+    description: c.imported ? `Ready-made ${c.name.replace(/\s+lists?$/i, "").toLowerCase()} lists. See a masked sample first, then pay once and download the file.` : `${c.description} See a masked sample first, then pay once and download the file.`,
     alternates: { canonical: `/lists/${c.slug}` },
   };
 }
