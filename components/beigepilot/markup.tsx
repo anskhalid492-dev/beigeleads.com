@@ -19,8 +19,8 @@ export function Markup({ text }: { text: string }) {
     <div className="space-y-2">
       {text.split(/\n{2,}/).map((blk, i) => {
         const lines = blk.split("\n").filter(Boolean);
-        if (lines.length && lines.every((x) => /^\s*[-*•]\s+/.test(x))) return <ul key={i} className="list-disc space-y-1 pl-5">{lines.map((x, j) => <li key={j}>{inline(x.replace(/^\s*[-*•]\s+/, ""))}</li>)}</ul>;
-        if (lines.length && lines.every((x) => /^\s*\d+[.)]\s+/.test(x))) return <ol key={i} className="list-decimal space-y-1 pl-5">{lines.map((x, j) => <li key={j}>{inline(x.replace(/^\s*\d+[.)]\s+/, ""))}</li>)}</ol>;
+        if (lines.length && lines.every((x) => /^\s*[-*•]\s+/.test(x))) return <ul key={i} className="list-disc space-y-1 ps-5">{lines.map((x, j) => <li key={j}>{inline(x.replace(/^\s*[-*•]\s+/, ""))}</li>)}</ul>;
+        if (lines.length && lines.every((x) => /^\s*\d+[.)]\s+/.test(x))) return <ol key={i} className="list-decimal space-y-1 ps-5">{lines.map((x, j) => <li key={j}>{inline(x.replace(/^\s*\d+[.)]\s+/, ""))}</li>)}</ol>;
         return <p key={i}>{lines.map((x, j) => <span key={j}>{j > 0 && <br />}{inline(x)}</span>)}</p>;
       })}
     </div>

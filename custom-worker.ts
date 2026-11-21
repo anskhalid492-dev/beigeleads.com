@@ -105,6 +105,7 @@ export default {
       ctx.waitUntil(purgeOldPopupEvents(env).catch(() => undefined));
       ctx.waitUntil(purgeCartEvents(env));
       ctx.waitUntil(import("./lib/beigepilot/proactive/store").then((m) => m.purgeProEvents(env)).catch(() => undefined));
+      ctx.waitUntil(import("./lib/beigepilot/v2/offers").then((m) => m.expireOffers(env)).catch(() => undefined));
     }
     else {
       ctx.waitUntil(runPaymentWatcher(env));

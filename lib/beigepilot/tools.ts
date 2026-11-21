@@ -14,6 +14,8 @@ import type { ToolDef } from "./providers";
 import { DEFAULT_SALES, type SalesAssistant } from "./store";
 import { affordableItems, cheapestOver, planBundle, validPick } from "./budget";
 import { loadSalesSettings } from "@/lib/sales/settings";
+import { issueOffer, type OfferResult } from "./v2/offers";
+import { OFFER_REFUSAL } from "./v2/negotiate";
 
 export type Card = {
   slug: string; name: string; url: string; sampleUrl: string; country: string; countryCode: string; category: string; region: string; forSale: boolean;
@@ -24,7 +26,11 @@ export type Card = {
 };
 export type Bundle = { lines: { slug: string; name: string; pkg: string; price: string }[]; subtotal: string; discount: string; total: string; volumeApplied: boolean };
 export type Source = { title: string; url: string };
-export type ToolCtx = { env: CloudflareEnv; sa: SalesAssistant; cards: Card[]; bundle: Bundle | null; sources: Source[]; handoff: string | null; miss: boolean; trace: { name: string; args: unknown; ok: boolean }[] };
+/** The offer Pilo made in this reply (shown as the "Special BeigePilot Offer" card). The code itself is never put in the chat. */
+export type OfferCard = { offerId: number; percent: number; expiresAt: number; savingCents: number; capped: boolean; eligible: string[]; excluded: string[] };
+/** Session facts for the discount tool. `lastUserText` is the visitor's REAL last message: the server (not the model) decides whether a discount was asked for. */
+export type V2Ctx = { negEnabled: boolean; sid: string; ipHash: string; cart: { slug: string; pkg: string }[]; lastUserText: string; offer: OfferCard | null; keptVolume: boolean; asked: boolean };
+export type ToolCtx = { env: CloudflareEnv; sa: SalesAssistant; v2?: V2Ctx; cards: Card[]; bundle: Bundle | null; sources: Source[]; handoff: string | null; miss: boolean; trace: { name: string; args: unknown; ok: boolean }[] };
 export const newCtx = (env: CloudflareEnv, sa: SalesAssistant = DEFAULT_SALES): ToolCtx => ({ env, sa, cards: [], bundle: null, sources: [], handoff: null, miss: false, trace: [] });
 
 const forSale = (p: Product) => p.status === "live" && !p.placeholderData;
@@ -86,19 +92,20 @@ export const TOOLS: ToolDef[] = [
   { name: "searchKnowledge", description: "Search answers written by the BeigeLeads team (custom FAQs). Use it for questions about policies, process or products that the catalog tools do not cover, before searchHelpArticles.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "searchHelpArticles", description: "Search published Help Center articles for how-to, delivery, payment, data and policy answers.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "getPolicyDetails", description: "Read a published policy page. topic is one of: " + POLICY_SLUGS.join(", "), parameters: { type: "object", properties: { topic: { type: "string" } }, required: ["topic"] } },
+  { name: "requestDiscount", description: "ONLY when the visitor has explicitly asked for a discount, coupon or better price. Asks the server whether an offer is available for the cart. Never call it on your own. The server decides; you cannot set or change a percentage.", parameters: { type: "object", properties: {}, required: [] } },
   { name: "suggestContact", description: "Use when you cannot answer confidently from tools, or the visitor asks about a specific order or account. Shows a 'Contact Our Team' button.", parameters: { type: "object", properties: { reason: { type: "string" } }, required: ["reason"] } },
 ];
 
 const FINDER = new Set(["searchProducts", "getRelatedProducts", "showProductCards"]);
 /** Tools the model may use, after the admin's Sales Assistant switches. */
-export const toolsFor = (sa: SalesAssistant): ToolDef[] => TOOLS.filter((t) => !(FINDER.has(t.name) && !sa.finder) && !(t.name === "findWithinBudget" && !sa.budget) && !(t.name === "prepareAddToCart" && !sa.cart) && !(t.name === "suggestContact" && !sa.handoff));
+export const toolsFor = (sa: SalesAssistant, neg = false): ToolDef[] => TOOLS.filter((t) => !(t.name === "requestDiscount" && !neg) && !(FINDER.has(t.name) && !sa.finder) && !(t.name === "findWithinBudget" && !sa.budget) && !(t.name === "prepareAddToCart" && !sa.cart) && !(t.name === "suggestContact" && !sa.handoff));
 const cap = (v: unknown, n = 7000) => { const s = JSON.stringify(v); return s.length > n ? s.slice(0, n) + '…[truncated]"' : s; };
 const str = (v: unknown, n = 200) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 
 /** Runs one tool. Always returns a JSON string; unknown tools and bad input return an error object, never throw. */
 export async function runTool(ctx: ToolCtx, name: string, args: Record<string, unknown>): Promise<string> {
   let ok = true;
-  if (!toolsFor(ctx.sa).some((t) => t.name === name)) { ctx.trace.push({ name, args, ok: false }); return JSON.stringify({ error: "This tool is switched off." }); }
+  if (!toolsFor(ctx.sa, !!ctx.v2?.negEnabled).some((t) => t.name === name)) { ctx.trace.push({ name, args, ok: false }); return JSON.stringify({ error: "This tool is switched off." }); }
   const out = await (async (): Promise<unknown> => {
     await hydrateCatalog(ctx.env);
     switch (name) {
@@ -117,6 +124,16 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         const matches = exact.filter(big).slice(0, ctx.sa.maxRecs);
         const closest = ctx.sa.alternatives ? [...exact.filter((p) => !big(p)), ...d.close.map(pick).filter((p): p is Product => !!p).filter(show)].slice(0, 4) : [];
         return { matches: matches.map(summary), closest: closest.map(summary), requestedMinimumContacts: min || undefined, note: matches.length ? (exact.length > matches.length ? "Some lists were left out because their biggest package is smaller than the requested quantity." : undefined) : "No exact match. Say so plainly (including when the quantity is too large); offer the closest lists if any, or the custom list builder (/custom-list) or contact page (/contact)." };
+      }
+      case "requestDiscount": {
+        const v = ctx.v2; if (!v) return { status: "unavailable" };
+        const r: OfferResult = await issueOffer(ctx.env, { sid: v.sid, ipHash: v.ipHash, cart: v.cart, lastUserText: v.lastUserText });
+        if (r.ok) {
+          v.offer = { offerId: r.offerId, percent: r.percent, expiresAt: r.expiresAt, savingCents: r.savingCents, capped: r.capped, eligible: r.eligible, excluded: r.excluded };
+          return { status: "offered", percent: r.percent, savesApprox: formatUsd(r.savingCents), validMinutes: Math.max(1, Math.round((r.expiresAt - Date.now() / 1000) / 60)), excludedFromOffer: r.excluded, askedAboveCeiling: r.capped, rules: "The offer is shown to the visitor as a card with an Apply button. Do not repeat the discount code (you do not have it). The maximum Pilo can ever offer is 20%. Never say a manager approved it; it is an automatic AI assistant offer. It does not combine with Buy More, Save More." };
+        }
+        if (r.reason === "kept-volume") { v.keptVolume = true; return { status: "kept-volume", message: "Your current bundle or volume savings are already better than the AI offer, so I've kept the larger discount for you." }; }
+        return { status: "no-offer", message: OFFER_REFUSAL[r.reason] ?? OFFER_REFUSAL.error };
       }
       case "getProductDetails": {
         const p = getProduct(str(args.slug, 100)); if (!p) return { error: "unknown product slug" };

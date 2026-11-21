@@ -7,7 +7,7 @@ import { savePro } from "@/lib/beigepilot/proactive/store";
 import { checkDelays, checkTemplate, DEFAULT_TEMPLATES, PAGE_KINDS, type ProSettings } from "@/lib/beigepilot/proactive/types";
 
 export type ProResult = { ok: boolean; message: string };
-type Payload = { enabled: boolean; delays: number[]; bubbleSeconds: number; pages: Record<string, boolean>; cartMessages: boolean; mobile: boolean; templates: { id: string; text: string; cta: string; ask: string; on: boolean }[] };
+type Payload = { enabled: boolean; delays: number[]; bubbleSeconds: number; pages: Record<string, boolean>; cartMessages: boolean; mobile: boolean; exitIntent?: boolean; templates: { id: string; text: string; cta: string; ask: string; on: boolean }[] };
 
 export async function saveProAction(_: ProResult | null, form: FormData): Promise<ProResult> {
   let who: string; try { who = (await requireAdmin()).email; } catch { return { ok: false, message: "Not allowed." }; }
@@ -25,7 +25,7 @@ export async function saveProAction(_: ProResult | null, form: FormData): Promis
   for (const stage of [1, 2, 3]) if (!templates.some((t) => t.stage === stage && t.kind === "default" && t.on)) return { ok: false, message: `Message ${stage} needs its default template switched on, so every page has something to show.` };
   const pages = Object.fromEntries(PAGE_KINDS.map((k) => [k, !!p.pages?.[k]])) as ProSettings["pages"];
   const env = getCloudflareContext().env;
-  const s: ProSettings = { enabled: !!p.enabled, delays: delays as [number, number, number], bubbleSeconds: Math.round(bs), pages, cartMessages: !!p.cartMessages, mobile: !!p.mobile, templates };
+  const s: ProSettings = { enabled: !!p.enabled, delays: delays as [number, number, number], bubbleSeconds: Math.round(bs), pages, cartMessages: !!p.cartMessages, mobile: !!p.mobile, exitIntent: p.exitIntent !== false, templates };
   try { await savePro(env, s); } catch { return { ok: false, message: "Could not save. Run migration 0037 in D1 first." }; }
   await getDbFromEnv(env).insert(schema.settingsAuditLog).values({ actor: who, category: "beigepilot", settingKey: "proactive", newValue: `enabled=${s.enabled} delays=${delays.join("/")}` }).catch(() => {});
   revalidatePath("/admin/beigepilot", "layout");

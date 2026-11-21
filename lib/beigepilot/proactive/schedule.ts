@@ -16,6 +16,7 @@ export type SState = {
   search?: string;
   recent: string[]; // paths of recently viewed single-segment /lists pages
   events: string[]; // analytics already sent, "stage:event"
+  exit?: boolean; // the exit-intent message was already shown this session (max one)
 };
 export const freshState = (sid: string): SState => ({ sid, activeMs: 0, stage: 0, lastShownMs: -1, hiddenAtMs: -1, stop: false, shown: [], nextTryMs: 0, recent: [], events: [] });
 

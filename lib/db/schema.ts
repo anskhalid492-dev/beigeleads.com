@@ -1268,3 +1268,19 @@ export const evEvents = sqliteTable("ev_events", {
   detail: text("detail").notNull().default(""),
   createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
 });
+
+/** BeigePilot negotiation offers (section 122). The discount itself is a `promotions` row (origin "negotiation"); this is the session-bound audit record. */
+export const piloOffers = sqliteTable("pilo_offers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: text("session_id").notNull(),
+  code: text("code").notNull().unique(),
+  promotionId: integer("promotion_id").notNull().default(0),
+  percent: integer("percent").notNull(),
+  levelNo: integer("level_no").notNull().default(1),
+  status: text("status").notNull().default("offered"),
+  ipHash: text("ip_hash").notNull().default(""),
+  cartJson: text("cart_json").notNull().default("[]"),
+  expiresAt: integer("expires_at").notNull(),
+  appliedAt: integer("applied_at"),
+  createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
+});

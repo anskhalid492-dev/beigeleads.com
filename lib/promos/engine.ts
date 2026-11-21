@@ -23,7 +23,7 @@ export type Promo = {
   status: "draft" | "active" | "paused";
   bannerPlaces: string[];
   /** a personal code (Second Purchase Offer): valid only with this email address; origin "reward" marks those codes */
-  boundEmail?: string | null; origin?: "admin" | "reward";
+  boundEmail?: string | null; origin?: "admin" | "reward" | "negotiation";
 };
 /** Facts the database supplies about one promotion for this buyer. null = unknown (no email yet). */
 export type PromoFacts = { totalUses: number; customerUses: number | null; firstPurchase: boolean | null; partner: boolean | null; /** true/false once the buyer email is known; null before; true for codes not bound to an email */ emailMatch?: boolean | null };
@@ -34,6 +34,8 @@ export type Applied = {
   source: "code" | "automatic" | "partner" | "volume"; lineCents: number[]; combinable: boolean;
   /** may the Buy More, Save More discount be added on top of this one */
   stacksVolume?: boolean;
+  /** a BeigePilot negotiation offer (CLAUDE.md section 122): capped at NEGOTIATION_MAX_PERCENT here, whatever the stored value says */
+  negotiation?: boolean;
 };
 export type EngineInput = {
   candidates: Candidate[]; enteredCode?: string;
@@ -66,6 +68,9 @@ export const STACKING_RULES = [
   "Percentage discounts are rounded to the nearest cent. \"Maximum discount\" caps the total saving of one promotion.",
 ];
 
+/** Hard ceiling for any BeigePilot negotiation offer. Enforced in the pricing engine itself, so no setting or database row can exceed it. */
+export const NEGOTIATION_MAX_PERCENT = 20;
+export const NEGOTIATION_KEPT_VOLUME = "Your current bundle or volume savings are already better than the AI offer, so I've kept the larger discount for you.";
 export const normalizePromoCode = (raw: string) => raw.trim().toUpperCase().replace(/\s+/g, "");
 export const PROMO_CODE_RE = /^[A-Z0-9][A-Z0-9_-]{2,29}$/;
 
@@ -129,7 +134,8 @@ export function promoCents(p: Promo, lines: EngineLine[], remaining: number[], c
   const eligible = lines.map((l, i) => (lineEligible(p, l) ? remaining[i] : 0));
   const base = eligible.reduce((a, b) => a + b, 0);
   if (base <= 0) return lines.map(() => 0);
-  let total = p.kind === "percent" ? Math.round((base * Math.min(100, Math.max(0, p.value))) / 100) : p.value;
+  const neg = p.origin === "negotiation";
+  let total = p.kind === "percent" || neg ? Math.round((base * Math.min(neg ? NEGOTIATION_MAX_PERCENT : 100, Math.max(0, p.value))) / 100) : p.value;
   if (p.maxDiscountCents !== null) total = Math.min(total, p.maxDiscountCents);
   return allocate(Math.min(total, base), eligible);
 }
@@ -201,7 +207,7 @@ function applyPromos(lines: EngineLine[], input: EngineInput): EngineResult {
     if (total <= 0) continue;
     cents.forEach((c, i) => { remaining[i] -= c; });
     if (needsEmail(p, x.c.facts)) needs = true;
-    applied.push({ promotionId: p.id, code: p.code ?? "", title: p.title, kind: p.kind, percent: p.kind === "percent" ? p.value : 0, cents: total, source: x.src, lineCents: cents, combinable: p.combinable, stacksVolume: p.origin === "reward" ? !!input.rewardCombineVolume : !!input.volume?.stackWithPromos });
+    applied.push({ promotionId: p.id, code: p.code ?? "", title: p.title, kind: p.kind, percent: p.kind === "percent" ? p.value : 0, cents: total, source: x.src, lineCents: cents, combinable: p.combinable, negotiation: p.origin === "negotiation", stacksVolume: p.origin === "negotiation" ? false : p.origin === "reward" ? !!input.rewardCombineVolume : !!input.volume?.stackWithPromos });
   }
   const notApplied = enteredPromo && !applied.some((a) => a.promotionId === enteredPromo.promo.id);
   if (notApplied) codeError = "A better offer is already applied to your cart. Offers cannot be combined.";
@@ -226,6 +232,16 @@ export function volumeInfo(lines: EngineLine[], v: VolumeSettings | undefined): 
 export function applyPromotions(lines: EngineLine[], input: EngineInput): EngineResult {
   const base = applyPromos(lines, input);
   const info = volumeInfo(lines, input.volume);
+  // A negotiation offer never stacks: the single greater saving wins (CLAUDE.md section 122).
+  const neg = base.applied.find((a) => a.negotiation);
+  if (neg && info.enabled && info.percent > 0) {
+    const v = input.volume!;
+    const volCents = lines.reduce((n, l) => n + (v.excludedProducts.includes(l.slug) || v.excludedCategories.includes(l.categorySlug) ? 0 : Math.round((l.priceCents * info.percent) / 100)), 0);
+    if (volCents >= neg.cents) {
+      const again = applyPromotions(lines, { ...input, enteredCode: undefined, candidates: input.candidates.filter((c) => c.promo.origin !== "negotiation") });
+      return { ...again, codeError: NEGOTIATION_KEPT_VOLUME };
+    }
+  }
   if (!info.enabled) return base;
   if (base.applied.some((a) => a.source === "partner")) return { ...base, volume: info };
   const stack = base.applied.every((a) => a.stacksVolume);

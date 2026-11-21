@@ -129,13 +129,15 @@ export function BeigePilot() {
     <>
       {mounted && cfg && <Panel cfg={cfg} path={path} open={open} launch={launch} onClosed={closed} />}
       {pro.bubble && !open && !hidden && (
-        <ProBubble name={name} text={pro.bubble.text} cta={pro.bubble.cta} intensity={cfg?.motion} onCta={() => openWith(pro.click())} onClose={pro.dismiss}
+        <ProBubble name={name} text={pro.bubble.text} cta={pro.bubble.cta} secondary={pro.bubble.secondary} intensity={cfg?.motion} onCta={() => openWith(pro.click())} onClose={pro.dismiss}
           className={`${side} ${onCart ? "bottom-[10.5rem] lg:bottom-[7rem]" : "bottom-[7rem]"}`} />
       )}
       {!hidden && (
         <button ref={btn} type="button" data-pose={pose} onClick={openIt} aria-label={`Open ${name}, the BeigeLeads assistant`}
           onPointerEnter={enter} onPointerLeave={leave} onFocus={enter} onBlur={leave}
-          className={`pl-dock ${side} ${onCart ? "bottom-[4.75rem] lg:bottom-0" : "bottom-0"}`}>
+          className={`pl-dock group ${side} ${onCart ? "bottom-[4.75rem] lg:bottom-0" : "bottom-0"}`}>
+          {pro.unread && !pro.bubble && <span className="absolute end-1 top-1 z-10 size-3.5 rounded-full border-2 border-sand-50 bg-purple-600" role="status"><span className="sr-only">1 unread message from {name}</span></span>}
+          <span aria-hidden className="pointer-events-none absolute bottom-[calc(100%+0.25rem)] end-2 z-10 hidden whitespace-nowrap rounded-xl bg-forest-900 px-3 py-1.5 text-[0.75rem] font-semibold text-sand-50 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:hover)]:block">Need help finding leads?</span>
           <div ref={rig} className="pl-rig">
             <Pilo peek mood={mood} size={104} intensity={cfg?.motion} />
           </div>

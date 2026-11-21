@@ -15,6 +15,8 @@ export type ProSettings = {
   pages: Record<PageKind, boolean>;
   cartMessages: boolean;
   mobile: boolean;
+  /** exit-intent rescue message (counts toward the 3-message cap) */
+  exitIntent: boolean;
   templates: Template[];
 };
 export const MAX_MESSAGES = 3;
@@ -50,7 +52,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
 export const DEFAULT_PRO: ProSettings = {
   enabled: true, delays: [0, 120, 240], bubbleSeconds: 25,
   pages: { home: true, product: true, category: true, country: true, search: true, cart: true, other: true },
-  cartMessages: true, mobile: true, templates: DEFAULT_TEMPLATES,
+  cartMessages: true, mobile: true, exitIntent: true, templates: DEFAULT_TEMPLATES,
 };
 
 // Wording that would make a proactive message dishonest or pushy. Rejected when an admin saves.
@@ -94,7 +96,7 @@ export function parsePro(raw: string | undefined | null): ProSettings {
   for (const k of PAGE_KINDS) if (typeof j.pages?.[k] === "boolean") pages[k] = j.pages[k];
   return {
     enabled: j.enabled !== false, delays, bubbleSeconds: Number.isFinite(bs) ? Math.min(60, Math.max(8, Math.round(bs))) : DEFAULT_PRO.bubbleSeconds,
-    pages, cartMessages: j.cartMessages !== false, mobile: j.mobile !== false, templates,
+    pages, cartMessages: j.cartMessages !== false, mobile: j.mobile !== false, exitIntent: j.exitIntent !== false, templates,
   };
 }
 

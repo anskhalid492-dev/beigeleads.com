@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { AiBenefits, AiBudget, AiCart, AiFinalCta, AiFinder, AiHero, AiLimits, AiPrompts, AiSteps, AiSupport } from "@/components/ai-assistant/sections";
+import { AiBenefits, AiFeatures, AiFinalCta, AiHero, AiLanguages, AiLimits, AiMemory, AiOffers, AiSteps4 } from "@/components/ai-assistant/sections";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SolutionFaq } from "@/components/solutions/sections";
-import { AI_DESC, AI_FAQS, AI_TITLE } from "@/lib/ai-assistant-content";
+import { AI_DESC, AI_V2_FAQS, AI_TITLE } from "@/lib/ai-assistant-content";
 import { SITE_URL } from "@/lib/site";
 
 // No page-level robots setting: the site-wide noindex in app/layout.tsx stays until launch (CLAUDE.md section 50).
@@ -21,15 +21,14 @@ export default function AiAssistantPage() {
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "BeigePilot AI Assistant", url: `${SITE_URL}/ai-assistant`, description: AI_DESC, isPartOf: { "@type": "WebSite", name: "BeigeLeads", url: SITE_URL } }} />
       <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "AI Assistant", href: "/ai-assistant" }]} /></div>
       <AiHero />
-      <AiSteps />
-      <AiFinder />
-      <AiCart />
-      <AiBudget />
-      <AiSupport />
-      <AiPrompts />
+      <AiFeatures />
+      <AiSteps4 />
+      <AiLanguages />
+      <AiMemory />
+      <AiOffers />
       <AiBenefits />
       <AiLimits />
-      <SolutionFaq name="BeigePilot" items={AI_FAQS} />
+      <SolutionFaq name="BeigePilot" items={AI_V2_FAQS} />
       <AiFinalCta />
     </>
   );

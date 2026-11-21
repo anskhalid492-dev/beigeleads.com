@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Pilo, type Intensity } from "./pilo";
 
-export function ProBubble({ name, text, cta, onCta, onClose, intensity, className = "", inline = false }: { name: string; text: string; cta: string; onCta: () => void; onClose: () => void; intensity?: Intensity; className?: string; inline?: boolean }) {
+export function ProBubble({ name, text, cta, onCta, onClose, secondary, intensity, className = "", inline = false }: { name: string; text: string; cta: string; onCta: () => void; onClose: () => void; secondary?: string; intensity?: Intensity; className?: string; inline?: boolean }) {
   const [more, setMore] = useState(false);
   return (
     <div role="region" aria-label={`A message from ${name}`} onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}
@@ -17,6 +17,7 @@ export function ProBubble({ name, text, cta, onCta, onClose, intensity, classNam
       <p className={`mt-2.5 text-[0.88rem] leading-snug text-forest-900 ${more ? "" : "line-clamp-4 sm:line-clamp-none"}`}>{text}</p>
       {!more && text.length > 150 && <button type="button" onClick={() => setMore(true)} className="mt-1 text-xs font-semibold text-purple-700 underline sm:hidden">Read more</button>}
       <button type="button" onClick={onCta} className="mt-3 w-full rounded-full bg-purple-600 px-4 py-2 text-[0.85rem] font-bold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">{cta}</button>
+      {secondary && <button type="button" onClick={onClose} className="mt-1.5 w-full rounded-full px-4 py-1.5 text-[0.8rem] font-semibold text-forest-700 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-purple-600">{secondary}</button>}
     </div>
   );
 }

@@ -708,7 +708,7 @@ summary::-webkit-details-marker {
 @keyframes pl-land-shadow { 0% { transform: scaleX(.4); opacity: 0; } 58% { transform: scaleX(1.15); } 100% { transform: scaleX(1); } }
 
 /* ---- Pilo launcher: peeks up from behind the bottom edge of the page ---- */
-.pl-dock { position: fixed; z-index: 40; width: 104px; height: 104px; clip-path: inset(-260px -30px 0 -30px); background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pl-dock { position: fixed; z-index: 40; width: 104px; height: 104px; clip-path: inset(-260px -200px 0 -200px); background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .pl-dock:focus-visible { outline: none; }
 .pl-dock:focus-visible .pl-rig::after { content: ""; position: absolute; left: 50%; top: 36%; width: 82px; height: 74px; transform: translateX(-50%); border: 3px solid var(--purple-600); border-radius: 36px; }
 .pl-rig { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; transition: transform 460ms cubic-bezier(.3,1.35,.5,1); }

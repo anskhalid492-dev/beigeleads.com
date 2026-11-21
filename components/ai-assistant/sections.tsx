@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Check, CircleHelp, LifeBuoy, MessageSquare, Search, Send, ShoppingCart, Target, Wallet, type LucideIcon } from "lucide-react";
-import { AI_BENEFITS, AI_BUDGET_PROMPTS, AI_CART_STEPS, AI_LIMITS, AI_PROMPTS, AI_SEARCHES, AI_SEARCH_BY, AI_STEPS, AI_SUPPORT_STEPS } from "@/lib/ai-assistant-content";
+import { AI_V2_FEATURES, AI_V2_LANGS, AI_V2_MEMORY, AI_V2_OFFER_RULES, AI_V2_STEPS, AI_BENEFITS, AI_BUDGET_PROMPTS, AI_CART_STEPS, AI_LIMITS, AI_PROMPTS, AI_SEARCHES, AI_SEARCH_BY, AI_STEPS, AI_SUPPORT_STEPS } from "@/lib/ai-assistant-content";
 import { HeroChat } from "./hero-chat";
 import { OpenPilo } from "./open-button";
 
@@ -16,7 +16,7 @@ export function AiHero() {
       <div className={`${wrap} grid gap-14 pb-20 pt-16 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-16 lg:pb-28 lg:pt-24`}>
         <div className="hero-in">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-forest-300">Meet BeigePilot</p>
-          <h1 className="display mt-4 text-5xl text-sand-50 sm:text-7xl xl:text-[5.25rem]">Meet Your AI Database Shopping Assistant</h1>
+          <h1 className="display mt-4 text-5xl text-sand-50 sm:text-7xl xl:text-[5.25rem]">Meet Pilo — Your Personal AI Database Shopping Assistant</h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-sand-200">Finding the right business database shouldn&rsquo;t take hours. Tell BeigePilot what you&rsquo;re looking for, and it will help you discover matching databases, explore available packages, shop within your budget, and get support when you need it.</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <OpenPilo className={primary} fallbackDark>Try BeigePilot Now</OpenPilo>
@@ -216,12 +216,82 @@ export function AiFinalCta() {
       <div className={wrap}>
         <div className="rounded-[2rem] bg-forest-900 px-6 py-14 text-center sm:px-12 sm:py-16" style={{ backgroundImage: "radial-gradient(36rem 16rem at 50% 0%, rgba(45,106,79,0.5), transparent 70%)" }}>
           <h2 className="display mx-auto max-w-3xl text-4xl text-sand-50 sm:text-6xl">Your Next Database Is Just a Conversation Away</h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-sand-200">Tell BeigePilot what you&rsquo;re looking for and let our AI assistant help you find the right database.</p>
+          <p className="mx-auto mt-5 max-w-xl text-lg text-sand-200">Tell Pilo what youTell BeigePilot what you&rsquo;re looking for and let our AI assistant help you find the right database.rsquo;re looking for and let our AI assistant help you find the right database.</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <OpenPilo className={primary} fallbackDark>Chat with BeigePilot</OpenPilo>
+            <OpenPilo className={primary} fallbackDark>Start Chatting With Pilo</OpenPilo>
             <Link href="/lists" className="inline-flex h-12 items-center rounded-full border border-sand-50/30 px-7 font-semibold text-sand-50 hover:border-sand-50 hover:bg-sand-50/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Browse All Databases</Link>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function AiFeatures() {
+  return (
+    <section className="bg-sand-50 py-20 lg:py-24">
+      <div className={wrap}>
+        <div className={head}><h2 className={h2}>Everything Pilo Can Help With</h2></div>
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {AI_V2_FEATURES.map(([t, d]) => <li key={t} className="rounded-3xl border border-sand-300 bg-white p-6"><h3 className="text-lg font-bold text-forest-900">{t}</h3><p className="mt-2">{d}</p></li>)}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+export function AiSteps4() {
+  return (
+    <section id="how-it-works" className="scroll-mt-24 bg-sand-100 py-20 lg:py-24">
+      <div className={wrap}>
+        <div className={head}><h2 className={h2}>From Question to Checkout in Four Steps</h2></div>
+        <ol className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {AI_V2_STEPS.map(([t, d], i) => <li key={t} className="rounded-3xl border border-sand-300 bg-white p-6"><span aria-hidden className="display text-4xl text-sand-300">{i + 1}</span><h3 className="mt-3 text-lg font-bold text-forest-900"><span className="sr-only">Step {i + 1}: </span>{t}</h3><p className="mt-2">{d}</p></li>)}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+export function AiLanguages() {
+  return (
+    <section className="bg-sand-50 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <div>
+          <h2 className={h2}>Chat in Your Own Language</h2>
+          <p className="mt-4 text-lg leading-relaxed">Pilo detects the language you write in, or you can choose one in the chat header. Arabic and Urdu switch the chat to right-to-left layout.</p>
+          <div className="mt-8"><OpenPilo ask="Hola, busco bases de datos de empresas." className={primary}>Try It in Your Language</OpenPilo></div>
+        </div>
+        <ul className="flex flex-wrap gap-3">{AI_V2_LANGS.map((l) => <li key={l} className={`${chip} text-base`}>{l}</li>)}</ul>
+      </div>
+    </section>
+  );
+}
+
+export function AiMemory() {
+  return (
+    <section className="bg-sand-100 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <ul className="grid gap-3 rounded-3xl border border-sand-300 bg-white p-6 sm:grid-cols-2 sm:p-8">{AI_V2_MEMORY.map(li)}</ul>
+        <div>
+          <h2 className={h2}>Pilo Remembers So You Don&rsquo;t Repeat Yourself</h2>
+          <p className="mt-4 text-lg leading-relaxed">During a chat, Pilo keeps what you told it and asks one short question at a time to fill the gaps. Memory stays in your browser. You can clear it at any time, or opt in to keep it on your device for up to 30 days.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AiOffers() {
+  return (
+    <section className="bg-sand-50 py-20 lg:py-24">
+      <div className={`${wrap} grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16`}>
+        <div>
+          <h2 className={h2}>Looking for a Better Price? Just Ask Pilo.</h2>
+          <p className="mt-4 text-lg leading-relaxed">When offers are available and your cart is eligible, Pilo can offer a discount of up to 20%. Ask in the chat to see whether your cart qualifies.</p>
+          <div className="mt-8"><OpenPilo ask="Can I get a better price?" className={primary}>Ask Pilo About Offers</OpenPilo></div>
+        </div>
+        <ul className="grid gap-3 rounded-3xl border border-sand-300 bg-white p-6 sm:p-8">{AI_V2_OFFER_RULES.map(li)}</ul>
       </div>
     </section>
   );

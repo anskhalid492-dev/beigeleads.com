@@ -16,7 +16,7 @@ export function rowToPromo(r: Row): Promo {
     usageLimit: r.usageLimit, perCustomerLimit: r.perCustomerLimit,
     firstPurchaseOnly: !!r.firstPurchaseOnly, partnerOnly: !!r.partnerOnly, automatic: !!r.automatic, combinable: !!r.combinable,
     status: r.status, bannerPlaces: list(r.bannerPlaces),
-    boundEmail: r.boundEmail ? r.boundEmail.toLowerCase() : null, origin: r.origin === "reward" ? "reward" : "admin",
+    boundEmail: r.boundEmail ? r.boundEmail.toLowerCase() : null, origin: r.origin === "reward" ? "reward" : r.origin === "negotiation" ? "negotiation" : "admin",
   };
 }
 

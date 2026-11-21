@@ -154,7 +154,7 @@ export function shownStatus(p: Promo, nowSec: number): Row["shown"] {
 /** Real numbers only. Revenue = totals of PAID orders that used a promotion (test-network payments are left out and counted separately). */
 export async function loadStats(db: Db, range: { from?: number; to?: number } = {}, nowSec = Math.floor(Date.now() / 1000)): Promise<Stats | null> {
   try {
-    const promos = (await db.select().from(schema.promotions)).map(rowToPromo).filter((p) => p.origin !== "reward"); // personal reward codes have their own admin page
+    const promos = (await db.select().from(schema.promotions)).map(rowToPromo).filter((p) => p.origin !== "reward" && p.origin !== "negotiation"); // reward codes and BeigePilot offers have their own admin pages
     const reds = await db.select().from(schema.promotionRedemptions);
     const orderIds = [...new Set(reds.filter((r) => r.status === "redeemed").map((r) => r.orderId))];
     const real = new Set<string>();

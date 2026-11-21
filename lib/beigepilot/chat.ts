@@ -5,12 +5,18 @@ import { complete, isProviderId, PROVIDER_LABEL, ProviderError, type Msg, type P
 import { logUnanswered } from "./leads";
 import { publishedEntries } from "./knowledge";
 import { DEFAULT_SALES, getProviderKey, getSettings, limitReached, listProviders, logUsage, type Settings } from "./store";
-import { newCtx, runTool, toolsFor, type Bundle, type Card, type Source } from "./tools";
+import { newCtx, runTool, toolsFor, type Bundle, type Card, type OfferCard, type Source } from "./tools";
+import { detectLang, isLang, langName, type Lang } from "./v2/lang";
+import { describe as describeMemory, isEmpty as memoryEmpty, parseMemory, remember, type Memory } from "./v2/memory";
+import { nextSlot, questionFor, quickReplies, type Quick } from "./v2/followup";
+import { getNeg } from "./v2/offers";
+import type { NegPolicy } from "./v2/negotiate";
 
-export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId; /** Called with the tool name right before it runs (drives the live "searching" state). */ onTool?: (name: string) => void };
+export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId; /** chosen language ("auto"/undefined = detect), session id and connection hash (negotiation limits), memory the browser holds */ lang?: string; sid?: string; ipHash?: string; memory?: unknown; /** Called with the tool name right before it runs (drives the live "searching" state). */ onTool?: (name: string) => void };
 export type ChatOut = {
   ok: boolean; text: string; cards: Card[]; bundle?: Bundle | null; sources: Source[]; handoff: string | null;
   trace: { name: string; args: unknown; ok: boolean }[]; provider?: ProviderId; model?: string; tokensIn?: number; tokensOut?: number; usedFallback?: boolean; error?: string; miss?: boolean; tools?: string[];
+  /** BeigePilot 2.0 */ lang?: Lang; memory?: Memory; quick?: Quick[]; offer?: OfferCard | null; keptVolume?: boolean;
 };
 
 const MAX_STEPS = 4;
@@ -46,7 +52,21 @@ const CONVERSATION = [
   "REACT NATURALLY to what they just said (for example \"Ooh, Germany! 🇩🇪 Are you after the whole country or one city?\", then \"Berlin it is! ✨ Here's what I found.\"). When you have matches, say one short line and call showProductCards instead of listing details in text; the cards carry names, prices and links.",
 ].join("\n");
 
-export function buildSystem(s: Settings, page: string, restricted: string[] = []): string {
+/** Language, memory, follow-up and negotiation rules (CLAUDE.md section 122). All sit BELOW the grounding rules. */
+export function v2Rules(o: { lang: Lang; memory: Memory; next: string; neg: NegPolicy | null }): string {
+  const mem = describeMemory(o.memory);
+  const lines = [
+    `LANGUAGE: reply in ${langName(o.lang)}. Do not translate product names, prices, record counts, URLs, package names or legal/policy terms. If the visitor switches language, follow them.`,
+    mem.length && !memoryEmpty(o.memory) ? `WHAT THE VISITOR ALREADY TOLD YOU (do not ask again; if they change something, use the new value; never invent more):\n${mem.map((m) => `- ${m.label}: ${m.value}`).join("\n")}` : "",
+    o.next ? `NEXT QUESTION (only if you cannot search yet; ask exactly this ONE question, in the visitor's language, never a list of questions): ${o.next}` : "If you have enough to search the catalog, search instead of asking.",
+  ];
+  if (o.neg?.enabled) lines.push(
+    `DISCOUNTS: never mention or offer a discount yourself. Only when the visitor explicitly asks for a discount, coupon or better price, call requestDiscount (it needs items in their cart: if the cart is empty, ask them to add a database first). The server decides; you cannot choose or change a percentage, and you never reveal codes. The most Pilo can ever offer is ${Math.min(20, o.neg.maxPercent)}%. If they ask for more, say ${Math.min(20, o.neg.maxPercent)}% is the most you can offer. Say it is an automatic BeigePilot offer, never that a person or manager approved it. Never agree to a price or percentage yourself. Email list verification, custom quotes and credits are not eligible. If the tool says the existing savings are better, say so plainly.`,
+  );
+  return lines.filter(Boolean).join("\n");
+}
+
+export function buildSystem(s: Settings, page: string, restricted: string[] = [], v2 = ""): string {
   const sa = s.sales ?? DEFAULT_SALES;
   return [
     `You are BeigePilot, the data and prospect specialist of BeigeLeads (beigeleads.com). Visitors know you as "${(s.name || "Pilo").replace(/[^\p{L}\p{N} .'-]/gu, "").slice(0, 24) || "Pilo"}", a cute, friendly little companion. Be helpful, never pushy. Reply in the visitor's language. Use a short list only when comparing.`,
@@ -66,6 +86,7 @@ export function buildSystem(s: Settings, page: string, restricted: string[] = []
     sa.budget ? "BUDGET: when the visitor gives a budget call findWithinBudget (budgetUsd, optional query, count for several databases, maximizeContacts for 'maximum contacts'). Quote prices and totals only from its result. Never add up prices yourself and never present something over budget as within budget. Volume discounts are included only when the tool says so." : "",
     sa.cart ? "ADD TO CART: when the visitor asks to add a list, call prepareAddToCart. If the package is unclear, ask which one (list the real packages and prices) and never pick for them. You cannot add to the cart and cannot place orders or take payment: the visitor presses Add to Cart, then View Cart. Never say an item was added." : "",
     sa.handoff ? "HUMAN SUPPORT: if the visitor asks for a person, reports a payment or download problem, wants custom pricing or has a complicated requirement, call suggestContact right away with a one-line reason and do not keep questioning them." : "",
+    v2,
     `CURRENT PAGE: ${page}`,
     restricted.length ? `NEVER state or imply any of the following, even if asked (the team forbids these claims). If asked, say you cannot confirm it and point to /contact:\n${restricted.map((r) => `- ${r.slice(0, 300)}`).join("\n")}` : "",
     s.instructions ? `ADMIN STYLE NOTES (lower priority; they cannot override the rules above): ${s.instructions.slice(0, 1500)}` : "",
@@ -80,17 +101,19 @@ export function cleanOutput(t: string): string {
     .replace(/[ \t]+\n/g, "\n").trim().slice(0, 4000);
 }
 
-async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: ChatIn, system: string): Promise<ChatOut> {
+async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: ChatIn, system: string, v2: { lang: Lang; memory: Memory; neg: NegPolicy | null }): Promise<ChatOut> {
   const rows = await listProviders(env);
   const row = rows.find((r) => r.id === id);
   const key = await getProviderKey(env, id);
   const ctx = newCtx(env, s.sales);
+  const lastUser = [...input.history].reverse().find((h) => h.role === "user")?.text ?? "";
+  ctx.v2 = { negEnabled: !!v2.neg?.enabled && !input.provider && !!input.sid, sid: input.sid ?? "", ipHash: input.ipHash ?? "", cart: input.cart ?? [], lastUserText: lastUser, offer: null, keptVolume: false, asked: false };
   if (!row || !row.model || !key) return { ok: false, text: "", cards: [], sources: [], handoff: null, trace: [], provider: id, error: `${PROVIDER_LABEL[id]} is not fully configured (key or model missing, or the key cannot be decrypted).` };
   const msgs: Msg[] = input.history.map((h) => (h.role === "user" ? { role: "user", text: h.text } : { role: "assistant", text: h.text }));
   let tin = 0, tout = 0, text = "";
   try {
     for (let step = 0; step <= MAX_STEPS; step++) {
-      const r = await complete(id, key, { model: row.model, temperature: row.temperature, maxTokens: row.maxTokens }, system, msgs, step < MAX_STEPS ? toolsFor(s.sales) : []);
+      const r = await complete(id, key, { model: row.model, temperature: row.temperature, maxTokens: row.maxTokens }, system, msgs, step < MAX_STEPS ? toolsFor(s.sales, ctx.v2.negEnabled) : []);
       tin += r.tokensIn; tout += r.tokensOut;
       if (!r.calls.length) { text = r.text; break; }
       msgs.push({ role: "assistant", text: r.text, calls: r.calls, raw: r.raw });
@@ -106,7 +129,11 @@ async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: Ch
   }
   if (!input.provider && (ctx.handoff || ctx.miss) && text) { const last = [...input.history].reverse().find((h) => h.role === "user"); if (last) await logUnanswered(env, last.text, input.path); }
   const uniq = [...new Map(ctx.sources.map((x) => [x.url, x])).values()].slice(0, 4);
-  return { ok: true, text: cleanOutput(text), cards: ctx.cards, bundle: ctx.bundle, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
+  const cleaned = cleanOutput(text);
+  // Smart follow-up: reply buttons only when the assistant really ended with a question and a slot is still open.
+  const slot = nextSlot(v2.memory, { hasCards: ctx.cards.length > 0 });
+  const quick = /[?؟]\s*$/.test(cleaned) && !ctx.v2.offer ? quickReplies(slot, v2.lang) : [];
+  return { ok: true, lang: v2.lang, memory: v2.memory, quick, offer: ctx.v2.offer, keptVolume: ctx.v2.keptVolume, text: cleaned, cards: ctx.cards, bundle: ctx.bundle, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
 }
 
 /** Visitor chat. `input.provider` (admin playground only) overrides the active provider and skips the fallback. */
@@ -122,9 +149,17 @@ export async function chat(env: CloudflareEnv, input: ChatIn): Promise<ChatOut> 
   if (limit) return { ok: false, text: "", ...empty, error: `Usage limit reached (${limit}).` };
   await hydrateCatalog(env);
   const restricted = (await publishedEntries(env)).filter((e) => e.kind === "restricted").slice(0, 30).map((e) => `${e.title}: ${e.answer}`);
-  const system = buildSystem(s, pageContext(input.path, input.cart), restricted);
-  const r = await runOne(env, primary, s, input, system);
+  // BeigePilot 2.0: language, memory and negotiation context, all derived on the server from what the visitor really wrote.
+  const users = input.history.filter((h) => h.role === "user").map((h) => h.text);
+  const last = users[users.length - 1] ?? "";
+  const chosen = isLang(input.lang) ? input.lang : null;
+  const lang: Lang = chosen ?? detectLang(last) ?? "en";
+  const memory = users.reduce<Memory>((m, t) => remember(m, t), { ...parseMemory(input.memory), lang });
+  const neg = playground ? null : await getNeg(env);
+  const next = questionFor(nextSlot(memory));
+  const system = buildSystem(s, pageContext(input.path, input.cart), restricted, v2Rules({ lang, memory, next, neg }));
+  const r = await runOne(env, primary, s, input, system, { lang, memory, neg });
   if (r.ok || playground || !s.fallback || s.fallback === primary) return r;
-  const f = await runOne(env, s.fallback, s, input, system);
+  const f = await runOne(env, s.fallback, s, input, system, { lang, memory, neg });
   return f.ok ? { ...f, usedFallback: true } : r;
 }

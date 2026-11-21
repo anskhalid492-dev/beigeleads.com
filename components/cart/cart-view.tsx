@@ -36,6 +36,10 @@ export function CartView() {
     const saved = readPartner();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of sessionStorage after mount
     if (saved) setApplied(saved);
+    // A BeigePilot offer applied from the chat while this page is open.
+    const on = () => { const p = readPartner(); if (p) setApplied(p); };
+    window.addEventListener("bl:partner-changed", on);
+    return () => window.removeEventListener("bl:partner-changed", on);
   }, []);
   const [result, setResult] = useState<{ key: string; data: Loaded | null; error: boolean } | null>(null);
   const [last, setLast] = useState<Loaded | null>(null);

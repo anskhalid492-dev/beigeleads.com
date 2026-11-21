@@ -19,7 +19,7 @@ export async function getPro(env: Env): Promise<ProSettings> {
 export async function savePro(env: Env, s: ProSettings): Promise<void> {
   const json = JSON.stringify(s);
   await env.DB.prepare("INSERT INTO beigepilot_settings (key, value, updated_at) VALUES ('proactive', ?1, unixepoch()) ON CONFLICT(key) DO UPDATE SET value = ?1, updated_at = unixepoch()").bind(json).run();
-  for (const k of [KEY, "beigepilot:config:v4"]) try { await env.CACHE.delete(k); } catch { /* optional */ }
+  for (const k of [KEY, "beigepilot:config:v5"]) try { await env.CACHE.delete(k); } catch { /* optional */ }
 }
 
 /** One row per (session, stage, event): the unique index makes repeats harmless. Returns true when a new row was written. */
