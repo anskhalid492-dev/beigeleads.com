@@ -49,6 +49,9 @@ const NAV = [
   ["Media", "/admin/media", ImageIcon],
   ["Media Kit", "/admin/media-kit", ImageIcon],
   ["Newsletter", "/admin/newsletter", Mail],
+  ["Social Links", "/admin/website/social-links", Globe],
+  ["AI Platforms", "/admin/website/ai-platforms", Bot],
+  ["AI Information", "/admin/website/ai-information", FileText],
   ["Settings", "/admin/settings", Settings],
 ] as const;
 

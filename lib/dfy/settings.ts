@@ -55,8 +55,8 @@ export const DEFAULT_DFY: DfySettings = {
   enabled: true,
   packages: [
     { name: "Starter", monthlyCents: 29_900, leads: 10_000, initialSends: 10_000, followups: 3, domainsMin: 3, domainsMax: 5, inboxesMin: 15, inboxesMax: 20, reporting: "monthly", support: "Email support", cta: "Start Outbound", featured: false, features: [...COMMON, "Monthly reporting", "Email support"] },
-    { name: "Growth", monthlyCents: 59_900, leads: 50_000, initialSends: 50_000, followups: 5, domainsMin: 10, domainsMax: 15, inboxesMin: 35, inboxesMax: 40, reporting: "weekly", support: "Priority support", cta: "Grow My Outbound", featured: true, features: [...COMMON, "Weekly reporting", "Priority support"] },
-    { name: "Scale", monthlyCents: 99_900, leads: 100_000, initialSends: 100_000, followups: 7, domainsMin: 20, domainsMax: 30, inboxesMin: 50, inboxesMax: 60, reporting: "weekly", support: "Dedicated account manager", cta: "Scale My Outbound", featured: false, features: [...COMMON, "Weekly reporting", "Priority support", "Dedicated account manager"] },
+    { name: "Growth", monthlyCents: 59_900, leads: 50_000, initialSends: 50_000, followups: 5, domainsMin: 10, domainsMax: 15, inboxesMin: 35, inboxesMax: 40, reporting: "weekly", support: "Priority support", cta: "Grow My Outbound", featured: true, features: [...COMMON, "Weekly reporting", "Priority support", "Replies delivered directly to your Slack"] },
+    { name: "Scale", monthlyCents: 99_900, leads: 100_000, initialSends: 100_000, followups: 7, domainsMin: 20, domainsMax: 30, inboxesMin: 50, inboxesMax: 60, reporting: "weekly", support: "Dedicated account manager", cta: "Scale My Outbound", featured: false, features: [...COMMON, "Weekly reporting", "Priority support", "Replies delivered directly to your Slack", "Dedicated account manager"] },
   ],
   ownershipEnabled: true, ownershipCents: 10_000,
   ownershipLabel: "I want to own my outbound infrastructure — +$100 one-time",

@@ -1,6 +1,7 @@
 import { BrandLogo } from "@/components/shared/brand-logo";
 import Link from "next/link";
 import { FooterCta } from "./footer-cta";
+import { BottomFooter } from "./bottom-footer";
 import { competitors, compareHref } from "@/lib/compare";
 
 import { solutions } from "@/lib/solutions";
@@ -84,6 +85,7 @@ const linkCls = "hover:text-sand-50 hover:underline underline-offset-4";
 
 export function Footer() {
   return (
+    <>
     <footer
       className="text-sand-100"
       style={{
@@ -139,5 +141,7 @@ export function Footer() {
         </div>
       </div>
     </footer>
+    <BottomFooter />
+    </>
   );
 }
