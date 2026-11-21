@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { applyLocalAction, rollbackLocalAction, scanLocalAction } from "./actions";
+import { applyLocalAction, createUsPagesAction, rollbackLocalAction, scanLocalAction } from "./actions";
 
 type Item = NonNullable<Awaited<ReturnType<typeof scanLocalAction>>["items"]>[number];
 type Data = Awaited<ReturnType<typeof scanLocalAction>>;
@@ -25,11 +25,17 @@ export function Runner() {
   async function undo(b: string) { setBusy(true); const r = await rollbackLocalAction(b); setMsg(r.message); await load(); }
   const toggle = (s: string) => setSel((p) => { const n = new Set(p); if (n.has(s)) n.delete(s); else n.add(s); return n; });
   const t = d?.totals;
+  async function createPages() { setBusy(true); const r = await createUsPagesAction(); setMsg(r.message); await load(); }
 
   return (
     <div className="space-y-5">
       {d && d.ready === false && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm">Migration 0040 is not applied yet. You can preview, but moving is disabled until you run drizzle/0040_category_moves.sql in D1.</p>}
       {msg && <p className="rounded-xl border border-sand-200 bg-white p-3 text-sm" role="status">{msg}</p>}
+      <div className="rounded-xl border border-sand-200 bg-white p-4">
+        <h2 className="font-semibold">Create US local-business landing pages</h2>
+        <p className="mt-1 text-sm text-forest-700">Creates one DRAFT list page per US local-business type (restaurants, salons, plumbers, dentists and more) in this category, each with the three packages and no record count. Types that already exist are skipped. Add counts, samples and delivery links in Products, then publish.</p>
+        <button disabled={busy} onClick={createPages} className="mt-3 rounded-lg bg-forest-900 px-3 py-1.5 text-sm text-sand-50 disabled:opacity-50">Create the pages</button>
+      </div>
       {t && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {([["Scanned", t.scanned], ["Will move", t.moves], ["Manual review", t.review], ["Stay unchanged", t.keep], ["Already moved", t.already]] as const).map(([k, v]) => (

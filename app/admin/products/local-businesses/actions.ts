@@ -4,7 +4,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { clearImportedCache } from "@/lib/catalog-db";
 import { getDbFromEnv, schema } from "@/lib/db";
-import { applyLocal, listBatches, movesReady, rollbackLocal, scanLocal, type ScanItem } from "@/lib/import/local-move";
+import { applyLocal, createUsLocalPages, listBatches, movesReady, rollbackLocal, scanLocal, type ScanItem } from "@/lib/import/local-move";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -41,4 +41,14 @@ export async function rollbackLocalAction(batch: string): Promise<{ ok: boolean;
   await audit(a.email, `batch ${batch} rolled back (${n} products)`);
   await refresh();
   return { ok: true, message: `${n} product(s) went back to their previous category.` };
+}
+
+export async function createUsPagesAction(): Promise<{ ok: boolean; message: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  try {
+    const r = await createUsLocalPages(db());
+    await audit(a.email, `US local pages: ${r.created} created, ${r.existing} existing, ${r.failed} failed`);
+    await refresh();
+    return { ok: true, message: `${r.created} draft landing page(s) created, ${r.existing} already existed${r.failed ? `, ${r.failed} failed` : ""}. Add counts, a delivery link and a sample in Products, then publish.` };
+  } catch (e) { return { ok: false, message: `Creating the pages failed: ${e instanceof Error ? e.message.slice(0, 160) : "database error"}. Run migrations 0035 and 0036 first.` }; }
 }

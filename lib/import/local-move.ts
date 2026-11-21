@@ -87,3 +87,17 @@ export async function listBatches(db: Db): Promise<{ batch: string; movedAt: num
 export async function movedIds(db: Db): Promise<number[]> {
   return (await db.select({ id: schema.catalogProducts.id }).from(schema.catalogProducts).where(eq(schema.catalogProducts.categorySlug, LOCAL_SLUG))).map((r) => r.id);
 }
+
+/** Create the US local-business landing pages as DRAFT products (section 137). Idempotent: a type whose list name already exists is skipped. */
+export async function createUsLocalPages(db: Db): Promise<{ created: number; existing: number; failed: number; slugs: string[] }> {
+  const { allUsTypes, usLocalProduct } = await import("./us-local-types");
+  const { createProduct } = await import("./store");
+  let created = 0, existing = 0, failed = 0; const slugs: string[] = [];
+  for (const t of allUsTypes()) {
+    const p = usLocalProduct(t.type);
+    const dup = await db.select({ id: schema.catalogProducts.id }).from(schema.catalogProducts).where(eq(schema.catalogProducts.name, p.name)).limit(1);
+    if (dup.length) { existing++; continue; }
+    try { const r = await createProduct(db, p); if (r.ok && r.slug) { created++; slugs.push(r.slug); } else failed++; } catch { failed++; }
+  }
+  return { created, existing, failed, slugs };
+}
