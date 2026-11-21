@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic"; // prices and limits come from the admin
 export const metadata: Metadata = {
   title: { absolute: EV_TITLE },
   description: EV_DESC,
-  alternates: { canonical: "/email-verification" },
-  openGraph: { title: EV_TITLE, description: EV_DESC, url: "/email-verification", type: "website" },
+  alternates: { canonical: "/email-list-verification" },
+  openGraph: { title: EV_TITLE, description: EV_DESC, url: "/email-list-verification", type: "website" },
   twitter: { card: "summary_large_image", title: EV_TITLE, description: EV_DESC },
 };
 
@@ -24,8 +24,8 @@ export default async function EmailVerificationPage() {
   return (
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }} />
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "Service", name: "Bulk Email List Verification", url: `${SITE_URL}/email-verification`, description: EV_DESC, provider: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL } }} />
-      <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "Email List Verification", href: "/email-verification" }]} /></div>
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "Service", name: "Bulk Email List Verification", url: `${SITE_URL}/email-list-verification`, description: EV_DESC, provider: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL } }} />
+      <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "Email List Verification", href: "/email-list-verification" }]} /></div>
       <EvHero />
       <EvWhy />
       <EvSteps />

@@ -109,7 +109,7 @@ describe("payment and fulfilment", () => {
     expect(ev?.status).toBe("awaiting_file");
     const confirms = sent.filter((m) => m.to.includes(email) && /Email List Verification Order Is Confirmed/.test(m.subject));
     expect(confirms).toHaveLength(1);
-    expect(confirms[0].text).toContain(`/email-verification/submit/${await evToken(env, ev!.id)}`);
+    expect(confirms[0].text).toContain(`/email-list-verification/submit/${await evToken(env, ev!.id)}`);
     expect(await deliverPendingOrders(env)).toBeGreaterThanOrEqual(0);
     expect((await q("SELECT COUNT(*) AS n FROM deliveries WHERE order_id = ?", orderId))!.n).toBe(0); // no database delivery row
   });

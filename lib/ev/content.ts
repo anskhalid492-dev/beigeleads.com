@@ -1,4 +1,4 @@
-// Copy for /email-verification. Facts come from how the service really works (manual processing, limits, retention from the admin settings).
+// Copy for /email-list-verification. Facts come from how the service really works (manual processing, limits, retention from the admin settings).
 // No accuracy percentages, no turnaround promises, no reviews, no security certifications.
 import type { EvSettings } from "./settings";
 

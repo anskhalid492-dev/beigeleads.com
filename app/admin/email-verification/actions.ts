@@ -63,6 +63,6 @@ export async function saveSettingsAction(_: unknown, f: FormData): Promise<Res> 
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the values." };
   const r = await saveEvSettings(env(), parsed.data, who);
   if (!r.ok) return { ok: false, error: r.message };
-  revalidatePath("/email-verification"); refresh();
+  revalidatePath("/email-list-verification"); refresh();
   return { ok: true, message: "Saved. Existing paid orders keep the package, limit and price they bought. Changes show within about a minute." };
 }

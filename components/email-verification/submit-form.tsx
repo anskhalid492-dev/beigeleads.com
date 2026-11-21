@@ -99,7 +99,7 @@ export function SubmitForm({ token, limit, used, accepted, formats, maxMb, repla
           </div>
         )}
         {busy && <div className="mt-4" role="status" aria-live="polite"><div className="h-2 overflow-hidden rounded-full bg-sand-200"><div className="h-full bg-purple-600 transition-[width]" style={{ width: `${pct}%` }} /></div><p className="mt-1 text-xs">{pct < 100 ? `Uploading… ${pct}%` : "Checking your list…"}</p></div>}
-        {msg && <p role={msg.kind === "err" ? "alert" : "status"} className={`mt-4 rounded-xl px-4 py-3 text-sm ${msg.kind === "err" ? "bg-sand-100 text-forest-900" : "bg-forest-100 font-semibold text-forest-900"}`}>{msg.text}{msg.kind === "err" && <> {" "}Need more room? <Link className="font-semibold underline" href="/email-verification#pricing">Choose a larger package</Link>{support ? <> or email <a className="font-semibold underline" href={`mailto:${support}`}>{support}</a></> : <> or <Link className="font-semibold underline" href="/contact">contact support</Link></>}.</>}</p>}
+        {msg && <p role={msg.kind === "err" ? "alert" : "status"} className={`mt-4 rounded-xl px-4 py-3 text-sm ${msg.kind === "err" ? "bg-sand-100 text-forest-900" : "bg-forest-100 font-semibold text-forest-900"}`}>{msg.text}{msg.kind === "err" && <> {" "}Need more room? <Link className="font-semibold underline" href="/email-list-verification#pricing">Choose a larger package</Link>{support ? <> or email <a className="font-semibold underline" href={`mailto:${support}`}>{support}</a></> : <> or <Link className="font-semibold underline" href="/contact">contact support</Link></>}.</>}</p>}
       </div>
     </div>
   );

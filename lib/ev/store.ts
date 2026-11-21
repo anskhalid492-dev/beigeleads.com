@@ -17,8 +17,8 @@ type Db = ReturnType<typeof getDbFromEnv>;
 const now = () => Math.floor(Date.now() / 1000);
 const DAY = 86400;
 
-export const submitUrl = (t: string) => `${SITE}/email-verification/submit/${t}`;
-export const statusUrl = (t: string) => `${SITE}/email-verification/order/${t}`;
+export const submitUrl = (t: string) => `${SITE}/email-list-verification/submit/${t}`;
+export const statusUrl = (t: string) => `${SITE}/email-list-verification/order/${t}`;
 export const adminUrl = (id: string) => `${SITE}/admin/email-verification/${id}`;
 export const originalKey = (evId: string, fileId: string) => `email-verification/orders/${evId}/original/${fileId}`;
 export const resultKey = (evId: string, fileId: string) => `email-verification/orders/${evId}/results/${fileId}`;

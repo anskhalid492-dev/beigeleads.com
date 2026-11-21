@@ -40,7 +40,7 @@ export function VerificationUpsellCard({ upsell, className = "" }: { upsell: Ver
       </fieldset>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         <Button onClick={() => { cartActions.setVerification(pkg); trackCart("add_to_cart", 1); }}>Add Verification to Cart</Button>
-        <Link href="/email-verification" className="text-sm font-semibold text-forest-700 underline underline-offset-2">Learn More</Link>
+        <Link href="/email-list-verification" className="text-sm font-semibold text-forest-700 underline underline-offset-2">Learn More</Link>
       </div>
       <p className="mt-3 text-xs">Optional service. No subscription.</p>
     </section>

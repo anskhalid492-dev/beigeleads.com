@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/use-cases", destination: "/solutions", permanent: true },
+      // The service was first published under /email-verification; emails already sent contain those links.
+      { source: "/email-verification", destination: "/email-list-verification", permanent: true },
+      { source: "/email-verification/:path*", destination: "/email-list-verification/:path*", permanent: true },
       { source: "/custom-list-builder", destination: "/custom-list", permanent: true },
       { source: "/faq", destination: "/help-center", permanent: true },
       // Country slug is now the full name (CLAUDE.md section 71); old short URLs keep working.

@@ -49,7 +49,7 @@ const columns: Column[] = [
       ["Pricing", "/pricing"],
       ["How It Works", "/how-it-works"],
       ["Request a Sample", "/sample"],
-      ["Email List Verification", "/email-verification"],
+      ["Email List Verification", "/email-list-verification"],
       ["Team Purchase Requests", "/team-purchase-requests"],
       ["AI Assistant", "/ai-assistant"],
       ["Case Studies", "/case-studies"],
