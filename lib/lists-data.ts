@@ -68,7 +68,7 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
   const subs = await loadSubindustries(db);
   return {
     products, tree,
-    industries: [...cats.map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })), ...[...extraInd.values()].sort(byName)],
+    industries: [...cats.filter((c) => products.some((p) => p.categorySlug === c.slug)).map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })), ...[...extraInd.values()].sort(byName)],
     countries: [...countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code })), ...[...extraCty.values()].sort(byName)],
     niches: subs.rows.map((s) => ({ category: s.categorySlug, categoryName: catName.get(s.categorySlug) ?? "", name: s.name })),
   };

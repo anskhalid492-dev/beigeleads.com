@@ -13,6 +13,7 @@ export function sitePages(): SitePage[] {
   return [
     ...main.map(([path, label]) => ({ path, label, group: "Main pages" })),
     ...getCategories().map((c) => ({ path: `/lists/${c.slug}`, label: c.name, group: "List categories" })),
+    { path: "/lists/local-businesses-database", label: "Local Businesses Database", group: "List categories" },
     ...TAXONOMY.flatMap((g) => [{ path: `/lists/${g.slug}`, label: g.name, group: "List types" }, ...g.children.map((c) => ({ path: `/lists/${g.slug}/${c.slug}`, label: c.name, group: "List types" }))]),
     ...getCategories().flatMap((c) => getCountries().map((k) => ({ path: `/lists/${c.slug}/${k.slug}`, label: `${c.name} in ${k.name}`, group: "Country pages" }))),
     ...getProducts().map((p) => ({ path: `/lists/${p.slug}`, label: p.name ?? p.slug, group: "Products" })),

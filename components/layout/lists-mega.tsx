@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Briefcase, Building2, ChevronDown, ChevronLeft, Crown, Mail, MapPin, Network, Phone, Stethoscope, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Briefcase, Building2, ChevronDown, ChevronLeft, Crown, Mail, MapPin, Network, Phone, Stethoscope, Store, Users, type LucideIcon } from "lucide-react";
 import { WhatsApp } from "@/components/lists/tax-icon";
 import { childHref, industryChildren, type TaxChild, type TaxGroup } from "@/lib/taxonomy";
 
@@ -20,6 +20,7 @@ const COLUMNS: Item[][] = [
     { key: "business", title: "Business Email Lists", desc: "Verified business emails", icon: Mail, href: "/lists/business-email-lists", group: "business-email-lists" },
     { key: "consumer", title: "Consumer Email Lists", desc: "Consumer emails by country", icon: Users, href: "/lists/consumer-email-lists", group: "consumer-email-lists" },
     { key: "phone", title: "Phone Number Lists", desc: "Business phone numbers", icon: Phone, href: "/lists/phone-number-lists", group: "phone-number-lists" },
+    { key: "local", title: "Local Businesses Database", desc: "Shops, clinics and local trades", icon: Store, href: "/lists/local-businesses-database", group: "" },
   ],
   [
     { key: "titles", title: "Job Title Lists", desc: "Decision-makers by role", icon: Briefcase, href: "/lists/job-title-lists", group: "job-title-lists" },
@@ -34,7 +35,7 @@ const COLUMNS: Item[][] = [
 ];
 
 const ring = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
-const visible = (tax: TaxGroup[], i: Item) => tax.some((g) => g.slug === i.group && g.menuVisible !== false && g.published !== false);
+const visible = (tax: TaxGroup[], i: Item) => i.group === "" || tax.some((g) => g.slug === i.group && g.menuVisible !== false && g.published !== false);
 
 /** The four ways to browse, shown by the animated intro block. Words and icons move in step (CSS only). */
 const WAYS: { word: string; icon: LucideIcon }[] = [

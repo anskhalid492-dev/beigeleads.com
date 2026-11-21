@@ -1088,3 +1088,17 @@ export const catalogImportErrors = sqliteTable("catalog_import_errors", {
   message: text("message").notNull(),
   createdAt: createdAt(),
 });
+
+// Migration 0040 (section 111): every category move made by the Local Businesses tool, so a whole batch can be undone.
+export const catalogCategoryMoves = sqliteTable("catalog_category_moves", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  batch: text("batch").notNull(),
+  productId: integer("product_id").notNull(),
+  productSlug: text("product_slug").notNull(),
+  fromCategorySlug: text("from_category_slug").notNull(),
+  fromCategoryName: text("from_category_name").notNull(),
+  toCategorySlug: text("to_category_slug").notNull(),
+  reason: text("reason").notNull().default(""),
+  movedAt: integer("moved_at").notNull(),
+  rolledBackAt: integer("rolled_back_at"),
+});

@@ -7,6 +7,7 @@ import { schema } from "@/lib/db";
 import { reservedSlugs } from "./reserved";
 import { categoryForSubject, seoText } from "./seo-text";
 import { publishBlockers } from "./woo";
+import { LOCAL_SLUG } from "./local-business";
 
 type Db = ReturnType<typeof import("@/lib/db").getDbFromEnv>;
 
@@ -365,9 +366,9 @@ export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false
       if (o.names) { set.name = t.name; set.title = t.title; }
       if (o.titles) { set.seoTitle = t.seoTitle; set.metaDescription = t.metaDescription; }
       // Products sitting in a catch-all category move into a real one named after what the list is about.
-      const shared = o.categories ? categoryForSubject(t.subject) : null;
+      const shared = o.categories && r.categorySlug !== LOCAL_SLUG ? categoryForSubject(t.subject) : null; // never pull a product back out of Local Businesses
       if (shared) { set.categoryName = shared.name; set.categorySlug = shared.slug; }
-      else if (o.categories && GENERIC_CATS.has(r.categoryName.toLowerCase()) && t.subject && !/^business$/i.test(t.subject)) {
+      else if (o.categories && r.categorySlug !== LOCAL_SLUG && GENERIC_CATS.has(r.categoryName.toLowerCase()) && t.subject && !/^business$/i.test(t.subject)) {
         const k = catKey(t.subject); let c = cats.get(k);
         if (!c) { let slug = slugify(t.subject); if (taken.has(slug)) slug = `${slug}-lists`; c = { slug, name: t.subject }; cats.set(k, c); taken.add(slug); }
         set.categoryName = c.name; set.categorySlug = c.slug;

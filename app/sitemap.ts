@@ -27,8 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try { blog = (await publishedSitemap(getCloudflareContext().env)).filter((p) => !p.noindex).map((p) => ({ url: `${SITE_URL}${KINDS[asKind(p.kind)].pub}/${p.slug}`, lastModified: p.updatedAt })); } catch { /* blog not set up yet */ }
   try { authors = (await authorSitemap(getCloudflareContext().env)).map((a) => ({ url: `${SITE_URL}/blog/author/${a.slug}`, lastModified: a.updatedAt })); } catch { /* authors not set up yet */ }
   await hydrateCatalog(getCloudflareContext().env);
-  const importedCats = [...new Set(getProducts().filter((p) => p.imported).map((p) => p.categorySlug))];
-  const importedCountryPaths = [...new Set(getProducts().filter((p) => p.imported).map((p) => `/lists/${p.categorySlug}/${p.countrySlug}`))];
+  const importedCats = [...new Set(getProducts().filter((p) => p.imported && p.categorySlug !== "local-businesses-database").map((p) => p.categorySlug))];
+  const importedCountryPaths = [...new Set(getProducts().filter((p) => p.imported && p.categorySlug !== "local-businesses-database").map((p) => `/lists/${p.categorySlug}/${p.countrySlug}`))];
   const excluded = await excludedSitemapPaths(getCloudflareContext().env);
   const geoPaths = await geoSitemapPaths(getDbFromEnv(getCloudflareContext().env));
   const help = await loadHelp(getCloudflareContext().env);
@@ -44,8 +44,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...authors,
     { url: `${SITE_URL}/` },
     { url: `${SITE_URL}/lists` },
-    ...getCategories().map((c) => ({ url: `${SITE_URL}/lists/${c.slug}` })),
+    ...getCategories().filter((c) => getProducts().some((p) => p.categorySlug === c.slug)).map((c) => ({ url: `${SITE_URL}/lists/${c.slug}` })),
     ...importedCats.map((c) => ({ url: `${SITE_URL}/lists/${c}` })),
+    ...(getProducts().some((p) => p.categorySlug === "local-businesses-database") ? [{ url: `${SITE_URL}/lists/local-businesses-database` }] : []), // the landing page exists with real products only
     ...importedCountryPaths.map((p) => ({ url: `${SITE_URL}${p}` })),
     ...taxonomyPaths(tax).map((p) => ({ url: `${SITE_URL}${p}` })),
     ...geoPaths.map((p) => ({ url: `${SITE_URL}${p}` })),

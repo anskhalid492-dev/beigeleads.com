@@ -11,6 +11,8 @@ import { countryFromFlat, geoShopMetadata } from "@/lib/geo-shop";
 import { TaxonomyPage } from "@/components/lists/taxonomy-page";
 import { loadListsData } from "@/lib/lists-data";
 import { resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
+import { LocalBusinessesPage, LOCAL_DESC, LOCAL_PATH, LOCAL_TITLE } from "@/components/category/local-businesses-page";
+import { LOCAL_SLUG } from "@/lib/import/local-business";
 import { coverageFor, listAllCities, listAreas, regionTotals } from "@/lib/geo/store";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +27,10 @@ export async function generateMetadata(props: PageProps<"/lists/[category]">): P
   if (flat) return geoShopMetadata(flat, "main");
   const tax = await resolveTax(category);
   if (tax) return taxMetadata(tax);
+  if (category === LOCAL_SLUG) {
+    const any = (await loadListsData()).products.some((x) => x.categorySlug === LOCAL_SLUG);
+    return { title: LOCAL_TITLE, description: LOCAL_DESC, alternates: { canonical: LOCAL_PATH }, ...(any ? {} : { robots: { index: false, follow: true } }) };
+  }
   const c = getCategory(category);
   if (!c) return {};
   return {
@@ -44,6 +50,7 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
   if (flat) return <GeoShopPage country={flat} products={(await loadListsData()).products} />;
   const tax = await resolveTax(category);
   if (tax) return <TaxonomyPage {...tax} products={(await loadListsData()).products} industries={taxIndustries()} />;
+  if (category === LOCAL_SLUG) return <LocalBusinessesPage products={(await loadListsData()).products.filter((x) => x.categorySlug === LOCAL_SLUG)} />;
   const c = getCategory(category);
   if (!c) notFound();
   if (c.imported) {
@@ -71,5 +78,6 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
 
   // Every industry uses the shopping landing page.
   const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug);
+  if (!rows.length) notFound(); // every list of this industry was filed elsewhere (e.g. Local Businesses Database)
   return <IndustryPage c={c} products={rows} geo={geo.map((g) => ({ name: g.k.name, regions: g.regions, cities: g.cities }))} />;
 }
