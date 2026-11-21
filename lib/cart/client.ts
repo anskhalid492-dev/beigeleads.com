@@ -87,7 +87,33 @@ function writeVerification(pkg: string | null) {
   window.dispatchEvent(new Event(EVT));
 }
 
+// DFY Outbound: one package NAME + the ownership choice (nothing personal). The server validates both against its own settings.
+const DKEY = "bl-cart-dfy-v1";
+export type CartDfy = { pkg: string; own: boolean };
+const NO_DFY: CartDfy | null = null;
+let dcache: { raw: string | null; v: CartDfy | null } = { raw: null, v: NO_DFY };
+let dmemory: { v: CartDfy | null } | null = null;
+function readDfy(): CartDfy | null {
+  if (dmemory) return dmemory.v;
+  let raw: string | null = null;
+  try { raw = localStorage.getItem(DKEY); } catch { return dcache.v; }
+  if (raw === dcache.raw) return dcache.v;
+  let v: CartDfy | null = null;
+  try { const j = raw ? (JSON.parse(raw) as Partial<CartDfy>) : null; if (j && typeof j.pkg === "string" && j.pkg.length > 0 && j.pkg.length <= 40) v = { pkg: j.pkg, own: j.own === true }; } catch { /* ignore */ }
+  dcache = { raw, v };
+  return v;
+}
+function writeDfy(v: CartDfy | null) {
+  try {
+    if (v) { const raw = JSON.stringify(v); localStorage.setItem(DKEY, raw); dcache = { raw, v }; } else { localStorage.removeItem(DKEY); dcache = { raw: null, v: null }; }
+    dmemory = null;
+  } catch { dmemory = { v }; }
+  window.dispatchEvent(new Event(EVT));
+}
+
 export const cartActions = {
+  /** Add, change or (null) remove DFY Outbound. One line only; ownership is OFF unless the customer ticks it. */
+  setDfy(v: CartDfy | null) { writeDfy(v); },
   /** Add, change or (null) remove the Email Verification service. One line only: choosing again replaces the package. */
   setVerification(pkg: string | null) { writeVerification(pkg); },
   /** Adds several lists at once (Build Your Own Bundle). All or nothing: if they do not fit in the cart, nothing is added. */
@@ -122,7 +148,7 @@ export const cartActions = {
   remove(slug: string) { write(read().filter((i) => i.slug !== slug)); },
   setPackage(slug: string, pkg: string) { write(read().map((i) => (i.slug === slug ? { ...i, pkg } : i))); },
   replaceAll(items: CartItem[]) { write(items); },
-  clear() { write([]); writeBundles([]); writeVerification(null); },
+  clear() { write([]); writeBundles([]); writeVerification(null); writeDfy(null); },
 };
 
 export function useCart(): CartItem[] {
@@ -134,8 +160,11 @@ export function useCartBundles(): string[] {
 export function useCartVerification(): string | null {
   return useSyncExternalStore(subscribe, readVerification, () => null);
 }
+export function useCartDfy(): CartDfy | null {
+  return useSyncExternalStore(subscribe, readDfy, () => null);
+}
 /** Number of cart lines: single lists, bundles and the verification service. */
-export const useCartCount = () => useCart().length + useCartBundles().length + (useCartVerification() ? 1 : 0);
+export const useCartCount = () => useCart().length + useCartBundles().length + (useCartVerification() ? 1 : 0) + (useCartDfy() ? 1 : 0);
 
 /** false on the server and during hydration, true afterwards (so the cart is only drawn once the browser's own cart is known). */
 export const useMounted = () => useSyncExternalStore(() => () => undefined, () => true, () => false);

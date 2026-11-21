@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, Check, Copy, Minus, MoreVertical, RotateCcw, Search, Send, Square, Tag, ThumbsDown, ThumbsUp, Wallet, GitCompare, X, LifeBuoy, ShieldCheck } from "lucide-react";
 import { useCart } from "@/lib/cart/client";
-import type { Bundle, Card, OfferCard, Source } from "@/lib/beigepilot/tools";
+import type { Bundle, Card, DfyCardData, OfferCard, Source } from "@/lib/beigepilot/tools";
 import { LANGS, detectLang, isLang, isRtl, t, type Lang } from "@/lib/beigepilot/v2/lang";
 import { EMPTY_MEMORY, describe as describeMemory, parseMemory, remember, type Memory } from "@/lib/beigepilot/v2/memory";
 import type { Quick } from "@/lib/beigepilot/v2/followup";
@@ -15,13 +15,13 @@ import { useRouter } from "next/navigation";
 import { chipsFor, isCheer } from "@/lib/beigepilot/suggest";
 import { ApiForm } from "@/components/forms/api-form";
 import { Markup } from "./markup";
-import { ChatBundle, ChatProductCard } from "./product-card";
+import { ChatBundle, ChatDfyCard, ChatProductCard } from "./product-card";
 import { useGaze, setGaze } from "./use-gaze";
 import { Pilo, type Intensity, type Mood } from "./pilo";
 
 export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: string; humor: "professional" | "friendly" | "playful"; motion: Intensity; launcher: "right" | "left"; suggestions: string[]; sales?: { finder: boolean; cart: boolean; budget: boolean; handoff: boolean }; proactive?: { enabled: boolean; delays: number[]; bubbleSeconds: number; mobile: boolean; exitIntent?: boolean }; negotiation?: boolean };
-type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; bundle?: Bundle | null; sources?: Source[]; handoff?: boolean; miss?: boolean; quick?: Quick[]; offer?: OfferCard | null; fresh?: boolean };
-type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; bundle?: Bundle | null; sources?: Source[]; handoff?: string | null; miss?: boolean; error?: string; lang?: string; memory?: unknown; quick?: Quick[]; offer?: OfferCard | null };
+type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources?: Source[]; handoff?: boolean; miss?: boolean; quick?: Quick[]; offer?: OfferCard | null; fresh?: boolean };
+type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources?: Source[]; handoff?: string | null; miss?: boolean; error?: string; lang?: string; memory?: unknown; quick?: Quick[]; offer?: OfferCard | null };
 
 const KEY = "bp-chat-v2";
 // A message Pilo wrote first (from a proactive bubble) is shown in the chat but not sent: providers need the visitor to speak first.
@@ -147,7 +147,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
       const hasCards = !!final.cards?.length;
       if (isLang(final.lang) && langSel === "auto") setLang(final.lang);
       if (final.memory) setMem(parseMemory(final.memory));
-      setMsgs([...list, { role: "assistant", text: final.text, cards: final.cards, bundle: final.bundle, sources: final.sources, handoff: !!final.handoff, miss: !!final.miss && !hasCards, quick: final.quick, offer: final.offer ?? null, fresh: true }]);
+      setMsgs([...list, { role: "assistant", text: final.text, cards: final.cards, dfy: final.dfy, bundle: final.bundle, sources: final.sources, handoff: !!final.handoff, miss: !!final.miss && !hasCards, quick: final.quick, offer: final.offer ?? null, fresh: true }]);
       setOnline(true);
       if (hasCards) window.dispatchEvent(new Event("bl:pilo-recs"));
       if (hasCards) doFlash("found", 2200); else if (final.miss) doFlash("confused", 2600); else if (final.offer) doFlash("excited", 2400);
@@ -237,7 +237,6 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
         <span className="shrink-0"><Pilo crop="avatar" mood={mood} size={42} intensity={cfg.motion} /></span>
         <div className="min-w-0 flex-1 ps-1">
           <p className="display text-[1.1rem] leading-none text-forest-900">{name} <span aria-hidden>💜</span></p>
-          <p className="truncate text-[0.72rem] text-forest-700">{t(lang, "ai")}</p>
           <p className="flex items-center gap-1.5 text-[0.7rem]" aria-live="polite"><span aria-hidden className={`size-1.5 rounded-full ${online ? "bg-forest-500" : "bg-amber-500"}`} />{status}</p>
         </div>
         <label className="sr-only" htmlFor="bp-lang">{t(lang, "language")}</label>
@@ -286,7 +285,6 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
               {welcome.length === 0 && chips.map((c) => <button key={c.id} type="button" onClick={() => pickChip(c)} className="col-span-2 rounded-full border border-sand-300 bg-white px-3.5 py-1.5 text-[0.8rem] font-semibold text-forest-900">{c.label}</button>)}
             </div>
             {cfg.suggestions.length > 0 && <div className="mt-3 flex flex-wrap justify-center gap-2">{chips.map((c) => <button key={c.id} type="button" onClick={() => pickChip(c)} className="rounded-full border border-sand-300 bg-white px-3 py-1 text-[0.75rem] font-semibold text-forest-900">{c.label}</button>)}</div>}
-            <p className="mt-3 max-w-[22rem] text-[0.7rem] text-forest-700">{t(lang, "privacy")}</p>
           </div>
         )}
 
@@ -299,6 +297,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="relative w-fit max-w-full break-words rounded-2xl rounded-ss-md bg-sand-100 px-3 py-2 text-forest-900"><Revealed text={m.text} run={!!m.fresh && i === lastAssistant} /><CopyBtn text={m.text} lang={lang} /></div>
                 {m.offer && <OfferCardView o={m.offer} cid={chatId()} lang={lang} onApplied={() => { window.dispatchEvent(new Event("bl:pilo-cart-add")); doFlash("success", 2400); }} />}
+                {m.dfy?.map((c) => <ChatDfyCard key={c.name} c={c} onAdded={() => { window.dispatchEvent(new Event("bl:pilo-cart-add")); doFlash("success", 2400); }} />)}
                 {m.bundle && <ChatBundle b={m.bundle} onAdded={() => { window.dispatchEvent(new Event("bl:pilo-cart-add")); doFlash("success", 2400); }} />}
                 {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} onAdded={() => { window.dispatchEvent(new Event("bl:pilo-cart-add")); trackPilo(chatId(), "add_to_cart"); setMem((x) => ({ ...x, picked: [...new Set([...x.picked, c.slug])].slice(-6) })); doFlash("success", 2400); }} onPick={() => doFlash("point", 1500)} />)}
                 {(i === lastAssistant && !m.rated) || m.handoff ? (

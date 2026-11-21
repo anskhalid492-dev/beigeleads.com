@@ -5,7 +5,7 @@ import { Check, FileText, ShoppingBag } from "lucide-react";
 import { DbBadge } from "@/components/shared/db-icon";
 import { fmtDate, fmtNum } from "@/components/product/meta";
 import { cartActions, useCart } from "@/lib/cart/client";
-import type { Bundle, Card } from "@/lib/beigepilot/tools";
+import type { Bundle, Card, DfyCardData } from "@/lib/beigepilot/tools";
 import type { CartPricing } from "@/lib/cart/model";
 
 const usd = (c: number) => `$${(c / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -127,5 +127,36 @@ export function ChatBundle({ b, onAdded }: { b: Bundle; onAdded?: () => void }) 
         </div>
       )}
     </section>
+  );
+}
+
+/** A DFY Outbound package. Add to Cart asks the server to price it first (it checks the package and availability), then updates the normal cart. Ownership is off unless ticked. */
+export function ChatDfyCard({ c, onAdded }: { c: DfyCardData; onAdded?: () => void }) {
+  const [own, setOwn] = useState(false);
+  const [state, setState] = useState<"idle" | "adding" | "added" | "error">("idle");
+  async function add() {
+    if (state === "adding") return;
+    setState("adding");
+    try {
+      const r = await fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: [], dfy: { pkg: c.name, ownership: own } }) });
+      const j = (await r.json()) as { ok?: boolean; pricing?: CartPricing };
+      if (!r.ok || !j.ok || !j.pricing?.dfy) { setState("error"); return; }
+      cartActions.setDfy({ pkg: c.name, own: own && c.ownershipEnabled }); setState("added"); onAdded?.();
+    } catch { setState("error"); }
+  }
+  const n = (x: number) => x.toLocaleString("en-US");
+  return (
+    <div className="rounded-2xl border border-sand-300 bg-white p-3 text-sm">
+      <p className="flex items-baseline justify-between gap-2"><span className="font-bold text-forest-900">DFY Outbound · {c.name}</span><span className="font-bold text-forest-900">{usd(c.monthlyCents).replace(/\.00$/, "")}/mo</span></p>
+      <p className="mt-1 text-forest-700">{n(c.leads)} leads · {n(c.initialSends)} initial sends · {c.followups} follow-ups</p>
+      <p className="text-xs text-forest-700">Estimated {c.domains} domains, {c.inboxes} inboxes · {c.reporting} reports</p>
+      {c.ownershipEnabled && <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={own} onChange={(e) => setOwn(e.target.checked)} className="accent-purple-600" />Own my infrastructure (+{usd(c.ownershipCents).replace(/\.00$/, "")} one-time)</label>}
+      <div className="mt-2 flex items-center gap-3">
+        <button type="button" onClick={add} disabled={state === "adding" || state === "added"} className="rounded-full bg-purple-600 px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-70">{state === "added" ? "Added" : state === "adding" ? "Adding…" : "Add to Cart"}</button>
+        <Link href="/dfy-outbound" className="text-xs font-semibold text-forest-700 underline underline-offset-2">View Details</Link>
+        {state === "added" && <Link href="/cart" className="text-xs font-semibold text-purple-700 underline underline-offset-2">View cart</Link>}
+      </div>
+      {state === "error" && <p role="alert" className="mt-2 text-xs text-red-800">I couldn&rsquo;t add that to your cart. Please try again.</p>}
+    </div>
   );
 }

@@ -43,12 +43,19 @@ export type PricedLine = {
 };
 /** The optional Email Verification service line. A service, not a database: no promotion, volume or bundle logic touches it. */
 export type PricedVerification = { name: string; limit: number; priceCents: number; purchasable: boolean; reason: string };
+/** The optional DFY Outbound service line: recurring monthly service + optional one-time ownership fee. Outside every database discount. */
+export type PricedDfy = { name: string; monthlyCents: number; ownership: boolean; ownershipCents: number; priceCents: number; leads: number; initialSends: number; followups: number; domains: string; inboxes: string; purchasable: boolean; reason: string };
+export type DfyPackageInfo = { name: string; monthlyCents: number; leads: number; initialSends: number; followups: number; domainsMin: number; domainsMax: number; inboxesMin: number; inboxesMax: number };
+/** What the cart shows in the optional DFY offer (built on the server from the admin settings). */
+export type DfyUpsell = { headline: string; description: string; ownershipEnabled: boolean; ownershipLabel: string; ownershipCents: number; packages: { name: string; monthlyCents: number; leads: number; initialSends: number; followups: number; domains: string; inboxes: string; featured: boolean }[] };
 /** What the cart shows in the optional verification offer (loaded from the admin settings on the server). */
 export type VerificationUpsell = { headline: string; description: string; placement: "after_items" | "in_summary"; packages: { name: string; limit: number; priceCents: number; featured: boolean }[] };
 export type CartPricing = {
   lines: PricedLine[];
   /** the Email Verification service in this cart (undefined = none) */
   service?: PricedVerification;
+  /** the DFY Outbound service in this cart (undefined = none) */
+  dfy?: PricedDfy;
   /** curated bundles in the cart, each with its lists and its own price (never discounted again) */
   bundles: PricedBundle[];
   /** how much the bundles save compared with buying their lists one by one */
@@ -81,6 +88,8 @@ export type CartContext = {
   volume?: VolumeSettings; rewardCombineVolume?: boolean;
   /** Email Verification: the selected package name and the packages from the server-side settings. Omitted = no service. */
   verification?: { pkg: string | null; enabled: boolean; packages: { name: string; limit: number; priceCents: number }[] };
+  /** DFY Outbound: selected package name + ownership choice, with the server-side settings. Omitted = no service. */
+  dfy?: { pkg: string | null; ownership: boolean; enabled: boolean; ownershipEnabled: boolean; ownershipCents: number; packages: DfyPackageInfo[] };
 };
 
 /** Cents to pay for a list price after a percent discount. Whole cents, rounded to nearest. */
@@ -155,12 +164,21 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
     const pk = vp.packages.find((x) => x.name === vp.pkg);
     if (pk) service = { name: pk.name, limit: pk.limit, priceCents: pk.priceCents, purchasable: vp.enabled && ctx.checkoutOpen, reason: !vp.enabled ? "Email list verification is not available right now." : !ctx.checkoutOpen ? "Checkout is not open yet." : "" };
   }
-  const totalCents = goodsCents + (service?.priceCents ?? 0);
+  let dfy: PricedDfy | undefined;
+  const dp = ctx.dfy;
+  if (dp?.pkg) {
+    const pk = dp.packages.find((x) => x.name === dp.pkg);
+    if (pk) {
+      const own = dp.ownership && dp.ownershipEnabled;
+      dfy = { name: pk.name, monthlyCents: pk.monthlyCents, ownership: own, ownershipCents: own ? dp.ownershipCents : 0, priceCents: pk.monthlyCents + (own ? dp.ownershipCents : 0), leads: pk.leads, initialSends: pk.initialSends, followups: pk.followups, domains: pk.domainsMin === pk.domainsMax ? String(pk.domainsMin) : `${pk.domainsMin}–${pk.domainsMax}`, inboxes: pk.inboxesMin === pk.inboxesMax ? String(pk.inboxesMin) : `${pk.inboxesMin}–${pk.inboxesMax}`, purchasable: dp.enabled && ctx.checkoutOpen, reason: !dp.enabled ? "DFY Outbound is not available right now." : !ctx.checkoutOpen ? "Checkout is not open yet." : "" };
+    }
+  }
+  const totalCents = goodsCents + (service?.priceCents ?? 0) + (dfy?.priceCents ?? 0);
   const single = r.applied.length === 1 && r.applied[0].kind === "percent" ? r.applied[0].percent : 0;
   return {
-    lines, bundles, service, bundleSavingsCents: bundlesList - bundlesPay, droppedBundles, subtotalCents: subtotalCents + bundlesList, discountPercent: single, discountCents: subtotalCents + bundlesList - goodsCents, discountCode: r.applied.map((a) => a.code).filter(Boolean).join(", "),
+    lines, bundles, service, dfy, bundleSavingsCents: bundlesList - bundlesPay, droppedBundles, subtotalCents: subtotalCents + bundlesList, discountPercent: single, discountCents: subtotalCents + bundlesList - goodsCents, discountCode: r.applied.map((a) => a.code).filter(Boolean).join(", "),
     applied: r.applied, codeError: r.codeError, needsEmail: r.needsEmail, volume: r.volume,
-    totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length + bundles.length + (service ? 1 : 0) > 0 && lines.every((l) => l.purchasable) && bundles.every((b) => b.purchasable) && (!service || service.purchasable), dropped,
+    totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length + bundles.length + (service ? 1 : 0) + (dfy ? 1 : 0) > 0 && lines.every((l) => l.purchasable) && bundles.every((b) => b.purchasable) && (!service || service.purchasable) && (!dfy || dfy.purchasable), dropped,
     placeholderPrices: lines.some((l) => l.placeholder) || bundles.some((b) => b.components.some((c) => getProduct(c.slug)?.placeholderData)),
   };
 }

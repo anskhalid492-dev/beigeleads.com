@@ -12,12 +12,15 @@ import { isPartnerCode } from "@/lib/partners/types";
 import { loadCandidates } from "@/lib/promos/store";
 import { loadSalesSettings } from "@/lib/sales/settings";
 import { loadEvSettings } from "@/lib/ev/settings";
+import { loadDfySettings } from "@/lib/dfy/settings";
 
 const body = z.object({
   items: cartItemsSchema,
   bundles: bundleSlugsSchema.optional(),
   // Email Verification package NAME only; the server looks up its price and limit.
   verification: z.string().trim().max(40).optional(),
+  // DFY Outbound: package NAME + ownership choice only. The server looks up prices and allocations.
+  dfy: z.object({ pkg: z.string().trim().max(40), ownership: z.boolean() }).optional(),
   // Optional partner code + the email it must belong to. Validated here; the browser never sets a price.
   code: z.string().trim().max(40).optional(),
   email: z.string().trim().toLowerCase().max(254).optional(),
@@ -53,7 +56,9 @@ export async function POST(req: Request) {
   const bundleSlugs = normalizeBundleSlugs(p.data.bundles ?? []);
   const bundleDefs = bundleSlugs.length ? await loadPublished(env) : [];
   const ev = await loadEvSettings(env);
+  const dfySet = await loadDfySettings(env);
   const pricing = priceCart(items, {
+    dfy: p.data.dfy ? { pkg: p.data.dfy.pkg, ownership: p.data.dfy.ownership, enabled: dfySet.enabled, ownershipEnabled: dfySet.ownershipEnabled, ownershipCents: dfySet.ownershipCents, packages: dfySet.packages } : undefined,
     verification: { pkg: p.data.verification || null, enabled: ev.enabled, packages: ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents })) },
     bundles: { slugs: bundleSlugs, defs: bundleDefs }, checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume,
     promo: { candidates, enteredCode, nowSec: Math.floor(Date.now() / 1000), emailKnown: !!p.data.email },
@@ -66,5 +71,7 @@ export async function POST(req: Request) {
   // The optional upsell: shown by the cart only for carts with databases and no verification yet.
   const upsell = ev.enabled && ev.upsellEnabled ? { headline: ev.upsellHeadline, description: ev.upsellDescription, placement: ev.upsellPlacement, packages: ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents, featured: x.featured })) } : null;
   const evPackages = ev.enabled ? ev.packages.map((x) => ({ name: x.name, limit: x.limit, priceCents: x.priceCents, featured: x.featured })) : [];
-  return json(200, { ok: true, pricing, discountError, upsell, evPackages, suggestions: suggestFor(basis, basis.length === 0 ? 4 : 3) });
+  // DFY offer for carts that hold databases (never on an empty cart, never when DFY is already in the cart).
+  const dfyOffer = dfySet.enabled && dfySet.upsellEnabled ? { headline: dfySet.upsellHeadline, description: dfySet.upsellDescription, ownershipEnabled: dfySet.ownershipEnabled, ownershipLabel: "Own My Infrastructure — +$100 one-time".replace("$100", `$${dfySet.ownershipCents / 100}`), ownershipCents: dfySet.ownershipCents, packages: dfySet.packages.map((x) => ({ name: x.name, monthlyCents: x.monthlyCents, leads: x.leads, initialSends: x.initialSends, followups: x.followups, domains: x.domainsMin === x.domainsMax ? String(x.domainsMin) : `${x.domainsMin}–${x.domainsMax}`, inboxes: x.inboxesMin === x.inboxesMax ? String(x.inboxesMin) : `${x.inboxesMin}–${x.inboxesMax}`, featured: x.featured })) } : null;
+  return json(200, { ok: true, pricing, discountError, upsell, dfyOffer, evPackages, suggestions: suggestFor(basis, basis.length === 0 ? 4 : 3) });
 }

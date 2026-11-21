@@ -5,7 +5,7 @@ import { complete, isProviderId, PROVIDER_LABEL, ProviderError, type Msg, type P
 import { logUnanswered } from "./leads";
 import { publishedEntries } from "./knowledge";
 import { DEFAULT_SALES, getProviderKey, getSettings, limitReached, listProviders, logUsage, type Settings } from "./store";
-import { newCtx, runTool, toolsFor, type Bundle, type Card, type OfferCard, type Source } from "./tools";
+import { newCtx, runTool, toolsFor, type Bundle, type Card, type DfyCardData, type OfferCard, type Source } from "./tools";
 import { detectLang, isLang, langName, type Lang } from "./v2/lang";
 import { describe as describeMemory, isEmpty as memoryEmpty, parseMemory, remember, type Memory } from "./v2/memory";
 import { nextSlot, questionFor, quickReplies, type Quick } from "./v2/followup";
@@ -14,7 +14,7 @@ import type { NegPolicy } from "./v2/negotiate";
 
 export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId; /** chosen language ("auto"/undefined = detect), session id and connection hash (negotiation limits), memory the browser holds */ lang?: string; sid?: string; ipHash?: string; memory?: unknown; /** Called with the tool name right before it runs (drives the live "searching" state). */ onTool?: (name: string) => void };
 export type ChatOut = {
-  ok: boolean; text: string; cards: Card[]; bundle?: Bundle | null; sources: Source[]; handoff: string | null;
+  ok: boolean; text: string; cards: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources: Source[]; handoff: string | null;
   trace: { name: string; args: unknown; ok: boolean }[]; provider?: ProviderId; model?: string; tokensIn?: number; tokensOut?: number; usedFallback?: boolean; error?: string; miss?: boolean; tools?: string[];
   /** BeigePilot 2.0 */ lang?: Lang; memory?: Memory; quick?: Quick[]; offer?: OfferCard | null; keptVolume?: boolean;
 };
@@ -47,6 +47,8 @@ const HUMOR_RULES: Record<string, string> = {
 };
 const HUMOR_LIMITS = "HUMOR LIMITS (always): never joke about payments, crypto, privacy, security, data accuracy, refunds, legal terms or complaints. For serious or policy questions stay plain, kind and professional. Personality never replaces accuracy.";
 const CONVERSATION = [
+  "NEVER mention tool names or internal terms (such as showProductCards, tools, cards, search function). Show the exact matching product and say one short line. Do not offer discounts or hint at them unless the visitor asked.",
+  "DFY OUTBOUND (done-for-you cold email outbound, monthly packages): for any question about it, call showDfyPackages and answer only from its result. Match a lead volume or budget to the right package by comparing the numbers; if nothing fits (for example more leads than the largest package), say so and offer a custom quote through the support request. Mention ownership (optional, one-time) only when the visitor asks about owning domains/inboxes. Leads, initial sends and follow-ups are separate; the maximum message number is a ceiling, not a promise; domain and inbox counts are estimates until onboarding. Never promise replies, meetings, revenue or inbox placement. No discounts apply to DFY: never offer one. Ask one question at a time (prospects, countries, budget, ownership) only if needed. Keep the replies in the visitor's language but keep prices, limits and terms exactly the same.",
   "HOW YOU TALK: like a helpful friend, not a corporate support agent and not a robot. Never mention being a robot, circuits or technology. Default to 1-2 short sentences. Do not repeat greetings, do not restate the question, avoid corporate phrases.",
   "ONE QUESTION AT A TIME: never ask more than one question in a reply. If the visitor names an industry but no place, ask only whether they want the whole country or a specific city (or which country). If you have enough to search, search instead of asking.",
   "REACT NATURALLY to what they just said (for example \"Ooh, Germany! 🇩🇪 Are you after the whole country or one city?\", then \"Berlin it is! ✨ Here's what I found.\"). When you have matches, say one short line and call showProductCards instead of listing details in text; the cards carry names, prices and links.",
@@ -61,7 +63,7 @@ export function v2Rules(o: { lang: Lang; memory: Memory; next: string; neg: NegP
     o.next ? `NEXT QUESTION (only if you cannot search yet; ask exactly this ONE question, in the visitor's language, never a list of questions): ${o.next}` : "If you have enough to search the catalog, search instead of asking.",
   ];
   if (o.neg?.enabled) lines.push(
-    `DISCOUNTS: never mention or offer a discount yourself. Only when the visitor explicitly asks for a discount, coupon or better price, call requestDiscount (it needs items in their cart: if the cart is empty, ask them to add a database first). The server decides; you cannot choose or change a percentage, and you never reveal codes. The most Pilo can ever offer is ${Math.min(20, o.neg.maxPercent)}%. If they ask for more, say ${Math.min(20, o.neg.maxPercent)}% is the most you can offer. Say it is an automatic BeigePilot offer, never that a person or manager approved it. Never agree to a price or percentage yourself. Email list verification, custom quotes and credits are not eligible. If the tool says the existing savings are better, say so plainly.`,
+    `DISCOUNTS: never mention or offer a discount yourself. Only when the visitor explicitly asks for a discount, coupon or better price, call requestDiscount (it needs items in their cart: if the cart is empty, ask them to add a database first). The server decides; you cannot choose or change a percentage, and you never reveal codes. The most Pilo can ever offer is ${Math.min(20, o.neg.maxPercent)}%. If they ask for more, say ${Math.min(20, o.neg.maxPercent)}% is the most you can offer. State the offer in plain words (for example "I can do 10% off your cart"). Never call it an "automatic" or "BeigePilot" offer, never say "I can try to get you" an offer, and never say a person or manager approved it. Never agree to a price or percentage yourself. Email list verification, custom quotes and credits are not eligible. If the tool says the existing savings are better, say so plainly.`,
   );
   return lines.filter(Boolean).join("\n");
 }
@@ -133,7 +135,7 @@ async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: Ch
   // Smart follow-up: reply buttons only when the assistant really ended with a question and a slot is still open.
   const slot = nextSlot(v2.memory, { hasCards: ctx.cards.length > 0 });
   const quick = /[?؟]\s*$/.test(cleaned) && !ctx.v2.offer ? quickReplies(slot, v2.lang) : [];
-  return { ok: true, lang: v2.lang, memory: v2.memory, quick, offer: ctx.v2.offer, keptVolume: ctx.v2.keptVolume, text: cleaned, cards: ctx.cards, bundle: ctx.bundle, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
+  return { ok: true, lang: v2.lang, memory: v2.memory, quick, offer: ctx.v2.offer, keptVolume: ctx.v2.keptVolume, text: cleaned, cards: ctx.cards, dfy: ctx.dfy, bundle: ctx.bundle, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
 }
 
 /** Visitor chat. `input.provider` (admin playground only) overrides the active provider and skips the fallback. */

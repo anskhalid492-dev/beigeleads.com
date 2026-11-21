@@ -5,6 +5,7 @@ import { notifyOwner, sendEmail } from "@/lib/forms/email";
 import { systemMail } from "@/lib/system-emails/mail";
 import { sendOnce } from "@/lib/system-emails/triggers";
 import { findDeliveryLink } from "./links";
+import { isDfySlug } from "@/lib/dfy/settings";
 import { EV_SLUG } from "@/lib/ev/settings";
 
 const MAX_ATTEMPTS = 5;
@@ -66,7 +67,11 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   if (all.some((x) => x.productSlug === EV_SLUG)) {
     try { const { fulfillOnPaid } = await import("@/lib/ev/store"); await fulfillOnPaid(env, orderId); } catch { /* the cron retries */ }
   }
-  const items = all.filter((x) => x.productSlug !== EV_SLUG);
+  // DFY Outbound is a managed service: it has no download link. Its own flow (onboarding link) starts here and never delays the lists.
+  if (all.some((x) => isDfySlug(x.productSlug))) {
+    try { const { fulfillOnPaid } = await import("@/lib/dfy/store"); await fulfillOnPaid(env, orderId); } catch { /* the cron retries */ }
+  }
+  const items = all.filter((x) => x.productSlug !== EV_SLUG && !isDfySlug(x.productSlug));
   const item = items[0];
   if (!item) return all.length > 0 ? "no-lists" : "not-paid";
   const multi = items.length > 1;
@@ -155,7 +160,7 @@ export async function deliverPendingOrders(env: CloudflareEnv): Promise<number> 
   const rows = await db.all<{ id: string }>(sql`
     SELECT o.id FROM orders o
     WHERE o.status = 'paid'
-      AND EXISTS (SELECT 1 FROM order_items i WHERE i.order_id = o.id AND i.product_slug <> ${EV_SLUG})
+      AND EXISTS (SELECT 1 FROM order_items i WHERE i.order_id = o.id AND i.product_slug NOT IN (${EV_SLUG}, 'dfy-outbound', 'dfy-ownership'))
       AND NOT EXISTS (SELECT 1 FROM deliveries d WHERE d.order_id = o.id AND (d.status = 'sent' OR d.status = 'sending' OR (d.status = 'failed' AND d.attempts >= ${MAX_ATTEMPTS})))
     ORDER BY o.paid_at LIMIT 20`);
   let sent = 0;

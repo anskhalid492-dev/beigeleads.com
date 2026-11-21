@@ -1,4 +1,5 @@
 import type { TemplateDef } from "./types";
+import { DFY_TEMPLATES } from "./dfy-templates";
 
 const SIGN = "The BeigeLeads team";
 const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and no recurring charges.";
@@ -8,6 +9,7 @@ const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and 
  * then wins. "connected" means a real backend event sends it today (see CONNECTIONS in the admin Triggers tab).
  */
 export const TEMPLATES: TemplateDef[] = [
+  ...DFY_TEMPLATES,
   // ---- Sales Features: Second Purchase Offer (section 113) ------------------------------------------------
   {
     key: "reward_first", name: "Second purchase reward: your code", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",

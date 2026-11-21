@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ApiForm } from "@/components/forms/api-form";
 import { Button } from "@/components/ui/button";
-import { cartActions, useCart, useCartBundles, useCartVerification, useMounted } from "@/lib/cart/client";
+import { cartActions, useCart, useCartBundles, useCartDfy, useCartVerification, useMounted } from "@/lib/cart/client";
 import type { CartPricing, VerificationUpsell } from "@/lib/cart/model";
 import { VerificationUpsellCard } from "@/components/cart/verification-card";
 import { readPartner, writePartner } from "@/lib/cart/partner";
@@ -19,7 +19,8 @@ export function CartCheckout({ options }: { options: Option[] }) {
   const cart = useCart();
   const bundleCart = useCartBundles();
   const verif = useCartVerification();
-  const empty = cart.length === 0 && bundleCart.length === 0 && !verif;
+  const dfyCart = useCartDfy();
+  const empty = cart.length === 0 && bundleCart.length === 0 && !verif && !dfyCart;
   const mounted = useMounted();
   const [result, setResult] = useState<{ key: string; pricing: CartPricing | null; upsell: VerificationUpsell | null; error: boolean; discountError: string } | null>(null);
   const [applied, setApplied] = useState<Applied | null>(null);
@@ -27,7 +28,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
   const [codeMsg, setCodeMsg] = useState("");
   const [last, setLast] = useState<CartPricing | null>(null);
   const [lastUpsell, setLastUpsell] = useState<VerificationUpsell | null>(null);
-  const key = JSON.stringify([cart, bundleCart, verif, applied]);
+  const key = JSON.stringify([cart, bundleCart, verif, dfyCart, applied]);
 
   // A code applied in the cart carries over (same tab). The server checks it again.
   useEffect(() => {
@@ -43,12 +44,13 @@ export function CartCheckout({ options }: { options: Option[] }) {
   useEffect(() => {
     if (!mounted || empty) return;
     const ac = new AbortController();
-    fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: cart, bundles: bundleCart, ...(verif ? { verification: verif } : {}), ...(applied ? { code: applied.code, email: applied.email } : {}) }), signal: ac.signal })
+    fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: cart, bundles: bundleCart, ...(verif ? { verification: verif } : {}), ...(dfyCart ? { dfy: { pkg: dfyCart.pkg, ownership: dfyCart.own } } : {}), ...(applied ? { code: applied.code, email: applied.email } : {}) }), signal: ac.signal })
       .then((r) => (r.ok ? (r.json() as Promise<{ ok: boolean; pricing: CartPricing; upsell?: VerificationUpsell | null; discountError?: string }>) : Promise.reject(new Error(r.status === 429 ? "limit" : "price"))))
       .then((j) => {
         setResult({ key, pricing: j.pricing, upsell: j.upsell ?? null, error: false, discountError: j.discountError ?? "" });
         setLast(j.pricing); setLastUpsell(j.upsell ?? null);
         if (verif && !j.pricing.service) cartActions.setVerification(null);
+        if (dfyCart && !j.pricing.dfy) cartActions.setDfy(null);
         if (applied) { if (j.discountError) { setCodeMsg(j.discountError); setApplied(null); writePartner(null); } else { setCodeMsg(j.pricing.applied.some((a) => a.source !== "automatic") ? "Code applied." : ""); writePartner(applied); } }
       })
       .catch((e: Error) => { if (e.name !== "AbortError") setResult({ key, pricing: null, upsell: null, error: true, discountError: "" }); if (e.message === "limit") { setCodeMsg("Too many code attempts. Try again in an hour."); setApplied(null); } });
@@ -88,7 +90,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
           successTitle="Creating your order"
           successText="Taking you to the payment page."
           defaults={applied ? { email: applied.email } : {}}
-          hidden={{ items: pricing.lines.map((l) => ({ product: l.slug, package: l.packageName })), bundles: pricing.bundles.map((b) => b.slug), ...(pricing.service ? { verification: pricing.service.name } : {}), ...(applied && hasCode ? { discountCode: applied.code } : {}) }}
+          hidden={{ items: pricing.lines.map((l) => ({ product: l.slug, package: l.packageName })), bundles: pricing.bundles.map((b) => b.slug), ...(pricing.service ? { verification: pricing.service.name } : {}), ...(pricing.dfy ? { dfy: { pkg: pricing.dfy.name, ownership: pricing.dfy.ownership } } : {}), ...(applied && hasCode ? { discountCode: applied.code } : {}) }}
           fields={[]}
           render={({ id, turnstile, error: formError, submit, honeypot }) => (
             <>
@@ -122,9 +124,9 @@ export function CartCheckout({ options }: { options: Option[] }) {
         <section aria-labelledby="co-team" className={card}>
           <h2 id="co-team" className="text-xl font-bold text-forest-900">Purchasing for Your Team?</h2>
           <p className="mt-2 text-sm">Need your manager to approve this purchase? Send them your selected databases for review and secure payment.</p>
-          {pricing.bundles.length === 0 && !pricing.service
+          {pricing.bundles.length === 0 && !pricing.service && !pricing.dfy
             ? <TeamRequest items={pricing.lines.map((l) => ({ product: l.slug, package: l.packageName }))} className="mt-4" />
-            : <p className="mt-3 text-sm">Manager approval requests are not available for carts that contain a {pricing.service ? "verification service" : "bundle"}.</p>}
+            : <p className="mt-3 text-sm">Manager approval requests are not available for carts that contain a {pricing.dfy ? "DFY service" : pricing.service ? "verification service" : "bundle"}.</p>}
         </section>
         <ul className="grid gap-2 text-sm sm:grid-cols-3">
           {["Payment is checked on the network", "Download links are emailed after confirmed payment", "No customer account required"].map((t) => <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{t}</li>)}
@@ -146,6 +148,18 @@ export function CartCheckout({ options }: { options: Option[] }) {
                 <span className="font-semibold text-forest-900">{formatUsd(l.priceCents)}</span>
               </li>
             ))}
+            {pricing.dfy && (
+              <li className="flex justify-between gap-4 py-3 text-sm">
+                <span><span className="block font-semibold text-forest-900">DFY Outbound — {pricing.dfy.name}</span><span className="text-forest-500">First month · renews monthly, paid manually</span></span>
+                <span className="font-semibold text-forest-900">{formatUsd(pricing.dfy.monthlyCents)}</span>
+              </li>
+            )}
+            {pricing.dfy?.ownership && (
+              <li className="flex justify-between gap-4 py-3 text-sm">
+                <span><span className="block font-semibold text-forest-900">Infrastructure ownership</span><span className="text-forest-500">One-time fee, never part of a renewal</span></span>
+                <span className="font-semibold text-forest-900">{formatUsd(pricing.dfy.ownershipCents)}</span>
+              </li>
+            )}
             {pricing.service && (
               <li className="flex justify-between gap-4 py-3 text-sm">
                 <span><span className="block font-semibold text-forest-900">Email List Verification</span><span className="text-forest-500">{pricing.service.name} · up to {pricing.service.limit.toLocaleString("en-US")} emails</span></span>
@@ -154,7 +168,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
             )}
           </ul>
           <dl className="space-y-1.5 border-t border-sand-200 pt-4 text-sm">
-            <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatUsd(pricing.subtotalCents + (pricing.service?.priceCents ?? 0))}</dd></div>
+            <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatUsd(pricing.subtotalCents + (pricing.service?.priceCents ?? 0) + (pricing.dfy?.priceCents ?? 0))}</dd></div>
             {pricing.bundleSavingsCents > 0 && <div className="flex justify-between gap-3"><dt>Bundle savings · in the bundle price</dt><dd className="font-semibold text-forest-500">&minus;{formatUsd(pricing.bundleSavingsCents)}</dd></div>}
             {pricing.applied.map((a) => <div key={`${a.source}-${a.code}-${a.title}`} className="flex justify-between gap-3"><dt>{a.title}{a.kind === "percent" && a.percent > 0 ? ` (${a.percent}%)` : ""}{a.source === "automatic" ? " · applied automatically" : a.code ? ` · ${a.code}` : ""}</dt><dd className="font-semibold text-forest-500">&minus;{formatUsd(a.cents)}</dd></div>)}
           </dl>

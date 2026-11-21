@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         if (r.keptVolume) await piloEvent(env, cid, "offer_kept_volume");
       })());
     }
-    return { ok: true, lang: r.lang ?? "en", memory: r.memory ?? null, quick: r.quick ?? [], offer: r.offer ?? null, text: r.text, cards: r.cards, bundle: r.bundle ?? null, sources: r.sources, handoff: r.handoff, miss: !!r.miss, tools: r.tools ?? [] };
+    return { ok: true, lang: r.lang ?? "en", memory: r.memory ?? null, quick: r.quick ?? [], offer: r.offer ?? null, text: r.text, cards: r.cards, dfy: r.dfy ?? [], bundle: r.bundle ?? null, sources: r.sources, handoff: r.handoff, miss: !!r.miss, tools: r.tools ?? [] };
   };
 
   // Live status for the widget: one JSON line per step (tool started), then the final answer or a failure.

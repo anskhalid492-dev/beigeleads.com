@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { EmptyCart } from "@/components/cart/empty-cart";
 import { Flag, IndustryIcon } from "@/components/shared/db-icon";
 import { Button } from "@/components/ui/button";
-import { cartActions, useCart, useCartBundles, useCartVerification, useMounted } from "@/lib/cart/client";
+import { cartActions, useCart, useCartBundles, useCartDfy, useCartVerification, useMounted } from "@/lib/cart/client";
 import { CartBundleCard } from "@/components/bundles/cart-bundle";
-import type { CartPricing, PricedLine, Suggestion, VerificationUpsell } from "@/lib/cart/model";
+import type { CartPricing, DfyUpsell, PricedLine, Suggestion, VerificationUpsell } from "@/lib/cart/model";
+import { DfyLine, DfyUpsellCard } from "@/components/cart/dfy-card";
 import { VerificationLine, VerificationUpsellCard } from "@/components/cart/verification-card";
 import { readPartner, writePartner } from "@/lib/cart/partner";
 import { trackCart, trackCartViewOnce } from "@/lib/cart/track";
@@ -15,14 +16,15 @@ import { formatUsd } from "@/lib/catalog";
 import { TeamRequest } from "@/components/cart/team-request";
 import { VolumeLadder } from "@/components/cart/volume-ladder";
 
-type Loaded = { pricing: CartPricing; suggestions: Suggestion[]; upsell: VerificationUpsell | null; evPackages: VerificationUpsell["packages"] };
+type Loaded = { pricing: CartPricing; suggestions: Suggestion[]; upsell: VerificationUpsell | null; dfyOffer: DfyUpsell | null; evPackages: VerificationUpsell["packages"] };
 
 export function CartView() {
   const cart = useCart();
   const bundleCart = useCartBundles();
   const mounted = useMounted();
   const verif = useCartVerification();
-  const empty = cart.length === 0 && bundleCart.length === 0 && !verif;
+  const dfyCart = useCartDfy();
+  const empty = cart.length === 0 && bundleCart.length === 0 && !verif && !dfyCart;
   const [notice, setNotice] = useState("");
   const [open, setOpen] = useState(false); // mobile summary
   const [attempt, setAttempt] = useState(0); // bumped by "Try again"
@@ -47,17 +49,18 @@ export function CartView() {
   useEffect(() => {
     if (!mounted || empty) return;
     const ac = new AbortController();
-    fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: cart, bundles: bundleCart, ...(verif ? { verification: verif } : {}), ...(applied ? { code: applied.code, email: applied.email } : {}) }), signal: ac.signal })
+    fetch("/api/cart/price", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ items: cart, bundles: bundleCart, ...(verif ? { verification: verif } : {}), ...(dfyCart ? { dfy: { pkg: dfyCart.pkg, ownership: dfyCart.own } } : {}), ...(applied ? { code: applied.code, email: applied.email } : {}) }), signal: ac.signal })
       .then((r) => (r.ok ? (r.json() as Promise<{ ok: boolean; discountError?: string } & Loaded>) : Promise.reject(new Error(r.status === 429 ? "limit" : String(r.status)))))
       .then((j) => {
         if (!j.ok) throw new Error("bad");
-        const loaded = { pricing: j.pricing, suggestions: j.suggestions, upsell: j.upsell ?? null, evPackages: j.evPackages ?? [] };
+        const loaded = { pricing: j.pricing, suggestions: j.suggestions, upsell: j.upsell ?? null, dfyOffer: j.dfyOffer ?? null, evPackages: j.evPackages ?? [] };
         setResult({ key, data: loaded, error: false });
         setLast(loaded);
         if (applied) {
           if (j.discountError) { setCodeMsg({ ok: false, text: j.discountError }); setApplied(null); writePartner(null); }
           else { setCodeMsg({ ok: true, text: appliedMessage(j.pricing) }); writePartner(applied); }
         }
+        if (dfyCart && !j.pricing.dfy) { cartActions.setDfy(null); setNotice("The DFY Outbound package in your cart is no longer available and was removed."); }
         if (verif && !j.pricing.service) { cartActions.setVerification(null); setNotice("The email list verification package in your cart is no longer available and was removed."); }
         const gone = j.pricing.dropped.length + j.pricing.droppedBundles.length;
         if (gone > 0) {
@@ -96,10 +99,12 @@ export function CartView() {
   }
   const pricing = data?.pricing;
   if (!pricing) return <Skeleton />;
-  if (pricing.lines.length === 0 && pricing.bundles.length === 0 && !pricing.service) return <EmptyCart notice={notice} />;
+  if (pricing.lines.length === 0 && pricing.bundles.length === 0 && !pricing.service && !pricing.dfy) return <EmptyCart notice={notice} />;
 
   const dbCount = pricing.lines.length + pricing.bundles.length;
   // The offer: only with at least one database in the cart and no verification yet (never on an empty or verification-only cart).
+  // The DFY offer: only with at least one database in the cart, never when DFY is already in it, and never next to the verification offer position-wise (it sits below).
+  const dfyOffer = data?.dfyOffer && dbCount > 0 && !pricing.dfy ? data.dfyOffer : null;
   const upsell = data?.upsell && dbCount > 0 && !pricing.service ? data.upsell : null;
   return (
     <div className="cart-in pb-28 lg:pb-0">
@@ -111,9 +116,11 @@ export function CartView() {
           <ul className="mt-4">
             {pricing.bundles.map((b, i) => <li key={`bundle-${b.slug}`} className="cart-in pb-4" style={{ "--i": i } as React.CSSProperties}><CartBundleCard b={b} onRemove={() => { cartActions.removeBundle(b.slug); trackCart("remove_from_cart", count - 1); }} /></li>)}
             {pricing.lines.map((l, i) => <Line key={l.slug} l={l} i={i} onRemove={() => { cartActions.remove(l.slug); trackCart("remove_from_cart", cart.length - 1); }} />)}
+            {pricing.dfy && <DfyLine dfy={pricing.dfy} offer={data?.dfyOffer ?? null} onRemove={() => { cartActions.setDfy(null); trackCart("remove_from_cart", count - 1); }} />}
             {pricing.service && <VerificationLine service={pricing.service} packages={data?.evPackages ?? []} onRemove={() => { cartActions.setVerification(null); trackCart("remove_from_cart", count - 1); }} />}
           </ul>
           {upsell && upsell.placement === "after_items" && <VerificationUpsellCard upsell={upsell} className="mt-2" />}
+          {dfyOffer && <DfyUpsellCard offer={dfyOffer} className="mt-2" />}
           {data && data.suggestions.length > 0 && <Reach items={data.suggestions} count={count} />}
         </section>
 
@@ -190,10 +197,12 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         <ul className="mt-4 space-y-2 text-sm">
           {pricing.bundles.map((b) => <li key={`b-${b.slug}`} className="flex justify-between gap-3"><span className="min-w-0 truncate">{b.name} <span className="text-forest-500">· bundle of {b.components.length}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(b.priceCents)}</span></li>)}
           {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span className="min-w-0 truncate">{l.name} <span className="text-forest-500">· {l.packageName}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(l.payCents)}</span></li>)}
+          {pricing.dfy && <li className="flex justify-between gap-3"><span className="min-w-0 truncate">DFY Outbound <span className="text-forest-500">· {pricing.dfy.name} · monthly</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(pricing.dfy.monthlyCents)}</span></li>}
+          {pricing.dfy?.ownership && <li className="flex justify-between gap-3"><span className="min-w-0 truncate">Infrastructure ownership <span className="text-forest-500">· one-time</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(pricing.dfy.ownershipCents)}</span></li>}
           {pricing.service && <li className="flex justify-between gap-3"><span className="min-w-0 truncate">Email List Verification <span className="text-forest-500">· {pricing.service.name}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(pricing.service.priceCents)}</span></li>}
         </ul>
         <dl className="mt-4 space-y-2 border-t border-sand-200 pt-4 text-sm">
-          <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents + (pricing.service?.priceCents ?? 0))}</dd></div>
+          <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents + (pricing.service?.priceCents ?? 0) + (pricing.dfy?.priceCents ?? 0))}</dd></div>
           {pricing.bundleSavingsCents > 0 && <div className="flex justify-between gap-3 text-forest-700"><dt>Bundle savings<span className="block text-xs text-forest-500">Already in the bundle price</span></dt><dd className="shrink-0 font-semibold">&minus;{formatUsd(pricing.bundleSavingsCents)}</dd></div>}
           {pricing.applied.map((a) => (
             <div key={`${a.source}-${a.code}-${a.title}`} className="cart-in flex justify-between gap-3 text-forest-700">
@@ -214,7 +223,7 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
       </div>
       <div className="mt-5 hidden lg:block"><CheckoutCta pricing={pricing} count={pricing.lines.length + pricing.bundles.length + (pricing.service ? 1 : 0)} /></div>
       {pricing.canCheckout && pricing.bundles.length === 0 && !pricing.service && pricing.lines.length > 0 && <TeamRequest className="mt-3" items={pricing.lines.map((l) => ({ product: l.slug, package: l.packageName }))} />}
-      {pricing.canCheckout && (pricing.bundles.length > 0 || pricing.service) && <p className="mt-3 text-center text-xs">Manager approval requests are not available for carts that contain a {pricing.service ? "verification service" : "bundle"}.</p>}
+      {pricing.canCheckout && (pricing.bundles.length > 0 || pricing.service || pricing.dfy) && <p className="mt-3 text-center text-xs">Manager approval requests are not available for carts that contain a {pricing.service ? "verification service" : "bundle"}.</p>}
       {blocked.length > 0 && (
         <p role="status" className="mt-4 rounded-xl bg-sand-100 px-4 py-3 text-sm">{blocked[0].reason}{pricing.checkoutOpen && blocked.length > 0 ? " Remove it from your cart to continue." : " Your cart is saved in this browser."}</p>
       )}

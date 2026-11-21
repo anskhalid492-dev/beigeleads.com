@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AiBenefits, AiFeatures, AiFinalCta, AiHero, AiLanguages, AiLimits, AiMemory, AiOffers, AiSteps4 } from "@/components/ai-assistant/sections";
+import { AiBenefits, AiDfy, AiFeatures, AiFinalCta, AiHero, AiLanguages, AiLimits, AiMemory, AiOffers, AiSteps4 } from "@/components/ai-assistant/sections";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SolutionFaq } from "@/components/solutions/sections";
@@ -26,6 +26,7 @@ export default function AiAssistantPage() {
       <AiLanguages />
       <AiMemory />
       <AiOffers />
+      <AiDfy />
       <AiBenefits />
       <AiLimits />
       <SolutionFaq name="BeigePilot" items={AI_V2_FAQS} />

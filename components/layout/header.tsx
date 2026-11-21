@@ -19,6 +19,7 @@ const GROUPS = [
 ] as const;
 
 const LINKS = [
+  { label: "DFY", href: "/dfy-outbound" },
   { label: "Blog", href: "/blog" },
   { label: "Help Center", href: "/help-center" },
   { label: "Data Resellers", href: "/partners" },

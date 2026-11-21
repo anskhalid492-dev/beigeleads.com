@@ -296,3 +296,22 @@ export function AiOffers() {
     </section>
   );
 }
+
+export function AiDfy() {
+  return (
+    <section className="bg-sand-100 py-16 lg:py-20">
+      <div className={`${wrap} text-center`}>
+        <h2 className={`${h2} mx-auto max-w-3xl`}>Need More Than Leads? Let Pilo Handle Your Outbound Questions.</h2>
+        <p className="mx-auto mt-4 max-w-2xl text-lg">Ask Pilo how DFY Outbound works, which package fits your lead volume, and what ownership means.</p>
+        <p className="mt-4 font-semibold text-forest-900">Starter $299/mo · Growth $599/mo · Scale $999/mo</p>
+        <ul className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2 text-sm">
+          {["Package differences", "Lead and send volumes", "Infrastructure ownership", "Setup process", "Reporting", "Custom quote"].map((t) => <li key={t} className="rounded-full border border-sand-300 bg-white px-3 py-1.5">{t}</li>)}
+        </ul>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <OpenPilo className={primary} ask="Tell me about DFY Outbound packages">Ask Pilo About DFY</OpenPilo>
+          <Link href="/dfy-outbound" className="inline-flex h-12 items-center rounded-full border border-forest-700 px-7 font-semibold text-forest-900 transition-colors hover:bg-white">Explore DFY Packages</Link>
+        </div>
+      </div>
+    </section>
+  );
+}
