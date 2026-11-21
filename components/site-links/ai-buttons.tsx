@@ -33,8 +33,8 @@ export function AiButtons({ platforms, prompt, preview = false }: { platforms: A
           </li>
         ))}
       </ul>
-      <p role="status" aria-live="polite" className="mt-2 max-w-sm text-xs text-forest-700">{msg}</p>
-      {shown && <textarea readOnly value={shown} rows={4} aria-label="Prompt to copy" onFocus={(e) => e.currentTarget.select()} className="mt-2 w-full max-w-sm rounded-lg border border-sand-200 bg-white p-2 text-xs text-forest-900" />}
+      <p role="status" aria-live="polite" className="mt-2 max-w-sm text-xs opacity-90">{msg}</p>
+      {shown && <textarea readOnly value={shown} rows={4} aria-label="Prompt to copy" onFocus={(e) => e.currentTarget.select()} className="mt-2 w-full max-w-sm rounded-lg border border-sand-200 bg-white p-2 text-left text-xs text-forest-900" />}
     </div>
   );
 }
