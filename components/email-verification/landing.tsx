@@ -105,7 +105,7 @@ export function EvPricing({ s }: { s: EvSettings }) {
         <h2 className={`${h2} mx-auto max-w-3xl text-center`}>Simple, Transparent Verification Pricing</h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-lg">One-time payments. No subscription. Every package is a maximum, so smaller lists can use it too; the {s.packages[0].name} package accepts lists from 5K up to {s.packages[0].limit.toLocaleString("en-US")}.</p>
         <PricingCards packages={s.packages} enabled={s.enabled} />
-        {!s.enabled && <p role="status" className="mt-6 text-center text-sm font-semibold">Email verification is not available right now. Please check back soon.</p>}
+        {!s.enabled && <p role="status" className="mt-6 text-center text-sm font-semibold">Email list verification is not available right now. Please check back soon.</p>}
         <div id="quote" className="mx-auto mt-14 grid max-w-5xl scroll-mt-24 gap-8 rounded-3xl border border-sand-200 bg-white p-7 sm:p-10 lg:grid-cols-[1fr_1fr]">
           <div>
             <h3 className="display text-3xl text-forest-900 sm:text-4xl">Need to Verify More Than 1 Million Emails?</h3>

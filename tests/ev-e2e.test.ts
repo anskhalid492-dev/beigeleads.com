@@ -1,4 +1,4 @@
-// Email Verification service against a local D1 + KV + R2: checkout (standalone and mixed), payment hook, upload limits, admin workflow, emails.
+// Email List Verification service against a local D1 + KV + R2: checkout (standalone and mixed), payment hook, upload limits, admin workflow, emails.
 import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -107,7 +107,7 @@ describe("payment and fulfilment", () => {
     expect(await deliverOrder(env, orderId)).toBe("no-lists");
     const ev = await getEvByOrder(getDbFromEnv(base), orderId);
     expect(ev?.status).toBe("awaiting_file");
-    const confirms = sent.filter((m) => m.to.includes(email) && /Email Verification Order Is Confirmed/.test(m.subject));
+    const confirms = sent.filter((m) => m.to.includes(email) && /Email List Verification Order Is Confirmed/.test(m.subject));
     expect(confirms).toHaveLength(1);
     expect(confirms[0].text).toContain(`/email-verification/submit/${await evToken(env, ev!.id)}`);
     expect(await deliverPendingOrders(env)).toBeGreaterThanOrEqual(0);
@@ -122,7 +122,7 @@ describe("payment and fulfilment", () => {
     expect(await deliverOrder(env, orderId)).toBe("sent");
     expect(sent.some((m) => m.text?.includes("https://files.example/mix"))).toBe(true);
     expect((await getEvByOrder(getDbFromEnv(base), orderId))?.status).toBe("awaiting_file");
-    expect(sent.filter((m) => /Email Verification Order Is Confirmed/.test(m.subject))).toHaveLength(1);
+    expect(sent.filter((m) => /Email List Verification Order Is Confirmed/.test(m.subject))).toHaveLength(1);
   });
   it("the cron safety net fulfils a paid order the hook missed", async () => {
     mockMail();

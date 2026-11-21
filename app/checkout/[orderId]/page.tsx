@@ -11,7 +11,7 @@ import { getDb, schema } from "@/lib/db";
 import { CheckoutLive } from "./live";
 import { EV_SLUG } from "@/lib/ev/settings";
 
-const itemName = (slug: string) => (slug === EV_SLUG ? "Email Verification" : getProduct(slug)?.name ?? slug);
+const itemName = (slug: string) => (slug === EV_SLUG ? "Email List Verification" : getProduct(slug)?.name ?? slug);
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";

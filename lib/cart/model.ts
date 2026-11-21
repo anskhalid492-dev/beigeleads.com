@@ -153,7 +153,7 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
   const vp = ctx.verification;
   if (vp?.pkg) {
     const pk = vp.packages.find((x) => x.name === vp.pkg);
-    if (pk) service = { name: pk.name, limit: pk.limit, priceCents: pk.priceCents, purchasable: vp.enabled && ctx.checkoutOpen, reason: !vp.enabled ? "Email verification is not available right now." : !ctx.checkoutOpen ? "Checkout is not open yet." : "" };
+    if (pk) service = { name: pk.name, limit: pk.limit, priceCents: pk.priceCents, purchasable: vp.enabled && ctx.checkoutOpen, reason: !vp.enabled ? "Email list verification is not available right now." : !ctx.checkoutOpen ? "Checkout is not open yet." : "" };
   }
   const totalCents = goodsCents + (service?.priceCents ?? 0);
   const single = r.applied.length === 1 && r.applied[0].kind === "percent" ? r.applied[0].percent : 0;

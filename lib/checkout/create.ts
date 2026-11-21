@@ -71,7 +71,7 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
   if (priced.lines.length + priced.bundles.reduce((n, b) => n + b.components.length, 0) > 40) throw new CheckoutError("This order is too large. Remove something from your cart.");
   // A code the buyer typed that does not apply stops the order: they must not pay a price they did not expect.
   if (typed && !discount && priced.codeError) throw new CheckoutError(priced.codeError);
-  if (priced.service && !priced.service.purchasable) throw new CheckoutError(priced.service.reason || "Email verification is not available right now.");
+  if (priced.service && !priced.service.purchasable) throw new CheckoutError(priced.service.reason || "Email list verification is not available right now.");
   const totalCents = priced.totalCents;
   // One order item per list. A bundle's lists carry their share of the bundle price, so the items always add up to the amount paid
   // (refunds and reports use what was actually paid, never the list price).

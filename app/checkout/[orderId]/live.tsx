@@ -56,7 +56,7 @@ export function CheckoutLive({ orderId, expiresAt, initial, slugs = [], bundles 
       <p className="mt-2 text-sm">{l.text}</p>
       {effective === "paid" && verification && (
         <div className="mt-3 rounded-xl border border-sand-200 bg-white p-4 text-sm">
-          <p className="font-semibold text-forest-900">Email verification: submit your list</p>
+          <p className="font-semibold text-forest-900">Email list verification: submit your list</p>
           <p className="mt-1">{lists ? "Your database links are emailed separately. " : ""}Verification starts after you paste or upload your emails. It is done by our team and is not instant.</p>
           {status.submitUrl ? <a href={status.submitUrl} className="mt-3 inline-flex rounded-full bg-purple-600 px-5 py-2.5 font-semibold text-white hover:bg-purple-700">Submit Your List</a> : <p className="mt-2">Your secure submission link is being prepared. It will be emailed to you.</p>}
         </div>

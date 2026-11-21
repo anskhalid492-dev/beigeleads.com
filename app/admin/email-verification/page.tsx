@@ -8,7 +8,7 @@ import { listOrders, statusCounts } from "@/lib/ev/store";
 import { gate } from "./gate";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Email Verification Orders", robots: { index: false, follow: false } };
+export const metadata = { title: "Email List Verification Orders", robots: { index: false, follow: false } };
 const PER = 25;
 const d = (t: number | null) => (t ? new Date(t * 1000).toISOString().slice(0, 10) : "—");
 const size = (b: number) => (b > 0 ? `${(b / 1024 / 1024).toFixed(1)} MB` : "—");
@@ -20,12 +20,12 @@ export default async function EvOrders({ searchParams }: { searchParams: Promise
   const page = Math.max(1, Number(sp.page) || 1);
   let data: Awaited<ReturnType<typeof listOrders>> | null = null; let counts: Record<string, number> = {};
   try { data = await listOrders(db, { status: sp.status, q: (sp.q ?? "").trim() || undefined, page, per: PER }); counts = await statusCounts(db); } catch { data = null; }
-  if (!data) return (<><PageHeader title="Email Verification Orders" /><p role="alert" className="rounded-xl bg-amber-100 p-3 text-sm text-amber-900">Run migration 0045_email_verification.sql in D1 (one statement at a time) to turn this page on.</p></>);
+  if (!data) return (<><PageHeader title="Email List Verification Orders" /><p role="alert" className="rounded-xl bg-amber-100 p-3 text-sm text-amber-900">Run migration 0045_email_verification.sql in D1 (one statement at a time) to turn this page on.</p></>);
   const pages = Math.max(1, Math.ceil(data.total / PER));
   const href = (p: number) => `?${new URLSearchParams({ ...(sp.q ? { q: sp.q } : {}), ...(sp.status ? { status: sp.status } : {}), page: String(p) })}`;
   return (
     <>
-      <PageHeader title="Email Verification Orders" text="Orders for the manual verification service. A job is never completed automatically: you upload the result and mark it Completed."
+      <PageHeader title="Email List Verification Orders" text="Orders for the manual verification service. A job is never completed automatically: you upload the result and mark it Completed."
         actions={<div className="flex gap-2"><Button asChild variant="secondary"><Link href="/admin/email-verification/quotes">Custom quotes</Link></Button><Button asChild variant="secondary"><Link href="/admin/email-verification/settings">Settings</Link></Button></div>} />
       <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Waiting for a list" value={counts.awaiting_file ?? 0} />

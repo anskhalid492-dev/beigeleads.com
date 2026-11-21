@@ -54,7 +54,7 @@ export function CartView() {
           if (j.discountError) { setCodeMsg({ ok: false, text: j.discountError }); setApplied(null); writePartner(null); }
           else { setCodeMsg({ ok: true, text: appliedMessage(j.pricing) }); writePartner(applied); }
         }
-        if (verif && !j.pricing.service) { cartActions.setVerification(null); setNotice("The email verification package in your cart is no longer available and was removed."); }
+        if (verif && !j.pricing.service) { cartActions.setVerification(null); setNotice("The email list verification package in your cart is no longer available and was removed."); }
         const gone = j.pricing.dropped.length + j.pricing.droppedBundles.length;
         if (gone > 0) {
           // Something in this browser's cart no longer exists in the catalog (or a bundle was unpublished): remove it and say so.
@@ -186,7 +186,7 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         <ul className="mt-4 space-y-2 text-sm">
           {pricing.bundles.map((b) => <li key={`b-${b.slug}`} className="flex justify-between gap-3"><span className="min-w-0 truncate">{b.name} <span className="text-forest-500">· bundle of {b.components.length}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(b.priceCents)}</span></li>)}
           {pricing.lines.map((l) => <li key={l.slug} className="flex justify-between gap-3"><span className="min-w-0 truncate">{l.name} <span className="text-forest-500">· {l.packageName}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(l.payCents)}</span></li>)}
-          {pricing.service && <li className="flex justify-between gap-3"><span className="min-w-0 truncate">Email Verification <span className="text-forest-500">· {pricing.service.name}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(pricing.service.priceCents)}</span></li>}
+          {pricing.service && <li className="flex justify-between gap-3"><span className="min-w-0 truncate">Email List Verification <span className="text-forest-500">· {pricing.service.name}</span></span><span className="shrink-0 font-semibold text-forest-900">{formatUsd(pricing.service.priceCents)}</span></li>}
         </ul>
         <dl className="mt-4 space-y-2 border-t border-sand-200 pt-4 text-sm">
           <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents + (pricing.service?.priceCents ?? 0))}</dd></div>
@@ -201,7 +201,7 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         </dl>
         <Code pricing={pricing} applied={applied} codeMsg={codeMsg} busy={busy} onApply={onApply} onRemove={onRemoveCode} />
         <VolumeLadder volume={pricing.volume} />
-        {pricing.service && pricing.volume && <p className="mt-2 text-xs">Email verification is not counted in database discounts.</p>}
+        {pricing.service && pricing.volume && <p className="mt-2 text-xs">Email list verification is not counted in database discounts.</p>}
         <div className={`mt-4 flex items-end justify-between border-t border-sand-200 pt-4 transition-opacity duration-200 ${busy ? "opacity-60" : ""}`}>
           <p className="font-bold text-forest-900">Total</p>
           <p className="display text-5xl leading-none text-forest-900"><Money cents={pricing.totalCents} /></p>

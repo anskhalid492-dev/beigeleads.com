@@ -25,7 +25,7 @@ export default async function EmailVerificationPage() {
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Service", name: "Bulk Email List Verification", url: `${SITE_URL}/email-verification`, description: EV_DESC, provider: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL } }} />
-      <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "Email Verification", href: "/email-verification" }]} /></div>
+      <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "Email List Verification", href: "/email-verification" }]} /></div>
       <EvHero />
       <EvWhy />
       <EvSteps />
@@ -33,7 +33,7 @@ export default async function EmailVerificationPage() {
       <EvFormats s={s} />
       <EvStatuses />
       <EvPrivacy s={s} />
-      <SolutionFaq name="Email Verification" items={faqs} />
+      <SolutionFaq name="Email List Verification" items={faqs} />
       <EvFinalCta />
     </>
   );
