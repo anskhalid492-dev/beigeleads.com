@@ -14,10 +14,11 @@ import { loadListsData } from "@/lib/lists-data";
 import { parseSlugList, getPublicSettings } from "@/lib/settings/service";
 import { applyFilters, chips, facets, interpret, isFiltered, listsHref, paginate, parseFilters } from "@/lib/shop";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 type SP = Promise<Record<string, string | string[] | undefined>>;
 
-export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
+async function generateMetadataRaw({ searchParams }: { searchParams: SP }): Promise<Metadata> {
   const f = parseFilters(await searchParams);
   // Filtered, searched, sorted and B2C views are thin or duplicate: noindex, canonical to the clean page. Plain pagination keeps its own canonical.
   const filtered = isFiltered(f);
@@ -80,3 +81,5 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

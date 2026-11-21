@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { PricingPage } from "@/components/pricing/pricing-page";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "One-Time Business Email List Pricing",
   description: "Buy business email lists and B2B contact databases with a one-time payment. No subscriptions, no credits. Preview a masked sample, pick a package, pay once.",
   alternates: { canonical: "/pricing" },
@@ -9,3 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default PricingPage;
+
+export const metadata: Metadata = fitMeta(metadataRaw);

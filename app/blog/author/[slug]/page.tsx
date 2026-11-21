@@ -12,6 +12,7 @@ import { authorCategories, getPublicAuthorBySlug, publishedCount } from "@/lib/b
 import { listPublished } from "@/lib/blog/posts";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 const abs = (u: string) => (u.startsWith("http") ? u : `${SITE_URL}${u}`);
 
@@ -27,7 +28,7 @@ async function load(slug: string, page: number, categorySlug?: string) {
   } catch { return null; }
 }
 
-export async function generateMetadata(props: PageProps<"/blog/author/[slug]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/blog/author/[slug]">): Promise<Metadata> {
   const d = await load((await props.params).slug, 1);
   if (!d) return { title: "Author not found", robots: { index: false } };
   const a = d.author;
@@ -124,3 +125,5 @@ export default async function AuthorPage(props: PageProps<"/blog/author/[slug]">
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

@@ -9,13 +9,14 @@ import { getSeoSettings } from "@/lib/seo/settings";
 import { newsletterOn } from "@/lib/newsletter";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
 async function load(slug: string) {
   try { return await getPublishedBySlug(getCloudflareContext().env, slug); } catch { return null; }
 }
 
-export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const p = await load((await props.params).slug);
   if (!p) return { title: "Article not found", robots: { index: false } };
   const r = p.row;
@@ -46,3 +47,5 @@ export default async function BlogArticle(props: PageProps<"/blog/[slug]">) {
     }} />
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

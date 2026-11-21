@@ -5,7 +5,8 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { FOUNDER } from "@/lib/about-content";
 import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "About BeigeLeads: the story behind the lists",
   description: "How years of client acquisition work led founder Anus to build BeigeLeads: ready-made and custom B2B contact lists you pay for once and own.",
   alternates: { canonical: "/about" },
@@ -24,3 +25,5 @@ export default function About() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

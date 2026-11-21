@@ -6,8 +6,9 @@ import { TprBenefits, TprFinalCta, TprHero, TprPreview, TprRoles, TprSteps } fro
 import { TPR_DESC, TPR_FAQS, TPR_TITLE } from "@/lib/team-requests-content";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 // No page-level robots setting: the site-wide noindex in app/layout.tsx stays until launch (CLAUDE.md section 50).
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: TPR_TITLE },
   description: TPR_DESC,
   alternates: { canonical: "/team-purchase-requests" },
@@ -30,3 +31,5 @@ export default function TeamPurchaseRequestsPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

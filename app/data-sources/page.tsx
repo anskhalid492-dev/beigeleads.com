@@ -8,9 +8,10 @@ import { RecordJourney } from "@/components/data-sources/record-journey";
 import { SourceFlow } from "@/components/data-sources/source-flow";
 import { VerifyRing } from "@/components/data-sources/verify-ring";
 
+import { fitMeta } from "@/lib/seo/fit";
 // NEEDS LAWYER REVIEW: describes how data is sourced. Every claim here comes from the owner's
 // description of the operation and must stay true; see TODO-BEFORE-LAUNCH.md.
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "Data sources: how every BeigeLeads record is built",
   description:
     "Where our business contact data comes from, how we find missing details, how emails are checked, and how often every record is re-verified.",
@@ -223,3 +224,5 @@ export default function DataSourcesPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

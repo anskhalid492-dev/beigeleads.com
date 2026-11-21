@@ -10,9 +10,10 @@ import { TaxonomyPage } from "@/components/lists/taxonomy-page";
 import { loadListsData } from "@/lib/lists-data";
 import { isTaxGroup, resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: { params: Promise<{ category: string; country: string; geo: string[] }> }): Promise<Metadata> {
+async function generateMetadataRaw(props: { params: Promise<{ category: string; country: string; geo: string[] }> }): Promise<Metadata> {
   const { category, country, geo } = await props.params;
   if (await isTaxGroup(category)) { const t = geo.length === 1 ? await resolveTax(category, country, geo[0]) : null; return t ? taxMetadata(t) : {}; }
   await hydrateCatalog();
@@ -37,3 +38,5 @@ export default async function GeoRoute(props: { params: Promise<{ category: stri
   if (!d) notFound();
   return <GeoPage d={d} />;
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

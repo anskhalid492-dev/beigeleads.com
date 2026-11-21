@@ -8,9 +8,10 @@ import { getDbFromEnv } from "@/lib/db";
 import { getCategories, publishedCards } from "@/lib/glossary/store";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
+async function generateMetadataRaw(): Promise<Metadata> {
   const any = (await publishedCards(getDbFromEnv(getCloudflareContext().env))).length > 0;
   return {
     title: "B2B Data & Lead Generation Glossary",
@@ -40,3 +41,5 @@ export default async function GlossaryPage({ searchParams }: { searchParams: Pro
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

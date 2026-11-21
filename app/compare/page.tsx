@@ -4,7 +4,8 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { compareHref, compareTitle } from "@/lib/compare";
 import { comparisons } from "@/lib/compare-data";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "Compare BeigeLeads with other list and prospecting tools",
   description: "Sourced, plain comparisons between BeigeLeads (buy a list once) and subscription prospecting tools and other list stores.",
   alternates: { canonical: "/compare" },
@@ -31,3 +32,5 @@ export default function CompareHub() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

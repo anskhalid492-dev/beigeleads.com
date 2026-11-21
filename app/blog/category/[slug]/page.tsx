@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { listPublished, publishedCategories } from "@/lib/blog/posts";
 import { listCategories } from "@/lib/blog/taxonomy";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
 async function load(slug: string, page: number) {
@@ -20,7 +21,7 @@ async function load(slug: string, page: number) {
   } catch { return null; }
 }
 
-export async function generateMetadata(props: PageProps<"/blog/category/[slug]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/blog/category/[slug]">): Promise<Metadata> {
   const d = await load((await props.params).slug, 1);
   if (!d) return { title: "Category not found", robots: { index: false } };
   return {
@@ -61,3 +62,5 @@ export default async function BlogCategory(props: PageProps<"/blog/category/[slu
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

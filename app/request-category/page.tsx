@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { ApiForm } from "@/components/forms/api-form";
 import { FormPage } from "@/components/shared/form-page";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "Request a category",
   robots: { index: false, follow: true },
 };
@@ -28,3 +29,5 @@ export default function RequestCategoryPage() {
     </FormPage>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

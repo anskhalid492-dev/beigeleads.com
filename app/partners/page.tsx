@@ -7,10 +7,11 @@ import { SolutionFaq } from "@/components/solutions/sections";
 import { PARTNER_FAQS } from "@/lib/partners/content";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 const TITLE = "Data Reseller Partner Program — 50% Off Databases | BeigeLeads";
 const DESC = "Apply to become a BeigeLeads Data Reseller Partner. Approved partners receive 50% off database purchases. Applications reviewed within 7 days.";
 
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: TITLE },
   description: DESC,
   keywords: ["data reseller program", "B2B data reseller", "business email list reseller", "data reseller partnership", "wholesale business databases"],
@@ -34,3 +35,5 @@ export default function PartnersPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

@@ -7,10 +7,11 @@ import { buildView, isThin, seoOf } from "@/lib/glossary/public";
 import { publishedBySlug } from "@/lib/glossary/store";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 const load = async (slug: string) => publishedBySlug(getDbFromEnv(getCloudflareContext().env), slug);
 
-export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+async function generateMetadataRaw(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const t = await load((await props.params).slug);
   if (!t) return { title: "Term not found", robots: { index: false } };
   const { title, description } = seoOf(t);
@@ -27,3 +28,5 @@ export default async function GlossaryTermPage(props: { params: Promise<{ slug: 
   if (!t) notFound();
   return <TermPage v={await buildView(getDbFromEnv(getCloudflareContext().env), t)} />;
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

@@ -4,7 +4,8 @@ import { CartCheckout } from "@/components/cart/checkout-form";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { OPTIONS } from "@/lib/payments/options";
 
-export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 
 export default function CartCheckoutPage() {
   const steps = [["Cart", "/cart"], ["Checkout", ""], ["Payment", ""]] as const;
@@ -27,3 +28,5 @@ export default function CartCheckoutPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

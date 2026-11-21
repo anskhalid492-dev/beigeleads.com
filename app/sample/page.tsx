@@ -8,10 +8,11 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { sampleRowsOf, getCategories, getCategory, getCountry, getProduct, getProducts } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 const DESC = "Explore how BeigeLeads business contact lists are structured, see available fields, and request a free masked sample before purchasing.";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "Free sample of business contact lists | BeigeLeads",
   description: DESC,
   alternates: { canonical: "/sample" },
@@ -93,3 +94,5 @@ export default async function SamplePage({ searchParams }: PageProps<"/sample">)
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

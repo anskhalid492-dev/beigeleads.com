@@ -15,9 +15,10 @@ import { LocalBusinessesPage, LOCAL_DESC, LOCAL_PATH, LOCAL_TITLE } from "@/comp
 import { LOCAL_SLUG } from "@/lib/import/local-business";
 import { coverageFor, listAllCities, listAreas, regionTotals } from "@/lib/geo/store";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: PageProps<"/lists/[category]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/lists/[category]">): Promise<Metadata> {
   const { category } = await props.params;
   await hydrateCatalog();
   const found = getProduct(category);
@@ -81,3 +82,5 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
   if (!rows.length) notFound(); // every list of this industry was filed elsewhere (e.g. Local Businesses Database)
   return <IndustryPage c={c} products={rows} geo={geo.map((g) => ({ name: g.k.name, regions: g.regions, cities: g.cities }))} />;
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

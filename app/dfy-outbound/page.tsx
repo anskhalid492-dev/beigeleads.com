@@ -9,9 +9,10 @@ import { DFY_DESC, DFY_FAQS, DFY_TITLE } from "@/lib/dfy/content";
 import { loadDfySettings } from "@/lib/dfy/settings";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 // No page-level robots: the site-wide noindex stays until launch (CLAUDE.md section 50).
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: DFY_TITLE }, description: DFY_DESC, alternates: { canonical: "/dfy-outbound" },
   openGraph: { title: DFY_TITLE, description: DFY_DESC, url: "/dfy-outbound", type: "website" },
 };
@@ -41,3 +42,5 @@ export default async function DfyPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

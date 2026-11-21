@@ -11,9 +11,10 @@ import { getDb, schema } from "@/lib/db";
 import { CheckoutLive } from "./live";
 import { EV_SLUG } from "@/lib/ev/settings";
 
+import { fitMeta } from "@/lib/seo/fit";
 const itemName = (slug: string) => (slug === EV_SLUG ? "Email List Verification" : getProduct(slug)?.name ?? slug);
 
-export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
+const metadataRaw: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -107,3 +108,5 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
     </main>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

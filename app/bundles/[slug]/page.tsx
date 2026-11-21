@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { BundleDetail } from "@/components/bundles/bundle-detail";
 import { loadBundleView } from "@/lib/bundles/public";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+async function generateMetadataRaw({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const v = await loadBundleView(getCloudflareContext().env, (await params).slug);
   if (!v) return { title: "Bundle not found", robots: { index: false, follow: false } };
   const { def, bundle } = v;
@@ -26,3 +27,5 @@ export default async function BundlePage({ params }: { params: Promise<{ slug: s
   if (!v) notFound();
   return <BundleDetail bundle={v.bundle} related={v.related} />;
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

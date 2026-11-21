@@ -8,8 +8,9 @@ import { acceptedTotal, filesOf, getEvByToken, linkExpired, statusUrl } from "@/
 import { evToken } from "@/lib/ev/token";
 import { SubmitForm } from "@/components/email-verification/submit-form";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Submit your email list", robots: { index: false, follow: false }, referrer: "no-referrer" };
+const metadataRaw: Metadata = { title: "Submit your email list", robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 export default async function SubmitPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -46,3 +47,5 @@ export default async function SubmitPage({ params }: { params: Promise<{ token: 
 function Shell({ children }: { children: React.ReactNode }) {
   return <section className="mx-auto max-w-3xl px-4 pb-24 pt-12 sm:px-6"><h1 className="display text-5xl text-forest-900 sm:text-6xl">Submit your email list</h1><p className="mt-3 max-w-2xl text-lg">Upload a file or paste your emails. Our team verifies the list by hand, so results are not instant.</p>{children}</section>;
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

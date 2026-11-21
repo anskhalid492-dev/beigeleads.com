@@ -4,8 +4,9 @@ import { OPTIONS } from "@/lib/payments/options";
 import { requestExists } from "@/lib/sales/team";
 import { ManagerReview } from "./review";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Purchase request", robots: { index: false, follow: false }, referrer: "no-referrer" };
+const metadataRaw: Metadata = { title: "Purchase request", robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 export default async function PurchaseRequestPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -18,3 +19,5 @@ export default async function PurchaseRequestPage({ params }: { params: Promise<
     </section>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

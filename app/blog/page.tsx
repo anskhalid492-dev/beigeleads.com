@@ -8,8 +8,9 @@ import { NewsletterCta } from "@/components/blog/newsletter";
 import { newsletterOn } from "@/lib/newsletter";
 import { listPublished, publishedCategories } from "@/lib/blog/posts";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "The BeigeLeads Journal: B2B data and prospecting guides",
   description: "Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business prospects.",
   alternates: { canonical: "/blog" },
@@ -103,3 +104,5 @@ export default async function BlogIndex(props: PageProps<"/blog">) {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

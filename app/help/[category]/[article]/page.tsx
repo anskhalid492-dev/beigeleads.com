@@ -14,9 +14,10 @@ import { articleHref, articleId, getArticle, getCategory, relatedOf } from "@/li
 import { getHelp } from "@/lib/help/server";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: PageProps<"/help/[category]/[article]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/help/[category]/[article]">): Promise<Metadata> {
   const { category, article } = await props.params;
   const a = getArticle(await getHelp(), category, article);
   if (!a) return {};
@@ -117,3 +118,5 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

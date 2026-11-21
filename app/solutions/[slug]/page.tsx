@@ -7,11 +7,12 @@ import {
 } from "@/components/solutions/blocks";
 import { getSolution, solutions } from "@/lib/solutions";
 
+import { fitMeta } from "@/lib/seo/fit";
 // One reusable template for every solution. All copy lives in lib/solutions.ts.
 // Indexability follows the site-wide setting in app/layout.tsx (noindex until launch).
 export const dynamic = "force-dynamic"; // reads the real sample (D1/KV)
 
-export async function generateMetadata(props: PageProps<"/solutions/[slug]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/solutions/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const s = getSolution(slug);
   if (!s) return {};
@@ -47,3 +48,5 @@ export default async function SolutionPage(props: PageProps<"/solutions/[slug]">
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

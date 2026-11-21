@@ -3,7 +3,8 @@ import { validToken } from "@/lib/newsletter";
 import { unsubscribeAction } from "../actions";
 import { TokenButton } from "../token-button";
 
-export const metadata: Metadata = { title: "Unsubscribe", robots: { index: false, follow: false } };
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = { title: "Unsubscribe", robots: { index: false, follow: false } };
 
 export default async function Page(props: PageProps<"/newsletter/unsubscribe">) {
   const { token } = await props.searchParams;
@@ -15,3 +16,5 @@ export default async function Page(props: PageProps<"/newsletter/unsubscribe">) 
     </main>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

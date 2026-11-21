@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { listPublished, publishedCategories } from "@/lib/blog/posts";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "B2B Guides: lead generation, cold email and data quality",
   description: "Practical, step-by-step guides on B2B lead generation, cold email outreach, sales prospecting, business data and email verification.",
   alternates: { canonical: "/guides" },
@@ -114,3 +115,5 @@ export default async function GuidesIndex(props: { searchParams: Promise<Record<
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

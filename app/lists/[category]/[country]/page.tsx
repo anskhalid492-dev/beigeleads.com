@@ -11,9 +11,10 @@ import { TaxonomyPage } from "@/components/lists/taxonomy-page";
 import { loadListsData } from "@/lib/lists-data";
 import { isTaxGroup, resolveTax, taxIndustries, taxMetadata } from "@/lib/taxonomy-route";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: PageProps<"/lists/[category]/[country]">): Promise<Metadata> {
+async function generateMetadataRaw(props: PageProps<"/lists/[category]/[country]">): Promise<Metadata> {
   const { category, country } = await props.params;
   const flat = countryFromFlat(category);
   if (flat && country === "cities") return geoShopMetadata(flat, "cities");
@@ -43,3 +44,5 @@ export default async function CountryPage(props: PageProps<"/lists/[category]/[c
   if (!d) notFound();
   return <GeoPage d={d} />;
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

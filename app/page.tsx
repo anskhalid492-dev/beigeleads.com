@@ -15,10 +15,11 @@ import { Button } from "@/components/ui/button";
 import { formatUsd, getCategories, getCities, getCountries, getCountry, getProducts, startingPriceCents } from "@/lib/catalog";
 import { solutions } from "@/lib/solutions";
 
+import { fitMeta } from "@/lib/seo/fit";
 // Home. No invented stats, reviews, customers or counts (CLAUDE.md section 2). Never state how many lists exist (section 37).
 // Placeholder product numbers are labelled as such wherever they appear.
 
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: "BeigeLeads: buy business contact lists once, no subscription" },
   description: "Search ready-made business contact lists by industry and location, preview a masked sample, pay once in crypto and get your file by email. Or request a custom list.",
   alternates: { canonical: "/" },
@@ -331,3 +332,5 @@ export default async function Home() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

@@ -3,8 +3,9 @@ import { PromoBanner } from "@/components/promos/banner";
 import { CartView } from "@/components/cart/cart-view";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 
+import { fitMeta } from "@/lib/seo/fit";
 // A private page: it only shows what is in this browser's cart.
-export const metadata: Metadata = { title: "Your Cart", robots: { index: false, follow: false }, alternates: { canonical: "/cart" } };
+const metadataRaw: Metadata = { title: "Your Cart", robots: { index: false, follow: false }, alternates: { canonical: "/cart" } };
 
 export default function CartPage() {
   return (
@@ -21,3 +22,5 @@ export default function CartPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

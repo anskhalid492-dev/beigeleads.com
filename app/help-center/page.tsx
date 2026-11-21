@@ -12,9 +12,10 @@ import { plainText, readingMinutes } from "@/lib/help";
 import { toDoc } from "@/lib/help/search";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "Help Center",
   description: "Answers about BeigeLeads business contact lists: buying, payments, delivery, data verification and custom list requests.",
   alternates: { canonical: "/help-center" },
@@ -117,3 +118,5 @@ export default async function HelpCenterPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

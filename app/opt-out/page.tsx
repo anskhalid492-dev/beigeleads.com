@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ApiForm } from "@/components/forms/api-form";
 import { FormPage } from "@/components/shared/form-page";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "Opt out",
   robots: { index: false, follow: true },
 };
@@ -32,3 +33,5 @@ export default function OptOutPage() {
     </FormPage>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

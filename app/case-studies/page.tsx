@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { listPublished, publishedCategories } from "@/lib/blog/posts";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "B2B Lead Generation Case Studies and Data Use Cases",
   description: "Practical examples of how targeted business data supports B2B prospecting, geographic segmentation and sales workflows, with links to the databases behind them.",
   alternates: { canonical: "/case-studies" },
@@ -103,3 +104,5 @@ export default async function CaseStudiesIndex(props: { searchParams: Promise<Re
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

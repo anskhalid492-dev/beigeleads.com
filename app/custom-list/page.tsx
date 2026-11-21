@@ -8,7 +8,8 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { getCategories } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "Custom B2B contact list builder",
   description: "Build a custom B2B contact list: choose industries, locations and data fields, then request a quotation. We review feasibility and reply by email.",
   alternates: { canonical: "/custom-list" },
@@ -80,3 +81,5 @@ export default async function CustomListPage(props: { searchParams: Promise<SP> 
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

@@ -6,7 +6,8 @@ import { SolutionIcon } from "@/components/solutions/icons";
 import { HeroShell, SolutionCta, RecommendedDatabases, SolutionFaq, wrap } from "@/components/solutions/sections";
 import { solutions } from "@/lib/solutions";
 
-export const metadata: Metadata = {
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = {
   title: "Solutions: business databases for every growth goal",
   description:
     "Find the right BeigeLeads database for lead generation, cold email, sales prospecting, agencies, research, local marketing and more. Pay once, sample first.",
@@ -92,3 +93,5 @@ export default function SolutionsPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

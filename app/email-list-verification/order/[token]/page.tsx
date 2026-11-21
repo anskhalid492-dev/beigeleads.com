@@ -7,8 +7,9 @@ import { evToken } from "@/lib/ev/token";
 import { submitUrl } from "@/lib/ev/store";
 import { ResultsAccess } from "@/components/email-verification/results-access";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Verification order status", robots: { index: false, follow: false }, referrer: "no-referrer" };
+const metadataRaw: Metadata = { title: "Verification order status", robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 const date = (t: number | null) => (t ? new Date(t * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "Not yet");
 export default async function OrderStatusPage({ params }: { params: Promise<{ token: string }> }) {
@@ -47,3 +48,5 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ to
     </section>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

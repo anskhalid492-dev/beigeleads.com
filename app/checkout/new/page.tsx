@@ -6,7 +6,8 @@ import { FormPage } from "@/components/shared/form-page";
 import { formatUsd, getProduct } from "@/lib/catalog";
 import { OPTIONS } from "@/lib/payments/options";
 
-export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
+import { fitMeta } from "@/lib/seo/fit";
+const metadataRaw: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function NewCheckout(props: PageProps<"/checkout/new">) {
@@ -44,3 +45,5 @@ export default async function NewCheckout(props: PageProps<"/checkout/new">) {
     </FormPage>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

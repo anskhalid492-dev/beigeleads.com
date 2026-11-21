@@ -13,9 +13,10 @@ import { ProcessTimeline } from "@/components/verification/process-timeline";
 import { VerifyRing } from "@/components/data-sources/verify-ring";
 import { LEGAL_UPDATED, formatLegalDate } from "@/lib/legal/docs";
 
+import { fitMeta } from "@/lib/seo/fit";
 // Every statement comes from the owner's description of the operation (CLAUDE.md section 21) or
 // from the site's own policies. No statistics, certifications, partnerships or guarantees are invented.
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "How We Source & Verify Business Data",
   description:
     "Discover how BeigeLeads sources, researches and checks business data. Learn about our data quality process, email verification and responsible data practices.",
@@ -403,3 +404,5 @@ export default function VerificationPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

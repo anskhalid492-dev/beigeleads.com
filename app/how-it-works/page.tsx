@@ -12,10 +12,11 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { sampleRowsOf, getCategories, getCountry, getProducts } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 const DESC = "How to buy a B2B business contact list with BeigeLeads: find a list, preview a masked sample, choose a package, pay once, and receive your CSV, Excel or TXT file by email.";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "How BeigeLeads works: buy business contact lists once | BeigeLeads",
   description: DESC,
   alternates: { canonical: "/how-it-works" },
@@ -106,3 +107,5 @@ export default async function HowItWorksPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

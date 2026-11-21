@@ -6,8 +6,9 @@ import { SolutionFaq } from "@/components/solutions/sections";
 import { AI_DESC, AI_V2_FAQS, AI_TITLE } from "@/lib/ai-assistant-content";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 // No page-level robots setting: the site-wide noindex in app/layout.tsx stays until launch (CLAUDE.md section 50).
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: AI_TITLE },
   description: AI_DESC,
   alternates: { canonical: "/ai-assistant" },
@@ -34,3 +35,5 @@ export default function AiAssistantPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

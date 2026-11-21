@@ -3,9 +3,10 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { MediaKitView } from "@/components/media-kit/media-kit-view";
 import { getPublishedKit } from "@/lib/media-kit/store";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic"; // reads one cached value (published text and extra files)
 
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: "BeigeLeads Media Kit | Official Logos & Brand Assets" },
   description: "Download official BeigeLeads logos (SVG and PNG), favicons, social images, brand colors and guidelines.",
   alternates: { canonical: "/media-kit" },
@@ -19,3 +20,5 @@ export default async function MediaKitPage() {
   const kit = await getPublishedKit(getCloudflareContext().env);
   return <MediaKitView content={kit.content} files={kit.files} />;
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

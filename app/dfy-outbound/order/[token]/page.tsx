@@ -7,8 +7,9 @@ import { assetsOf, getDfyByToken, latestCopy, STOP_RULES } from "@/lib/dfy/store
 import { LABEL, STAGES, isStage } from "@/lib/dfy/state";
 import { loadDfySettings } from "@/lib/dfy/settings";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Your DFY Outbound order", robots: { index: false, follow: false }, referrer: "no-referrer" };
+const metadataRaw: Metadata = { title: "Your DFY Outbound order", robots: { index: false, follow: false }, referrer: "no-referrer" };
 const card = "mt-6 rounded-2xl border border-sand-200 bg-white p-5 sm:p-6";
 const OWN: Record<string, string> = { not_started: "Not started", preparing: "Preparing", ready: "Ready", transferred: "Transferred", restricted: "Limited by provider rules" };
 
@@ -53,3 +54,5 @@ export default async function DfyOrderPage({ params }: { params: Promise<{ token
 function Shell({ children }: { children: React.ReactNode }) {
   return <section className="mx-auto max-w-4xl px-4 pb-24 pt-12 sm:px-6"><h1 className="display text-5xl text-forest-900 sm:text-6xl">Your DFY Outbound order</h1>{children}</section>;
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

@@ -5,9 +5,10 @@ import { ContactForm } from "@/components/contact/form";
 import { QuickLinks, SupportCards, TrustStrip } from "@/components/contact/sections";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 const DESC = "Questions about business contact lists, an existing order, payments or custom data? Send BeigeLeads a message and get a reference number and confirmation email.";
 
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: "Contact BeigeLeads | Questions, orders and custom data",
   description: DESC,
   alternates: { canonical: "/contact" },
@@ -37,3 +38,5 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);

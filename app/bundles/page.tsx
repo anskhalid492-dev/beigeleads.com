@@ -13,12 +13,13 @@ import { loadBundlesView } from "@/lib/bundles/public";
 import { loadBuilderSettings } from "@/lib/bundles/settings";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 
 const TITLE = "Database Bundles: Save on Multiple B2B Email Lists";
 const DESC = "Explore carefully selected database bundles designed to help you reach more prospects across industries and markets, all in one convenient purchase. Or build your own bundle.";
 
-export async function generateMetadata({ searchParams }: { searchParams: Promise<{ category?: string }> }): Promise<Metadata> {
+async function generateMetadataRaw({ searchParams }: { searchParams: Promise<{ category?: string }> }): Promise<Metadata> {
   const filtered = !!(await searchParams).category;
   return {
     title: { absolute: TITLE }, description: DESC, alternates: { canonical: "/bundles" },
@@ -97,3 +98,5 @@ export default async function BundlesPage({ searchParams }: { searchParams: Prom
     </>
   );
 }
+
+export async function generateMetadata(...args: Parameters<typeof generateMetadataRaw>) { return fitMeta(await generateMetadataRaw(...args)); }

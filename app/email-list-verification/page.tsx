@@ -8,9 +8,10 @@ import { EV_DESC, EV_TITLE, evFaqs } from "@/lib/ev/content";
 import { loadEvSettings } from "@/lib/ev/settings";
 import { SITE_URL } from "@/lib/site";
 
+import { fitMeta } from "@/lib/seo/fit";
 // No page-level robots setting: the site-wide noindex stays until launch (CLAUDE.md section 50).
 export const dynamic = "force-dynamic"; // prices and limits come from the admin settings
-export const metadata: Metadata = {
+const metadataRaw: Metadata = {
   title: { absolute: EV_TITLE },
   description: EV_DESC,
   alternates: { canonical: "/email-list-verification" },
@@ -38,3 +39,5 @@ export default async function EmailVerificationPage() {
     </>
   );
 }
+
+export const metadata: Metadata = fitMeta(metadataRaw);
