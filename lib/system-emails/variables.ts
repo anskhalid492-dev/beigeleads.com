@@ -31,6 +31,10 @@ export const VARIABLES: VarDef[] = [
   { key: "business_name", label: "Business name", description: "The business named in a partner application.", example: "Northwind Growth Agency" },
   { key: "partner_code", label: "Partner discount code", description: "The partner's personal 50% code. Works only with the email address of the approved partner.", example: "PARTNER-EXMP-1234" },
   { key: "partner_discount", label: "Partner discount", description: "The partner discount, as text.", example: "50%" },
+  { key: "discount_code", label: "Reward discount code", description: "The customer's personal Second Purchase Offer code. Works only with their own email address.", example: "BEIGE-7K9M2Q" },
+  { key: "discount_percent", label: "Reward discount", description: "The reward discount, as text.", example: "50%" },
+  { key: "expiration_date", label: "Expiration date", description: "When the personal offer ends.", example: "5 December 2026" },
+  { key: "discount_terms", label: "Offer terms", description: "The real rules of the offer (cap, expiry, one use), generated from the current settings.", example: "Valid on one order of eligible lists. Maximum saving $100." },
   { key: "timestamp", label: "Time", description: "When the event happened (UTC).", example: "2026-11-19 10:30 UTC" },
   { key: "details", label: "Details", description: "Short factual details for admin alerts. Never secrets.", example: "Example details" },
   // Added by the system on every send.

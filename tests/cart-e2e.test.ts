@@ -38,7 +38,8 @@ describe("multi-list order creation", () => {
     orderId = await createOrder(env, { email: "buyer@test.dev", items: [it0(a, 0), it0(b, 1)], option: "BTC" });
     const o = (await base.DB.prepare("SELECT total_usd_cents AS t, status FROM orders WHERE id = ?").bind(orderId).first()) as { t: number; status: string };
     expect(o.status).toBe("pending");
-    expect(o.t).toBe(a.packages[0].priceUsdCents + b.packages[1].priceUsdCents);
+    // two distinct lists = Buy More, Save More tier 1 (15%), priced on the server
+    expect(o.t).toBe(Math.round((a.packages[0].priceUsdCents + b.packages[1].priceUsdCents) * 0.85));
     expect(await count(`SELECT COUNT(*) AS n FROM order_items WHERE order_id = '${orderId}'`)).toBe(2);
     expect(await count(`SELECT COUNT(*) AS n FROM payment_attempts WHERE order_id = '${orderId}'`)).toBe(1);
   });

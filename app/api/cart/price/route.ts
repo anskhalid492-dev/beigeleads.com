@@ -9,6 +9,7 @@ import { getDbFromEnv } from "@/lib/db";
 import { DISCOUNT_REFUSED, resolveDiscount } from "@/lib/partners/discount";
 import { isPartnerCode } from "@/lib/partners/types";
 import { loadCandidates } from "@/lib/promos/store";
+import { loadSalesSettings } from "@/lib/sales/settings";
 
 const body = z.object({
   items: cartItemsSchema,
@@ -43,8 +44,9 @@ export async function POST(req: Request) {
     } else enteredCode = p.data.code;
   }
   const candidates = await loadCandidates(db, p.data.email || undefined);
+  const sales = await loadSalesSettings(env);
   const pricing = priceCart(items, {
-    checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount,
+    checkoutOpen: env.CHECKOUT_ENABLED === "true", allowPlaceholder: env.CHECKOUT_ALLOW_PLACEHOLDER === "true", discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume,
     promo: { candidates, enteredCode, nowSec: Math.floor(Date.now() / 1000), emailKnown: !!p.data.email },
   }, () => false);
   for (const l of pricing.lines) { const rs = sampleRowsOf(l.slug).slice(0, 3); l.hasSample = rs.length > 0; l.sample = rs.map((r) => ({ business: r.business, city: r.city || r.address, email: r.email, phone: r.phone })); }

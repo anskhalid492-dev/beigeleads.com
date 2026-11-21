@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { cartActions } from "@/lib/cart/client";
 
-type Status = { status: string; attempt: string | null; expiresAt: number | null };
+type Status = { status: string; reward?: boolean; attempt: string | null; expiresAt: number | null };
 
 const label: Record<string, { title: string; text: string }> = {
   pending: { title: "Waiting for payment", text: "We check the network every minute. You can close this page: we email you when the payment is confirmed." },
@@ -48,6 +48,7 @@ export function CheckoutLive({ orderId, expiresAt, initial, slugs = [] }: { orde
         {effective === "pending" && <p className="font-mono text-2xl font-bold text-forest-900" aria-label="Time left on this price">{mm}:{ss}</p>}
       </div>
       <p className="mt-2 text-sm">{l.text}</p>
+      {effective === "paid" && status.reward && <p className="mt-2 text-sm font-semibold text-forest-900">Your next order is waiting: we emailed you a personal 50% OFF code for your next purchase.</p>}
     </div>
   );
 }

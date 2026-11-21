@@ -985,6 +985,8 @@ export const promotions = sqliteTable(
     combinable: integer("combinable").notNull().default(0),
     status: text("status", { enum: ["draft", "active", "paused"] }).notNull().default("draft"),
     bannerPlaces: text("banner_places").notNull().default("[]"),
+    boundEmail: text("bound_email"),
+    origin: text("origin").notNull().default("admin"),
     createdAt: createdAt(),
     updatedAt: integer("updated_at"),
   },
@@ -1101,4 +1103,23 @@ export const catalogCategoryMoves = sqliteTable("catalog_category_moves", {
   reason: text("reason").notNull().default(""),
   movedAt: integer("moved_at").notNull(),
   rolledBackAt: integer("rolled_back_at"),
+});
+
+/** Second Purchase Offer (section 113): one personal 50% code per customer, issued after their first paid order. */
+export const rewardCodes = sqliteTable("reward_codes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  firstOrderId: text("first_order_id").notNull().unique(),
+  promotionId: integer("promotion_id").notNull(),
+  code: text("code").notNull().unique(),
+  percent: integer("percent").notNull(),
+  maxDiscountCents: integer("max_discount_cents"),
+  status: text("status", { enum: ["active", "revoked"] }).notNull().default("active"),
+  createdAt: createdAt(),
+  expiresAt: integer("expires_at").notNull(),
+  emailStatus: text("email_status").notNull().default("pending"),
+  emailError: text("email_error"),
+  reminder1At: integer("reminder1_at"),
+  reminder2At: integer("reminder2_at"),
+  revokedAt: integer("revoked_at"),
 });

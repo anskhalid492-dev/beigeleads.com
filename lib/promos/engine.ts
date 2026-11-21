@@ -9,6 +9,8 @@
 //     A non-combinable promotion is always applied alone.
 //  4. Discounts only touch eligible lines, are whole cents, and never take a line below $0.
 
+import type { VolumeSettings } from "@/lib/sales/settings";
+
 export type PromoKind = "percent" | "fixed";
 export type Promo = {
   id: number; name: string; title: string; code: string | null; description: string;
@@ -20,19 +22,32 @@ export type Promo = {
   firstPurchaseOnly: boolean; partnerOnly: boolean; automatic: boolean; combinable: boolean;
   status: "draft" | "active" | "paused";
   bannerPlaces: string[];
+  /** a personal code (Second Purchase Offer): valid only with this email address; origin "reward" marks those codes */
+  boundEmail?: string | null; origin?: "admin" | "reward";
 };
 /** Facts the database supplies about one promotion for this buyer. null = unknown (no email yet). */
-export type PromoFacts = { totalUses: number; customerUses: number | null; firstPurchase: boolean | null; partner: boolean | null };
+export type PromoFacts = { totalUses: number; customerUses: number | null; firstPurchase: boolean | null; partner: boolean | null; /** true/false once the buyer email is known; null before; true for codes not bound to an email */ emailMatch?: boolean | null };
 export type Candidate = { promo: Promo; facts: PromoFacts };
 export type EngineLine = { slug: string; categorySlug: string; packageName: string; priceCents: number };
 export type Applied = {
   promotionId: number | null; code: string; title: string; kind: PromoKind; percent: number; cents: number;
-  source: "code" | "automatic" | "partner"; lineCents: number[]; combinable: boolean;
+  source: "code" | "automatic" | "partner" | "volume"; lineCents: number[]; combinable: boolean;
+  /** may the Buy More, Save More discount be added on top of this one */
+  stacksVolume?: boolean;
 };
 export type EngineInput = {
   candidates: Candidate[]; enteredCode?: string;
   partner?: { code: string; percent: number };
   nowSec: number; emailKnown: boolean;
+  /** Buy More, Save More settings (omitted = feature off) and whether personal reward codes may combine with it */
+  volume?: VolumeSettings; rewardCombineVolume?: boolean;
+};
+export type VolumeInfo = {
+  enabled: boolean; tiers: { min: number; percent: number }[];
+  /** distinct eligible lists in the cart */ count: number;
+  /** tier reached now (0 = none) */ percent: number;
+  /** next tier: how many more lists unlock which percentage */ next: { need: number; percent: number } | null;
+  /** true when the discount is part of the price; false when a code replaced it */ applied: boolean; replacedByCode: boolean;
 };
 export type EngineResult = {
   applied: Applied[]; discountCents: number; payCents: number[];
@@ -40,6 +55,7 @@ export type EngineResult = {
   codeError: string;
   /** some applied promotion still needs the buyer's email to be verified (first purchase, per-customer limit, partner only) */
   needsEmail: boolean;
+  volume?: VolumeInfo;
 };
 
 export const STACKING_RULES = [
@@ -81,11 +97,12 @@ export function refusal(p: Promo, f: PromoFacts, nowSec: number): Refusal | null
   if (p.perCustomerLimit !== null && f.customerUses !== null && f.customerUses >= p.perCustomerLimit) return "customer";
   if (p.firstPurchaseOnly && f.firstPurchase === false) return "first";
   if (p.partnerOnly && f.partner === false) return "partner";
+  if (p.boundEmail && f.emailMatch === false) return "invalid"; // same text as an unknown code: a personal code is never confirmed to others
   return null;
 }
 
 const needsEmail = (p: Promo, f: PromoFacts) =>
-  (p.firstPurchaseOnly && f.firstPurchase === null) || (p.partnerOnly && f.partner === null) || (p.perCustomerLimit !== null && f.customerUses === null);
+  (p.firstPurchaseOnly && f.firstPurchase === null) || (p.partnerOnly && f.partner === null) || (p.perCustomerLimit !== null && f.customerUses === null) || (!!p.boundEmail && f.emailMatch === null);
 
 export function lineEligible(p: Promo, l: EngineLine): boolean {
   return (p.productSlugs.length === 0 || p.productSlugs.includes(l.slug))
@@ -119,7 +136,7 @@ export function promoCents(p: Promo, lines: EngineLine[], remaining: number[], c
 
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 
-export function applyPromotions(lines: EngineLine[], input: EngineInput): EngineResult {
+function applyPromos(lines: EngineLine[], input: EngineInput): EngineResult {
   const price = lines.map((l) => l.priceCents);
   const subtotal = sum(price);
   const none: EngineResult = { applied: [], discountCents: 0, payCents: price, codeError: "", needsEmail: false };
@@ -184,9 +201,40 @@ export function applyPromotions(lines: EngineLine[], input: EngineInput): Engine
     if (total <= 0) continue;
     cents.forEach((c, i) => { remaining[i] -= c; });
     if (needsEmail(p, x.c.facts)) needs = true;
-    applied.push({ promotionId: p.id, code: p.code ?? "", title: p.title, kind: p.kind, percent: p.kind === "percent" ? p.value : 0, cents: total, source: x.src, lineCents: cents, combinable: p.combinable });
+    applied.push({ promotionId: p.id, code: p.code ?? "", title: p.title, kind: p.kind, percent: p.kind === "percent" ? p.value : 0, cents: total, source: x.src, lineCents: cents, combinable: p.combinable, stacksVolume: p.origin === "reward" ? !!input.rewardCombineVolume : !!input.volume?.stackWithPromos });
   }
   const notApplied = enteredPromo && !applied.some((a) => a.promotionId === enteredPromo.promo.id);
   if (notApplied) codeError = "A better offer is already applied to your cart. Offers cannot be combined.";
   return { applied, discountCents: sum(applied.map((a) => a.cents)), payCents: remaining, codeError, needsEmail: needs };
+}
+
+/** Distinct eligible lists -> tier. Pure. Excluded products and categories neither count nor get a discount. */
+export function volumeInfo(lines: EngineLine[], v: VolumeSettings | undefined): VolumeInfo {
+  if (!v || !v.enabled) return { enabled: false, tiers: [], count: 0, percent: 0, next: null, applied: false, replacedByCode: false };
+  const eligible = lines.filter((l) => !v.excludedProducts.includes(l.slug) && !v.excludedCategories.includes(l.categorySlug));
+  const count = new Set(eligible.map((l) => l.slug)).size; // distinct lists, never quantities
+  const tiers = [...v.tiers].sort((a, b) => a.min - b.min);
+  const reached = [...tiers].reverse().find((t) => count >= t.min);
+  const next = tiers.find((t) => t.min > count);
+  return { enabled: true, tiers, count, percent: reached?.percent ?? 0, next: next ? { need: next.min - count, percent: next.percent } : null, applied: false, replacedByCode: false };
+}
+
+/**
+ * Promotion priority (CLAUDE.md section 113): a partner code applies alone; a code/promotion that applies replaces the Buy More, Save More
+ * discount unless the settings say it may stack; with no code, the volume discount applies. Same function for the cart, checkout and team requests.
+ */
+export function applyPromotions(lines: EngineLine[], input: EngineInput): EngineResult {
+  const base = applyPromos(lines, input);
+  const info = volumeInfo(lines, input.volume);
+  if (!info.enabled) return base;
+  if (base.applied.some((a) => a.source === "partner")) return { ...base, volume: info };
+  const stack = base.applied.every((a) => a.stacksVolume);
+  if (base.applied.length > 0 && !stack) return { ...base, volume: { ...info, replacedByCode: info.percent > 0 } };
+  if (info.percent <= 0) return { ...base, volume: info };
+  const v = input.volume!;
+  const lineCents = lines.map((l, i) => (v.excludedProducts.includes(l.slug) || v.excludedCategories.includes(l.categorySlug) ? 0 : Math.round((base.payCents[i] * info.percent) / 100)));
+  const cents = lineCents.reduce((a, b) => a + b, 0);
+  if (cents <= 0) return { ...base, volume: info };
+  const applied: Applied = { promotionId: null, code: "VOLUME", title: "Buy More, Save More", kind: "percent", percent: info.percent, cents, source: "volume", lineCents, combinable: true, stacksVolume: true };
+  return { ...base, applied: [...base.applied, applied], discountCents: base.discountCents + cents, payCents: base.payCents.map((p, i) => p - lineCents[i]), volume: { ...info, applied: true } };
 }

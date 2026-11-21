@@ -16,6 +16,7 @@ export function rowToPromo(r: Row): Promo {
     usageLimit: r.usageLimit, perCustomerLimit: r.perCustomerLimit,
     firstPurchaseOnly: !!r.firstPurchaseOnly, partnerOnly: !!r.partnerOnly, automatic: !!r.automatic, combinable: !!r.combinable,
     status: r.status, bannerPlaces: list(r.bannerPlaces),
+    boundEmail: r.boundEmail ? r.boundEmail.toLowerCase() : null, origin: r.origin === "reward" ? "reward" : "admin",
   };
 }
 
@@ -43,7 +44,7 @@ export async function loadCandidates(db: Db, email?: string): Promise<Candidate[
       partner = !!p;
     }
     return rows.map((r) => {
-      const facts: PromoFacts = { totalUses: total.get(r.id) ?? 0, customerUses: mail ? (perCustomer.get(r.id) ?? 0) : null, firstPurchase: first, partner };
+      const facts: PromoFacts = { totalUses: total.get(r.id) ?? 0, customerUses: mail ? (perCustomer.get(r.id) ?? 0) : null, firstPurchase: first, partner, emailMatch: r.boundEmail ? (mail ? mail === r.boundEmail.toLowerCase() : null) : true };
       return { promo: rowToPromo(r), facts };
     });
   } catch { return []; }

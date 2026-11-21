@@ -8,6 +8,61 @@ const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and 
  * then wins. "connected" means a real backend event sends it today (see CONNECTIONS in the admin Triggers tab).
  */
 export const TEMPLATES: TemplateDef[] = [
+  // ---- Sales Features: Second Purchase Offer (section 113) ------------------------------------------------
+  {
+    key: "reward_first", name: "Second purchase reward: your code", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "A customer's first order is paid: their personal 50% code is created and emailed immediately (once per customer).",
+    vars: ["first_name", "discount_code", "discount_percent", "expiration_date", "discount_terms"], required: ["discount_code", "expiration_date"],
+    content: {
+      subject: "Your Exclusive {{discount_percent}} OFF Code Is Here! 🎁",
+      preheader: "A thank-you for your first BeigeLeads purchase.",
+      heading: "Your next database is {{discount_percent}} OFF",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "Thank you for your first purchase at BeigeLeads!" },
+        { t: "p", text: "As a special welcome gift, we're giving you **{{discount_percent}} OFF your next database purchase**." },
+        { t: "kv", rows: [{ label: "Your exclusive discount code:", value: "{{discount_code}}" }, { label: "Offer expires on:", value: "{{expiration_date}}" }] },
+        { t: "p", text: "Use it at checkout to save {{discount_percent}} on your next qualifying order." },
+        { t: "note", text: "{{discount_terms}}" },
+      ],
+      cta: { label: "Shop More Databases", url: "{{lists_url}}" },
+      signoff: "Thank you for choosing BeigeLeads!\nThe BeigeLeads Team",
+    },
+  },
+  {
+    key: "reward_reminder", name: "Second purchase reward: reminder", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "A few days after the code was created, only while it is still unused and valid.",
+    vars: ["first_name", "discount_code", "discount_percent", "expiration_date"], required: ["discount_code", "expiration_date"],
+    content: {
+      subject: "Your {{discount_percent}} OFF BeigeLeads Code Is Waiting",
+      preheader: "Your personal discount is still available.",
+      heading: "Your {{discount_percent}} OFF code is waiting",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "You still have an exclusive {{discount_percent}} discount available for your next database purchase." },
+        { t: "kv", rows: [{ label: "Your code:", value: "{{discount_code}}" }, { label: "Use it before:", value: "{{expiration_date}}" }] },
+      ],
+      cta: { label: "Explore Databases", url: "{{lists_url}}" },
+      signoff: "BeigeLeads",
+    },
+  },
+  {
+    key: "reward_expiring", name: "Second purchase reward: expires soon", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "About 48 hours before the code expires, only while it is still unused and valid.",
+    vars: ["first_name", "discount_code", "discount_percent", "expiration_date"], required: ["discount_code", "expiration_date"],
+    content: {
+      subject: "Your {{discount_percent}} OFF Offer Expires Soon",
+      preheader: "Your personal BeigeLeads discount ends soon.",
+      heading: "Your offer expires soon",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "Your exclusive BeigeLeads {{discount_percent}} discount expires soon." },
+        { t: "kv", rows: [{ label: "Code:", value: "{{discount_code}}" }, { label: "Expires:", value: "{{expiration_date}}" }] },
+      ],
+      cta: { label: "Use My Discount", url: "{{lists_url}}" },
+      signoff: "BeigeLeads",
+    },
+  },
   // ---- Data Reseller Partners ---------------------------------------------------------------------------
   {
     key: "partner_application_received", name: "Partner application received", audience: "customer", category: "Data Reseller Partners", canDisable: true, connection: "connected",

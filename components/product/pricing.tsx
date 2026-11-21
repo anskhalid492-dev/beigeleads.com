@@ -6,8 +6,10 @@ import { formatUsd, offeredPackages, type Product } from "@/lib/catalog";
 import { getPublicPromos, shownPrice } from "@/lib/promos/public";
 import { fmtNum } from "./meta";
 import { PromoBanner } from "@/components/promos/banner";
+import { loadSalesSettings } from "@/lib/sales/settings";
 
 export async function ProductPricing({ product, forSale }: { product: Product; forSale: boolean }) {
+  const volMsg = await (async () => { try { const { volume: v } = await loadSalesSettings(getCloudflareContext().env); if (!v.enabled || v.excludedProducts.includes(product.slug) || v.excludedCategories.includes(product.categorySlug)) return ""; const t = v.tiers[0]; const top = v.tiers[v.tiers.length - 1]; return t ? `Buy ${t.min}+ databases and save ${t.percent}%${top.percent > t.percent ? ` (up to ${top.percent}%)` : ""} in your cart.` : ""; } catch { return ""; } })();
   // Promotions only change what is SHOWN here; the cart and checkout re-price everything on the server.
   const promos = await getPublicPromos(getCloudflareContext().env).catch(() => []);
   if (!offeredPackages(product).length) {
@@ -29,6 +31,7 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
         </p>
 
         <PromoBanner place="product" slug={product.slug} className="mt-6" />
+        {volMsg && <p className="mx-auto mt-4 max-w-xl text-center text-sm font-semibold text-forest-900">{volMsg}</p>}
 
         <div className={`mt-12 grid items-stretch gap-6 ${offeredPackages(product).length === 1 ? "mx-auto max-w-md" : offeredPackages(product).length === 2 ? "mx-auto max-w-3xl lg:grid-cols-2" : "lg:grid-cols-3"}`}>
           {offeredPackages(product).map((pk) => {

@@ -10,6 +10,7 @@ import type { CartPricing, PricedLine, Suggestion } from "@/lib/cart/model";
 import { readPartner, writePartner } from "@/lib/cart/partner";
 import { trackCart, trackCartViewOnce } from "@/lib/cart/track";
 import { formatUsd } from "@/lib/catalog";
+import { VolumeLadder } from "@/components/cart/volume-ladder";
 
 type Loaded = { pricing: CartPricing; suggestions: Suggestion[] };
 
@@ -174,13 +175,14 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
           <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-semibold text-forest-900">{formatUsd(pricing.subtotalCents)}</dd></div>
           {pricing.applied.map((a) => (
             <div key={`${a.source}-${a.code}-${a.title}`} className="cart-in flex justify-between gap-3 text-forest-700">
-              <dt className="min-w-0">{a.title}{a.kind === "percent" && a.percent > 0 ? ` (${a.percent}%)` : ""}{a.source === "automatic" && <span className="block text-xs text-forest-500">Applied automatically</span>}{a.code && a.source !== "automatic" && <span className="block font-mono text-xs text-forest-500">{a.code}</span>}</dt>
+              <dt className="min-w-0">{a.title}{a.kind === "percent" && a.percent > 0 ? ` (${a.percent}%)` : ""}{(a.source === "automatic" || a.source === "volume") && <span className="block text-xs text-forest-500">Applied automatically</span>}{a.code && a.source !== "automatic" && <span className="block font-mono text-xs text-forest-500">{a.code}</span>}</dt>
               <dd className="shrink-0 font-semibold">&minus;{formatUsd(a.cents)}</dd>
             </div>
           ))}
           <div className="flex justify-between"><dt>BeigeLeads fees</dt><dd>None added</dd></div>
         </dl>
         <Code pricing={pricing} applied={applied} codeMsg={codeMsg} busy={busy} onApply={onApply} onRemove={onRemoveCode} />
+        <VolumeLadder volume={pricing.volume} />
         <div className={`mt-4 flex items-end justify-between border-t border-sand-200 pt-4 transition-opacity duration-200 ${busy ? "opacity-60" : ""}`}>
           <p className="font-bold text-forest-900">Total</p>
           <p className="display text-5xl leading-none text-forest-900"><Money cents={pricing.totalCents} /></p>
@@ -200,7 +202,7 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
 
 const isPartnerLike = (c: string) => /^PARTNER-/i.test(c.trim());
 const appliedMessage = (p: CartPricing) => {
-  const typed = p.applied.find((a) => a.source !== "automatic");
+  const typed = p.applied.find((a) => a.source !== "automatic" && a.source !== "volume");
   if (!typed) return "";
   return p.needsEmail ? `${typed.code || typed.title} applied. We confirm your eligibility with your email at checkout.` : `${typed.code || typed.title} applied: you save ${formatUsd(typed.cents)}.`;
 };
@@ -212,7 +214,7 @@ function Code({ pricing, applied, codeMsg, busy, onApply, onRemove }: {
 }) {
   const [show, setShow] = useState(false);
   const [draft, setDraft] = useState({ code: "", email: "" });
-  const live = !!applied && pricing.applied.some((a) => a.source !== "automatic");
+  const live = !!applied && pricing.applied.some((a) => a.source !== "automatic" && a.source !== "volume");
   const partner = isPartnerLike(draft.code);
   const ready = draft.code.trim().length > 0 && (!partner || draft.email.trim().length > 0);
   return (

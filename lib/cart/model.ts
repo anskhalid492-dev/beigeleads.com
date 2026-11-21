@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { applyPromotions, type Applied, type Candidate } from "@/lib/promos/engine";
+import { applyPromotions, type Applied, type Candidate, type VolumeInfo } from "@/lib/promos/engine";
+import type { VolumeSettings } from "@/lib/sales/settings";
 import { getCategory, getCountry, getProduct, getProducts, offeredPackages, type Product } from "@/lib/catalog";
 
 /** What the browser stores: ONLY the product and the chosen package. Prices, names and totals always come from the server. */
@@ -41,6 +42,8 @@ export type CartPricing = {
   discountPercent: number; discountCents: number; discountCode: string;
   /** every discount applied (partner or promotions) with the amount it takes off, and what to tell the buyer about a code that did not apply */
   applied: Applied[]; codeError: string; needsEmail: boolean;
+  /** Buy More, Save More ladder, current tier and what the next one needs (undefined = feature off) */
+  volume?: VolumeInfo;
   /** what the buyer pays */
   totalCents: number; checkoutOpen: boolean; canCheckout: boolean;
   /** items in the request that no longer exist in the catalog (removed from the cart by the client) */
@@ -53,6 +56,8 @@ export type CartContext = {
   discount?: { code: string; percent: number };
   /** Promotions loaded from the database for this request (never from the browser). Omitted = no promotions. */
   promo?: { candidates: Candidate[]; enteredCode?: string; nowSec: number; emailKnown: boolean };
+  /** Buy More, Save More settings (loaded on the server; omitted = feature off) */
+  volume?: VolumeSettings; rewardCombineVolume?: boolean;
 };
 
 /** Cents to pay for a list price after a percent discount. Whole cents, rounded to nearest. */
@@ -85,14 +90,14 @@ export function priceCart(input: unknown, ctx: CartContext, hasSample: (category
   const subtotalCents = lines.reduce((s, l) => s + l.priceCents, 0);
   const r = applyPromotions(
     lines.map((l) => ({ slug: l.slug, categorySlug: l.categorySlug, packageName: l.packageName, priceCents: l.priceCents })),
-    { candidates: ctx.promo?.candidates ?? [], enteredCode: ctx.promo?.enteredCode, partner: ctx.discount, nowSec: ctx.promo?.nowSec ?? Math.floor(Date.now() / 1000), emailKnown: ctx.promo?.emailKnown ?? false },
+    { candidates: ctx.promo?.candidates ?? [], enteredCode: ctx.promo?.enteredCode, partner: ctx.discount, nowSec: ctx.promo?.nowSec ?? Math.floor(Date.now() / 1000), emailKnown: ctx.promo?.emailKnown ?? false, volume: ctx.volume, rewardCombineVolume: ctx.rewardCombineVolume },
   );
   lines.forEach((l, i) => { l.payCents = r.payCents[i]; });
   const totalCents = lines.reduce((s, l) => s + l.payCents, 0);
   const single = r.applied.length === 1 && r.applied[0].kind === "percent" ? r.applied[0].percent : 0;
   return {
     lines, subtotalCents, discountPercent: single, discountCents: subtotalCents - totalCents, discountCode: r.applied.map((a) => a.code).filter(Boolean).join(", "),
-    applied: r.applied, codeError: r.codeError, needsEmail: r.needsEmail,
+    applied: r.applied, codeError: r.codeError, needsEmail: r.needsEmail, volume: r.volume,
     totalCents, checkoutOpen: ctx.checkoutOpen, canCheckout: lines.length > 0 && lines.every((l) => l.purchasable), dropped, placeholderPrices: lines.some((l) => l.placeholder),
   };
 }

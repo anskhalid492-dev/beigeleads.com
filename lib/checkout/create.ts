@@ -11,6 +11,7 @@ import { OPTIONS } from "@/lib/payments/options";
 import { getUsdPriceCached } from "@/lib/payments/rates";
 import { allocateUniqueAmount } from "@/lib/payments/unique-amount";
 import { isActive } from "@/lib/wallets/service";
+import { loadSalesSettings } from "@/lib/sales/settings";
 
 /** Message is safe to show to the buyer. */
 export class CheckoutError extends Error {}
@@ -48,9 +49,10 @@ export async function createOrder(env: CloudflareEnv, input: CreateInput): Promi
     discount = d.discount;
   }
   const candidates = await loadCandidates(db, input.email);
+  const sales = await loadSalesSettings(env);
   const priced = priceCart(
     input.items.map((i) => ({ slug: i.productSlug, pkg: i.packageName })),
-    { checkoutOpen: true, allowPlaceholder: on(env.CHECKOUT_ALLOW_PLACEHOLDER), discount, promo: { candidates, enteredCode: typed && !discount ? typed : undefined, nowSec: Math.floor(Date.now() / 1000), emailKnown: true } },
+    { checkoutOpen: true, allowPlaceholder: on(env.CHECKOUT_ALLOW_PLACEHOLDER), discount, volume: sales.volume, rewardCombineVolume: sales.reward.combineVolume, promo: { candidates, enteredCode: typed && !discount ? typed : undefined, nowSec: Math.floor(Date.now() / 1000), emailKnown: true } },
   );
   if (priced.dropped.length > 0) throw new CheckoutError("A list or package in your cart does not exist any more. Review your cart.");
   const unavailable = priced.lines.find((l) => !l.purchasable);
