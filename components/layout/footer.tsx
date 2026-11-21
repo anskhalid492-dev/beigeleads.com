@@ -80,7 +80,7 @@ const columns: Column[] = [
   },
 ];
 
-const linkCls = "font-medium tracking-[-0.005em] text-sand-200 transition-colors hover:text-sand-50 hover:underline underline-offset-4";
+const linkCls = "font-normal text-sand-200 transition-colors hover:text-sand-50 hover:underline underline-offset-4";
 
 export function Footer() {
   return (
@@ -95,10 +95,10 @@ export function Footer() {
       <FooterCta />
 
       {/* Link columns */}
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-12 px-4 py-16 sm:px-6 md:grid-cols-3 lg:grid-cols-6 lg:px-8">
+      <div className="font-footer mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-12 px-4 py-16 sm:px-6 md:grid-cols-3 lg:grid-cols-6 lg:px-8">
         {columns.map((col) => (
           <nav key={col.title} aria-label={col.title}>
-            <p className="display text-xl tracking-wide text-forest-300">{col.title}</p>
+            <p className="text-sm font-semibold tracking-wide text-forest-300">{col.title}</p>
             {col.links && (
               <ul className="mt-5 space-y-3 text-[0.98rem] leading-snug">
                 {col.links.map(([label, href]) => (

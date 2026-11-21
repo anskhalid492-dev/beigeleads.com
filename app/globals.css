@@ -774,3 +774,5 @@ li > span > .ev-res, li > .relative > .ev-res { opacity: 0; }
   .dfy-travel, .dfy-mail { display: none; }
   .dfy-row:nth-child(3) { background-color: rgba(124, 58, 237, 0.22); border-color: rgba(167, 139, 250, 0.7); }
 }
+
+.font-footer, .font-footer * { font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif; font-stretch: 100%; }

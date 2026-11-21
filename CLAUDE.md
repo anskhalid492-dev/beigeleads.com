@@ -1316,3 +1316,5 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 131. Footer fully rounded (21 Nov 2026) — amends section 129/130
 
 - Owner request: round the whole footer. `components/layout/footer.tsx` is now an inset card (`mx-2 mb-2 sm:mx-3 sm:mb-3`) with `rounded-[2rem] sm:rounded-[3rem]`, `overflow-hidden` and a 1px `sand-300` border, so the light "Discover BeigeLeads with AI" band's bottom corners are visible against the sand page. Not browser-screenshotted.
+
+- Footer link font (21 Nov 2026, owner: the footer menus felt noisy): the six link columns use Inter Variable (`@fontsource-variable/inter` 5.3.0, self-hosted, OFL, pinned; `.font-footer` in `globals.css`), regular weight links and small semibold column titles. Rest of the site stays Bricolage Grotesque. Not browser-screenshotted.

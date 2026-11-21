@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/bricolage-grotesque/wdth.css";
+import "@fontsource-variable/inter";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AnnouncementBanner } from "@/components/layout/announcement-banner";
