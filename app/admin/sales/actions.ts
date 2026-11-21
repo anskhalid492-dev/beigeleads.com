@@ -53,3 +53,22 @@ export async function resendRewardAction(_: unknown, f: FormData): Promise<Res> 
   revalidatePath("/admin/sales/reward");
   return x === "sent" || x === "already-sent" ? { ok: true, message: "Email accepted by the email service." } : { ok: false, error: x === "skipped" ? "Code is not active, or sending is not configured." : "The email service did not accept it. Try again." };
 }
+
+export async function cancelRequestAction(_: unknown, f: FormData): Promise<Res> {
+  const who = await actor(); if (!who) return { ok: false, error: "Your session ended. Sign in again." };
+  const id = Number(f.get("id")); const env = getCloudflareContext().env;
+  const { cancelRequest } = await import("@/lib/sales/team");
+  const ok = await cancelRequest(getDbFromEnv(env), id);
+  await getDbFromEnv(env).insert(schema.settingsAuditLog).values({ actor: who, category: "sales", settingKey: `team-request:${id}`, newValue: "cancelled" }).catch(() => {});
+  revalidatePath("/admin/sales/team"); return ok ? { ok: true, message: "Cancelled. The manager's link no longer works." } : { ok: false, error: "Only open requests can be cancelled." };
+}
+
+export async function resendRequestAction(_: unknown, f: FormData): Promise<Res> {
+  const who = await actor(); if (!who) return { ok: false, error: "Your session ended. Sign in again." };
+  const id = Number(f.get("id")); const env = getCloudflareContext().env;
+  const { resendManager } = await import("@/lib/sales/team");
+  const x = await resendManager(env, id);
+  await getDbFromEnv(env).insert(schema.settingsAuditLog).values({ actor: who, category: "sales", settingKey: `team-request:${id}`, newValue: `resend ${x}` }).catch(() => {});
+  revalidatePath("/admin/sales/team");
+  return x === "sent" ? { ok: true, message: "New link emailed to the manager. The old link no longer works." } : x === "closed" ? { ok: false, error: "Only open requests can be resent." } : { ok: false, error: "The email service did not accept it. Try again." };
+}

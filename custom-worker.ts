@@ -98,6 +98,7 @@ export default {
       ctx.waitUntil(purgeOldSearches(env).catch(() => undefined));
       ctx.waitUntil(purgeEmailLogs(env).catch(() => undefined));
       ctx.waitUntil(import("./lib/sales/reward").then((m) => m.sendRewardReminders(env)).catch(() => undefined));
+    ctx.waitUntil(import("./lib/sales/team").then((m) => m.sweepRequests(env)).catch(() => undefined));
       ctx.waitUntil(purgeUnanswered(env).catch(() => undefined));
       ctx.waitUntil(getBpSettings(env).then(({ s }) => purgeHistory(env, s.retentionDays)).catch(() => undefined));
       ctx.waitUntil(purgeOldPopupEvents(env).catch(() => undefined));

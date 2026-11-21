@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useCart, useMounted } from "@/lib/cart/client";
 import type { CartPricing } from "@/lib/cart/model";
 import { readPartner, writePartner } from "@/lib/cart/partner";
+import { TeamRequest } from "@/components/cart/team-request";
 import { formatUsd } from "@/lib/catalog";
 
 type Option = { value: string; label: string };
@@ -91,6 +92,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
           { name: "coin", label: "Pay with", type: "select", required: true, options: options },
         ]}
       />
+      <TeamRequest items={pricing.lines.map((l) => ({ product: l.slug, package: l.packageName }))} />
       <p className="text-sm">One payment for the whole order. After the network confirms it, we email your download link for each list. No account needed.</p>
     </div>
   );

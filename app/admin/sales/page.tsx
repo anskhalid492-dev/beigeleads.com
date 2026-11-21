@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 const items = [
   ["Volume Discounts", "/admin/sales/volume", "Buy More, Save More: tiers by number of distinct databases, exclusions, stacking."],
   ["Second Purchase Offer", "/admin/sales/reward", "Personal code after a first paid order: settings, issued codes, revoke, resend."],
+  ["Team Purchase Requests", "/admin/sales/team", "Approval requests from team members to managers: status, resend, cancel."],
   ["Email Templates", "/admin/system-emails", "Edit, preview and test-send the reward emails (category Sales Features)."],
   ["Email Delivery Logs", "/admin/system-emails", "Open the Email activity tab for delivery status of every system email."],
 ];

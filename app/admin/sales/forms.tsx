@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import type { RewardSettings, VolumeSettings } from "@/lib/sales/settings";
-import { resendRewardAction, revokeRewardAction, saveRewardAction, saveVolumeAction } from "./actions";
+import { cancelRequestAction, resendRequestAction, resendRewardAction, revokeRewardAction, saveRewardAction, saveVolumeAction } from "./actions";
 
 type Res = { ok: true; message: string } | { ok: false; error: string } | null;
 const inp = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
@@ -64,6 +64,19 @@ export function RewardRowActions({ id, status, emailStatus }: { id: number; stat
     <div className="flex flex-wrap items-start gap-2">
       {status === "active" && <form action={runA} onSubmit={(e) => { if (!window.confirm("Revoke this code? It stops working immediately.")) e.preventDefault(); }}><input type="hidden" name="id" value={id} /><Button type="submit" size="sm" variant="secondary" disabled={pa}>Revoke</Button></form>}
       {status === "active" && emailStatus !== "sent" && <form action={runB}><input type="hidden" name="id" value={id} /><Button type="submit" size="sm" variant="secondary" disabled={pb}>Resend email</Button></form>}
+      <Msg r={a} /><Msg r={b} />
+    </div>
+  );
+}
+
+export function RequestRowActions({ id, open }: { id: number; open: boolean }) {
+  const [a, runA, pa] = useActionState(cancelRequestAction, null as Res);
+  const [b, runB, pb] = useActionState(resendRequestAction, null as Res);
+  if (!open) return <span className="text-xs">—</span>;
+  return (
+    <div className="flex flex-wrap items-start gap-2">
+      <form action={runB}><input type="hidden" name="id" value={id} /><Button type="submit" size="sm" variant="secondary" disabled={pb}>Resend to manager</Button></form>
+      <form action={runA} onSubmit={(e) => { if (!window.confirm("Cancel this request? The manager's link stops working.")) e.preventDefault(); }}><input type="hidden" name="id" value={id} /><Button type="submit" size="sm" variant="secondary" disabled={pa}>Cancel</Button></form>
       <Msg r={a} /><Msg r={b} />
     </div>
   );

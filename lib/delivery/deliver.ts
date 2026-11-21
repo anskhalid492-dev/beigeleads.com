@@ -76,6 +76,8 @@ export async function deliverOrder(env: CloudflareEnv, orderId: string, opts: { 
   } catch { /* delivery must never depend on this note */ }
   // Second Purchase Offer: first paid order -> personal 50% code, emailed right away (idempotent, never blocks delivery).
   try { const { issueReward } = await import("@/lib/sales/reward"); await issueReward(env, orderId); } catch { /* the cron retries */ }
+  // Team Purchase Request paid by a manager: mark it paid and tell both people (idempotent, never blocks delivery).
+  try { const { onOrderPaid } = await import("@/lib/sales/team"); await onOrderPaid(env, orderId); } catch { /* idempotent: the next run tries again */ }
 
   // Every list in the order needs its own delivery link. If any is missing nothing is sent (the cron retries every minute).
   const links = await Promise.all(items.map((x) => findDeliveryLink(env, x.productSlug, x.packageName)));

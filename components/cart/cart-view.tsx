@@ -10,6 +10,7 @@ import type { CartPricing, PricedLine, Suggestion } from "@/lib/cart/model";
 import { readPartner, writePartner } from "@/lib/cart/partner";
 import { trackCart, trackCartViewOnce } from "@/lib/cart/track";
 import { formatUsd } from "@/lib/catalog";
+import { TeamRequest } from "@/components/cart/team-request";
 import { VolumeLadder } from "@/components/cart/volume-ladder";
 
 type Loaded = { pricing: CartPricing; suggestions: Suggestion[] };
@@ -190,6 +191,7 @@ function Summary({ pricing, open, setOpen, applied, codeMsg, busy, onApply, onRe
         <p className="mt-2 text-xs">Priced in US dollars. You pay in crypto: the exact coin amount is shown at checkout and locked for 30 minutes.</p>
       </div>
       <div className="mt-5 hidden lg:block"><CheckoutCta pricing={pricing} count={pricing.lines.length} /></div>
+      {pricing.canCheckout && <TeamRequest className="mt-3" items={pricing.lines.map((l) => ({ product: l.slug, package: l.packageName }))} />}
       {blocked.length > 0 && (
         <p role="status" className="mt-4 rounded-xl bg-sand-100 px-4 py-3 text-sm">{blocked[0].reason}{pricing.checkoutOpen && blocked.length > 0 ? " Remove it from your cart to continue." : " Your cart is saved in this browser."}</p>
       )}

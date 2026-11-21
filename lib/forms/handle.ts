@@ -55,5 +55,7 @@ export async function handleForm<T extends { turnstileToken: string; website?: s
   } catch {
     return json(500, { ok: false, error: "Something went wrong. Try again in a minute." });
   }
+  // A handler can refuse with a plain-language reason (for example "your cart is empty"): shown to the visitor as is.
+  if (typeof extra.error === "string") return json(400, { ok: false, error: extra.error });
   return json(200, { ...extra, ok: true });
 }

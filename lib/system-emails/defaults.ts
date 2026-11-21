@@ -63,6 +63,141 @@ export const TEMPLATES: TemplateDef[] = [
       signoff: "BeigeLeads",
     },
   },
+  // ---- Sales Features: Team Purchase Requests (section 114) ----------------------------------------------
+  {
+    key: "team_request_sent", name: "Team request: sent to requester", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "A team member sends a purchase request: confirmation to the requester.",
+    vars: ["requester_name", "manager_name", "request_items", "request_total", "request_reference", "request_expiry"], required: ["request_reference"],
+    content: {
+      subject: "Your purchase request was sent",
+      preheader: "We emailed your manager the approval link.",
+      heading: "Your request is with {{manager_name}}",
+      blocks: [
+        { t: "p", text: "Hi {{requester_name}}," },
+        { t: "p", text: "We sent your purchase request to **{{manager_name}}**. You will get an email when they approve or decline it." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Total:", value: "{{request_total}}" }, { label: "Request:", value: "{{request_reference}}" }] },
+        { t: "note", text: "The request is valid until {{request_expiry}}. Nothing is charged until your manager approves and pays." },
+      ],
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_manager", name: "Team request: approval request to manager", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "A purchase request is created: the approval link goes to the manager.",
+    vars: ["requester_name", "manager_name", "request_url", "request_note", "request_items", "request_total", "request_reference", "request_expiry"], required: ["request_url"],
+    content: {
+      subject: "{{requester_name}} asks you to approve a BeigeLeads purchase",
+      preheader: "Review the databases and approve or decline.",
+      heading: "{{requester_name}} needs your approval",
+      blocks: [
+        { t: "p", text: "Hi {{manager_name}}," },
+        { t: "p", text: "**{{requester_name}}** asked you to approve and pay for these databases." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Total:", value: "{{request_total}}" }, { label: "Request:", value: "{{request_reference}}" }] },
+        { t: "kv", rows: [{ label: "Note from {{requester_name}}:", value: "{{request_note}}" }] },
+        { t: "note", text: "You will be asked to confirm your email address. This request expires on {{request_expiry}}. BeigeLeads is a one-time purchase with no subscription." },
+      ],
+      cta: { label: "Review Request", url: "{{request_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_reminder", name: "Team request: reminder to manager", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "48 hours after the request, only while it is still waiting for the manager.",
+    vars: ["requester_name", "manager_name", "request_url", "request_items", "request_total", "request_expiry"], required: ["request_url"],
+    content: {
+      subject: "Reminder: {{requester_name}} is waiting for your approval",
+      preheader: "The request expires on {{request_expiry}}.",
+      heading: "A purchase request is waiting for you",
+      blocks: [
+        { t: "p", text: "Hi {{manager_name}}," },
+        { t: "p", text: "A purchase request from **{{requester_name}}** has not been answered yet." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Total:", value: "{{request_total}}" }, { label: "Expires:", value: "{{request_expiry}}" }] },
+      ],
+      cta: { label: "Review Request", url: "{{request_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_approved", name: "Team request: approved", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "The manager approved and opened checkout: notice to the requester.",
+    vars: ["requester_name", "manager_name", "request_items", "request_total", "request_reference"], required: ["request_reference"],
+    content: {
+      subject: "Your request was approved",
+      preheader: "{{manager_name}} approved your purchase request.",
+      heading: "Your request was approved",
+      blocks: [
+        { t: "p", text: "Hi {{requester_name}}," },
+        { t: "p", text: "**{{manager_name}}** approved your request and is completing the payment. We will email you again when the payment is confirmed." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Total:", value: "{{request_total}}" }, { label: "Request:", value: "{{request_reference}}" }] },
+      ],
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_declined", name: "Team request: declined", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "The manager declined the request: notice to the requester.",
+    vars: ["requester_name", "manager_name", "request_items", "request_reference", "decline_reason"], required: ["request_reference"],
+    content: {
+      subject: "Your purchase request was declined",
+      preheader: "{{manager_name}} declined the request.",
+      heading: "Your request was declined",
+      blocks: [
+        { t: "p", text: "Hi {{requester_name}}," },
+        { t: "p", text: "**{{manager_name}}** declined your purchase request." },
+        { t: "kv", rows: [{ label: "Reason:", value: "{{decline_reason}}" }, { label: "Databases:", value: "{{request_items}}" }, { label: "Request:", value: "{{request_reference}}" }] },
+      ],
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_expired", name: "Team request: expired", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "The request was not answered in 7 days: notice to the requester.",
+    vars: ["requester_name", "manager_name", "request_items", "request_reference"], required: ["request_reference"],
+    content: {
+      subject: "Your purchase request expired",
+      preheader: "It was not answered in time.",
+      heading: "Your request expired",
+      blocks: [
+        { t: "p", text: "Hi {{requester_name}}," },
+        { t: "p", text: "Your request to **{{manager_name}}** was not answered in time and has expired. You can send a new request from your cart." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Request:", value: "{{request_reference}}" }] },
+      ],
+      cta: { label: "Open BeigeLeads", url: "{{lists_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_paid_requester", name: "Team request: payment confirmed (requester)", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "The approved order is really paid (confirmed on the network): notice to the requester.",
+    vars: ["requester_name", "manager_name", "request_items", "request_reference"], required: ["request_reference"],
+    content: {
+      subject: "Payment confirmed for your request",
+      preheader: "Your databases are being delivered.",
+      heading: "Payment confirmed",
+      blocks: [
+        { t: "p", text: "Hi {{requester_name}}," },
+        { t: "p", text: "The payment for your request was confirmed. The delivery email goes to **{{manager_name}}**, who placed the order." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Request:", value: "{{request_reference}}" }] },
+      ],
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "team_request_paid_manager", name: "Team request: payment confirmed (manager)", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",
+    event: "The approved order is really paid: confirmation to the manager.",
+    vars: ["manager_name", "requester_name", "request_items", "request_total", "request_reference", "order_url"], required: ["request_reference"],
+    content: {
+      subject: "Payment confirmed: purchase request {{request_reference}}",
+      preheader: "Thank you for approving.",
+      heading: "Payment confirmed",
+      blocks: [
+        { t: "p", text: "Hi {{manager_name}}," },
+        { t: "p", text: "Your payment for the request from **{{requester_name}}** was confirmed. The delivery email follows." },
+        { t: "kv", rows: [{ label: "Databases:", value: "{{request_items}}" }, { label: "Total:", value: "{{request_total}}" }, { label: "Request:", value: "{{request_reference}}" }, { label: "Order:", value: "{{order_url}}" }] },
+      ],
+      signoff: "The BeigeLeads team",
+    },
+  },
   // ---- Data Reseller Partners ---------------------------------------------------------------------------
   {
     key: "partner_application_received", name: "Partner application received", audience: "customer", category: "Data Reseller Partners", canDisable: true, connection: "connected",

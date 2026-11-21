@@ -1123,3 +1123,33 @@ export const rewardCodes = sqliteTable("reward_codes", {
   reminder2At: integer("reminder2_at"),
   revokedAt: integer("revoked_at"),
 });
+
+
+/** Team Purchase Requests (migration 0042): a buyer asks a manager to approve and pay. Prices are a snapshot; the order is re-priced on approval. */
+export const purchaseRequests = sqliteTable("purchase_requests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  reference: text("reference").notNull(),
+  tokenHash: text("token_hash").notNull(),
+  requesterName: text("requester_name").notNull(),
+  requesterEmail: text("requester_email").notNull(),
+  managerName: text("manager_name").notNull().default(""),
+  managerEmail: text("manager_email").notNull(),
+  note: text("note").notNull().default(""),
+  itemsJson: text("items_json").notNull(),
+  subtotalCents: integer("subtotal_cents").notNull(),
+  discountCents: integer("discount_cents").notNull().default(0),
+  totalCents: integer("total_cents").notNull(),
+  dedupeKey: text("dedupe_key").notNull(),
+  status: text("status").notNull().default("pending"),
+  createdAt: integer("created_at").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  viewedAt: integer("viewed_at"),
+  decidedAt: integer("decided_at"),
+  declineReason: text("decline_reason"),
+  orderId: text("order_id"),
+  reminderAt: integer("reminder_at"),
+  expiredNotifiedAt: integer("expired_notified_at"),
+  paidNotifiedAt: integer("paid_notified_at"),
+  requesterEmailStatus: text("requester_email_status").notNull().default("pending"),
+  managerEmailStatus: text("manager_email_status").notNull().default("pending"),
+});
