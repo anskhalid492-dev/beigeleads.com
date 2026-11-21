@@ -15,12 +15,32 @@ export type Settings = {
   greeting: string; instructions: string; saveChats: boolean; retentionDays: number;
   name: string; humor: Humor; motion: Motion; launcher: "right" | "left"; suggestions: string[];
   dailyRequestLimit: number; dailyTokenLimit: number; monthlySpendUsd: number | null;
+  sales: SalesAssistant;
 };
+/** Sales Assistant switches (all on by default). Stored in the same key/value table as the other settings. */
+export type SalesAssistant = {
+  finder: boolean; cart: boolean; budget: boolean; handoff: boolean;
+  maxRecs: number; alternatives: boolean; volume: boolean; unavailable: boolean;
+  supportEmail: string; ackNote: string;
+};
+export const DEFAULT_SALES: SalesAssistant = { finder: true, cart: true, budget: true, handoff: true, maxRecs: 5, alternatives: true, volume: true, unavailable: false, supportEmail: "", ackNote: "" };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export function parseSales(m: Record<string, string | undefined>): SalesAssistant {
+  const on = (k: string, d: boolean) => (m[k] === "1" ? true : m[k] === "0" ? false : d);
+  const mx = Number(m.saMaxRecs);
+  const email = (m.saSupportEmail ?? "").trim().toLowerCase().slice(0, 200);
+  return {
+    finder: on("saFinder", true), cart: on("saCart", true), budget: on("saBudget", true), handoff: on("saHandoff", true),
+    maxRecs: Number.isFinite(mx) && m.saMaxRecs ? Math.min(5, Math.max(1, Math.round(mx))) : DEFAULT_SALES.maxRecs,
+    alternatives: on("saAlternatives", true), volume: on("saVolume", true), unavailable: on("saUnavailable", false),
+    supportEmail: EMAIL_RE.test(email) ? email : "", ackNote: (m.saAckNote ?? "").trim().slice(0, 400),
+  };
+}
 export const DEFAULT_SETTINGS: Settings = {
   enabled: false, active: "", fallback: "",
   greeting: "Who are we finding today?",
   name: "Pilo", humor: "friendly", motion: "balanced", launcher: "right", suggestions: [],
-  instructions: "", saveChats: false, retentionDays: 90, dailyRequestLimit: 500, dailyTokenLimit: 500_000, monthlySpendUsd: null,
+  instructions: "", saveChats: false, retentionDays: 90, dailyRequestLimit: 500, dailyTokenLimit: 500_000, monthlySpendUsd: null, sales: DEFAULT_SALES,
 };
 
 type Env = CloudflareEnv;
@@ -37,15 +57,15 @@ export async function getSettings(env: Env): Promise<{ ready: boolean; s: Settin
       name: (m.name ?? "").trim().slice(0, 24) || DEFAULT_SETTINGS.name, humor: HUMORS.includes(m.humor as Humor) ? (m.humor as Humor) : DEFAULT_SETTINGS.humor,
       motion: MOTIONS.includes(m.motion as Motion) ? (m.motion as Motion) : DEFAULT_SETTINGS.motion, launcher: m.launcher === "left" ? "left" : "right", suggestions: parseSuggestions(m.suggestions), instructions: (m.instructions ?? "").slice(0, 1500), saveChats: m.saveChats === "1", retentionDays: [30, 90, 180, 365].includes(Number(m.retentionDays)) ? Number(m.retentionDays) : 90,
       dailyRequestLimit: num(m.dailyRequestLimit, DEFAULT_SETTINGS.dailyRequestLimit, 1, 1_000_000), dailyTokenLimit: num(m.dailyTokenLimit, DEFAULT_SETTINGS.dailyTokenLimit, 1000, 1_000_000_000),
-      monthlySpendUsd: Number.isFinite(spend) && spend > 0 ? spend : null,
+      monthlySpendUsd: Number.isFinite(spend) && spend > 0 ? spend : null, sales: parseSales(m),
     } };
   } catch { return { ready: false, s: DEFAULT_SETTINGS }; }
 }
 
-export async function saveSettings(env: Env, patch: Partial<Record<keyof Settings, string>>): Promise<void> {
+export async function saveSettings(env: Env, patch: Partial<Record<keyof Settings | `sa${string}`, string>>): Promise<void> {
   const st = env.DB.prepare("INSERT INTO beigepilot_settings (key, value, updated_at) VALUES (?1, ?2, unixepoch()) ON CONFLICT(key) DO UPDATE SET value = ?2, updated_at = unixepoch()");
   await env.DB.batch(Object.entries(patch).map(([k, v]) => st.bind(k, v ?? "")));
-  try { await env.CACHE.delete("beigepilot:config:v2"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v3"); } catch { /* optional */ }
 }
 
 export type ProviderRow = { id: ProviderId; hasKey: boolean; hint: string; model: string; temperature: number; maxTokens: number; priceIn: number | null; priceOut: number | null };
@@ -65,12 +85,12 @@ export async function saveProvider(env: Env, id: ProviderId, v: { apiKey?: strin
   await env.DB.prepare(`INSERT INTO beigepilot_providers (id, enc_key, key_hint, model, temperature, max_tokens, price_in, price_out, updated_at) VALUES (?1, COALESCE(?2, ''), ?3, ?4, ?5, ?6, ?7, ?8, unixepoch())
     ON CONFLICT(id) DO UPDATE SET enc_key = COALESCE(?2, enc_key), key_hint = ?3, model = ?4, temperature = ?5, max_tokens = ?6, price_in = ?7, price_out = ?8, updated_at = unixepoch()`)
     .bind(id, enc, hint, v.model, v.temperature, v.maxTokens, v.priceIn, v.priceOut).run();
-  try { await env.CACHE.delete("beigepilot:config:v2"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v3"); } catch { /* optional */ }
 }
 
 export async function removeProviderKey(env: Env, id: ProviderId): Promise<void> {
   await env.DB.prepare("UPDATE beigepilot_providers SET enc_key = '', key_hint = '', updated_at = unixepoch() WHERE id = ?1").bind(id).run();
-  try { await env.CACHE.delete("beigepilot:config:v2"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v3"); } catch { /* optional */ }
 }
 
 /** The decrypted key, server-side only. null = no key saved, or the secret changed so it cannot be read. */

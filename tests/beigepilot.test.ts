@@ -205,11 +205,11 @@ describe("phase 3 storage (local D1)", () => {
 afterAll(async () => { await proxy?.dispose(); });
 
 describe("BeigePilot widget suggestions and personality", () => {
-  it("shows exactly three tiny welcome suggestions; two start a chat, one focuses the box", () => {
-    expect(DEFAULT_CHIPS).toHaveLength(3);
+  it("shows four real welcome actions; two start a chat, two run an action without the AI", () => {
+    expect(DEFAULT_CHIPS.map((c) => c.label)).toEqual(["Find a Database", "Shop by Budget", "View My Cart", "Contact Support"]);
     expect(DEFAULT_CHIPS.filter((c) => c.ask)).toHaveLength(2);
-    expect(DEFAULT_CHIPS.find((c) => c.focus)?.label).toBe("Ask anything");
-    expect(chipsFor([]).map((c) => c.label)).toEqual(["Find contacts", "Explore lists", "Ask anything"]);
+    expect(DEFAULT_CHIPS.filter((c) => c.action).map((c) => c.action)).toEqual(["cart", "support"]);
+    expect(chipsFor([], { finder: false, cart: true, budget: true, handoff: false }).map((c) => c.label)).toEqual(["Shop by Budget", "View My Cart"]);
   });
   it("admin suggestions replace the defaults (max 3) and each is a real message", () => {
     const c = chipsFor(["One", "Two", "Three", "Four"]);

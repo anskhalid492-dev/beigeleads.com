@@ -16,6 +16,8 @@ type Props = {
   submitLabel: string;
   successTitle: string;
   successText: string;
+  /** Shown instead of the server text when the request fails with a server error or no connection. */
+  failText?: string;
   defaults?: Record<string, string>;
   /** Extra values sent with the form (not shown). */
   hidden?: Record<string, unknown>;
@@ -38,9 +40,10 @@ declare global {
 const inputClass =
   "w-full rounded-lg border border-sand-300 bg-white px-4 py-3 text-base text-forest-900 placeholder:text-forest-500/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 
-export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, defaults = {}, hidden = {}, onSubmitStart }: Props) {
+export function ApiForm({ endpoint, fields, submitLabel, successTitle, successText, failText, defaults = {}, hidden = {}, onSubmitStart }: Props) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || TEST_SITE_KEY;
   const formId = useId();
+  const [ref, setRef] = useState("");
   const widgetRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | undefined>(undefined);
   const [token, setToken] = useState("");
@@ -81,18 +84,19 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: string; redirect?: string };
+      const data = (await res.json()) as { ok?: boolean; error?: string; redirect?: string; reference?: string };
       if (res.ok && data.ok) {
         if (typeof data.redirect === "string" && data.redirect.startsWith("/")) {
           window.location.assign(data.redirect);
           return;
         }
+        if (typeof data.reference === "string") setRef(data.reference);
         setState("done");
         return;
       }
-      setError(data.error ?? "Something went wrong. Try again.");
+      setError(res.status >= 500 && failText ? failText : data.error ?? "Something went wrong. Try again.");
     } catch {
-      setError("Could not reach the server. Check your connection and try again.");
+      setError(failText ?? "Could not reach the server. Check your connection and try again.");
     }
     setState("idle");
     setToken("");
@@ -103,7 +107,7 @@ export function ApiForm({ endpoint, fields, submitLabel, successTitle, successTe
     return (
       <div role="status" className="rounded-2xl border-2 border-forest-900 bg-forest-100 p-8">
         <h2 className="display text-4xl text-forest-900">{successTitle}</h2>
-        <p className="mt-3 max-w-md">{successText}</p>
+        <p className="mt-3 max-w-md">{successText.replace("{reference}", ref)}</p>
       </div>
     );
   }

@@ -1,8 +1,8 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getSettings, listProviders, type Humor, type Motion } from "@/lib/beigepilot/store";
 
-const KEY = "beigepilot:config:v2";
-type Cfg = { enabled: boolean; greeting: string; saving: boolean; name: string; humor: Humor; motion: Motion; launcher: "right" | "left"; suggestions: string[] };
+const KEY = "beigepilot:config:v3";
+type Cfg = { enabled: boolean; greeting: string; saving: boolean; name: string; humor: Humor; motion: Motion; launcher: "right" | "left"; suggestions: string[]; sales: { finder: boolean; cart: boolean; budget: boolean; handoff: boolean } };
 
 /** Public, cached 60 s. The widget shows only when it is switched on AND the active provider really has a key and a model. */
 export async function GET() {
@@ -12,7 +12,7 @@ export async function GET() {
   if (!cfg) {
     const [{ s }, provs] = await Promise.all([getSettings(env), listProviders(env)]);
     const p = provs.find((x) => x.id === s.active);
-    cfg = { enabled: s.enabled && !!p?.hasKey && !!p.model, greeting: s.greeting, saving: s.saveChats, name: s.name, humor: s.humor, motion: s.motion, launcher: s.launcher, suggestions: s.suggestions };
+    cfg = { enabled: s.enabled && !!p?.hasKey && !!p.model, greeting: s.greeting, saving: s.saveChats, name: s.name, humor: s.humor, motion: s.motion, launcher: s.launcher, suggestions: s.suggestions, sales: { finder: s.sales.finder, cart: s.sales.cart, budget: s.sales.budget, handoff: s.sales.handoff } };
     try { await env.CACHE.put(KEY, JSON.stringify(cfg), { expirationTtl: 60 }); } catch { /* optional */ }
   }
   return Response.json(cfg, { headers: { "cache-control": "public, max-age=30" } });

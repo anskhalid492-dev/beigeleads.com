@@ -34,32 +34,54 @@ export async function purgeUnanswered(env: Env, days = 180): Promise<void> {
   try { await env.DB.prepare("DELETE FROM beigepilot_unanswered WHERE last_at < unixepoch() - ?1").bind(days * 86400).run(); } catch { /* before migration */ }
 }
 
-/* ---------- handoff leads ---------- */
-export type Lead = { id: number; reference: string; name: string; email: string; message: string; page: string; consent: boolean; status: "new" | "contacted" | "closed"; note: string; ownerNotify: string; createdAt: number };
+/* ---------- handoff leads (support tickets) ---------- */
+export type LeadStatus = "new" | "in_progress" | "resolved" | "closed" | "contacted";
+export const LEAD_STATUSES: { value: LeadStatus; label: string }[] = [{ value: "new", label: "New" }, { value: "in_progress", label: "In Progress" }, { value: "resolved", label: "Resolved" }, { value: "closed", label: "Closed" }];
+const VALID = new Set<string>([...LEAD_STATUSES.map((x) => x.value), "contacted"]); // "contacted" is the old value, still readable
+export type Lead = { id: number; reference: string; name: string; email: string; message: string; summary: string; page: string; consent: boolean; status: LeadStatus; note: string; ownerNotify: string; customerEmail: string; createdAt: number };
 const ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 export const newLeadReference = (b: Uint8Array = crypto.getRandomValues(new Uint8Array(8))) => "BP-" + Array.from(b, (x) => ALPHABET[x % ALPHABET.length]).join("");
+const DUP_WINDOW = 600; // seconds: the same person sending the same message again returns the same ticket
 
-export async function createLead(env: Env, v: { name: string; email: string; message: string; page: string; consent: boolean }): Promise<{ reference: string } | null> {
+/** Saves the ticket. `duplicate` = the same email and message were saved in the last 10 minutes (no new ticket, no new emails). Works before migration 0043 (without the summary). */
+export async function createLead(env: Env, v: { name: string; email: string; message: string; page: string; consent: boolean; summary?: string }): Promise<{ reference: string; duplicate: boolean } | null> {
   if (!v.consent) return null;
-  const reference = newLeadReference();
+  const email = v.email.trim().toLowerCase().slice(0, 200), message = v.message.trim().slice(0, 2000);
   try {
-    await env.DB.prepare("INSERT INTO beigepilot_leads (reference, name, email, message, page, consent) VALUES (?1,?2,?3,?4,?5,1)").bind(reference, v.name.trim().slice(0, 120), v.email.trim().toLowerCase().slice(0, 200), v.message.trim().slice(0, 2000), v.page.slice(0, 80)).run();
-    return { reference };
-  } catch { return null; }
+    const dup = await env.DB.prepare("SELECT reference FROM beigepilot_leads WHERE email = ?1 AND message = ?2 AND created_at > unixepoch() - ?3 ORDER BY id DESC LIMIT 1").bind(email, message, DUP_WINDOW).first<{ reference: string }>();
+    if (dup) return { reference: dup.reference, duplicate: true };
+  } catch { /* before migration 0038: the insert below reports it */ }
+  const reference = newLeadReference();
+  const summary = (v.summary ?? "").slice(0, 2000);
+  try {
+    await env.DB.prepare("INSERT INTO beigepilot_leads (reference, name, email, message, page, consent, summary) VALUES (?1,?2,?3,?4,?5,1,?6)").bind(reference, v.name.trim().slice(0, 120), email, message, v.page.slice(0, 80), summary).run();
+    return { reference, duplicate: false };
+  } catch {
+    try { // migration 0043 not applied yet: keep the ticket without the summary
+      await env.DB.prepare("INSERT INTO beigepilot_leads (reference, name, email, message, page, consent) VALUES (?1,?2,?3,?4,?5,1)").bind(reference, v.name.trim().slice(0, 120), email, message, v.page.slice(0, 80)).run();
+      return { reference, duplicate: false };
+    } catch { return null; }
+  }
 }
 export async function setLeadNotify(env: Env, reference: string, s: "sent" | "failed" | "skipped"): Promise<void> {
   try { await env.DB.prepare("UPDATE beigepilot_leads SET owner_notify = ?2 WHERE reference = ?1").bind(reference, s).run(); } catch { /* ignore */ }
 }
-type LRaw = { id: number; reference: string; name: string; email: string; message: string; page: string; consent: number; status: string; note: string; owner_notify: string; created_at: number };
-const toLead = (r: LRaw): Lead => ({ id: r.id, reference: r.reference, name: r.name, email: r.email, message: r.message, page: r.page, consent: !!r.consent, status: r.status as Lead["status"], note: r.note, ownerNotify: r.owner_notify, createdAt: r.created_at });
+export async function setLeadCustomerEmail(env: Env, reference: string, s: "sent" | "failed" | "skipped"): Promise<void> {
+  try { await env.DB.prepare("UPDATE beigepilot_leads SET customer_email = ?2 WHERE reference = ?1").bind(reference, s).run(); } catch { /* before migration 0043 */ }
+}
+type LRaw = { id: number; reference: string; name: string; email: string; message: string; summary?: string; page: string; consent: number; status: string; note: string; owner_notify: string; customer_email?: string; created_at: number };
+const toLead = (r: LRaw): Lead => ({ id: r.id, reference: r.reference, name: r.name, email: r.email, message: r.message, summary: r.summary ?? "", page: r.page, consent: !!r.consent, status: (VALID.has(r.status) ? r.status : "new") as LeadStatus, note: r.note, ownerNotify: r.owner_notify, customerEmail: r.customer_email ?? "pending", createdAt: r.created_at });
 export async function listLeads(env: Env, status: string): Promise<{ ready: boolean; items: Lead[] }> {
   try {
-    const where = ["new", "contacted", "closed"].includes(status) ? "WHERE status = ?1" : "WHERE ?1 = ?1";
+    const where = VALID.has(status) ? (status === "closed" ? "WHERE status IN ('closed')" : status === "in_progress" ? "WHERE status IN ('in_progress','contacted')" : "WHERE status = ?1") : "WHERE ?1 = ?1";
     return { ready: true, items: (await env.DB.prepare(`SELECT * FROM beigepilot_leads ${where} ORDER BY created_at DESC LIMIT 200`).bind(status).all<LRaw>()).results.map(toLead) };
   } catch { return { ready: false, items: [] }; }
 }
+export async function getLeadByReference(env: Env, reference: string): Promise<Lead | null> {
+  try { const r = await env.DB.prepare("SELECT * FROM beigepilot_leads WHERE reference = ?1").bind(reference).first<LRaw>(); return r ? toLead(r) : null; } catch { return null; }
+}
 export async function updateLead(env: Env, id: number, status: string, note: string): Promise<void> {
-  if (!["new", "contacted", "closed"].includes(status)) return;
+  if (!VALID.has(status)) return;
   await env.DB.prepare("UPDATE beigepilot_leads SET status = ?2, note = ?3 WHERE id = ?1").bind(id, status, note.slice(0, 1000)).run();
 }
 export async function deleteLead(env: Env, id: number): Promise<void> { await env.DB.prepare("DELETE FROM beigepilot_leads WHERE id = ?1").bind(id).run(); }

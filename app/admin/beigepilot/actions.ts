@@ -69,6 +69,14 @@ export async function saveSettingsAction(_: Result | null, form: FormData): Prom
   if (form.has("motion")) { const m = String(form.get("motion")); patch.motion = ["calm", "balanced", "lively"].includes(m) ? m : "balanced"; }
   if (form.has("launcher")) patch.launcher = String(form.get("launcher")) === "left" ? "left" : "right";
   if (form.has("suggestions")) patch.suggestions = String(form.get("suggestions")).split("\n").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 3).join("\n");
+  if (form.has("saMaxRecs")) {
+    for (const [f, k] of [["saFinder", "saFinder"], ["saCart", "saCart"], ["saBudget", "saBudget"], ["saHandoff", "saHandoff"], ["saAlternatives", "saAlternatives"], ["saVolume", "saVolume"], ["saUnavailable", "saUnavailable"]] as const) patch[k] = form.getAll(f).pop() === "1" ? "1" : "0";
+    patch.saMaxRecs = String(Math.round(numOr(form.get("saMaxRecs"), 5, 1, 5)));
+    const em = String(form.get("saSupportEmail") ?? "").trim().toLowerCase();
+    if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return { ok: false, message: "That support email address does not look valid." };
+    patch.saSupportEmail = em.slice(0, 200);
+    patch.saAckNote = String(form.get("saAckNote") ?? "").trim().slice(0, 400);
+  }
   if (form.has("instructions")) patch.instructions = String(form.get("instructions")).trim().slice(0, 1500);
   if (form.has("dailyRequestLimit")) { patch.dailyRequestLimit = String(Math.round(numOr(form.get("dailyRequestLimit"), 500, 1, 1_000_000))); patch.dailyTokenLimit = String(Math.round(numOr(form.get("dailyTokenLimit"), 500000, 1000, 1_000_000_000))); const m = optNum(form.get("monthlySpendUsd")); patch.monthlySpendUsd = m ? String(m) : ""; }
   if (patch.enabled === "1") {
@@ -96,7 +104,8 @@ export async function playgroundAction(_: { out: ChatOut | null; q: string } | n
 /* ---------------- Phase 2: knowledge, unanswered, leads ---------------- */
 import { redirect } from "next/navigation";
 import { cleanEntry, deleteEntry, saveEntry } from "@/lib/beigepilot/knowledge";
-import { deleteLead, deleteUnanswered, setUnanswered, updateLead } from "@/lib/beigepilot/leads";
+import { deleteLead, deleteUnanswered, getLeadByReference, setUnanswered, updateLead } from "@/lib/beigepilot/leads";
+import { sendLeadEmails } from "@/lib/beigepilot/handoff";
 
 export async function saveEntryAction(_: Result | null, form: FormData): Promise<Result> {
   const who = await actor(); if (!who) return { ok: false, message: "Not allowed." };
@@ -134,6 +143,18 @@ export async function leadAction(form: FormData): Promise<void> {
   const env = getCloudflareContext().env;
   if (String(form.get("op")) === "delete") { await deleteLead(env, id); await audit(env, who, `lead.${id}`, "deleted"); }
   else { await updateLead(env, id, String(form.get("status") ?? ""), String(form.get("note") ?? "")); await audit(env, who, `lead.${id}`, `status ${String(form.get("status"))}`); }
+  revalidatePath("/admin/beigepilot/leads");
+}
+
+/** Sends the failed (or skipped) support or acknowledgment email of one ticket again. The ticket itself is never changed. */
+export async function retryLeadEmailAction(form: FormData): Promise<void> {
+  const who = await actor(); if (!who) return;
+  const ref = String(form.get("ref") ?? ""), which = String(form.get("which") ?? "");
+  if (!/^BP-[A-Z0-9]{8}$/.test(ref) || (which !== "owner" && which !== "customer")) return;
+  const env = getCloudflareContext().env;
+  const l = await getLeadByReference(env, ref); if (!l) return;
+  const r = await sendLeadEmails(env, l, which);
+  await audit(env, who, `lead.${ref}`, `retry ${which} email: ${which === "owner" ? r.owner : r.customer}`);
   revalidatePath("/admin/beigepilot/leads");
 }
 

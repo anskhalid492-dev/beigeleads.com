@@ -4,17 +4,18 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Info, RotateCcw, Send, ThumbsDown, ThumbsUp, X, LifeBuoy } from "lucide-react";
 import { useCart } from "@/lib/cart/client";
-import type { Card, Source } from "@/lib/beigepilot/tools";
+import type { Bundle, Card, Source } from "@/lib/beigepilot/tools";
+import { useRouter } from "next/navigation";
 import { chipsFor, isCheer } from "@/lib/beigepilot/suggest";
 import { ApiForm } from "@/components/forms/api-form";
 import { Markup } from "./markup";
-import { ChatProductCard } from "./product-card";
+import { ChatBundle, ChatProductCard } from "./product-card";
 import { useGaze, setGaze } from "./use-gaze";
 import { Pilo, type Intensity, type Mood } from "./pilo";
 
-export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: string; humor: "professional" | "friendly" | "playful"; motion: Intensity; launcher: "right" | "left"; suggestions: string[] };
-type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; sources?: Source[]; handoff?: boolean; miss?: boolean };
-type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; sources?: Source[]; handoff?: string | null; miss?: boolean; error?: string };
+export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: string; humor: "professional" | "friendly" | "playful"; motion: Intensity; launcher: "right" | "left"; suggestions: string[]; sales?: { finder: boolean; cart: boolean; budget: boolean; handoff: boolean } };
+type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; bundle?: Bundle | null; sources?: Source[]; handoff?: boolean; miss?: boolean };
+type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; bundle?: Bundle | null; sources?: Source[]; handoff?: string | null; miss?: boolean; error?: string };
 
 const KEY = "bp-chat-v2";
 const CID = "bp-cid-v1";
@@ -29,7 +30,8 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
   const [tool, setTool] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [online, setOnline] = useState(true);
-  const [form, setForm] = useState<number | "err" | null>(null);
+  const [form, setForm] = useState<number | "err" | "direct" | null>(null);
+  const router = useRouter();
   const [info, setInfo] = useState(false);
   const [closing, setClosing] = useState(false);
   const [flash, setFlash] = useState<Mood | null>(null);
@@ -103,7 +105,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
     setBusy(false); setTool("");
     if (final?.text) {
       const hasCards = !!final.cards?.length;
-      setMsgs([...list, { role: "assistant", text: final.text, cards: final.cards, sources: final.sources, handoff: !!final.handoff, miss: !!final.miss && !hasCards }]);
+      setMsgs([...list, { role: "assistant", text: final.text, cards: final.cards, bundle: final.bundle, sources: final.sources, handoff: !!final.handoff, miss: !!final.miss && !hasCards }]);
       setOnline(true);
       if (hasCards) doFlash("found", 2200); else if (final.miss) doFlash("confused", 2600);
     } else {
@@ -130,7 +132,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
 
   const searching = busy && SEARCH_TOOLS.has(tool);
   const mood: Mood = closing ? "bye" : flash ?? (busy ? (searching ? "search" : "think") : err ? "error" : text.trim() ? "curious" : "idle");
-  const chips = useMemo(() => chipsFor(cfg.suggestions), [cfg.suggestions]);
+  const chips = useMemo(() => chipsFor(cfg.suggestions, cfg.sales), [cfg.suggestions, cfg.sales]);
   const last = msgs[msgs.length - 1];
   const status = busy ? (searching ? "Looking through the lists" : "Thinking") : online ? "Online" : "Having trouble";
   const caption = searching ? "Looking through the lists" : "Thinking";
@@ -139,7 +141,11 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
   // While the visitor types, Pilo looks down at the box.
   useEffect(() => { if (text.trim()) setGaze(hero.current, 0, 0.9); }, [text]);
 
-  const pickChip = (c: { ask?: string; focus?: boolean }) => { if (c.ask) send(c.ask); else input.current?.focus(); };
+  const pickChip = (c: { ask?: string; focus?: boolean; action?: "cart" | "support" }) => {
+    if (c.action === "cart") { close(false); router.push("/cart"); return; }
+    if (c.action === "support") { setMsgs((m) => [...m, { role: "assistant", text: "Of course! I can send your question to the BeigeLeads support team. Fill in the form below." }]); setForm("direct"); return; }
+    if (c.ask) send(c.ask); else input.current?.focus();
+  };
   const lastAssistant = msgs.length - 1;
 
   return (
@@ -183,6 +189,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
               <span className="mt-0.5 shrink-0"><Pilo crop="avatar" mood={m.cards?.length && i === lastAssistant ? "found" : m.miss && i === lastAssistant ? "confused" : "idle"} size={34} intensity={cfg.motion} animated={i === lastAssistant} /></span>
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="w-fit max-w-full rounded-2xl rounded-tl-md bg-sand-100 px-3 py-2 text-forest-900"><Markup text={m.text} /></div>
+                {m.bundle && <ChatBundle b={m.bundle} onAdded={() => doFlash("success", 2400)} />}
                 {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} onAdded={() => doFlash("success", 2400)} onPick={() => doFlash("point", 1500)} />)}
                 {(i === lastAssistant && !m.rated) || m.handoff ? (
                   <div className="flex flex-wrap items-center gap-1 text-xs">
@@ -192,7 +199,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
                     {m.handoff && form !== i && <button type="button" onClick={() => setForm(i)} className="inline-flex items-center gap-1 rounded-full border border-forest-900 px-3 py-1 font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50"><LifeBuoy className="size-3.5" aria-hidden />Talk to a person</button>}
                   </div>
                 ) : null}
-                {m.handoff && form === i && <HandoffForm path={path} />}
+                {((m.handoff && form === i) || (form === "direct" && i === lastAssistant)) && <HandoffForm path={path} history={msgs} />}
                 {!!m.sources?.length && <p className="text-xs">Sources: {m.sources.map((s, j) => <span key={s.url}>{j > 0 && " · "}<Link href={s.url} className="font-semibold text-purple-700 underline underline-offset-2">{s.title}</Link></span>)}</p>}
               </div>
             </div>
@@ -213,7 +220,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
                 <button type="button" onClick={retry} className="inline-flex items-center gap-1.5 rounded-full bg-forest-900 px-3.5 py-1.5 text-xs font-bold text-sand-50 hover:bg-forest-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"><RotateCcw className="size-3.5" aria-hidden />Retry</button>
                 <button type="button" onClick={() => setForm("err")} className="inline-flex items-center gap-1.5 rounded-full border border-forest-900 px-3.5 py-1.5 text-xs font-bold text-forest-900 hover:bg-forest-900 hover:text-sand-50"><LifeBuoy className="size-3.5" aria-hidden />Contact Support</button>
               </div>
-              {form === "err" && <div className="mt-3"><HandoffForm path={path} /></div>}
+              {form === "err" && <div className="mt-3"><HandoffForm path={path} history={msgs} /></div>}
             </div>
           )}
         </div>
@@ -234,12 +241,22 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
   );
 }
 
-function HandoffForm({ path }: { path: string }) {
+function HandoffForm({ path, history }: { path: string; history: Msg[] }) {
+  const [share, setShare] = useState(false);
+  // A short summary of the last few messages. It is sent only when the visitor ticks the box below.
+  const summary = useMemo(() => history.filter((m) => m.text).slice(-6).map((m) => `${m.role === "user" ? "Visitor" : "BeigePilot"}: ${m.text.replace(/\s+/g, " ").slice(0, 220)}`).join("\n"), [history]);
   return (
     <div className="rounded-xl border border-sand-300 bg-white p-3">
       <p className="mb-2 text-sm font-bold text-forest-900">Leave your details and our team will read your message.</p>
-      <ApiForm endpoint="/api/beigepilot/handoff" submitLabel="Send to our team" successTitle="Message sent" successText="Thanks. Our team has your message. We sent a confirmation to your email."
-        hidden={{ page: path.slice(0, 80) }}
+      {summary && (
+        <div className="mb-3 rounded-lg bg-sand-100 p-2.5 text-xs">
+          <label className="flex items-start gap-2 font-semibold text-forest-900"><input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-purple-600" />Share a short summary of this chat with the support team</label>
+          <details className="mt-1.5 pl-6"><summary className="cursor-pointer font-semibold text-purple-700">See what would be shared</summary><p className="mt-1 whitespace-pre-wrap">{summary}</p><p className="mt-1">Emails and phone numbers are removed.</p></details>
+        </div>
+      )}
+      <ApiForm endpoint="/api/beigepilot/handoff" submitLabel="Send to Human Support" successTitle="Request sent" successText="Thanks. Our support team has your request. Your reference number is {reference}. We sent a confirmation to your email."
+        failText="Your request couldn't be submitted. Please try again or contact support using the contact page."
+        hidden={{ page: path.slice(0, 80), shareChat: share ? "yes" : "no", summary: share ? summary : "" }}
         fields={[
           { name: "name", label: "Your name", type: "text", required: true, autoComplete: "name" },
           { name: "email", label: "Email", type: "email", required: true },

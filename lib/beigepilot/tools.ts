@@ -11,15 +11,21 @@ import { loadHelp } from "@/lib/help/store";
 import { legalBySlug, LEGAL_UPDATED } from "@/lib/legal/docs";
 import { publishedEntries, searchEntries } from "./knowledge";
 import type { ToolDef } from "./providers";
+import { DEFAULT_SALES, type SalesAssistant } from "./store";
+import { affordableItems, cheapestOver, planBundle, validPick } from "./budget";
+import { loadSalesSettings } from "@/lib/sales/settings";
 
 export type Card = {
   slug: string; name: string; url: string; sampleUrl: string; country: string; countryCode: string; category: string; region: string; forSale: boolean;
   records: number | null; startingPrice: string | null; lastUpdated: string | null; hasSample: boolean;
   packages: { name: string; records: number; price: string; priceCents: number; highlighted: boolean }[];
+  /** package the assistant already settled on (budget plan or a named package); the visitor still presses Add to Cart */
+  pick?: string;
 };
+export type Bundle = { lines: { slug: string; name: string; pkg: string; price: string }[]; subtotal: string; discount: string; total: string; volumeApplied: boolean };
 export type Source = { title: string; url: string };
-export type ToolCtx = { env: CloudflareEnv; cards: Card[]; sources: Source[]; handoff: string | null; miss: boolean; trace: { name: string; args: unknown; ok: boolean }[] };
-export const newCtx = (env: CloudflareEnv): ToolCtx => ({ env, cards: [], sources: [], handoff: null, miss: false, trace: [] });
+export type ToolCtx = { env: CloudflareEnv; sa: SalesAssistant; cards: Card[]; bundle: Bundle | null; sources: Source[]; handoff: string | null; miss: boolean; trace: { name: string; args: unknown; ok: boolean }[] };
+export const newCtx = (env: CloudflareEnv, sa: SalesAssistant = DEFAULT_SALES): ToolCtx => ({ env, sa, cards: [], bundle: null, sources: [], handoff: null, miss: false, trace: [] });
 
 const forSale = (p: Product) => p.status === "live" && !p.placeholderData;
 const url = (p: Product) => `/lists/${p.slug}`;
@@ -69,24 +75,30 @@ const POLICY_SLUGS = ["privacy", "terms", "refund-replacement", "delivery", "coo
 /* ---------------- tool definitions ---------------- */
 
 export const TOOLS: ToolDef[] = [
-  { name: "searchProducts", description: "Search the real BeigeLeads catalog by plain words: audience/industry, country, state or city, channel (email, phone, WhatsApp, consumer). Returns matching lists with real availability, packages and prices.", parameters: { type: "object", properties: { query: { type: "string", description: "e.g. 'dentists california' or 'germany business email'" }, limit: { type: "integer", description: "max results, default 6" } }, required: ["query"] } },
+  { name: "searchProducts", description: "Search the real BeigeLeads catalog by plain words: audience/industry, country, state or city, channel (email, phone, WhatsApp, consumer). Returns matching lists with real availability, packages and prices.", parameters: { type: "object", properties: { query: { type: "string", description: "e.g. 'dentists california' or 'germany business email'. Words only: put the industry, country and place here, not the quantity." }, minRecords: { type: "integer", description: "the contact quantity the visitor asked for (e.g. 100000 for '100K', 1000000 for '1 million'). Only lists with a package of at least this size are returned." }, limit: { type: "integer", description: "max results, default 6" } }, required: ["query"] } },
   { name: "getProductDetails", description: "Full public details of one list by slug: coverage, fields, formats, availability, packages, dates.", parameters: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "getProductPackages", description: "The packages and one-time prices of one list by slug. Empty when the list is not for sale.", parameters: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "getProductVerificationInfo", description: "The recorded last-updated date and stated accuracy of one list, plus the policy pages that govern verification, replacement and refunds.", parameters: { type: "object", properties: { slug: { type: "string" } }, required: ["slug"] } },
   { name: "getRelatedProducts", description: "Other real lists related to one list (same industry, country or channel).", parameters: { type: "object", properties: { slug: { type: "string" }, limit: { type: "integer" } }, required: ["slug"] } },
   { name: "showProductCards", description: "Show interactive product cards (View Details, Get This List, Request a Sample) to the visitor for up to 3 real lists. Call it after you recommend lists.", parameters: { type: "object", properties: { slugs: { type: "array", items: { type: "string" } } }, required: ["slugs"] } },
+  { name: "findWithinBudget", description: "Budget shopping. Finds real lists whose packages fit a USD budget, optionally for an industry/country (query), and can plan several databases within one total budget using the real cart pricing. Cards are shown to the visitor automatically with the right package. Never calculate prices yourself.", parameters: { type: "object", properties: { budgetUsd: { type: "number", description: "the visitor's budget in US dollars" }, query: { type: "string", description: "industry, country or place words, if any" }, count: { type: "integer", description: "how many different databases the visitor wants (2-5) when they want several; omit for one" }, maximizeContacts: { type: "boolean", description: "true when the visitor wants the maximum contacts for the budget" } }, required: ["budgetUsd"] } },
+  { name: "prepareAddToCart", description: "Use when the visitor asks to add a list to the cart. Shows the list with its real packages and an Add to Cart button. If the package is known and valid pass it, otherwise omit it and ask the visitor which package they want. You can NOT add to the cart yourself: the visitor presses the button.", parameters: { type: "object", properties: { slug: { type: "string" }, package: { type: "string", description: "package name exactly as returned by the catalog tools, only if the visitor chose one" } }, required: ["slug"] } },
   { name: "searchKnowledge", description: "Search answers written by the BeigeLeads team (custom FAQs). Use it for questions about policies, process or products that the catalog tools do not cover, before searchHelpArticles.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "searchHelpArticles", description: "Search published Help Center articles for how-to, delivery, payment, data and policy answers.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "getPolicyDetails", description: "Read a published policy page. topic is one of: " + POLICY_SLUGS.join(", "), parameters: { type: "object", properties: { topic: { type: "string" } }, required: ["topic"] } },
   { name: "suggestContact", description: "Use when you cannot answer confidently from tools, or the visitor asks about a specific order or account. Shows a 'Contact Our Team' button.", parameters: { type: "object", properties: { reason: { type: "string" } }, required: ["reason"] } },
 ];
 
+const FINDER = new Set(["searchProducts", "getRelatedProducts", "showProductCards"]);
+/** Tools the model may use, after the admin's Sales Assistant switches. */
+export const toolsFor = (sa: SalesAssistant): ToolDef[] => TOOLS.filter((t) => !(FINDER.has(t.name) && !sa.finder) && !(t.name === "findWithinBudget" && !sa.budget) && !(t.name === "prepareAddToCart" && !sa.cart) && !(t.name === "suggestContact" && !sa.handoff));
 const cap = (v: unknown, n = 7000) => { const s = JSON.stringify(v); return s.length > n ? s.slice(0, n) + '…[truncated]"' : s; };
 const str = (v: unknown, n = 200) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 
 /** Runs one tool. Always returns a JSON string; unknown tools and bad input return an error object, never throw. */
 export async function runTool(ctx: ToolCtx, name: string, args: Record<string, unknown>): Promise<string> {
   let ok = true;
+  if (!toolsFor(ctx.sa).some((t) => t.name === name)) { ctx.trace.push({ name, args, ok: false }); return JSON.stringify({ error: "This tool is switched off." }); }
   const out = await (async (): Promise<unknown> => {
     await hydrateCatalog(ctx.env);
     switch (name) {
@@ -95,9 +107,16 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         if (!q) return { error: "empty query" };
         const lim = Math.min(8, Math.max(1, Number(args.limit) || 6));
         const names = { cat: (s: string) => getCategory(s)?.name ?? s, country: (s: string) => getCountry(s)?.name ?? s };
+        const min = Math.max(0, Math.floor(Number(args.minRecords) || 0));
         const d = discover(getProducts(), q, names, lim);
         const pick = (l: { slug: string }) => getProduct(l.slug);
-        return { matches: d.exact.map(pick).filter((p): p is Product => !!p).map(summary), closest: d.close.map(pick).filter((p): p is Product => !!p).slice(0, 4).map(summary), note: d.exact.length ? undefined : "No exact match. Say so plainly; offer the closest lists if any, or the custom list builder (/custom-list) or contact page (/contact)." };
+        // Quantity: the list must really offer a package (or total) of at least the requested size.
+        const big = (p: Product) => !min || offeredPackages(p).some((k) => k.records >= min) || (p.recordCount ?? 0) >= min;
+        const show = (p: Product) => ctx.sa.unavailable || forSale(p);
+        const exact = d.exact.map(pick).filter((p): p is Product => !!p).filter(show);
+        const matches = exact.filter(big).slice(0, ctx.sa.maxRecs);
+        const closest = ctx.sa.alternatives ? [...exact.filter((p) => !big(p)), ...d.close.map(pick).filter((p): p is Product => !!p).filter(show)].slice(0, 4) : [];
+        return { matches: matches.map(summary), closest: closest.map(summary), requestedMinimumContacts: min || undefined, note: matches.length ? (exact.length > matches.length ? "Some lists were left out because their biggest package is smaller than the requested quantity." : undefined) : "No exact match. Say so plainly (including when the quantity is too large); offer the closest lists if any, or the custom list builder (/custom-list) or contact page (/contact)." };
       }
       case "getProductDetails": {
         const p = getProduct(str(args.slug, 100)); if (!p) return { error: "unknown product slug" };
@@ -117,10 +136,62 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         return { related: getRelatedProducts(p, Math.min(6, Math.max(1, Number(args.limit) || 4))).map(summary) };
       }
       case "showProductCards": {
-        const slugs = Array.isArray(args.slugs) ? args.slugs.map((s) => str(s, 100)).filter(Boolean).slice(0, 3) : [];
-        const found = slugs.map((s) => getProduct(s)).filter((p): p is Product => !!p);
+        const slugs = Array.isArray(args.slugs) ? args.slugs.map((s) => str(s, 100)).filter(Boolean).slice(0, ctx.sa.maxRecs) : [];
+        const found = slugs.map((s) => getProduct(s)).filter((p): p is Product => !!p).filter((p) => ctx.sa.unavailable || forSale(p));
         for (const p of found) if (!ctx.cards.some((c) => c.slug === p.slug)) ctx.cards.push(card(p));
         return { shown: found.map((p) => p.slug), unknown: slugs.length - found.length };
+      }
+      case "findWithinBudget": {
+        const dollars = Number(args.budgetUsd);
+        if (!Number.isFinite(dollars) || dollars < 1 || dollars > 1_000_000) return { error: "budgetUsd must be a number of dollars between 1 and 1,000,000" };
+        const budget = Math.round(dollars * 100);
+        const q = str(args.query, 160);
+        const names = { cat: (s: string) => getCategory(s)?.name ?? s, country: (s: string) => getCountry(s)?.name ?? s };
+        const pool = q ? (() => { const d = discover(getProducts(), q, names, 40); return [...d.exact, ...(ctx.sa.alternatives ? d.close : [])].map((l) => getProduct(l.slug)).filter((p): p is Product => !!p); })() : getProducts().filter(forSale);
+        const sales = await loadSalesSettings(ctx.env);
+        const volume = ctx.sa.volume && sales.volume.enabled ? sales.volume : undefined;
+        let items = affordableItems(pool, budget);
+        if (args.maximizeContacts === true) items = [...items].sort((a, b) => b.best.records - a.best.records);
+        const want = Math.min(5, Math.max(0, Math.floor(Number(args.count) || 0)));
+        const limit = Math.min(ctx.sa.maxRecs, want >= 2 ? want : ctx.sa.maxRecs);
+        const shown = items.slice(0, limit);
+        const usd = (c: number) => formatUsd(c);
+        const out: Record<string, unknown> = { budgetUsd: usd(budget), results: shown.map((it) => { const p = getProduct(it.best.slug)!; return { slug: p.slug, name: p.name, url: url(p), country: getCountry(p.countrySlug)?.name ?? p.countrySlug, bestPackageWithinBudget: { name: it.best.pkg, records: it.best.records, priceUsd: usd(it.best.priceCents) }, allPackagesWithinBudget: it.affordable.map((k) => ({ name: k.pkg, records: k.records, priceUsd: usd(k.priceCents) })) }; }) };
+        const picks: Record<string, string> = {};
+        for (const it of shown) picks[it.best.slug] = it.best.pkg;
+        if (want >= 2) {
+          const plan = planBundle(items, budget, want, volume);
+          if (plan) {
+            const rows = plan.slugs.map((x) => ({ slug: x.slug, name: getProduct(x.slug)?.name ?? x.slug, pkg: x.pkg, price: usd(x.priceCents) }));
+            ctx.bundle = { lines: rows, subtotal: usd(plan.subtotalCents), discount: usd(plan.discountCents), total: usd(plan.totalCents), volumeApplied: plan.volumeApplied };
+            out.bundle = { lines: rows, subtotalUsd: ctx.bundle.subtotal, volumeDiscountUsd: ctx.bundle.discount, estimatedTotalUsd: ctx.bundle.total, volumeDiscountIncluded: plan.volumeApplied, note: "Estimate from the real cart pricing. The cart checks the total again. Promo codes are not included." };
+            for (const x of plan.slugs) picks[x.slug] = x.pkg;
+            shown.splice(0, shown.length, ...plan.slugs.map((x) => items.find((i) => i.best.slug === x.slug)!).filter(Boolean));
+          } else { out.bundle = null; out.bundleNote = `Could not fit ${want} different databases within the budget. Say so and show the single options.`; }
+        }
+        for (const it of shown) { const p = getProduct(it.best.slug); if (p && !ctx.cards.some((c) => c.slug === p.slug)) ctx.cards.push({ ...card(p), pick: picks[p.slug] }); }
+        if (!shown.length) {
+          ctx.miss = true;
+          const over = ctx.sa.alternatives ? cheapestOver(pool.length ? pool : getProducts(), budget) : null;
+          out.nothingWithinBudget = true;
+          if (over) { const p = getProduct(over.slug)!; out.cheapestAvailable = { slug: p.slug, name: p.name, package: over.pkg, priceUsd: usd(over.priceCents), overBudgetByUsd: usd(over.overCents) }; if (!ctx.cards.some((c) => c.slug === p.slug)) ctx.cards.push({ ...card(p), pick: over.pkg }); }
+          out.note = "Nothing fits this budget. Say so plainly. If cheapestAvailable is present it is OVER the budget: say by how much, never present it as within budget. Suggest raising the budget or the custom list builder (/custom-list).";
+        }
+        return out;
+      }
+      case "prepareAddToCart": {
+        const p = getProduct(str(args.slug, 100));
+        if (!p) return { error: "unknown product slug" };
+        if (!forSale(p)) return { error: "This list is not currently for sale, so it cannot be added to the cart. Offer View Details, a free sample or the custom list builder." };
+        const pk = offeredPackages(p);
+        if (!pk.length) return { error: "This list has no packages to buy right now." };
+        const named = str(args.package, 40);
+        const chosen = named ? validPick(p.slug, named) : pk.length === 1 ? validPick(p.slug, pk[0].name) : null;
+        if (named && !chosen) return { error: `No package named "${named}". Valid packages: ${pk.map((k) => k.name).join(", ")}. Ask the visitor which one.` };
+        const i = ctx.cards.findIndex((c) => c.slug === p.slug);
+        const c = { ...card(p), pick: chosen?.pkg };
+        if (i >= 0) ctx.cards[i] = c; else ctx.cards.push(c);
+        return { shown: true, name: p.name, package: chosen?.pkg ?? null, packages: pk.map((k) => ({ name: k.name, records: k.records, priceUsd: formatUsd(k.priceUsdCents) })), note: chosen ? "The card shows this package selected with an Add to Cart button. Tell the visitor to press Add to Cart. You cannot add it yourself and must not say it was added." : "Ask which package they want (list them with prices). The card lets them pick and press Add to Cart. Never say it was added." };
       }
       case "searchKnowledge": {
         const q = str(args.query, 160); if (!q) return { error: "empty query" };

@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       const user = p.data.messages[p.data.messages.length - 1].text;
       ctx.waitUntil((async () => { if ((await getSettings(env)).s.saveChats) await recordTurn(env, cid, p.data.path, user, { text: r.text, tools: r.trace.map((t) => t.name), provider: r.provider ?? "", tokens: (r.tokensIn ?? 0) + (r.tokensOut ?? 0), handoff: !!r.handoff }); })());
     }
-    return { ok: true, text: r.text, cards: r.cards, sources: r.sources, handoff: r.handoff, miss: !!r.miss, tools: r.tools ?? [] };
+    return { ok: true, text: r.text, cards: r.cards, bundle: r.bundle ?? null, sources: r.sources, handoff: r.handoff, miss: !!r.miss, tools: r.tools ?? [] };
   };
 
   // Live status for the widget: one JSON line per step (tool started), then the final answer or a failure.
