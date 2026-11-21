@@ -14,9 +14,8 @@ import { loadSalesSettings } from "./settings";
 
 type Db = ReturnType<typeof getDbFromEnv>;
 export const SITE = "https://beigeleads.com";
-export const REQUEST_DAYS = 7;
-export const REMINDER_HOURS = 48;
-export const MAX_ITEMS = 10;
+import { MAX_ITEMS, REMINDER_HOURS, REQUEST_DAYS } from "./team-constants";
+export { MAX_ITEMS, REMINDER_HOURS, REQUEST_DAYS };
 export type Snap = { slug: string; name: string; pkg: string; records: number; cents: number };
 export type Status = "pending" | "viewed" | "approved" | "declined" | "expired" | "paid" | "cancelled";
 const OPEN: Status[] = ["pending", "viewed"];

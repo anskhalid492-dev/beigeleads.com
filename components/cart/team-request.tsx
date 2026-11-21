@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { UsersRound, X } from "lucide-react";
 import { ApiForm } from "@/components/forms/api-form";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ export function TeamRequest({ items, className = "" }: { items: { product: strin
   return (
     <div className={className}>
       <Button type="button" variant="secondary" className="w-full" onClick={() => setOpen(true)}><UsersRound className="size-4" aria-hidden /> Request manager approval</Button>
-      <p className="mt-1.5 text-center text-xs">Need sign-off first? We email your manager a secure link to review and pay.</p>
+      <p className="mt-1.5 text-center text-xs">Need sign-off first? We email your manager a secure link to review and pay. <Link href="/team-purchase-requests" className="underline">How team requests work</Link></p>
       <dialog ref={ref} onClose={() => setOpen(false)} onClick={(e) => { if (e.target === ref.current) setOpen(false); }} aria-labelledby="team-title" className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-3xl border border-sand-200 bg-white p-0 text-forest-700 shadow-2xl backdrop:bg-forest-900/50">
         <div className="max-h-[85vh] overflow-y-auto p-6">
           <div className="flex items-start justify-between gap-3">
