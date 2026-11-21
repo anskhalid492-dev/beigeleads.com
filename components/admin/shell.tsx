@@ -2,58 +2,70 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, UsersRound, Menu, Package, Send, Settings, ShieldCheck, ShoppingCart, Wallet, X } from "lucide-react";
+import { Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronDown, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, UsersRound, Menu, Package, Send, Settings, ShieldCheck, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
   ["Overview", "/admin", BarChart3],
-  ["Products", "/admin/products", Package],
-  ["Database Bundles", "/admin/bundles", Package],
-  ["DFY Outbound Orders", "/admin/dfy", ShieldCheck],
-  ["DFY Outbound Settings", "/admin/dfy/settings", ShieldCheck],
-  ["Email List Verification Orders", "/admin/email-verification", ShieldCheck],
-  ["Email List Verification Settings", "/admin/email-verification/settings", ShieldCheck],
-  ["Delivery Links", "/admin/delivery", Send],
   ["Orders", "/admin/orders", ShoppingCart],
+  ["Delivery Links", "/admin/delivery", Send],
   ["Cart funnel", "/admin/cart", ShoppingCart],
+  ["Payments & Wallets", "/admin/wallets", Wallet],
+  ["Promotions", "/admin/promotions", TicketPercent],
   ["Sales Features", "/admin/sales", TicketPercent],
   ["Volume Discounts", "/admin/sales/volume", TicketPercent],
   ["Second Purchase Offer", "/admin/sales/reward", TicketPercent],
   ["Team Purchase Requests", "/admin/sales/team", UsersRound],
-  ["Catalog setup", "/admin/catalog", Package],
+  ["Partner Requests", "/admin/partner-requests", Handshake],
+  ["Products", "/admin/products", Package],
+  ["Database Bundles", "/admin/bundles", Package],
   ["List categories", "/admin/categories", Package],
+  ["Catalog setup", "/admin/catalog", Package],
   ["Geography", "/admin/geography", Globe],
   ["Geography pages SEO", "/admin/geography/pages", Globe],
-  ["Keywords", "/admin/seo/keywords", Search],
-  ["Payments & Wallets", "/admin/wallets", Wallet],
+  ["DFY Outbound Orders", "/admin/dfy", ShieldCheck],
+  ["DFY Outbound Settings", "/admin/dfy/settings", ShieldCheck],
+  ["Email List Verification Orders", "/admin/email-verification", ShieldCheck],
+  ["Email List Verification Settings", "/admin/email-verification/settings", ShieldCheck],
+  ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Sample Requests", "/admin/sample-requests", Inbox],
   ["Contact Inquiries", "/admin/contact-inquiries", MessageSquare],
-  ["Promotions", "/admin/promotions", TicketPercent],
-  ["Partner Requests", "/admin/partner-requests", Handshake],
-  ["Help Center", "/admin/help", LifeBuoy],
-  ["System Emails", "/admin/system-emails", MailCheck],
-  ["Popups", "/admin/popups", MessageSquare],
-  ["BeigePilot AI", "/admin/beigepilot", Bot],
-  ["Custom Requests", "/admin/custom-requests", ClipboardList],
   ["Blog", "/admin/blog", FileText],
+  ["Authors", "/admin/blog/authors", Users],
   ["Guides", "/admin/guides", BookOpen],
   ["Case Studies", "/admin/case-studies", Presentation],
   ["Glossary", "/admin/glossary", BookMarked],
+  ["Help Center", "/admin/help", LifeBuoy],
+  ["Media", "/admin/media", ImageIcon],
+  ["Media Kit", "/admin/media-kit", ImageIcon],
+  ["Newsletter", "/admin/newsletter", Mail],
   ["SEO", "/admin/seo", Search],
   ["Website pages SEO", "/admin/seo/site-pages", Search],
+  ["Keywords", "/admin/seo/keywords", Search],
   ["Redirects", "/admin/seo/redirects", Search],
   ["Sitemap", "/admin/seo/sitemap", Search],
   ["Site audit", "/admin/seo/audit", Search],
   ["Search Console", "/admin/seo/search-console", Search],
-  ["Authors", "/admin/blog/authors", Users],
-  ["Media", "/admin/media", ImageIcon],
-  ["Media Kit", "/admin/media-kit", ImageIcon],
-  ["Newsletter", "/admin/newsletter", Mail],
+  ["BeigePilot AI", "/admin/beigepilot", Bot],
+  ["Popups", "/admin/popups", MessageSquare],
+  ["System Emails", "/admin/system-emails", MailCheck],
   ["Social Links", "/admin/website/social-links", Globe],
   ["AI Platforms", "/admin/website/ai-platforms", Bot],
   ["AI Information", "/admin/website/ai-information", FileText],
   ["Settings", "/admin/settings", Settings],
 ] as const;
+
+const GROUPS: { name: string; hrefs: string[] }[] = [
+  { name: "", hrefs: ["/admin"] },
+  { name: "Sales & Orders", hrefs: ["/admin/orders", "/admin/delivery", "/admin/cart", "/admin/wallets", "/admin/promotions", "/admin/sales", "/admin/sales/volume", "/admin/sales/reward", "/admin/sales/team", "/admin/partner-requests"] },
+  { name: "Catalog", hrefs: ["/admin/products", "/admin/bundles", "/admin/categories", "/admin/catalog", "/admin/geography", "/admin/geography/pages"] },
+  { name: "Services", hrefs: ["/admin/dfy", "/admin/dfy/settings", "/admin/email-verification", "/admin/email-verification/settings", "/admin/custom-requests"] },
+  { name: "Inbox", hrefs: ["/admin/sample-requests", "/admin/contact-inquiries"] },
+  { name: "Content", hrefs: ["/admin/blog", "/admin/blog/authors", "/admin/guides", "/admin/case-studies", "/admin/glossary", "/admin/help", "/admin/media", "/admin/media-kit", "/admin/newsletter"] },
+  { name: "SEO", hrefs: ["/admin/seo", "/admin/seo/site-pages", "/admin/seo/keywords", "/admin/seo/redirects", "/admin/seo/sitemap", "/admin/seo/audit", "/admin/seo/search-console"] },
+  { name: "Assistant & Messaging", hrefs: ["/admin/beigepilot", "/admin/popups", "/admin/system-emails"] },
+  { name: "Website", hrefs: ["/admin/website/social-links", "/admin/website/ai-platforms", "/admin/website/ai-information", "/admin/settings"] },
+];
 
 const TITLES: Record<string, string> = Object.fromEntries(NAV.map(([l, h]) => [h, l]));
 
@@ -63,42 +75,64 @@ export function AdminShell({ email, role = "admin", logout, pendingPartners = 0,
     try { return typeof localStorage !== "undefined" && localStorage.getItem("admin-collapsed") === "1"; } catch { return false; }
   });
   const [open, setOpen] = useState(false);
+  const [shut, setShut] = useState<Record<string, boolean>>({});
   const [prev, setPrev] = useState(path);
   if (prev !== path) { setPrev(path); setOpen(false); }
   const toggle = () => setCollapsed((c) => { try { localStorage.setItem("admin-collapsed", c ? "0" : "1"); } catch { /* ignore */ } return !c; });
 
   if (path === "/admin/login") return <main className="mx-auto w-full max-w-md px-5 py-16">{children}</main>;
 
-  const title = TITLES[path] ?? NAV.find(([, h]) => h !== "/admin" && path.startsWith(h))?.[0] ?? "Admin";
-  const active = (h: string) => (h === "/admin" ? path === "/admin" : h === "/admin/blog" ? path.startsWith(h) && !path.startsWith("/admin/blog/authors") : path.startsWith(h));
+  const best = NAV.filter(([, h]) => (h === "/admin" ? path === "/admin" : path === h || path.startsWith(h + "/"))).sort((x, y) => y[1].length - x[1].length)[0]?.[1];
+  const title = TITLES[best ?? ""] ?? "Admin";
+  const active = (h: string) => h === best;
+  const allowed = (href: string) => role === "admin" || href === "/admin/blog" || href === "/admin/media";
+  const linkOf = (href: string, compact: boolean) => {
+    const [label, , Icon] = NAV.find(([, h]) => h === href)!;
+    return (
+      <li key={href}>
+        <Link href={href} prefetch={false} title={label} aria-current={active(href) ? "page" : undefined}
+          className={`relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-purple-600 ${active(href) ? "bg-forest-100 !text-forest-900" : "text-sand-200 hover:bg-forest-700 hover:text-sand-50"}`}>
+          <Icon className="size-5 shrink-0" aria-hidden />
+          <span className={compact ? "sr-only" : ""}>{label}</span>
+          {href === "/admin/partner-requests" && pendingPartners > 0 && (
+            <span className={`ml-auto grid min-w-5 place-items-center rounded-full bg-purple-600 px-1.5 text-xs font-bold leading-5 text-white ${compact ? "absolute right-1.5 top-1" : ""}`}><span className="sr-only">Pending: </span>{pendingPartners}</span>
+          )}
+        </Link>
+      </li>
+    );
+  };
 
   const links = (compact: boolean) => (
-    <ul className="space-y-1">
-      {NAV.filter(([, href]) => role === "admin" || href === "/admin/blog" || href === "/admin/media").map(([label, href, Icon]) => (
-        <li key={href}>
-          <Link href={href} prefetch={false} title={label} aria-current={active(href) ? "page" : undefined}
-            className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-purple-600 ${active(href) ? "bg-forest-100 text-forest-900" : "text-sand-200 hover:bg-forest-700 hover:text-sand-50"} ${active(href) ? "!text-forest-900" : ""}`}>
-            <Icon className="size-5 shrink-0" aria-hidden />
-            <span className={compact ? "sr-only" : ""}>{label}</span>
-            {href === "/admin/partner-requests" && pendingPartners > 0 && (
-              <span className={`ml-auto grid min-w-5 place-items-center rounded-full bg-purple-600 px-1.5 text-xs font-bold leading-5 text-white ${compact ? "absolute right-1.5 top-1" : ""}`}><span className="sr-only">Pending: </span>{pendingPartners}</span>
-            )}
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-1">
+      {GROUPS.map((g) => {
+        const hrefs = g.hrefs.filter(allowed);
+        if (!hrefs.length) return null;
+        if (!g.name || compact) return <ul key={g.name || "top"} className="space-y-0.5">{hrefs.map((h) => linkOf(h, compact))}</ul>;
+        const hasActive = hrefs.some(active);
+        const isOpen = hasActive || !shut[g.name];
+        return (
+          <section key={g.name}>
+            <button type="button" aria-expanded={isOpen} onClick={() => setShut((m) => ({ ...m, [g.name]: isOpen }))}
+              className="mt-3 flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-xs font-bold text-forest-300 hover:text-sand-50 focus-visible:outline-2 focus-visible:outline-purple-600">
+              {g.name}<ChevronDown className={`size-4 transition-transform ${isOpen ? "" : "-rotate-90"}`} aria-hidden />
+            </button>
+            {isOpen && <ul className="space-y-0.5">{hrefs.map((h) => linkOf(h, false))}</ul>}
+          </section>
+        );
+      })}
+    </div>
   );
 
   return (
     <ToastProvider>
       <div className="flex min-h-screen bg-sand-50">
         <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col bg-forest-900 p-3 transition-[width] duration-200 lg:flex ${collapsed ? "w-[4.5rem]" : "w-64"}`}>
-          <Link href="/admin" prefetch={false} className="mb-6 flex items-center gap-2 px-3 py-2 text-sand-50">
+          <Link href="/admin" prefetch={false} className="mb-3 flex shrink-0 items-center gap-2 px-3 py-2 text-sand-50">
             <span className="grid size-8 place-items-center rounded-lg bg-sand-50 font-black text-forest-900">B</span>
             {!collapsed && <span className="display text-2xl text-sand-50">BeigeLeads</span>}
           </Link>
-          <nav aria-label="Admin" className="flex-1">{links(collapsed)}</nav>
-          <button type="button" onClick={toggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-sand-200 hover:bg-forest-700 focus-visible:outline-2 focus-visible:outline-purple-600">
+          <nav aria-label="Admin" className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin] [scrollbar-color:var(--color-forest-500)_transparent]">{links(collapsed)}</nav>
+          <button type="button" onClick={toggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="mt-2 flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-sand-200 hover:bg-forest-700 focus-visible:outline-2 focus-visible:outline-purple-600">
             {collapsed ? <ChevronsRight className="size-5" aria-hidden /> : <><ChevronsLeft className="size-5" aria-hidden /> Collapse</>}
           </button>
         </aside>
@@ -111,7 +145,7 @@ export function AdminShell({ email, role = "admin", logout, pendingPartners = 0,
                 <span className="display text-2xl text-sand-50">BeigeLeads</span>
                 <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="text-sand-50"><X className="size-6" /></button>
               </div>
-              <nav aria-label="Admin">{links(false)}</nav>
+              <nav aria-label="Admin" className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">{links(false)}</nav>
             </aside>
           </div>
         )}

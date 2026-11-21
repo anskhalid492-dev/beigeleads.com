@@ -1288,3 +1288,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 127. Bottom footer inside the green footer (21 Nov 2026) — amends section 126
 
 - Owner request: the new section is part of the dark green footer (no separate cream strip). `components/layout/bottom-footer.tsx` now inherits the green background (`border-t border-forest-700`, sand text). Order: BeigeBrand logo (dark variant) + tagline "Pay once. Own the list.", social icons (only when links exist), Terms of Use / Privacy Policy / "Hey AI, learn about us", `© 2026 BeigeLeads®`; "Ask AI about BeigeLeads" + buttons on the right (desktop), stacked on mobile. Browser-checked at 1280 and 375 px, no horizontal scroll.
+
+## 128. Admin sidebar groups (21 Nov 2026) — amends section 40
+
+- `components/admin/shell.tsx`: the flat list is now nine groups (Overview, Sales & Orders, Catalog, Services, Inbox, Content, SEO, Assistant & Messaging, Website) with collapsible headings (the group holding the current page stays open) and a scrollable nav (`overflow-y-auto`, header and Collapse button fixed) on desktop and in the mobile drawer. The active item is the longest matching path (no more two highlighted items), which also drives the page title. Collapsed icon mode shows plain icons. Not browser-checked behind Access.
