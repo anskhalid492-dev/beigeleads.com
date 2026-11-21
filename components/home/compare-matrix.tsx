@@ -7,13 +7,18 @@ import { CHECKED_LABEL } from "@/lib/compare-data";
  * pages, as recorded in lib/compare-data.ts (sources + CHECKED date). No accuracy, quality or "better than" claims;
  * where a vendor's page said nothing the cell is left out of the text (never guessed).
  */
+// Slugs that have an official logo file at public/compare-logos/<slug>.svg. Add a slug here after adding its file;
+// the name is shown for any provider without one.
+const LOGOS = new Set<string>([]);
+const hasLogo = (slug: string) => LOGOS.has(slug);
+
 type Vendor = { slug: string; name: string; kind: string; cells: [string, string, string, string, string] };
 
 const ROWS = ["How you pay", "Try it first", "Credits and limits", "Plan detail", "Built for"] as const;
 
 const US_CELLS: Vendor["cells"] = [
   "One list, once. Nothing renews and there is nothing to cancel.",
-  "Free masked sample on every list page, no payment details.",
+  "Free sample on every list page, no payment details.",
   "No seats and no credits. You get the whole file.",
   "Ready-made US lists; a custom list request if you do not see yours.",
   "A list for one campaign, paid once in crypto with no account.",
@@ -71,7 +76,12 @@ export function CompareMatrix() {
                 </th>
                 {VENDORS.map((v) => (
                   <th key={v.slug} scope="col" className="px-5 py-5 align-bottom">
-                    <span className="display block text-2xl leading-none text-forest-900">{v.name}</span>
+                    {hasLogo(v.slug) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={`/compare-logos/${v.slug}.svg`} alt={v.name} className="h-7 w-auto max-w-[8rem] object-contain object-left" />
+                    ) : (
+                      <span className="display block text-2xl leading-none text-forest-900">{v.name}</span>
+                    )}
                     <span className="mt-1 block text-sm font-normal text-forest-700">{v.kind}</span>
                   </th>
                 ))}
@@ -109,7 +119,7 @@ export function CompareMatrix() {
           </div>
           <div className="rounded-[1.4rem] bg-forest-900 p-6 text-sand-100">
             <h3 className="text-lg font-bold text-sand-50">BeigeLeads fits better if</h3>
-            <p className="mt-2">You need a list for one campaign, want to inspect a masked sample first, and prefer to pay once instead of renewing.</p>
+            <p className="mt-2">You need a list for one campaign, want to inspect a sample first, and prefer to pay once instead of renewing.</p>
           </div>
         </div>
 
