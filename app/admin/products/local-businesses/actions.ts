@@ -43,12 +43,12 @@ export async function rollbackLocalAction(batch: string): Promise<{ ok: boolean;
   return { ok: true, message: `${n} product(s) went back to their previous category.` };
 }
 
-export async function createUsPagesAction(): Promise<{ ok: boolean; message: string }> {
+export async function createUsPagesAction(offset = 0): Promise<{ ok: boolean; message: string; next?: number | null; total?: number; created?: number; existing?: number; failed?: number }> {
   const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
   try {
-    const r = await createUsLocalPages(db());
-    await audit(a.email, `US local pages: ${r.created} created, ${r.existing} existing, ${r.failed} failed`);
-    await refresh();
-    return { ok: true, message: `${r.created} draft landing page(s) created, ${r.existing} already existed${r.failed ? `, ${r.failed} failed` : ""}. Add counts, a delivery link and a sample in Products, then publish.` };
+    const r = await createUsLocalPages(db(), { offset: Math.max(0, Math.floor(Number(offset) || 0)), limit: 25 });
+    if (r.next === null || r.created) await audit(a.email, `US local pages batch from ${offset}: ${r.created} created, ${r.existing} existing, ${r.failed} failed`);
+    if (r.next === null) await refresh();
+    return { ok: true, message: "", next: r.next, total: r.total, created: r.created, existing: r.existing, failed: r.failed };
   } catch (e) { return { ok: false, message: `Creating the pages failed: ${e instanceof Error ? e.message.slice(0, 160) : "database error"}. Run migrations 0035 and 0036 first.` }; }
 }

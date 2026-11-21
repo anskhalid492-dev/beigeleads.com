@@ -25,7 +25,20 @@ export function Runner() {
   async function undo(b: string) { setBusy(true); const r = await rollbackLocalAction(b); setMsg(r.message); await load(); }
   const toggle = (s: string) => setSel((p) => { const n = new Set(p); if (n.has(s)) n.delete(s); else n.add(s); return n; });
   const t = d?.totals;
-  async function createPages() { setBusy(true); const r = await createUsPagesAction(); setMsg(r.message); await load(); }
+  async function createPages() {
+    setBusy(true); let off = 0, c = 0, e = 0, f = 0, total = 0;
+    try {
+      for (;;) {
+        const r = await createUsPagesAction(off);
+        if (!r.ok) { setMsg(`${r.message} (${c} created so far)`); setBusy(false); return; }
+        c += r.created ?? 0; e += r.existing ?? 0; f += r.failed ?? 0; total = r.total ?? total;
+        setMsg(`Working: ${Math.min(r.next ?? total, total)} of ${total} types checked, ${c} created...`);
+        if (r.next === null) break; if (r.next === undefined) break; off = r.next;
+      }
+      setMsg(`Done: ${c} draft landing page(s) created, ${e} already existed${f ? `, ${f} failed` : ""}. Add counts, a delivery link and a sample in Products, then publish.`);
+    } catch { setMsg(`Stopped early (${c} created). Press the button again; finished types are skipped.`); }
+    await load();
+  }
 
   return (
     <div className="space-y-5">
@@ -33,7 +46,7 @@ export function Runner() {
       {msg && <p className="rounded-xl border border-sand-200 bg-white p-3 text-sm" role="status">{msg}</p>}
       <div className="rounded-xl border border-sand-200 bg-white p-4">
         <h2 className="font-semibold">Create US local-business landing pages</h2>
-        <p className="mt-1 text-sm text-forest-700">Creates one DRAFT list page per US local-business type (restaurants, salons, plumbers, dentists and more) in this category, each with the three packages and no record count. Types that already exist are skipped. Add counts, samples and delivery links in Products, then publish.</p>
+        <p className="mt-1 text-sm text-forest-700">Creates one DRAFT list page per US local-business type (about 1,100: the curated types plus the 1,000 most popular categories from your sheet) in this category, each with the three packages and no record count. Types that already exist are skipped. Add counts, samples and delivery links in Products, then publish.</p>
         <button disabled={busy} onClick={createPages} className="mt-3 rounded-lg bg-forest-900 px-3 py-1.5 text-sm text-sand-50 disabled:opacity-50">Create the pages</button>
       </div>
       {t && (

@@ -20,7 +20,14 @@ export const US_LOCAL_TYPES: { industry: string; types: string[] }[] = [
   { industry: "Other local service businesses", types: ["Child Care Centers", "Driving Schools", "Tutoring Centers", "Funeral Homes", "Laundromats and Dry Cleaners", "Photographers", "Print Shops", "Travel Agencies", "Self Storage Facilities", "Preschools", "Music Schools", "Wedding Planners", "Event Planners", "Sign Shops", "Tailors and Alterations", "Interior Designers", "Architects", "Arborists", "Art Galleries", "Auction Houses"] },
 ];
 
-export const allUsTypes = () => US_LOCAL_TYPES.flatMap((g) => g.types.map((t) => ({ industry: g.industry, type: t })));
+import { POPULAR_US_TYPES } from "@/lib/import/us-local-popular";
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, "").replace(/s$/, "");
+/** Curated types first, then the 1,000 most popular categories from the owner's sheet (industry grouping is derived from the name by classifyLocal). */
+export const allUsTypes = () => {
+  const base = US_LOCAL_TYPES.flatMap((g) => g.types.map((t) => ({ industry: g.industry, type: t })));
+  const seen = new Set(base.map((b) => norm(b.type)));
+  return [...base, ...POPULAR_US_TYPES.filter((t) => !seen.has(norm(t))).map((t) => ({ industry: "Local services", type: t }))];
+};
 
 const PACKAGES = [
   { name: "Starter" as const, records: 100_000, priceUsdCents: 9900 },

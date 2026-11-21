@@ -89,15 +89,16 @@ export async function movedIds(db: Db): Promise<number[]> {
 }
 
 /** Create the US local-business landing pages as DRAFT products (section 137). Idempotent: a type whose list name already exists is skipped. */
-export async function createUsLocalPages(db: Db): Promise<{ created: number; existing: number; failed: number; slugs: string[] }> {
+export async function createUsLocalPages(db: Db, opts: { offset?: number; limit?: number } = {}): Promise<{ created: number; existing: number; failed: number; slugs: string[]; total: number; next: number | null }> {
   const { allUsTypes, usLocalProduct } = await import("./us-local-types");
   const { createProduct } = await import("./store");
   let created = 0, existing = 0, failed = 0; const slugs: string[] = [];
-  for (const t of allUsTypes()) {
+  const all = allUsTypes(); const start = opts.offset ?? 0; const end = Math.min(all.length, opts.limit ? start + opts.limit : all.length);
+  for (const t of all.slice(start, end)) {
     const p = usLocalProduct(t.type);
     const dup = await db.select({ id: schema.catalogProducts.id }).from(schema.catalogProducts).where(eq(schema.catalogProducts.name, p.name)).limit(1);
     if (dup.length) { existing++; continue; }
     try { const r = await createProduct(db, p); if (r.ok && r.slug) { created++; slugs.push(r.slug); } else { failed++; console.error(r.message); } } catch (e) { failed++; console.error(String(e).slice(0, 300)); }
   }
-  return { created, existing, failed, slugs };
+  return { created, existing, failed, slugs, total: all.length, next: end < all.length ? end : null };
 }
