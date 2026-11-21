@@ -246,7 +246,7 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
 export async function uniqueSlug(db: Db, base: string, except?: string): Promise<string> {
   const root = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 140) || "product";
   const taken = new Set<string>();
-  const like_ = `${root}%`;
+  const like_ = `${root.slice(0, 40)}%`; // D1 limits a LIKE pattern to 50 bytes
   for (const r of await db.select({ s: schema.catalogProducts.slug }).from(schema.catalogProducts).where(like(schema.catalogProducts.slug, like_))) if (r.s !== except) taken.add(r.s);
   // An old slug of ANOTHER product stays reserved (it redirects there); the product's own old slugs may be reclaimed.
   try { for (const r of await db.select({ s: schema.slugAliases.oldSlug, n: schema.slugAliases.newSlug }).from(schema.slugAliases).where(like(schema.slugAliases.oldSlug, like_))) if (r.n !== except) taken.add(r.s); } catch { /* migration 0036 not applied */ }

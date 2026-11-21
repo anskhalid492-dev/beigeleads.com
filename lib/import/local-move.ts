@@ -97,7 +97,7 @@ export async function createUsLocalPages(db: Db): Promise<{ created: number; exi
     const p = usLocalProduct(t.type);
     const dup = await db.select({ id: schema.catalogProducts.id }).from(schema.catalogProducts).where(eq(schema.catalogProducts.name, p.name)).limit(1);
     if (dup.length) { existing++; continue; }
-    try { const r = await createProduct(db, p); if (r.ok && r.slug) { created++; slugs.push(r.slug); } else failed++; } catch { failed++; }
+    try { const r = await createProduct(db, p); if (r.ok && r.slug) { created++; slugs.push(r.slug); } else { failed++; console.error(r.message); } } catch (e) { failed++; console.error(String(e).slice(0, 300)); }
   }
   return { created, existing, failed, slugs };
 }
