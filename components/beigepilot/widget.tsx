@@ -9,6 +9,8 @@ import { Pilo, type Mood } from "./pilo";
 import { useGaze } from "./use-gaze";
 import type { Cfg, Launch } from "./panel";
 import { OPEN_EVENT, type OpenDetail } from "./open";
+import { useProactive } from "./use-proactive";
+import { ProBubble } from "./proactive-bubble";
 
 const Panel = dynamic(() => import("./panel").then((m) => m.BeigePilotPanel), { ssr: false });
 type Pose = "away" | "rest" | "up" | "duck" | "leap" | "return";
@@ -75,6 +77,15 @@ export function BeigePilot() {
     return () => { clearTimeout(t); timers.forEach(clearTimeout); };
   }, [enabled, open]);
 
+  const pro = useProactive({ cfg: cfg?.proactive, path, active: enabled, open });
+  // A proactive message arrives: Pilo gives one small wave, no more.
+  useEffect(() => {
+    if (!pro.bubble) return;
+    const a = setTimeout(() => setMood((m) => (m === "idle" ? "wave" : m)), 0);
+    const t = setTimeout(() => setMood((m) => (m === "wave" ? "idle" : m)), 1800);
+    return () => { clearTimeout(a); clearTimeout(t); };
+  }, [pro.bubble]);
+
   useGaze(rig, enabled && !open && !hidden, 420);
 
   const enter = useCallback((e: React.PointerEvent | React.FocusEvent) => {
@@ -108,6 +119,7 @@ export function BeigePilot() {
     setMood("excited"); setPose("leap");
     setTimeout(() => setHidden(true), 560);
   };
+  const openWith = (seed: string | null) => { setLaunch({ n: Date.now(), seed: seed ?? undefined }); openIt(); };
   const closed = () => {
     setOpen(false); setHidden(false); setPose("return"); setMood("wave");
     setTimeout(() => { hot.current = false; setPose("rest"); setMood("idle"); btn.current?.focus(); }, 950);
@@ -116,6 +128,10 @@ export function BeigePilot() {
   return (
     <>
       {mounted && cfg && <Panel cfg={cfg} path={path} open={open} launch={launch} onClosed={closed} />}
+      {pro.bubble && !open && !hidden && (
+        <ProBubble name={name} text={pro.bubble.text} cta={pro.bubble.cta} intensity={cfg?.motion} onCta={() => openWith(pro.click())} onClose={pro.dismiss}
+          className={`${side} ${onCart ? "bottom-[10.5rem] lg:bottom-[7rem]" : "bottom-[7rem]"}`} />
+      )}
       {!hidden && (
         <button ref={btn} type="button" data-pose={pose} onClick={openIt} aria-label={`Open ${name}, the BeigeLeads assistant`}
           onPointerEnter={enter} onPointerLeave={leave} onFocus={enter} onBlur={leave}

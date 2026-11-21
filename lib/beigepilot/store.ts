@@ -65,7 +65,7 @@ export async function getSettings(env: Env): Promise<{ ready: boolean; s: Settin
 export async function saveSettings(env: Env, patch: Partial<Record<keyof Settings | `sa${string}`, string>>): Promise<void> {
   const st = env.DB.prepare("INSERT INTO beigepilot_settings (key, value, updated_at) VALUES (?1, ?2, unixepoch()) ON CONFLICT(key) DO UPDATE SET value = ?2, updated_at = unixepoch()");
   await env.DB.batch(Object.entries(patch).map(([k, v]) => st.bind(k, v ?? "")));
-  try { await env.CACHE.delete("beigepilot:config:v3"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v4"); } catch { /* optional */ }
 }
 
 export type ProviderRow = { id: ProviderId; hasKey: boolean; hint: string; model: string; temperature: number; maxTokens: number; priceIn: number | null; priceOut: number | null };
@@ -85,12 +85,12 @@ export async function saveProvider(env: Env, id: ProviderId, v: { apiKey?: strin
   await env.DB.prepare(`INSERT INTO beigepilot_providers (id, enc_key, key_hint, model, temperature, max_tokens, price_in, price_out, updated_at) VALUES (?1, COALESCE(?2, ''), ?3, ?4, ?5, ?6, ?7, ?8, unixepoch())
     ON CONFLICT(id) DO UPDATE SET enc_key = COALESCE(?2, enc_key), key_hint = ?3, model = ?4, temperature = ?5, max_tokens = ?6, price_in = ?7, price_out = ?8, updated_at = unixepoch()`)
     .bind(id, enc, hint, v.model, v.temperature, v.maxTokens, v.priceIn, v.priceOut).run();
-  try { await env.CACHE.delete("beigepilot:config:v3"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v4"); } catch { /* optional */ }
 }
 
 export async function removeProviderKey(env: Env, id: ProviderId): Promise<void> {
   await env.DB.prepare("UPDATE beigepilot_providers SET enc_key = '', key_hint = '', updated_at = unixepoch() WHERE id = ?1").bind(id).run();
-  try { await env.CACHE.delete("beigepilot:config:v3"); } catch { /* optional */ }
+  try { await env.CACHE.delete("beigepilot:config:v4"); } catch { /* optional */ }
 }
 
 /** The decrypted key, server-side only. null = no key saved, or the secret changed so it cannot be read. */

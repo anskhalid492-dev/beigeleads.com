@@ -13,16 +13,18 @@ import { ChatBundle, ChatProductCard } from "./product-card";
 import { useGaze, setGaze } from "./use-gaze";
 import { Pilo, type Intensity, type Mood } from "./pilo";
 
-export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: string; humor: "professional" | "friendly" | "playful"; motion: Intensity; launcher: "right" | "left"; suggestions: string[]; sales?: { finder: boolean; cart: boolean; budget: boolean; handoff: boolean } };
+export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: string; humor: "professional" | "friendly" | "playful"; motion: Intensity; launcher: "right" | "left"; suggestions: string[]; sales?: { finder: boolean; cart: boolean; budget: boolean; handoff: boolean }; proactive?: { enabled: boolean; delays: number[]; bubbleSeconds: number; mobile: boolean } };
 type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; bundle?: Bundle | null; sources?: Source[]; handoff?: boolean; miss?: boolean };
 type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; bundle?: Bundle | null; sources?: Source[]; handoff?: string | null; miss?: boolean; error?: string };
 
 const KEY = "bp-chat-v2";
+// A message Pilo wrote first (from a proactive bubble) is shown in the chat but not sent: providers need the visitor to speak first.
+const dropLeadingAssistant = (l: Msg[]) => { let i = 0; while (i < l.length && l[i].role === "assistant") i++; return l.slice(i); };
 const CID = "bp-cid-v1";
 const SEARCH_TOOLS = new Set(["searchProducts", "getProductDetails", "getProductPackages", "getRelatedProducts", "getProductVerificationInfo", "showProductCards"]);
 function chatId(): string { try { let c = sessionStorage.getItem(CID); if (!c) { c = crypto.randomUUID().replace(/-/g, "").slice(0, 24); sessionStorage.setItem(CID, c); } return c; } catch { return `nostorage${Math.random().toString(36).slice(2, 12)}`; } }
 
-export type Launch = { n: number; ask?: string; action?: "support" };
+export type Launch = { n: number; ask?: string; action?: "support"; seed?: string };
 
 export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cfg; path: string; open: boolean; launch?: Launch | null; onClosed: (clear: boolean) => void }) {
   const cart = useCart();
@@ -85,7 +87,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
     try {
       const res = await fetch("/api/beigepilot/chat", {
         method: "POST", headers: { "content-type": "application/json", accept: "application/x-ndjson, application/json" },
-        body: JSON.stringify({ cid: chatId(), messages: list.slice(-12).map((m) => ({ role: m.role, text: m.text.slice(0, 1500) })), path, cart: cart.slice(0, 10) }),
+        body: JSON.stringify({ cid: chatId(), messages: dropLeadingAssistant(list.slice(-12)).map((m) => ({ role: m.role, text: m.text.slice(0, 1500) })), path, cart: cart.slice(0, 10) }),
       });
       if ((res.headers.get("content-type") ?? "").includes("ndjson") && res.body) {
         const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
@@ -109,6 +111,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
       const hasCards = !!final.cards?.length;
       setMsgs([...list, { role: "assistant", text: final.text, cards: final.cards, bundle: final.bundle, sources: final.sources, handoff: !!final.handoff, miss: !!final.miss && !hasCards }]);
       setOnline(true);
+      if (hasCards) window.dispatchEvent(new Event("bl:pilo-recs"));
       if (hasCards) doFlash("found", 2200); else if (final.miss) doFlash("confused", 2600);
     } else {
       setOnline(false);
@@ -119,6 +122,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
   const send = useCallback((raw: string) => {
     const t = raw.trim();
     if (!t || busy) return;
+    if (!msgs.some((m) => m.role === "user")) window.dispatchEvent(new Event("bl:pilo-chat-started"));
     const next: Msg[] = [...msgs, { role: "user", text: t }];
     setMsgs(next); setText(""); doFlash(isCheer(t) ? "giggle" : "nod", isCheer(t) ? 1800 : 600); setForm(null);
     void run(next);
@@ -153,8 +157,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
   const doneLaunch = useRef(0);
   useEffect(() => {
     if (!launch || doneLaunch.current === launch.n) return;
-    doneLaunch.current = launch.n;
-    const t = setTimeout(() => { if (launch.ask) send(launch.ask); else if (launch.action === "support") pickChip({ action: "support" }); else input.current?.focus(); }, 450);
+    const t = setTimeout(() => { doneLaunch.current = launch.n; if (launch.seed) { const seed = launch.seed; setMsgs((m) => (m[m.length - 1]?.text === seed ? m : [...m, { role: "assistant", text: seed }])); input.current?.focus(); } else if (launch.ask) send(launch.ask); else if (launch.action === "support") pickChip({ action: "support" }); else input.current?.focus(); }, 450);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [launch]);
@@ -200,8 +203,8 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
               <span className="mt-0.5 shrink-0"><Pilo crop="avatar" mood={m.cards?.length && i === lastAssistant ? "found" : m.miss && i === lastAssistant ? "confused" : "idle"} size={34} intensity={cfg.motion} animated={i === lastAssistant} /></span>
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="w-fit max-w-full rounded-2xl rounded-tl-md bg-sand-100 px-3 py-2 text-forest-900"><Markup text={m.text} /></div>
-                {m.bundle && <ChatBundle b={m.bundle} onAdded={() => doFlash("success", 2400)} />}
-                {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} onAdded={() => doFlash("success", 2400)} onPick={() => doFlash("point", 1500)} />)}
+                {m.bundle && <ChatBundle b={m.bundle} onAdded={() => { window.dispatchEvent(new Event("bl:pilo-cart-add")); doFlash("success", 2400); }} />}
+                {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} onAdded={() => { window.dispatchEvent(new Event("bl:pilo-cart-add")); doFlash("success", 2400); }} onPick={() => doFlash("point", 1500)} />)}
                 {(i === lastAssistant && !m.rated) || m.handoff ? (
                   <div className="flex flex-wrap items-center gap-1 text-xs">
                     {i === lastAssistant && !m.rated && <span role="group" aria-label="Rate this answer" className="flex">

@@ -6,6 +6,7 @@ export type CartEvent = "add_to_cart" | "remove_from_cart" | "view_cart" | "begi
  * Global Privacy Control or Do Not Track.
  */
 export function trackCart(event: CartEvent, items: number): void {
+  if (event === "add_to_cart") { try { window.dispatchEvent(new Event("bl:pilo-cart-add")); } catch { /* ignore */ } } // lets the assistant attribute it to its last message (same session only)
   try {
     const n = navigator as Navigator & { globalPrivacyControl?: boolean };
     if (n.globalPrivacyControl || n.doNotTrack === "1") return;

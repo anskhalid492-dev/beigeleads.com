@@ -90,6 +90,7 @@ export function Copilot() {
       return;
     }
     setValue(t);
+    window.dispatchEvent(new CustomEvent("bl:pilo-search", { detail: { q: t } })); // lets the assistant know the real search term
     setSubmitted(t);
     search(t);
     setOpen(false);
