@@ -9,6 +9,7 @@ import { chipsFor, isCheer } from "@/lib/beigepilot/suggest";
 import { ApiForm } from "@/components/forms/api-form";
 import { Markup } from "./markup";
 import { ChatProductCard } from "./product-card";
+import { useGaze, setGaze } from "./use-gaze";
 import { Pilo, type Intensity, type Mood } from "./pilo";
 
 export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: string; humor: "professional" | "friendly" | "playful"; motion: Intensity; launcher: "right" | "left"; suggestions: string[] };
@@ -37,6 +38,9 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
   const end = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const name = cfg.name || "Pilo";
+  const hero = useRef<HTMLDivElement>(null);
+  const [landing, setLanding] = useState(false);
+  const [openN, setOpenN] = useState(0);
 
   const doFlash = useCallback((m: Mood, ms: number) => { setFlash(m); clearTimeout(flashTimer.current); flashTimer.current = setTimeout(() => setFlash(null), ms); }, []);
   useEffect(() => () => clearTimeout(flashTimer.current), []);
@@ -51,8 +55,9 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
   // Opening: wave hello, move focus into the panel (keyboard only gets the field on devices with a real pointer).
   useEffect(() => {
     if (!open) return;
-    const t = setTimeout(() => { doFlash("wave", 2300); if (window.matchMedia("(pointer: fine)").matches) input.current?.focus(); else panel.current?.focus(); }, 0);
-    return () => clearTimeout(t);
+    const lt = setTimeout(() => setLanding(false), 1000);
+    const t = setTimeout(() => { setOpenN((n) => n + 1); setLanding(true); doFlash("wave", 2300); if (window.matchMedia("(pointer: fine)").matches) input.current?.focus(); else panel.current?.focus(); }, 0);
+    return () => { clearTimeout(t); clearTimeout(lt); };
   }, [open, doFlash]);
 
   // Mobile: follow the visual viewport so the composer stays above the on-screen keyboard.
@@ -125,10 +130,14 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
 
   const searching = busy && SEARCH_TOOLS.has(tool);
   const mood: Mood = closing ? "bye" : flash ?? (busy ? (searching ? "search" : "think") : err ? "error" : text.trim() ? "curious" : "idle");
-  const chips = useMemo(() => chipsFor(cfg.suggestions, name), [cfg.suggestions, name]);
+  const chips = useMemo(() => chipsFor(cfg.suggestions), [cfg.suggestions]);
   const last = msgs[msgs.length - 1];
   const status = busy ? (searching ? "Looking through the lists" : "Thinking") : online ? "Online" : "Having trouble";
   const caption = searching ? "Looking through the lists" : "Thinking";
+
+  useGaze(hero, open && msgs.length === 0, 520);
+  // While the visitor types, Pilo looks down at the box.
+  useEffect(() => { if (text.trim()) setGaze(hero.current, 0, 0.9); }, [text]);
 
   const pickChip = (c: { ask?: string; focus?: boolean }) => { if (c.ask) send(c.ask); else input.current?.focus(); };
   const lastAssistant = msgs.length - 1;
@@ -138,7 +147,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
       onKeyDown={(e) => { if (e.key === "Escape") { if (info) setInfo(false); else close(false); } }}
       className={`${closing ? "bp-close" : "bp-open"} fixed inset-0 z-50 flex flex-col overflow-hidden bg-sand-50 outline-none sm:inset-auto sm:bottom-5 sm:h-[min(620px,calc(100vh-2.5rem))] sm:w-[380px] sm:rounded-[1.75rem] sm:border sm:border-sand-300 sm:shadow-[0_24px_60px_-24px_rgba(15,42,29,.5)] ${cfg.launcher === "left" ? "sm:left-5" : "sm:right-5"}`}>
       <header className="flex items-center gap-2 px-3 py-2">
-        {msgs.length > 0 && <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand-100"><Pilo mood={mood} size={36} intensity={cfg.motion} /></span>}
+        {msgs.length > 0 && <span className="shrink-0"><Pilo crop="avatar" mood={mood} size={42} intensity={cfg.motion} /></span>}
         <div className="min-w-0 flex-1 pl-1">
           {msgs.length > 0 && <p className="display text-[1.1rem] leading-none text-forest-900">{name}</p>}
           <p className="flex items-center gap-1.5 text-xs" aria-live="polite"><span aria-hidden className={`size-1.5 rounded-full ${online ? "bg-forest-500" : "bg-amber-500"}`} />{status}</p>
@@ -157,8 +166,8 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-2 text-[0.9rem] leading-snug" role="log" aria-live="polite" aria-relevant="additions">
         {msgs.length === 0 && !busy && (
           <div className="flex min-h-full flex-col items-center justify-center pb-6 text-center">
-            <Pilo mood={mood === "idle" ? "wave" : mood} size={150} intensity={cfg.motion} title={`${name}, your little BeigeLeads friend`} />
-            <h2 className="display mt-1 text-[1.9rem] leading-none text-forest-900">Hiii! 👋 I&apos;m {name}!</h2>
+            <div ref={hero} key={openN}><Pilo className={landing ? "pl-land" : ""} mood={landing ? "idle" : mood === "idle" ? "wave" : mood} size={176} intensity={cfg.motion} title={`${name}, your little BeigeLeads friend`} /></div>
+            <h2 className="display mt-1 text-[2rem] leading-none text-forest-900">Hiii! I&apos;m {name}!</h2>
             <p className="mt-2 text-[1.02rem] text-forest-700">{cfg.greeting}</p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {chips.map((c) => <button key={c.id} type="button" onClick={() => pickChip(c)} className="rounded-full border border-sand-300 bg-white px-3.5 py-1.5 text-[0.8rem] font-semibold text-forest-900 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-forest-500 focus-visible:outline-2 focus-visible:outline-purple-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0">{c.label}</button>)}
@@ -171,7 +180,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
             <div key={i} className="bp-msg ml-auto w-fit max-w-[84%] rounded-2xl rounded-br-md bg-forest-900 px-3 py-2 text-sand-50">{m.text}</div>
           ) : (
             <div key={i} className="bp-msg flex items-start gap-2">
-              <span className="mt-0.5 shrink-0"><Pilo mood={m.cards?.length && i === lastAssistant ? "found" : m.miss && i === lastAssistant ? "confused" : "idle"} size={30} intensity={cfg.motion} animated={i === lastAssistant} /></span>
+              <span className="mt-0.5 shrink-0"><Pilo crop="avatar" mood={m.cards?.length && i === lastAssistant ? "found" : m.miss && i === lastAssistant ? "confused" : "idle"} size={34} intensity={cfg.motion} animated={i === lastAssistant} /></span>
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="w-fit max-w-full rounded-2xl rounded-tl-md bg-sand-100 px-3 py-2 text-forest-900"><Markup text={m.text} /></div>
                 {m.cards?.map((c) => <ChatProductCard key={c.slug} c={c} onAdded={() => doFlash("success", 2400)} onPick={() => doFlash("point", 1500)} />)}
@@ -191,7 +200,7 @@ export function BeigePilotPanel({ cfg, path, open, onClosed }: { cfg: Cfg; path:
 
           {busy && (
             <div className="bp-msg flex items-center gap-2" role="status">
-              <span className="shrink-0"><Pilo mood={searching ? "search" : "think"} size={38} intensity={cfg.motion} /></span>
+              <span className="shrink-0"><Pilo crop="avatar" mood={searching ? "search" : "think"} size={40} intensity={cfg.motion} /></span>
               <span className="flex gap-1 rounded-2xl rounded-tl-md bg-sand-100 px-3.5 py-3" aria-hidden><i className="bp-dot" /><i className="bp-dot" style={{ animationDelay: ".15s" }} /><i className="bp-dot" style={{ animationDelay: ".3s" }} /></span>
               <span className="sr-only">{caption}</span>
             </div>

@@ -208,8 +208,8 @@ describe("BeigePilot widget suggestions and personality", () => {
   it("shows exactly three tiny welcome suggestions; two start a chat, one focuses the box", () => {
     expect(DEFAULT_CHIPS).toHaveLength(3);
     expect(DEFAULT_CHIPS.filter((c) => c.ask)).toHaveLength(2);
-    expect(DEFAULT_CHIPS.find((c) => c.focus)?.label).toBe("Ask Pilo");
-    expect(chipsFor([], "Kiko").map((c) => c.label)).toEqual(["Find contacts", "Explore lists", "Ask Kiko"]);
+    expect(DEFAULT_CHIPS.find((c) => c.focus)?.label).toBe("Ask anything");
+    expect(chipsFor([]).map((c) => c.label)).toEqual(["Find contacts", "Explore lists", "Ask anything"]);
   });
   it("admin suggestions replace the defaults (max 3) and each is a real message", () => {
     const c = chipsFor(["One", "Two", "Three", "Four"]);
