@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Check, FileText, ShoppingBag } from "lucide-react";
 import { DbBadge } from "@/components/shared/db-icon";
@@ -9,6 +10,7 @@ import type { Card } from "@/lib/beigepilot/tools";
 
 /** A real product from the catalog. "Get This List" uses the site's normal cart; nothing is bought here. */
 export function ChatProductCard({ c, onAdded, onPick }: { c: Card; onAdded?: () => void; onPick?: () => void }) {
+  const router = useRouter();
   const rec = c.packages.find((p) => p.highlighted) ?? c.packages[0];
   const [pkg, setPkg] = useState(rec?.name ?? "");
   const [added, setAdded] = useState<"" | "added" | "updated" | "full">("");
@@ -26,10 +28,10 @@ export function ChatProductCard({ c, onAdded, onPick }: { c: Card; onAdded?: () 
         </div>
       </div>
       {sellable ? (
-        <div className="mt-2.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label={`Package for ${c.name}`}>
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           {c.packages.map((p) => (
-            <button key={p.name} type="button" role="radio" aria-checked={pkg === p.name} onClick={() => { setPkg(p.name); onPick?.(); }}
-              className={`rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors ${pkg === p.name ? "border-forest-900 bg-forest-900 text-sand-50" : "border-sand-300 bg-sand-50 text-forest-900 hover:border-forest-900"}`}>
+            <button key={p.name} type="button" aria-label={`Buy ${c.name}, ${p.name} package, ${p.price}: go to checkout`} onClick={() => { setPkg(p.name); onPick?.(); const r = cartActions.add(c.slug, p.name); if (r === "full") { setAdded("full"); return; } onAdded?.(); router.push("/checkout/cart"); }}
+              className="rounded-full border border-forest-900 bg-forest-900 px-2.5 py-1 text-xs font-semibold text-sand-50 transition-colors hover:border-purple-600 hover:bg-purple-600">
               {p.name} · {p.price}
             </button>
           ))}
