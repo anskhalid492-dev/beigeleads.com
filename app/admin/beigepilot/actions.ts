@@ -6,6 +6,7 @@ import { getDbFromEnv, schema } from "@/lib/db";
 import { chat, type ChatOut } from "@/lib/beigepilot/chat";
 import { isProviderId, listModels, PROVIDER_IDS, ProviderError } from "@/lib/beigepilot/providers";
 import { getProviderKey, removeProviderKey, saveProvider, saveSettings } from "@/lib/beigepilot/store";
+import { refreshPilo } from "@/lib/beigepilot/sync";
 import { isRateLimited } from "@/lib/forms/rate-limit";
 
 async function actor(): Promise<string | null> { try { return (await requireAdmin()).email; } catch { return null; } }
@@ -185,4 +186,13 @@ export async function deleteAllConversationsAction(form: FormData): Promise<void
   const env = getCloudflareContext().env;
   await deleteAllConversations(env); await audit(env, who, "conversation", "deleted all");
   revalidatePath("/admin/beigepilot/conversations");
+}
+
+/** Clears every cache Pilo reads Help, Glossary and Knowledge from, so the next question uses the newest published content. */
+export async function refreshPiloAction(): Promise<void> {
+  const who = await actor(); if (!who) return;
+  const env = getCloudflareContext().env;
+  await refreshPilo(env);
+  await audit(env, who, "contentSync", "refresh");
+  revalidatePath("/admin/beigepilot/sync");
 }

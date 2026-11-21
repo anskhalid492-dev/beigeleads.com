@@ -95,14 +95,15 @@ export const articlesA: readonly HelpArticle[] = [
   {
     category: "products", slug: "whats-in-a-list",
     title: "What information is included in a business contact list?",
-    description: "Each record has business name, address, city, country, phone, email and website.",
+    description: "Each list page shows the data fields in its files, from business name and address to phone, email and website.",
     keywords: ["fields", "columns", "data included", "email", "phone", "website", "address"],
     body: [
-      ["p", "Every list contains these fields for each business:"],
-      ["ul", ["Business name", "Address", "City", "Country", "Phone", "Email", "Website"]],
-      ["p", "The list page shows exactly which fields that list includes. If you need other fields, say so in a [custom list request](/custom-list)."],
+      ["p", "Each record is one business. The core fields are business name, address, city, country, phone, email and website, and the list page shows the full set of data fields offered for that list."],
+      ["p", "A field being offered does not mean every row has a value in it: small businesses often publish a phone number and website but no named contact. Check the masked sample or request one before you buy."],
+      ["p", "If you need other fields, say so in a [custom list request](/custom-list). For a deeper look, read [what information is included in a B2B database](/help/b2b-databases/what-information-is-included-in-a-b2b-database)."],
     ],
-    related: ["products/record-counts", "data-quality/how-we-verify-data", "getting-started/preview-data-before-purchase"],
+    related: ["products/record-counts", "data-quality/how-we-verify-data", "getting-started/preview-data-before-purchase", "b2b-databases/what-information-is-included-in-a-b2b-database"],
+    updated: "2026-11-21",
     cta: { label: "Explore available lists", href: "/lists" },
   },
   {
@@ -112,10 +113,11 @@ export const articlesA: readonly HelpArticle[] = [
     keywords: ["records", "count", "rows", "size", "how many"],
     body: [
       ["p", "A record is one business: a row with its name, address, contact details and website. A record count is how many rows a list or package holds."],
-      ["ul", ["The list page shows its record count and the date it was last verified.", "Each package has its own number of records.", "A bigger package gives you more rows, not different data."]],
+      ["ul", ["The list page shows its record count (very large counts are rounded down, for example 1M+) and the date it was last updated.", "Each package has its own number of records.", "A bigger package gives you more rows, not different data."]],
       ["p", "A count is shown only when we know it. If a number is not published for a list, we do not guess one."],
     ],
-    related: ["products/list-packages", "products/whats-in-a-list", "data-quality/data-freshness"],
+    related: ["products/list-packages", "products/whats-in-a-list", "data-quality/data-freshness", "b2b-databases/understanding-database-record-counts"],
+    updated: "2026-11-21",
   },
   {
     category: "products", slug: "industries-and-coverage",
@@ -212,14 +214,16 @@ export const articlesA: readonly HelpArticle[] = [
   {
     category: "pricing", slug: "how-to-purchase",
     title: "How to purchase a business contact list",
-    description: "Pick a package, enter your email, pay in crypto and receive the link by email.",
-    keywords: ["buy", "purchase", "checkout", "order", "how to buy"],
+    description: "Add a package to your cart, check out with your email, pay once in crypto and receive the link by email.",
+    keywords: ["buy", "purchase", "checkout", "order", "how to buy", "cart"],
     body: [
-      ["ol", ["Open the list page and choose a package.", "Enter your email address. This is where your link will be sent.", "Pick the coin and network you want to pay with.", "Send the exact amount to the address shown, before the quote expires.", "Wait for the confirmation. The checkout page updates by itself."]],
+      ["ol", ["Open the list page, choose a package and select **Get This Package** to add it to your cart.", "Open the [cart](/cart) and choose **Secure My Databases**.", "Enter your email address. This is where your link will be sent.", "Pick the coin and network you want to pay with, then choose **Continue to Payment**.", "Send the exact amount to the address shown, before the quote expires.", "Wait for the confirmation. The payment page updates by itself."]],
+      ["p", "For every screen in detail, read the [step-by-step checkout guide](/help/orders-checkout/step-by-step-checkout-guide)."],
       ["p", "After the payment is confirmed, we email your list link. Read [what happens after payment](/help/pricing/after-payment)."],
     ],
-    related: ["pricing/after-payment", "payments/how-payment-confirmation-works", "payments/accepted-payment-methods"],
+    related: ["pricing/after-payment", "payments/how-payment-confirmation-works", "payments/accepted-payment-methods", "orders-checkout/step-by-step-checkout-guide"],
     cta: { label: "Find my leads", href: "/#find-leads" },
+    updated: "2026-11-21",
   },
   {
     category: "pricing", slug: "understanding-packages",
@@ -240,9 +244,10 @@ export const articlesA: readonly HelpArticle[] = [
     keywords: ["after payment", "next", "confirmation", "delivery email", "receive"],
     body: [
       ["ol", ["Your payment is seen on the blockchain.", "It gets enough confirmations, and the order is marked paid.", "We email the link to your list to the address you gave at checkout."]],
-      ["p", "Delivery is mostly instant. In some cases it can take up to 12 hours at most. Nothing is sent before the payment is confirmed. If the email has not arrived, see [I haven't received my delivery email](/help/troubleshooting/no-delivery-email)."],
+      ["p", "Delivery is mostly instant. In some cases it can take up to 12 hours at most. Nothing is sent before the payment is confirmed. If your order has several lists, we send one email with a link for each list once every list is ready. If the email has not arrived, see [I haven't received my delivery email](/help/troubleshooting/no-delivery-email)."],
     ],
-    related: ["payments/how-payment-confirmation-works", "delivery/how-you-receive-your-list", "troubleshooting/no-delivery-email"],
+    related: ["payments/how-payment-confirmation-works", "delivery/how-you-receive-your-list", "troubleshooting/no-delivery-email", "orders-checkout/what-happens-after-you-complete-a-purchase"],
     cta: { label: "Explore available lists", href: "/lists" },
+    updated: "2026-11-21",
   },
 ];

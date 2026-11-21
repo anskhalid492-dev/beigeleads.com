@@ -2,15 +2,28 @@ import { helpCategories } from "./categories";
 import { articlesA } from "./articles-a";
 import { articlesB } from "./articles-b";
 import { articlesC } from "./articles-c";
+import { newA } from "./new/a";
+import { newB } from "./new/b";
+import { newC } from "./new/c";
 import type { Block, HelpArticle } from "./types";
 
 export { helpCategories };
 export type { Block, HelpArticle };
 
 /** Date the article text was last reviewed. Update it when an answer changes. */
-export const HELP_UPDATED = "2026-11-17";
+export const HELP_UPDATED = "2026-11-21";
 
-export const helpArticles: readonly HelpArticle[] = [...articlesA, ...articlesB, ...articlesC];
+/** Nov 2026 expansion: articles that mention details the application cannot confirm are imported as DRAFTS with the reason below. */
+export const HELP_REVIEW_NOTES: Record<string, string> = {
+  "custom-list/how-custom-database-pricing-and-delivery-are-determined": "Custom pricing rules and turnaround are set by staff case by case; confirm the wording about quote drivers.",
+  "custom-list/what-happens-if-custom-requirements-change": "No automatic change process exists in the application; confirm how staff handle changes after a quote or payment.",
+  "account-support/how-beigeleads-protects-customer-downloads": "The delivery file host and its access controls are managed outside the application; confirm what can be said about them.",
+  "account-support/how-customer-information-is-used-and-protected": "Summary of the privacy policy; confirm retention periods and sharing wording against the final legal text.",
+  "account-support/how-refunds-cancellations-and-disputes-are-handled": "The policy text does not set separate refund rules for verification or DFY orders; confirm what to promise.",
+  "dfy-outbound/what-is-the-optional-infrastructure-ownership-fee": "The ownership transfer agreement text is not written yet; confirm scope and what may be promised.",
+};
+const NEW: readonly HelpArticle[] = [...newA, ...newB, ...newC].map((a) => (HELP_REVIEW_NOTES[`${a.category}/${a.slug}`] ? { ...a, status: "draft" as const } : a));
+export const helpArticles: readonly HelpArticle[] = [...articlesA, ...articlesB, ...articlesC, ...NEW];
 
 export const articleId = (a: HelpArticle) => `${a.category}/${a.slug}`;
 export const articleHref = (a: HelpArticle) => `/help/${a.category}/${a.slug}`;

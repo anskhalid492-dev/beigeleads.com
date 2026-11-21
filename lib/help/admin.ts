@@ -12,7 +12,7 @@ export class HelpError extends Error {}
 const slug = z.string().trim().toLowerCase().min(2, "Slug is too short.").max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and single dashes.");
 const optText = (max: number) => z.string().trim().max(max).optional().transform((v) => v || undefined);
 
-export const ICONS = ["rocket", "database", "tag", "wallet", "download", "shield", "list", "scale", "life-buoy"] as const;
+export const ICONS = ["rocket", "database", "tag", "wallet", "download", "shield", "list", "scale", "life-buoy", "bot", "mail"] as const;
 
 export const articleInput = z.object({
   id: z.number().int().positive().optional(),

@@ -35,9 +35,40 @@ function tokenMatch(t: string, words: string[], joined: string): number {
   return 0;
 }
 
+/** Plain-language phrases and acronyms mapped to the words our articles use. Extra words only add score; they never decide whether an article matches. */
+const SYNONYMS: [RegExp, string][] = [
+  [/\b(where|find|lost|missing|cant find|can t find|locate)\b.*\b(file|files|download|link|database|list)\b/, "download delivery link email order access"],
+  [/\b(bad|wrong|dead|invalid|fake)\b.*\b(email|emails|addresses)\b|\bbouncing\b|\bemails? bounce/, "bounce verification deliverability invalid replacement"],
+  [/\bdfy\b.*\b(inbox|inboxes|domain|domains|mailbox)\b|\b(inbox|inboxes)\b.*\bdfy\b|\bsending (domain|domains|inbox|inboxes)\b/, "sending domains inboxes infrastructure warm-up dfy outbound"],
+  [/\b(money back|refund|refunded)\b/, "refund replacement bounce policy"],
+  [/\b(didn t|did not|not|never|haven t) (receive|received|get|got|arrive)\b|\bno email\b/, "delivery email spam link resend"],
+  [/\b(payment|pay|paid|transaction|tx)\b.*\b(fail|failed|stuck|pending|wrong|missing)\b/, "payment confirmation network amount hash claim"],
+  [/\b(discount|coupon|promo|voucher|code|cheaper|better price)\b/, "discount promotional code pilo offer buy more save more"],
+  [/\b(unsubscribe|stop emails|remove me|take me off)\b/, "opt-out removal suppression data removal"],
+  [/\b(cancel|cancellation|dispute|chargeback)\b/, "cancellation refund dispute policy"],
+  [/\b(who is pilo|chatbot|chat bot|assistant|ai help|ai chat)\b|\bpilo\b/, "pilo beigepilot ai assistant chat"],
+  [/\b(llms|llm|chatgpt|claude|perplexity|grok|gemini)\b/, "llms.txt ai discovery links"],
+  [/\b(cold email|outbound|managed campaign|done for you)\b/, "dfy outbound sending follow-ups domains"],
+  [/\b(clean|check|verify|validate)\b.*\b(my list|my emails|email list)\b/, "email list verification submit results"],
+  [/\b(custom|bespoke|special)\b.*\b(price|cost|quote|list|database)\b/, "custom list request quote pricing"],
+  [/\bspf\b|\bdkim\b|\bdmarc\b/, "sending domains inboxes authentication dfy outbound"],
+  [/\bgdpr\b|\bccpa\b|\bcasl\b|\bcan spam\b/, "privacy compliance responsible use lawful"],
+  [/\bsmtp\b|\bmx record\b/, "email verification valid invalid risky"],
+  [/\b(icp|kpi|abm|mql)\b/, "targeting prospects database"],
+];
+const norm2 = (q: string) => q.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+/** Extra search words for a query (empty when no phrase matches). */
+export function expandQuery(query: string): string[] {
+  const q = norm2(query);
+  const out = new Set<string>();
+  for (const [re, add] of SYNONYMS) if (re.test(q)) for (const w of tokens(add)) out.add(w);
+  return [...out];
+}
+
 export function searchDocs(docs: readonly SearchDoc[], query: string, category?: string, limit = 8): SearchDoc[] {
   const qt = tokens(query);
-  if (qt.length === 0) return [];
+  const extra = expandQuery(query).filter((w) => !qt.includes(w));
+  if (qt.length === 0 && extra.length === 0) return [];
   const scored: { d: SearchDoc; s: number }[] = [];
   for (const d of docs) {
     if (category && d.category !== category) continue;
@@ -50,9 +81,15 @@ export function searchDocs(docs: readonly SearchDoc[], query: string, category?:
       if (best > 0) matched++;
       total += best;
     }
-    if (matched === 0) continue;
-    // Prefer articles that match every word.
-    scored.push({ d, s: total * (matched === qt.length ? 2 : 1) });
+    let bonus = 0;
+    for (const t of extra) {
+      let best = 0;
+      for (const f of prepared) best = Math.max(best, tokenMatch(t, f.words, f.joined) * f.w);
+      bonus += best * 0.5;
+    }
+    if (matched === 0 && bonus === 0) continue;
+    // Prefer articles that match every word. Synonym words only add score.
+    scored.push({ d, s: total * (matched === qt.length && qt.length > 0 ? 2 : 1) + bonus });
   }
   return scored.sort((a, b) => b.s - a.s || a.d.title.localeCompare(b.d.title)).slice(0, limit).map((x) => x.d);
 }

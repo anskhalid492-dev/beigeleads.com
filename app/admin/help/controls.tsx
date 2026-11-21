@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useToast } from "@/components/admin/toast";
 import { Button } from "@/components/ui/button";
-import { articleStatusAction, deleteArticleAction, importBuiltInAction, moveArticleAction } from "./actions";
+import { applyReviewUpdatesAction, articleStatusAction, deleteArticleAction, importBuiltInAction, moveArticleAction } from "./actions";
 
 const small = "inline-flex h-8 items-center rounded-full border border-sand-300 bg-white px-3 text-xs font-semibold text-forest-900 hover:bg-sand-100 disabled:opacity-40";
 
@@ -48,5 +48,21 @@ export function ImportButton({ label = "Import the built-in articles" }: { label
       toast(true, `Imported ${x.articles} articles and ${x.categories} topics${x.skipped ? ` (${x.skipped} already existed)` : ""}.`);
       router.refresh();
     })}>{pending ? "Importing…" : label}</Button>
+  );
+}
+
+export function ReviewUpdateButton() {
+  const router = useRouter();
+  const toast = useToast();
+  const [pending, start] = useTransition();
+  return (
+    <Button size="sm" variant="secondary" disabled={pending} onClick={() => start(async () => {
+      if (!window.confirm("A backup of every article is saved first. Articles whose review date is older than the built-in text are replaced. Continue?")) return;
+      const r = await applyReviewUpdatesAction();
+      if (!r.ok) { toast(false, r.error); return; }
+      const x = (r as unknown as { result: { updated: string[]; kept: number } }).result;
+      toast(true, `Backup saved. ${x.updated.length} articles updated, ${x.kept} left as they were.`);
+      router.refresh();
+    })}>{pending ? "Updating…" : "Apply reviewed updates"}</Button>
   );
 }

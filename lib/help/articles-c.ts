@@ -8,10 +8,11 @@ export const articlesC: readonly HelpArticle[] = [
     description: "Fill in the custom list form with your industry, place, quantity and fields.",
     keywords: ["custom list", "request", "build", "form", "special", "not listed"],
     body: [
-      ["ol", ["Open the [custom list builder](/custom-list).", "Choose an industry and a country, and add a state or city if you need one.", "Enter how many contacts you want and the fields you need.", "Add your email address and any notes, then send the request."]],
-      ["p", "A request is not an order and nothing is charged. We reply by email after checking whether we can source it."],
+      ["ol", ["Open the [custom list builder](/custom-list). It has four steps: Prospects, Location, Data and Review.", "Choose the audience, and the country and any state or city.", "Enter how many contacts you want and the fields you need.", "Add your name, email address and any notes, check the summary and send the request."]],
+      ["p", "A request is not an order and nothing is charged. You receive a reference starting with CL- and a confirmation email. We reply by email after checking whether we can source it."],
     ],
-    related: ["custom-list/select-industries-and-locations", "custom-list/what-happens-after-request", "getting-started/ready-made-vs-custom"],
+    related: ["custom-list/select-industries-and-locations", "custom-list/what-happens-after-request", "getting-started/ready-made-vs-custom", "b2b-databases/how-to-request-a-custom-b2b-database"],
+    updated: "2026-11-21",
     cta: { label: "Build a custom list", href: "/custom-list" },
   },
   {
@@ -33,10 +34,11 @@ export const articlesC: readonly HelpArticle[] = [
     description: "Tick the fields you need, such as email, phone or website.",
     keywords: ["fields", "columns", "email", "phone", "website", "job titles"],
     body: [
-      ["p", "In the form you choose which fields you want in the file. Our standard fields are business name, address, city, country, phone, email and website."],
+      ["p", "In the form you choose which fields you want in the file. Each list page shows the fields that list offers, starting with business name, address, city, country, phone, email and website."],
       ["p", "If you need something else, such as specific job titles, say so in the form or the notes. We tell you in our reply whether it is possible."],
     ],
-    related: ["products/whats-in-a-list", "custom-list/request-a-custom-list", "custom-list/number-of-contacts"],
+    related: ["products/whats-in-a-list", "custom-list/request-a-custom-list", "custom-list/number-of-contacts", "custom-list/information-to-provide-for-a-custom-list"],
+    updated: "2026-11-21",
     cta: { label: "Build a custom list", href: "/custom-list" },
   },
   {
@@ -70,10 +72,11 @@ export const articlesC: readonly HelpArticle[] = [
     description: "We save your request and reply by email once we have checked it.",
     keywords: ["after request", "submitted", "reply", "response", "status"],
     body: [
-      ["p", "When you send a request, it is saved and our team is notified. Success is only shown after it is saved."],
+      ["p", "When you send a request, it is saved and our team is notified. Success is only shown after it is saved, together with a reference starting with CL- and a confirmation email."],
       ["p", "We then check whether we can source it and reply to the email address you entered. You do not need an account to follow up: [contact us](/contact) from the same address."],
     ],
-    related: ["custom-list/how-quotes-work", "custom-list/request-a-custom-list", "troubleshooting/contact-support"],
+    related: ["custom-list/how-quotes-work", "custom-list/request-a-custom-list", "troubleshooting/contact-support", "custom-list/how-custom-database-requests-work"],
+    updated: "2026-11-21",
     cta: { label: "Build a custom list", href: "/custom-list" },
   },
 
@@ -179,10 +182,11 @@ export const articlesC: readonly HelpArticle[] = [
     description: "Check that the payment is confirmed, then spam folders and the email address you entered.",
     keywords: ["no email", "not received", "missing email", "delivery email", "spam"],
     body: [
-      ["ol", ["Check that your payment is confirmed. The email is sent only after confirmation.", "Look in spam, promotions and other folders.", "Check you are using the address typed at checkout.", "Delivery is mostly instant. In some cases it can take up to 12 hours at most."]],
+      ["ol", ["Check that your payment is confirmed. The email is sent only after confirmation.", "Look in spam, promotions and other folders.", "Check you are using the address typed at checkout.", "Delivery is mostly instant. In some cases it can take up to 12 hours at most.", "If your order has several lists, the email is sent once every list is ready."]],
       ["p", "Still nothing? [Contact us](/contact) with your order ID and we will check the order and send it again."],
     ],
-    related: ["pricing/after-payment", "delivery/download-your-list", "troubleshooting/payment-not-confirmed"],
+    related: ["pricing/after-payment", "delivery/download-your-list", "troubleshooting/payment-not-confirmed", "orders-checkout/how-to-find-your-order-confirmation"],
+    updated: "2026-11-21",
   },
   {
     category: "troubleshooting", slug: "payment-not-confirmed",
@@ -212,9 +216,10 @@ export const articlesC: readonly HelpArticle[] = [
     description: "Use the contact form. We reply by email.",
     keywords: ["contact", "support", "email", "reach us", "message"],
     body: [
-      ["p", "Send a message through the [contact page](/contact). We reply to the email address you enter."],
+      ["p", "Send a message through the [contact page](/contact). We reply to the email address you enter. You get a reference starting with CT- when it is saved. You can also choose Contact Support in the Pilo chat."],
       ["p", "For a refund or replacement claim, contact us within 30 days of delivery. We aim to answer claims within 3 working days. Read the [Refund & Returns policy](/legal/refund-replacement)."],
     ],
-    related: ["troubleshooting/request-assistance", "payments/billing-support", "payments/refunds-and-replacements"],
+    related: ["troubleshooting/request-assistance", "payments/billing-support", "payments/refunds-and-replacements", "getting-started/how-to-contact-beigeleads-support"],
+    updated: "2026-11-21",
   },
 ];

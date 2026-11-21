@@ -3,7 +3,8 @@ import { PageHeader, Panel } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { guardAdmin } from "@/lib/admin/guard";
 import { STARTERS } from "@/lib/glossary/starters";
-import { loadStartersAction } from "../actions";
+import { NEW_GLOSSARY } from "@/lib/glossary/new";
+import { loadExpansionAction, loadStartersAction } from "../actions";
 import { ImportWizard } from "./import-wizard";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,12 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
             <p>{STARTERS.length} original entries across 12 topics: B2B databases, B2C data, lead generation, email marketing, cold emailing, email verification, data enrichment, sales prospecting, CRM, data segmentation, marketing automation, and privacy and compliance. Each has a definition, explanation, “why it matters” and an example. They are always added as <strong>drafts</strong>. You review and publish them yourself.</p>
             <form action={loadStartersAction}><Button type="submit">Add the {STARTERS.length} entries as drafts</Button></form>
             <div className="flex flex-wrap items-center gap-2"><span className="font-semibold text-forest-900">Or download the file:</span><a className={dl} href="/admin/glossary/download?file=starter&format=csv" download>CSV</a><a className={dl} href="/admin/glossary/download?file=starter&format=xlsx" download>XLSX</a><a className={dl} href="/admin/glossary/download?file=starter&format=json" download>JSON</a></div>
+          </div>
+        </Panel>
+        <Panel title="A to Z expansion (50 terms)">
+          <div className="space-y-4 p-5 text-sm">
+            <p>{NEW_GLOSSARY.length} terms covering every letter A to Z. New terms are added as drafts. Existing drafts with the same web address are updated; published entries are never changed. Safe to press again.</p>
+            <form action={loadExpansionAction}><Button type="submit">Add or update the {NEW_GLOSSARY.length} terms as drafts</Button></form>
           </div>
         </Panel>
         <Panel title="Import template">

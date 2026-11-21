@@ -395,8 +395,22 @@ const MORE: Record<string, string> = {
 export const STARTER_CATEGORIES = [...new Set(RAW.map((r) => r[1]))];
 
 const GUIDES: Record<string, string> = { [G1]: G1, [G2]: G2, [G3]: G3 };
-export const STARTERS: Entry[] = RAW.map(([term, category, short, content, why, example, related, guides, products]) => ({
+// Nov 2026: the 50-term expansion (`lib/glossary/new`) is authoritative. Older drafts with the same or a near-identical meaning are
+// dropped here, and links to them are repointed to the new term, so the glossary has no near-duplicates.
+const REPLACED: Record<string, string> = {
+  "Ideal Customer Profile": "Ideal Customer Profile (ICP)", "Marketing Qualified Lead": "Marketing Qualified Lead (MQL)", "Account-Based Marketing": "Account-Based Marketing (ABM)", "Reply Rate": "Response Rate",
+  "Email Warm-Up": "Warm-Up (Email)", "SMTP Check": "SMTP", "Role-Based Email": "Role-Based Email Address", "Data Enrichment": "Contact Data Enrichment",
+  "Sales Prospecting": "Prospecting", "Geographic Segmentation": "Geographic Targeting",
+};
+const NEW_TERMS: Record<string, string> = {
+  "B2B Data": "B2B Data", "Firmographic Data": "Firmographic Data", "Technographic Data": "Technographic Data", "Lead Generation": "Lead Generation", "Lead Scoring": "Lead Scoring",
+  "Open Rate": "Open Rate", "Email Deliverability": "Email Deliverability", "Cold Email": "Cold Email", "Email Verification": "Email Verification", "Bounce Rate": "Bounce Rate",
+  "Hard Bounce": "Hard Bounce", "Data Deduplication": "Data Deduplication", "GDPR": "GDPR", "Opt-Out": "Opt-Out",
+};
+const DROP = new Set([...Object.keys(REPLACED), ...Object.keys(NEW_TERMS)]);
+const fixRel = (r: string[]) => Array.from(new Set(r.map((t) => REPLACED[t] ?? t)));
+export const STARTERS: Entry[] = RAW.filter(([term]) => !DROP.has(term)).map(([term, category, short, content, why, example, related, guides, products]) => ({
   slug: slugify(term), term, category, shortDefinition: short, content: MORE[term] ? `${content}\n\n${MORE[term]}` : content, whyItMatters: why, example,
-  relatedTerms: related, relatedGuides: (guides ?? []).map((g) => GUIDES[g] ?? g), relatedProducts: products ?? [],
+  relatedTerms: fixRel(related), relatedGuides: (guides ?? []).map((g) => GUIDES[g] ?? g), relatedProducts: products ?? [],
   seoTitle: "", metaDescription: "", keywords: "", status: "draft" as const,
 }));

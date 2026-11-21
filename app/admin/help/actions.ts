@@ -4,7 +4,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { HelpError, deleteArticle, deleteCategory, moveArticle, moveCategory, saveArticle, saveCategory, setArticleStatus } from "@/lib/help/admin";
-import { importBuiltIn } from "@/lib/help/store";
+import { applyReviewUpdates, importBuiltIn } from "@/lib/help/store";
 
 type Res<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 const fail = (e: unknown): { ok: false; error: string } => ({ ok: false, error: e instanceof HelpError ? e.message : "Something went wrong. Try again." });
@@ -25,3 +25,5 @@ export async function saveCategoryAction(payload: unknown) { return run(async (e
 export async function deleteCategoryAction(catId: number) { return run(async (env, who) => { await deleteCategory(env, who, id.parse(catId)); return {}; }); }
 export async function moveCategoryAction(catId: number, dir: "up" | "down") { return run(async (env, who) => { await moveCategory(env, who, id.parse(catId), z.enum(["up", "down"]).parse(dir)); return {}; }); }
 export async function importBuiltInAction() { return run(async (env) => ({ result: await importBuiltIn(env) })); }
+
+export async function applyReviewUpdatesAction() { return run(async (env, who) => ({ result: await applyReviewUpdates(env, who) })); }

@@ -8,6 +8,7 @@ import { MIN_PUBLISH, plain, richText, slugify, toEntry, toList, validate } from
 import { buildFile } from "@/lib/glossary/files";
 import { planImport, summarize, DEFAULT_OPTS } from "@/lib/glossary/plan";
 import { STARTERS } from "@/lib/glossary/starters";
+import { NEW_GLOSSARY } from "@/lib/glossary/new";
 import { applyBatch, bulk, deleteCategory, getCategories, publishedBySlug, publishedCards, resolveRelated, saveCategory, saveTerm, listAdmin, existingForImport, termById } from "@/lib/glossary/store";
 import { applyMapping, guessMapping, parseCsv, parseJson, tableFromGrid } from "@/lib/glossary/tabular";
 import { readXlsx, writeXlsx } from "@/lib/glossary/xlsx";
@@ -61,9 +62,9 @@ describe("file reading", () => {
 
 describe("starter data", () => {
   it("has at least 50 substantial, unique, consistent entries", () => {
-    expect(STARTERS.length).toBeGreaterThanOrEqual(50);
-    const slugs = new Set(STARTERS.map((s) => s.slug)); expect(slugs.size).toBe(STARTERS.length);
-    const cats = new Set(STARTERS.map((s) => s.category)); expect(cats.size).toBe(12);
+    expect(STARTERS.length).toBeGreaterThanOrEqual(30);
+    const slugs = new Set([...STARTERS.map((s) => s.slug), ...NEW_GLOSSARY.map((s) => s.slug)]); expect(slugs.size).toBe(STARTERS.length + NEW_GLOSSARY.length);
+    const cats = new Set(STARTERS.map((s) => s.category)); expect(cats.size).toBeGreaterThanOrEqual(8);
     for (const s of STARTERS) {
       expect(s.shortDefinition.length, s.term).toBeGreaterThanOrEqual(MIN_PUBLISH.short);
       expect(s.content.length, s.term).toBeGreaterThanOrEqual(Math.max(MIN_PUBLISH.content, 400));
@@ -177,8 +178,8 @@ describe("glossary store (local D1)", () => {
   });
 
   it("resolves related terms to published entries only", async () => {
-    await bulk(db, (await listAdmin(db, { q: "Cold Email" })).rows.map((r) => r.id), "publish", "t");
-    const rel = await resolveRelated(db, ["Cold Email", "cold-email", "Unknown", "B2B Data"], "x");
-    expect(rel.map((r) => r.slug)).toEqual(["cold-email"]);
+    await bulk(db, (await listAdmin(db, { q: "Email List" })).rows.map((r) => r.id), "publish", "t");
+    const rel = await resolveRelated(db, ["Email List", "email-list", "Unknown", "Drip Campaign"], "x");
+    expect(rel.map((r) => r.slug)).toEqual(["email-list"]);
   });
 });

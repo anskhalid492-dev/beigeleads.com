@@ -4,7 +4,7 @@ import { Badge, Empty, PageHeader, Panel } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { guardAdmin } from "@/lib/admin/guard";
 import { loadAll } from "@/lib/help/store";
-import { ArticleRowActions, ImportButton } from "../controls";
+import { ArticleRowActions, ImportButton, ReviewUpdateButton } from "../controls";
 
 export const dynamic = "force-dynamic";
 const PAGE = 30;
@@ -33,7 +33,7 @@ export default async function HelpArticles({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageHeader title="Help articles" text="Drafts are never public. Use the arrows to change the order inside a topic." actions={<div className="flex gap-2"><ImportButton label="Import missing built-in articles" /><Button asChild size="sm"><Link href="/admin/help/articles/new">New article</Link></Button></div>} />
+      <PageHeader title="Help articles" text="Drafts are never public. Use the arrows to change the order inside a topic." actions={<div className="flex gap-2"><ImportButton label="Import missing built-in articles" /><ReviewUpdateButton /><Button asChild size="sm"><Link href="/admin/help/articles/new">New article</Link></Button></div>} />
       <form className="mb-4 flex flex-wrap gap-2 text-sm">
         <input name="q" defaultValue={sp.q} placeholder="Search title or slug" aria-label="Search" className="min-w-[14rem] rounded-xl border border-sand-300 bg-white px-3 py-2" />
         <select name="topic" defaultValue={sp.topic ?? ""} aria-label="Topic" className="rounded-xl border border-sand-300 bg-white px-3 py-2"><option value="">All topics</option>{all.categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select>

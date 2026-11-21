@@ -6,6 +6,7 @@ import type { Card } from "@/lib/glossary/store";
 
 type Cat = { slug: string; name: string };
 const letterOf = (t: string) => { const c = t.trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+const norm = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, "");
 const LETTERS = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ", "#"];
 
 /** Instant search, category filter and A–Z index. Every published entry is rendered in the HTML, so the links are crawlable. */
@@ -14,8 +15,8 @@ export function GlossaryBrowser({ cards, categories, initialCategory = "" }: { c
   const [cat, setCat] = useState(categories.some((c) => c.slug === initialCategory) ? initialCategory : "");
   const catName = useMemo(() => new Map(categories.map((c) => [c.slug, c.name])), [categories]);
   const counts = useMemo(() => { const m = new Map<string, number>(); for (const c of cards) m.set(c.category, (m.get(c.category) ?? 0) + 1); return m; }, [cards]);
-  const filtered = useMemo(() => { const s = q.trim().toLowerCase(); return cards.filter((c) => (!cat || c.category === cat) && (!s || c.term.toLowerCase().includes(s) || c.short.toLowerCase().includes(s))); }, [cards, q, cat]);
-  const groups = useMemo(() => { const g = new Map<string, Card[]>(); for (const c of filtered) { const l = letterOf(c.term); (g.get(l) ?? g.set(l, []).get(l)!).push(c); } return g; }, [filtered]);
+  const filtered = useMemo(() => { const s = q.trim().toLowerCase(); return cards.filter((c) => (!cat || c.category === cat) && (!s || norm(c.term).includes(norm(s)) || c.term.toLowerCase().includes(s) || (c.keywords ?? "").toLowerCase().includes(s) || c.short.toLowerCase().includes(s))); }, [cards, q, cat]);
+  const groups = useMemo(() => { const g = new Map<string, Card[]>(); for (const c of [...filtered].sort((a, b) => a.term.localeCompare(b.term, "en", { sensitivity: "base", ignorePunctuation: true }))) { const l = letterOf(c.term); (g.get(l) ?? g.set(l, []).get(l)!).push(c); } return g; }, [filtered]);
   const has = new Set(groups.keys());
   const featured = cards.filter((c) => c.featured).slice(0, 6);
   const filtering = !!q.trim() || !!cat;
@@ -31,7 +32,7 @@ export function GlossaryBrowser({ cards, categories, initialCategory = "" }: { c
             <form role="search" onSubmit={(e) => e.preventDefault()} className="relative mt-7 max-w-xl">
               <label htmlFor="glo-q" className="sr-only">Search the glossary</label>
               <Search className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-forest-500" aria-hidden />
-              <input id="glo-q" type="text" inputMode="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search terms, e.g. bounce rate" autoComplete="off" className="h-14 w-full rounded-full border border-sand-300 bg-white pl-13 pr-12 text-base text-forest-900 shadow-sm placeholder:text-forest-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600" style={{ paddingLeft: "3.25rem" }} />
+              <input id="glo-q" type="text" inputMode="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search a term or acronym, e.g. SPF or bounce rate" autoComplete="off" className="h-14 w-full rounded-full border border-sand-300 bg-white pl-13 pr-12 text-base text-forest-900 shadow-sm placeholder:text-forest-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600" style={{ paddingLeft: "3.25rem" }} />
               {q && <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="absolute right-4 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-forest-900 hover:bg-sand-100"><X className="size-4" aria-hidden /></button>}
             </form>
           </div>

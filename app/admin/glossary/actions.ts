@@ -11,12 +11,13 @@ import { live } from "@/lib/blog/posts";
 import { FIELDS, type Raw } from "@/lib/glossary/clean";
 import { planImport, type Existing, type Known, type Opts } from "@/lib/glossary/plan";
 import { STARTERS } from "@/lib/glossary/starters";
+import { NEW_GLOSSARY } from "@/lib/glossary/new";
 import { applyBatch, bulk, deleteCategory, existingForImport, getCategories, saveCategory, saveTerm, type BatchResult, type BulkAction } from "@/lib/glossary/store";
 
 const db = () => getDbFromEnv(getCloudflareContext().env);
 const admin = async () => { try { return await requireAdmin(); } catch { return null; } };
 const go = (path: string, msg: string, kind: "ok" | "err" = "ok"): never => redirect(`${path}${path.includes("?") ? "&" : "?"}${kind === "ok" ? "saved" : "error"}=${encodeURIComponent(msg)}`);
-const revalidate = () => { revalidatePath("/admin/glossary"); revalidatePath("/glossary"); revalidatePath("/glossary/[slug]", "page"); };
+const revalidate = () => { try { void getCloudflareContext().env.CACHE.delete("beigepilot:glossary:v1"); } catch { /* ignore */ } revalidatePath("/admin/glossary"); revalidatePath("/glossary"); revalidatePath("/glossary/[slug]", "page"); };
 
 export type FormState = { ok: boolean; message: string; errors?: string[]; id?: number } | null;
 
@@ -104,5 +105,19 @@ export async function loadStartersAction(): Promise<void> {
     const r = await applyBatch(db(), plans, opts, a.email);
     revalidate();
     go("/admin/glossary/import", `Starter entries: ${r.created} added as drafts, ${r.skipped} already existed${r.failed ? `, ${r.failed} failed` : ""}. Nothing is published yet.`, r.failed ? "err" : "ok");
+  } catch (e) { if (e && typeof e === "object" && "digest" in e) throw e; go("/admin/glossary/import", "Could not save. Migration 0032 may not be applied yet.", "err"); }
+}
+
+/** The 50-term expansion (Nov 2026). Missing terms are created as DRAFTS; existing DRAFT rows with the same slug are updated; published entries are never touched (reported as skipped). Safe to run again. */
+export async function loadExpansionAction(): Promise<void> {
+  const a = await admin(); if (!a) return;
+  const ctx = await importContextAction();
+  const opts: Opts = { mode: "update", allowUpdatePublished: false, forceDraft: true };
+  const raws = NEW_GLOSSARY.map((s, i) => ({ row: i + 1, raw: { term: s.term, slug: s.slug, category: s.category, shortDefinition: s.shortDefinition, content: s.content, whyItMatters: s.whyItMatters, example: s.example, relatedTerms: s.relatedTerms.join("; "), relatedGuides: s.relatedGuides.join("; "), relatedProducts: s.relatedProducts.join("; "), seoTitle: s.seoTitle, metaDescription: s.metaDescription, keywords: s.keywords } as Raw }));
+  try {
+    const plans = planImport(raws, ctx.existing, ctx.known, opts);
+    const r = await applyBatch(db(), plans, opts, a.email);
+    revalidate();
+    go("/admin/glossary/import", `50-term expansion: ${r.created} added as drafts, ${r.updated} drafts updated, ${r.skipped} skipped (already published or unchanged)${r.failed ? `, ${r.failed} failed` : ""}. Review, then publish from the glossary list.`, r.failed ? "err" : "ok");
   } catch (e) { if (e && typeof e === "object" && "digest" in e) throw e; go("/admin/glossary/import", "Could not save. Migration 0032 may not be applied yet.", "err"); }
 }

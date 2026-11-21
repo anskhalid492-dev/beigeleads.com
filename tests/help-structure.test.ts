@@ -7,8 +7,9 @@ import { codeData } from "@/lib/help/store";
 describe("help structure", () => {
   it("every group slug exists and every article lands in exactly one group", () => {
     for (const c of helpCategories) {
-      const list = [...articlesIn(c.slug)];
-      for (const g of HELP_GROUPS[c.slug] ?? []) for (const s of g.slugs) expect(list.some((a) => a.slug === s), `${c.slug}/${s}`).toBe(true);
+      const all = [...articlesIn(c.slug)];
+      const list = all.filter((a) => (a.status ?? "published") === "published");
+      for (const g of HELP_GROUPS[c.slug] ?? []) for (const s of g.slugs) expect(all.some((a) => a.slug === s), `${c.slug}/${s}`).toBe(true);
       const grouped = groupedArticles(dataArticlesIn(codeData(), c.slug)).flatMap((g) => g.items.map((a) => a.slug));
       expect(grouped.sort()).toEqual(list.map((a) => a.slug).sort());
       expect(new Set(grouped).size).toBe(grouped.length);

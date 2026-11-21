@@ -32,9 +32,10 @@ describe("prompt and templates", () => {
     expect(checkTemplate("https://chatgpt.com/?q=x", "https://chatgpt.com/").ok).toBe(false);
     expect(checkTemplate("http://chatgpt.com/?q={prompt}", "https://chatgpt.com/").ok).toBe(false);
   });
-  it("default platforms copy and open (no verified prefill); a template prefills with the prompt encoded; long prompts fall back", () => {
+  it("default platforms prefill (Gemini copies and opens); a template prefills with the prompt encoded; long prompts fall back", () => {
     const d = defaultAi(); expect(d.platforms.map((p) => p.name)).toEqual(["ChatGPT", "Perplexity", "Grok", "Gemini", "Claude"]);
-    expect(aiAction(d.platforms[0], d.prompt).kind).toBe("copy_open");
+    expect(aiAction(d.platforms[0], d.prompt).kind).toBe("prefill");
+    expect(aiAction(d.platforms.find((x) => x.id === "gemini")!, d.prompt).kind).toBe("copy_open");
     const p = { ...d.platforms[0], promptUrl: "https://chatgpt.com/?q={prompt}" };
     const a = aiAction(p, "What is BeigeLeads & how?  Tell me.");
     expect(a.kind).toBe("prefill"); expect(a.url).toBe("https://chatgpt.com/?q=What%20is%20BeigeLeads%20%26%20how%3F%20%20Tell%20me.");

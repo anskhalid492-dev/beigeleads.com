@@ -176,13 +176,14 @@ export const articlesB: readonly HelpArticle[] = [
     description: "We check emails. Some servers accept every address, so no check is perfect.",
     keywords: ["email verification", "smtp", "bounce", "valid", "deliverability", "accept all"],
     body: [
-      ["p", "SMTP verification asks the receiving mail server whether an address can receive mail, without sending a message. We run these checks ourselves on every email."],
+      ["p", "SMTP verification asks the receiving mail server whether an address can receive mail, without sending a message. We check every email in our lists this way. Our [Email List Verification](/email-list-verification) service applies the same idea to lists you own."],
       ["h", "What it can not do"],
       ["p", "Some mail servers accept every address, so a check can not tell which ones are real. That is why a small share of emails can still bounce, and why we promise replacements instead of a perfect result."],
       ["h", "What to do on your side"],
       ["p", "Send from a properly set-up domain, and start with a small batch. Compare the bounce rate to our [replacement policy](/legal/refund-replacement)."],
     ],
-    related: ["data-quality/how-we-verify-data", "data-quality/emails-become-outdated", "payments/refunds-and-replacements"],
+    related: ["data-quality/how-we-verify-data", "data-quality/emails-become-outdated", "payments/refunds-and-replacements", "email-verification/complete-guide-to-email-verification"],
+    updated: "2026-11-21",
   },
   {
     category: "data-quality", slug: "emails-become-outdated",
@@ -191,7 +192,7 @@ export const articlesB: readonly HelpArticle[] = [
     keywords: ["outdated", "stale", "old", "decay", "bounce", "change jobs"],
     body: [
       ["p", "Business contact data changes all the time. Businesses close or move, owners change, websites and domains change, and mailboxes are retired."],
-      ["p", "That is why we re-verify all data every 90 days, and why the list page shows when it was last verified. The newer the date, the fresher the list."],
+      ["p", "That is why we re-verify all data every 90 days, and why the list page shows when it was last updated. The newer the date, the fresher the list."],
     ],
     related: ["data-quality/data-freshness", "data-quality/email-verification", "data-quality/report-data-quality"],
   },
@@ -213,10 +214,11 @@ export const articlesB: readonly HelpArticle[] = [
     description: "Freshness is how recently a list was verified. All data is re-verified every 90 days.",
     keywords: ["freshness", "last verified", "up to date", "90 days", "recent"],
     body: [
-      ["p", "Freshness tells you how recently the data was checked. Each list page shows a last-verified date. All data is re-verified every 90 days."],
+      ["p", "Freshness tells you how recently the data was checked. Each list page shows a last-updated date. All data is re-verified every 90 days."],
       ["p", "Fresh does not mean perfect. Read [understanding email verification](/help/data-quality/email-verification) for what checks can and can not catch."],
     ],
-    related: ["data-quality/emails-become-outdated", "data-quality/how-we-verify-data", "products/record-counts"],
+    related: ["data-quality/emails-become-outdated", "data-quality/how-we-verify-data", "products/record-counts", "b2b-databases/how-database-updates-and-refreshes-work"],
+    updated: "2026-11-21",
   },
   {
     category: "data-quality", slug: "report-data-quality",

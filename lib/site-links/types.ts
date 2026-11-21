@@ -42,8 +42,19 @@ export const DEFAULT_HEADING = "Discover BeigeLeads with AI";
  * document nothing). So every default is empty and the button copies the prompt and opens the platform. An admin may add a
  * template after testing it; the admin screen says it is not officially documented.
  */
+/**
+ * Owner decision (21 Nov 2026): prompts open in the platform and start the chat. These ?q= links are widely used but NOT
+ * officially documented by the platforms, so they can change; the click falls back to copy + open when a link is too long
+ * or a platform stops accepting it. Gemini has no known prefill link, so it keeps copy + open.
+ */
+export const PREFILL: Record<string, string> = {
+  chatgpt: "https://chatgpt.com/?q={prompt}",
+  perplexity: "https://www.perplexity.ai/search?q={prompt}",
+  grok: "https://grok.com/?q={prompt}",
+  claude: "https://claude.ai/new?q={prompt}",
+};
 export function defaultAiPlatforms(): AiPlatform[] {
-  const mk = (id: string, name: string, icon: AiIcon, homepage: string, order: number): AiPlatform => ({ id, name, icon, homepage, promptUrl: "", enabled: true, order, override: "", fallback: "copy_open" });
+  const mk = (id: string, name: string, icon: AiIcon, homepage: string, order: number): AiPlatform => ({ id, name, icon, homepage, promptUrl: PREFILL[id] ?? "", enabled: true, order, override: "", fallback: "copy_open" });
   return [
     mk("chatgpt", "ChatGPT", "chatgpt", "https://chatgpt.com/", 0),
     mk("perplexity", "Perplexity", "perplexity", "https://www.perplexity.ai/", 1),
@@ -140,7 +151,7 @@ export function parseAi(raw: string | null | undefined): AiConfig {
       platforms.push({
         id: typeof x.id === "string" && /^[a-z0-9-]{1,40}$/.test(x.id) ? x.id : `p${platforms.length}`,
         name: x.name.trim(), icon: (AI_ICONS as readonly string[]).includes(String(x.icon)) ? (x.icon as AiIcon) : "custom", homepage,
-        promptUrl: tpl.ok ? tpl.value : "", enabled: x.enabled !== false, order: Number.isFinite(x.order) ? Number(x.order) : platforms.length,
+        promptUrl: tpl.ok && tpl.value ? tpl.value : (typeof x.id === "string" ? PREFILL[x.id] ?? "" : ""), enabled: x.enabled !== false, order: Number.isFinite(x.order) ? Number(x.order) : platforms.length,
         override: ov && ov.ok ? ov.value : "", fallback: x.fallback === "open_only" ? "open_only" : "copy_open",
       });
     }

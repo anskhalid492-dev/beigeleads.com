@@ -58,11 +58,11 @@ export async function existingForImport(db: Db): Promise<Existing[]> {
 }
 export const rowEntry = (r: Term): Entry => ({ slug: r.slug, term: r.term, category: r.categorySlug, shortDefinition: r.shortDefinition, content: r.content, whyItMatters: r.whyItMatters, example: r.example, relatedTerms: split(r.relatedTerms), relatedGuides: split(r.relatedGuides), relatedProducts: split(r.relatedProducts), seoTitle: r.seoTitle, metaDescription: r.metaDescription, keywords: r.keywords, status: r.status });
 
-export type Card = { slug: string; term: string; category: string; short: string; featured: boolean };
+export type Card = { slug: string; term: string; category: string; short: string; featured: boolean; keywords?: string };
 /** Published entries for the directory. Empty when the table is missing. */
 export async function publishedCards(db: Db): Promise<Card[]> {
   try {
-    const rows = await db.select({ slug: t.slug, term: t.term, category: t.categorySlug, short: t.shortDefinition, featured: t.featured }).from(t).where(eq(t.status, "published")).orderBy(asc(sql`lower(${t.term})`));
+    const rows = await db.select({ slug: t.slug, term: t.term, category: t.categorySlug, short: t.shortDefinition, featured: t.featured, keywords: t.keywords }).from(t).where(eq(t.status, "published")).orderBy(asc(sql`lower(${t.term})`));
     return rows.map((r) => ({ ...r, featured: r.featured === 1 }));
   } catch { return []; }
 }

@@ -1,7 +1,7 @@
 // Help Center content store. Articles and categories live in D1 (migration 0021); the 54 built-in articles in code
 // are the fallback until the tables exist and have been filled ("Import" in /admin/help/articles).
 // Public pages read ONE cached value (KV, 60 s) so a visit does not cost a database read.
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { cleanBlocks, parseJson } from "./blocks";
 import type { HelpData } from "./data";
@@ -29,11 +29,11 @@ export function rowToArticle(r: ArtRow): HelpArticle {
 export const rowToCategory = (r: CatRow): HelpCategory => ({ slug: r.slug, name: r.name, icon: r.icon, description: r.description, sort: r.sort, status: r.status });
 
 /** The built-in content in CMS shape: sub-groups, order, "Getting started" and "Common questions" positions. */
-export function codeData(): HelpData {
+export function codeData(withDrafts = false): HelpData {
   const categories = helpCategories.map((c, i) => ({ ...c, sort: i, status: "published" as const }));
   const articles: HelpArticle[] = [];
   for (const c of helpCategories) {
-    const list = helpArticles.filter((a) => a.category === c.slug);
+    const list = helpArticles.filter((a) => a.category === c.slug && (withDrafts || a.status !== "draft"));
     let n = 0;
     const seen = new Set<string>();
     for (const g of HELP_GROUPS[c.slug] ?? []) {
@@ -41,10 +41,10 @@ export function codeData(): HelpData {
         const a = list.find((x) => x.slug === slug);
         if (!a) continue;
         seen.add(slug);
-        articles.push({ ...a, status: "published", group: g.title, sort: n++ });
+        articles.push({ ...a, status: a.status ?? "published", group: g.title, sort: n++ });
       }
     }
-    for (const a of list) if (!seen.has(a.slug)) articles.push({ ...a, status: "published", group: "", sort: n++ });
+    for (const a of list) if (!seen.has(a.slug)) articles.push({ ...a, status: a.status ?? "published", group: "", sort: n++ });
   }
   const rank = (ids: readonly string[], a: HelpArticle) => ids.indexOf(`${a.category}/${a.slug}`) + 1;
   for (const a of articles) { a.featured = rank(startingPoints, a); a.common = rank(commonQuestions, a); }
@@ -79,7 +79,7 @@ export async function bustHelpCache(env: Env) { try { await env.CACHE.delete(HEL
 /** Copies the built-in categories and articles into the database. Safe to repeat: existing rows are never touched. */
 export async function importBuiltIn(env: Env): Promise<{ categories: number; articles: number; skipped: number }> {
   const db = getDbFromEnv(env);
-  const code = codeData();
+  const code = codeData(true);
   const now = Date.now();
   let categories = 0, articles = 0, skipped = 0;
   for (const c of code.categories) {
@@ -90,10 +90,46 @@ export async function importBuiltIn(env: Env): Promise<{ categories: number; art
     const r = await db.insert(schema.helpArticles).values({
       category: a.category, slug: a.slug, title: a.title, description: a.description, keywords: JSON.stringify(a.keywords), body: JSON.stringify(a.body),
       related: JSON.stringify(a.related), ctaLabel: a.cta?.label ?? null, ctaHref: a.cta?.href ?? null, group: a.group ?? "", sort: a.sort ?? 0,
-      featured: a.featured ?? 0, common: a.common ?? 0, status: "published", updated: a.updated ?? HELP_UPDATED, updatedAt: now,
+      featured: a.featured ?? 0, common: a.common ?? 0, status: a.status === "draft" ? "draft" : "published", updated: a.updated ?? HELP_UPDATED, updatedAt: now,
     }).onConflictDoNothing().returning({ id: schema.helpArticles.id });
     if (r.length) articles++; else skipped++;
   }
   await bustHelpCache(env);
   return { categories, articles, skipped };
+}
+
+/** Saves every help article row as JSON in system_settings (key help.backup.<timestamp>). No migration needed; the last 5 backups are kept. */
+export async function backupHelp(env: Env, actor: string): Promise<{ key: string; articles: number }> {
+  const db = getDbFromEnv(env);
+  const rows = await db.select().from(schema.helpArticles);
+  const key = `help.backup.${new Date().toISOString().replace(/[:.]/g, "-")}`;
+  await db.insert(schema.systemSettings).values({ key, value: JSON.stringify(rows), updatedBy: actor }).run();
+  const all = (await db.select({ key: schema.systemSettings.key }).from(schema.systemSettings)).map((r) => r.key).filter((k) => k.startsWith("help.backup.")).sort();
+  for (const old of all.slice(0, Math.max(0, all.length - 5))) await db.delete(schema.systemSettings).where(eq(schema.systemSettings.key, old)).run();
+  return { key, articles: rows.length };
+}
+
+/**
+ * Applies the reviewed built-in text to articles already in the database. A backup is taken first. Only rows whose review date is OLDER than
+ * the built-in review date are replaced (so anything an admin edited and re-dated later is kept); id, URL, order, flags and analytics stay.
+ */
+export async function applyReviewUpdates(env: Env, actor: string): Promise<{ backup: string; updated: string[]; kept: number }> {
+  const db = getDbFromEnv(env);
+  const { key } = await backupHelp(env, actor);
+  const rows = await db.select().from(schema.helpArticles);
+  const byId = new Map(rows.map((r) => [`${r.category}/${r.slug}`, r]));
+  const updated: string[] = []; let kept = 0;
+  for (const a of codeData(true).articles) {
+    const r = byId.get(`${a.category}/${a.slug}`);
+    if (!r) continue;
+    if (!a.updated || (r.updated ?? "") >= a.updated) { kept++; continue; }
+    if (JSON.stringify(cleanBlocks(parseJson<unknown>(r.body, []))) === JSON.stringify(a.body) && r.title === a.title && r.description === a.description) { kept++; continue; }
+    await db.update(schema.helpArticles).set({
+      title: a.title, description: a.description, keywords: JSON.stringify(a.keywords), body: JSON.stringify(a.body), related: JSON.stringify(a.related),
+      ctaLabel: a.cta?.label ?? null, ctaHref: a.cta?.href ?? null, updated: a.updated, updatedAt: Date.now(),
+    }).where(eq(schema.helpArticles.id, r.id)).run();
+    updated.push(`${a.category}/${a.slug}`);
+  }
+  await bustHelpCache(env);
+  return { backup: key, updated, kept };
 }

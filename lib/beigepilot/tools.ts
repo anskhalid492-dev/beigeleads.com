@@ -8,6 +8,7 @@ import { fieldSummary } from "@/lib/product-fields";
 import { helpArticles, helpCategories, plainText } from "@/lib/help";
 import { searchDocs, toDoc, type SearchDoc } from "@/lib/help/search";
 import { loadHelp } from "@/lib/help/store";
+import { glossaryDocs, searchGlossary } from "./glossary";
 import { legalBySlug, LEGAL_UPDATED } from "@/lib/legal/docs";
 import { publishedEntries, searchEntries } from "./knowledge";
 import type { ToolDef } from "./providers";
@@ -94,6 +95,7 @@ export const TOOLS: ToolDef[] = [
   { name: "showDfyPackages", description: "Use for questions about DFY Outbound (done-for-you cold email outbound: domains, inboxes, verified leads, copy, managed sending; one-time packages). Returns the real packages and shows package cards to the visitor. Pass names to show only some (for example the smallest package that covers a lead volume). Package numbers are the only source of truth: never promise anything else, never promise replies, meetings or inbox placement. Domain and inbox numbers are estimates until onboarding.", parameters: { type: "object", properties: { names: { type: "array", items: { type: "string" } } } } },
   { name: "searchKnowledge", description: "Search answers written by the BeigeLeads team (custom FAQs). Use it for questions about policies, process or products that the catalog tools do not cover, before searchHelpArticles.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "searchHelpArticles", description: "Search published Help Center articles for how-to, delivery, payment, data and policy answers.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "searchGlossary", description: "Look up a B2B data, email or outreach term (for example MX record, bounce rate, SPF, DMARC, ICP, GDPR) in the published BeigeLeads Glossary. This is general education, NOT BeigeLeads policy: when you answer, say so, and use searchHelpArticles or getPolicyDetails for what BeigeLeads actually does.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "getPolicyDetails", description: "Read a published policy page. topic is one of: " + POLICY_SLUGS.join(", "), parameters: { type: "object", properties: { topic: { type: "string" } }, required: ["topic"] } },
   { name: "requestDiscount", description: "ONLY when the visitor has explicitly asked for a discount, coupon or better price. Asks the server whether an offer is available for the cart. Never call it on your own. The server decides; you cannot set or change a percentage.", parameters: { type: "object", properties: {}, required: [] } },
   { name: "suggestContact", description: "Use when you cannot answer confidently from tools, or the visitor asks about a specific order or account. Shows a 'Contact Our Team' button.", parameters: { type: "object", properties: { reason: { type: "string" } }, required: ["reason"] } },
@@ -237,6 +239,13 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         if (!hits.length) ctx.miss = true;
         for (const h of hits) ctx.sources.push({ title: h.title, url: h.href });
         return { articles: hits.map((h) => ({ title: h.title, url: h.href, excerpt: (text.get(h.id) ?? "").slice(0, 900) })), note: hits.length ? undefined : "No matching article. Do not guess; offer /contact." };
+      }
+      case "searchGlossary": {
+        const q = str(args.query, 120); if (!q) return { error: "empty query" };
+        const hits = searchGlossary(await glossaryDocs(ctx.env), q, 3);
+        if (!hits.length) ctx.miss = true;
+        for (const h of hits) ctx.sources.push({ title: `Glossary: ${h.term}`, url: `/glossary/${h.slug}` });
+        return { terms: hits.map((h) => ({ term: h.term, url: `/glossary/${h.slug}`, definition: h.short, excerpt: h.text.slice(0, 900) })), note: hits.length ? "General education about the term. It is not BeigeLeads policy and not legal advice. For what BeigeLeads does, use searchHelpArticles or getPolicyDetails. Link the glossary page." : "No glossary entry found. Do not guess a definition as BeigeLeads policy." };
       }
       case "getPolicyDetails": {
         const t = str(args.topic, 40).toLowerCase();

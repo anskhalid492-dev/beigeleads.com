@@ -11,6 +11,7 @@ import { cleanBlocks } from "@/lib/help/blocks";
 import { recordFeedback } from "@/lib/help/feedback";
 import { importBuiltIn, loadAll, loadHelp } from "@/lib/help/store";
 import { articlesIn, groupedArticles } from "@/lib/help/data";
+import { HELP_REVIEW_NOTES, helpCategories } from "@/lib/help";
 
 let proxy: PlatformProxy<CloudflareEnv>;
 let env: CloudflareEnv;
@@ -43,14 +44,14 @@ describe("help CMS", () => {
 
   it("imports the built-in content once and keeps order, groups and picks", async () => {
     const first = await importBuiltIn(env);
-    expect(first.categories).toBe(9);
+    expect(first.categories).toBe(helpCategories.length);
     expect(first.articles).toBeGreaterThan(40);
     const again = await importBuiltIn(env);
     expect(again.articles).toBe(0);
     expect(again.skipped).toBe(first.articles);
     const d = await loadHelp(env);
     expect(d.source).toBe("database");
-    expect(d.articles.length).toBe(first.articles);
+    expect(d.articles.length).toBe(first.articles - Object.keys(HELP_REVIEW_NOTES).length);
     expect(d.articles.filter((a) => (a.featured ?? 0) > 0).length).toBe(6);
     expect(d.articles.filter((a) => (a.common ?? 0) > 0).length).toBe(8);
     const g = groupedArticles(articlesIn(d, "getting-started"));
