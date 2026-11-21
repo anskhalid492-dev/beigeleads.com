@@ -15,7 +15,7 @@ export const geoShopPath = (countrySlug: string) => `/lists/${countrySlug}-busin
 const faqs = (k: string, hasFull: boolean): [string, string][] => [
   ["What data is included?", `Each record can include business name, address, city, country, phone, email and website. The fields on each database page list exactly what is in that file.`],
   ["Can I preview the contacts?", "Yes. Every database page shows a masked sample, and you can request a free sample by email."],
-  ["How current is the data?", "Our team re-verifies all data every 60 days and checks emails with in-house SMTP tests. Each database page shows when it was last verified."],
+  ["How current is the data?", "BeigeLeads refreshes its databases every 90 days. Each database page shows when it was last verified."],
   [`Can I target specific cities in ${k}?`, `Yes. Each city has its own database. ${hasFull ? "The full-country database covers every city together." : ""}`.trim()],
   ["How does one-time pricing work?", "You pay once per database, in crypto. Packages and prices are on each database page. There is no subscription."],
   ["How is the list delivered?", "By email, as a link to your file in CSV, Excel or TXT format. No account is needed."],

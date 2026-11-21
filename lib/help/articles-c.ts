@@ -139,11 +139,11 @@ export const articlesC: readonly HelpArticle[] = [
   {
     category: "privacy-compliance", slug: "data-sources",
     title: "Data sources and processing policies",
-    description: "Our team collects data from public sources, verifies it in-house and re-verifies it every 60 days.",
+    description: "Our team collects data from public sources, verifies it and refreshes it every 90 days.",
     keywords: ["sources", "where data comes from", "google maps", "registries", "directories", "processing"],
     body: [
       ["p", "Our team collects raw data from business listings such as Google Maps, company websites, public government registries, directories, licensed providers, public professional profiles, surveys and our own research."],
-      ["p", "We then add missing details, verify emails with in-house SMTP checks and organise the data. All data is re-verified every 60 days. See the [data sources page](/data-sources)."],
+      ["p", "We then add missing details, verify emails and organise the data. All data is re-verified every 90 days. See the [data sources page](/data-sources)."],
     ],
     related: ["data-quality/how-we-verify-data", "privacy-compliance/gdpr-considerations", "privacy-compliance/privacy-policy"],
   },

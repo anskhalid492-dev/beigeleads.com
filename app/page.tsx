@@ -59,7 +59,7 @@ const audiences = [
 const trust = [
   { Icon: FileText, t: "What is in a file", d: "Business name, address, city, country, phone, email and website. Each list page shows the exact fields.", href: "/data-sources", cta: "Where the data comes from" },
   { Icon: Eye, t: "How samples work", d: "A free sample with masked contact details, so you can check the layout without seeing working data.", href: "/sample", cta: "Request a sample" },
-  { Icon: ShieldCheck, t: "What verification means", d: "Our team checks every email with in-house SMTP checks and re-verifies all data every 60 days.", href: "/verification", cta: "How we verify" },
+  { Icon: ShieldCheck, t: "What verification means", d: "BeigeLeads refreshes its databases every 90 days.", href: "/verification", cta: "How we verify" },
   { Icon: Mail, t: "How delivery works", d: "Once your payment is confirmed on the blockchain, a download link is emailed to you.", href: "/legal/delivery", cta: "Delivery policy" },
   { Icon: Users, t: "Using the data lawfully", d: "Lists are for lawful business outreach. Anyone can ask to be removed, and removals are honored.", href: "/legal/lawful-use", cta: "Lawful use" },
   { Icon: ShieldCheck, t: "If emails bounce", d: "Above 5% bounces we replace emails until the list is back at 95% verified, or refund proportionally.", href: "/legal/refund-replacement", cta: "Replacement policy" },
@@ -77,7 +77,7 @@ const faq = [
   ["How does BeigeLeads pricing work?", "Each list has its own page with fixed packages. You see the price before checkout and pay once. There are no seats, credits or renewals."],
   ["Is this a subscription?", "No. You buy a list once and download the file. Nothing renews and there is nothing to cancel."],
   ["Can I see data before I pay?", "Yes. Every list page has a masked sample, and you can request a free sample by email. It needs no payment details."],
-  ["How fresh is the data?", "Our team verifies every email with in-house SMTP checks and re-verifies all data every 60 days."],
+  ["How fresh is the data?", "BeigeLeads refreshes its databases every 90 days."],
   ["What happens after I pay?", "Payment is confirmed on the blockchain, then we email you the link to your file. You do not need an account."],
   ["What format is the file?", "A spreadsheet-style contact file you can open in a spreadsheet app or import into your email tool. The list page shows the fields."],
   ["Can I request a custom list?", "Yes. Describe the industry, place, quantity and fields on the custom list page. We reply by email after checking whether we can source it. Sending a request is free."],

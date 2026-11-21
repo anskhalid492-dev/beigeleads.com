@@ -296,12 +296,12 @@ export function getProductFaqs(p: Product, c: Category, k: Country): ProductFaq[
     [`How many ${c.singular.toLowerCase()} contacts are available?`, `The list holds ${count}. The count is shown on this page so you can compare it with the package you pick.`],
     ["Which countries are covered?", `This list covers ${k.name}. Other countries are added list by list, and you can request one on the custom list page.`],
     [`Can I see a sample of the ${p.name}?`, "Yes. This page shows masked sample rows, and you can request a free sample by email. Sample files only ever contain masked data."],
-    ["Are email addresses verified?", "Our team runs SMTP checks on emails and re-verifies all data every 60 days. No check is perfect, because some mail servers accept every address, so a small share of contacts can still bounce. Above a 5% bounce rate, our Refund & Returns policy replaces the bounced emails until the list is back to 95%."],
+    ["Are email addresses verified?", "BeigeLeads refreshes its databases every 90 days. No check is perfect, because some mail servers accept every address, so a small share of contacts can still bounce. Above a 5% bounce rate, our Refund & Returns policy replaces the bounced emails until the list is back to 95%."],
     [`Is the ${p.name} a one-time purchase?`, "Yes. You pay once and keep the file. There is no subscription and no account. Payment is in crypto, and checkout shows the coins that are open."],
     ["What file formats are available?", "CSV, Excel or TXT. These open in Excel, Google Sheets and most email and CRM tools."],
     ["How do I download the database after purchasing?", "Once your crypto payment is confirmed, we email your download link. Delivery is mostly instant and in some cases takes up to 12 hours at most. You can download the file as many times as you like."],
     ["Can I use this database for B2B marketing?", "Yes, within the law of your country and the contact's country. Read the lawful use policy and the pages on GDPR, CAN-SPAM and CASL before you send. We are not a law firm and this is not legal advice."],
-    [`How frequently is the ${p.name} updated?`, `All data is re-verified every 60 days. This list was last verified on ${verified}.`],
+    [`How frequently is the ${p.name} updated?`, `All data is re-verified every 90 days. This list was last verified on ${verified}.`],
     [`Can I request a custom ${c.singular.toLowerCase()} database?`, "Yes. Use the custom list page to describe the places, fields and size you need, and we will tell you what is possible."],
   ];
 }

@@ -142,7 +142,7 @@ Data quality decides whether your emails are delivered. Business data goes stale
 - **Mailbox.** Does the mail server indicate that this specific mailbox exists? This is usually done with an SMTP check, which asks the server without sending a message.
 - **Risky addresses.** Catch-all domains accept every address, so the check cannot prove the mailbox is real. Treat those with care.
 
-No verification method is perfect, and anyone who promises one is overselling. What verification does is remove the obvious failures before they cost you reputation. BeigeLeads verifies addresses with in-house SMTP checks and re-verifies all data every 60 days. If a list does not meet our promise, our [refund and replacement policy](/legal/refund-replacement) explains what happens, and the Help Center covers [why emails go out of date](/help/data-quality/emails-become-outdated).
+No verification method is perfect, and anyone who promises one is overselling. What verification does is remove the obvious failures before they cost you reputation. BeigeLeads refreshes its databases every 90 days. If a list does not meet our promise, our [refund and replacement policy](/legal/refund-replacement) explains what happens, and the Help Center covers [why emails go out of date](/help/data-quality/emails-become-outdated).
 
 On your side, build good habits too: remove bounced addresses after every send, never email a hard bounce twice, and verify again if a list has been sitting for months.
 
@@ -250,7 +250,7 @@ Verification checks the format, the domain and, where possible, whether the mail
 
 ### How often does business data go out of date?
 
-Constantly. People change roles and companies close or move, so any list loses accuracy over time. That is why verification dates matter. BeigeLeads re-verifies its data every 60 days, and you should re-check any list you have held for a while.
+Constantly. People change roles and companies close or move, so any list loses accuracy over time. That is why verification dates matter. BeigeLeads re-verifies its data every 90 days, and you should re-check any list you have held for a while.
 
 ### What is a good reply rate for cold email?
 

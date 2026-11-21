@@ -1,6 +1,6 @@
 // Audience-specific copy for each solution: one named reader, their real pain points, and a
 // specific closing line. Only claims what exists today: the lists on the lists page,
-// seven fields, masked samples, 60-day re-verification, one-time crypto payment.
+// seven fields, masked samples, 90-day re-verification, one-time crypto payment.
 // No statistics, no promised results. Needs lawyer review for compliance wording.
 
 export type Pain = { pain: string; fix: string };
@@ -35,7 +35,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "Building the list by hand eats the weeks you meant to spend selling.", fix: "Each database arrives as one finished file, already collected, cleaned and tagged by industry and city." },
       { pain: "A monthly lead-platform fee for data you use in bursts.", fix: "You pay once and keep the file. There is no account to cancel and nothing to renew." },
       { pain: "You cannot tell if a list is any good until you have paid for it.", fix: "Every list page shows a masked sample, and you can request a free sample by email first." },
-      { pain: "Old data sends messages to nobody and hurts your sending reputation.", fix: "Emails are checked by our team with SMTP tests and all data is re-verified every 60 days. The last-verified date is on each list page." },
+      { pain: "Old data sends messages to nobody and hurts your sending reputation.", fix: "BeigeLeads refreshes its databases every 90 days. The last-verified date is on each list page." },
       { pain: "New contacts clash with accounts already in your CRM.", fix: "Business name, city and website are separate columns, so matching against existing accounts is a one-step spreadsheet job." },
     ],
     applications: [
@@ -52,10 +52,10 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "cold-email-marketing": {
     seoTitle: "Verified Email Lists for Cold Email",
     seoDescription:
-      "Business email lists for cold outreach to local businesses. SMTP-checked, re-verified every 60 days, with a masked sample first.",
+      "Business email lists for cold outreach to local businesses. refreshed every 90 days, with a masked sample first.",
     h1: "Cold email to business owners without burning your domain",
     lede:
-      "A cold campaign lives or dies on bounces. These business email lists are checked by our own team and re-verified every 60 days, so your first send starts from addresses that were accepted by their mail servers recently.",
+      "A cold campaign lives or dies on bounces. These business email lists are refreshed every 90 days, so your first send starts from addresses that were accepted by their mail servers recently.",
     challenge: {
       heading: "One bad batch can sour your sending domain for months",
       paragraphs: [
@@ -64,7 +64,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       ],
     },
     pains: [
-      { pain: "High bounce rates damage your domain reputation.", fix: "Our team runs SMTP checks on every email and re-verifies all data every 60 days. Some bounces remain possible, and the page says so plainly." },
+      { pain: "High bounce rates damage your domain reputation.", fix: "BeigeLeads refreshes its databases every 90 days. Some bounces remain possible, and the page says so plainly." },
       { pain: "You pay for a list and then pay again for a verifier.", fix: "Verification is already part of how the list is made. The last-verified date is shown on the list page." },
       { pain: "One giant campaign gets generic copy and weak replies.", fix: "The city column lets you split the file into small campaigns and write one specific message per place." },
       { pain: "Unclear rules about who you may email.", fix: "Our CAN-SPAM, CASL and GDPR pages explain how we operate. They are not legal advice, so check the rules where you and your recipients are." },
@@ -98,7 +98,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
     pains: [
       { pain: "Time lost looking up phone numbers and websites one by one.", fix: "Phone, email and website sit on the same row as the business name and address." },
       { pain: "Two reps call the same business.", fix: "Split the file by city or address range and give each rep a territory that does not overlap." },
-      { pain: "Calls to businesses that have closed or moved.", fix: "All data is re-verified every 60 days, and the list page shows the last-verified date." },
+      { pain: "Calls to businesses that have closed or moved.", fix: "All data is re-verified every 90 days, and the list page shows the last-verified date." },
       { pain: "No idea which accounts were already worked.", fix: "Add a status and last-contact column to the file and your CRM keeps the history." },
       { pain: "Named decision makers are missing.", fix: "The seven fields do not include job titles. Use the website or a first call to the front desk to find the buyer." },
     ],
@@ -228,7 +228,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "Worry about touching patient information.", fix: "The list contains business contact details only. There is no patient data of any kind." },
       { pain: "Front desks block cold calls.", fix: "Use the email column for a short written first contact and the phone for follow-up at a quieter time." },
       { pain: "No named buyer for each practice.", fix: "The seven fields do not include job titles. Use the practice website or a first call to find who handles purchasing." },
-      { pain: "Practices open, merge and close.", fix: "All data is re-verified every 60 days and the product page shows when it was last verified." },
+      { pain: "Practices open, merge and close.", fix: "All data is re-verified every 90 days and the product page shows when it was last verified." },
     ],
     applications: [
       { t: "Introduce equipment to nearby practices", d: "Start with one city, send a short email, then follow up by phone." },

@@ -63,7 +63,7 @@ export const CHAPTERS: Chapter[] = [
     title: "Built from scratch, by one person",
     paragraphs: [
       "BeigeLeads is the result: a B2B data provider that Anus built entirely from scratch, drawing on his outbound sales, his freelancing journey and the habit of documenting the work every day. Every feature, pricing decision, integration and late-night fix was his.",
-      "It is built around that first link. The team collects raw data from business listings, company websites, public government registries, directories, licensed providers, public professional profiles and its own research. It fills in what is missing, such as owners and emails, using published addresses, pattern inference and enrichment, and verifies the emails with in-house SMTP checks. Every list is re-verified every 60 days.",
+      "It is built around that first link. The team collects raw data from business listings, company websites, public government registries, directories, licensed providers, public professional profiles and its own research. It fills in what is missing, such as owners and emails, using published addresses, pattern inference and enrichment, and verifies the emails. BeigeLeads refreshes its databases every 90 days.",
       "There are two ways in. A ready-made list suits a buyer who already knows the niche and the place: look at a masked sample, pay once in crypto, and receive the file as CSV, Excel or TXT by email. A custom list suits the buyer whose niche is not on the shelf: describe the requirement and the team sources it, subject to what can be sourced. In both cases there is no account to create and no subscription to cancel. An email address is enough.",
     ],
   },

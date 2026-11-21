@@ -15,7 +15,7 @@ const COMMON_CHOOSE: [string, string][] = [
   ["Check the fields", "Look at which fields the list includes before you look at anything else. Business name, address, city, country, phone, email and website are in our ready-made lists."],
   ["Preview the sample", "Every list page shows a masked sample, and you can request a free sample file by email."],
   ["Pick the place", "A country, state or city keeps a campaign local, so language, time zone and sending rules fit every recipient."],
-  ["Read how it is checked", "Emails are checked with in-house SMTP tests and every list is re-verified every 60 days."],
+  ["Read how it is checked", "BeigeLeads refreshes its databases every 90 days."],
 ];
 
 export const GROUP_COPY: Record<string, GroupCopy> = {
@@ -24,7 +24,7 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
     headline: "Business Email Lists, Ready to Download.",
     whatIs: [
       "A business email list is a database of companies with the contact details you need to reach them. Instead of researching one business at a time, you start from a finished file and filter it down to your market.",
-      "Our ready-made lists are collected from public listings, company websites, registries and directories, checked with in-house SMTP tests and re-verified every 60 days. Each record is one business, so some cells can be empty when a business does not publish a detail.",
+      "Our ready-made lists are collected from public listings, company websites, registries and directories, refreshed every 90 days. Each record is one business, so some cells can be empty when a business does not publish a detail.",
     ],
     uses: [
       ["Sales teams", "Build a prospect list for outbound by industry and place."],
@@ -162,8 +162,13 @@ export const GROUP_COPY: Record<string, GroupCopy> = {
 export const fallbackCopy = (name: string): GroupCopy => ({
   noun: name.toLowerCase(),
   headline: `Find the Right ${name}.`,
-  whatIs: ["Ready-made business contact databases, checked with in-house SMTP tests and re-verified every 60 days."],
-  uses: [["Sales teams", "Build a prospect list."], ["Agencies", "Plan campaigns for clients."]],
+  whatIs: ["Ready-made business contact databases, refreshed every 90 days."],
+  uses: [
+    ["Sales teams", "Build a prospect list for outbound by industry and place."],
+    ["Marketing agencies", "Plan campaigns for clients who sell into one market."],
+    ["Recruitment firms", "Find employers in a sector and region you place candidates in."],
+    ["Founders and small teams", "Reach your first customers without researching each business by hand."],
+  ],
   choose: COMMON_CHOOSE,
 });
 

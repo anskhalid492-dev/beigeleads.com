@@ -61,7 +61,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     },
     helps: [
       { t: "Lists ready to download", d: "Each database is already collected, cleaned and tagged by industry and place, so you skip the research stage." },
-      { t: "Checked before you buy", d: "Our team runs SMTP checks on emails and re-verifies all data every 60 days. The list page shows when it was last done." },
+      { t: "Checked before you buy", d: "BeigeLeads refreshes its databases every 90 days. The list page shows when it was last done." },
       { t: "See it first", d: "Every list shows a masked sample, and you can request a free sample by email before spending anything." },
       { t: "Pay once, keep the file", d: "No subscription and no account. The file is yours to use under the lawful use policy." },
     ],
@@ -101,7 +101,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     tagline: "Reach the right inboxes with a list that bounces less.",
     seoTitle: "Verified Email Lists for Cold Email Campaigns",
     seoDescription:
-      "Business email lists checked by our team and re-verified every 60 days, so cold email campaigns start with fewer bounces. Sample first, pay once.",
+      "Business email lists checked by our team and re-verified every 90 days, so cold email campaigns start with fewer bounces. Sample first, pay once.",
     h1: "Cold email lists built to protect your sender reputation",
     lede:
       "A cold email campaign is only as good as its list. BeigeLeads databases carry business emails that our own team checked, so your first send goes to real mailboxes instead of a pile of bounces.",
@@ -116,8 +116,8 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       ],
     },
     helps: [
-      { t: "Emails checked in-house", d: "Our team runs SMTP checks on every address before it joins a list, rather than passing the work to a third party." },
-      { t: "Re-checked every 60 days", d: "Addresses go stale as people move on, so all data is re-verified every 60 days." },
+      { t: "Refreshed every 90 days", d: "BeigeLeads refreshes its databases every 90 days, so you start from current data." },
+      { t: "Re-checked every 90 days", d: "Addresses go stale as people move on, so all data is re-verified every 90 days." },
       { t: "Opt-outs applied first", d: "People who asked to be removed are taken out before your file is created, and you keep your own suppression list too." },
       { t: "Be realistic about limits", d: "No check is perfect. Some servers accept every address, so a small share can still bounce. Above a 5% bounce rate, our Refund & Returns policy replaces the bounced emails." },
     ],
@@ -340,7 +340,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Address and city included", d: "Plan visits, mailers and neighbourhood campaigns from the same file." },
       { t: "Several ways to reach out", d: "Phone, email and website sit in one row, so you can pick the right channel for each business." },
       { t: "Small packages", d: "A starter-size list is often enough for one city or one campaign." },
-      { t: "Checked regularly", d: "All data is re-verified every 60 days, with the date shown on each list." },
+      { t: "Checked regularly", d: "All data is re-verified every 90 days, with the date shown on each list." },
     ],
     productSlugs: ["restaurants-us", "dentists-us", "ski-shops-us"],
     productNote: "Local-service businesses such as restaurants, dental practices and shops are good places to start.",
@@ -395,7 +395,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     helps: [
       { t: "Business details only", d: "Our lists describe businesses, such as a dental practice, with name, address, phone, email and website. They do not contain patient information." },
       { t: "Practice types you can target", d: "Start with dental practices and clinics, with other healthcare categories added list by list." },
-      { t: "Checked by our team", d: "Emails are checked with SMTP checks and all data is re-verified every 60 days." },
+      { t: "Checked by our team", d: "BeigeLeads refreshes its databases every 90 days." },
       { t: "Sample first", d: "See the masked rows or request a free sample before you buy." },
     ],
     productSlugs: ["dentists-us"],

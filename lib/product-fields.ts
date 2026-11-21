@@ -39,7 +39,7 @@ export const FIELD_CATALOG = [
     ["Email", "Business email address, checked by our team."],
     ["Secondary email", "A second email, when one is found."],
     ["Email type", "Generic (info@) or named mailbox."],
-    ["Email verification status", "Result of our in-house SMTP check."],
+    ["Email verification status", "Result of our email check."],
     ["Fax", "Fax number where published."],
     ["Contact page URL", "Link to the business's contact page."],
   ]),

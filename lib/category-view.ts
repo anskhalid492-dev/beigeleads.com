@@ -48,7 +48,7 @@ export const CEO_CONTENT = {
     ["Match the role to the buyer", "In a small business the CEO often is the buyer. In a large one, a director or a chief of one function may suit you better."],
     ["Narrow by industry first", "One message fits one industry. A focused list is easier to write for than a broad one."],
     ["Decide the place", "Choose a country, state or city, and check the sending rules that apply there."],
-    ["Ask how contacts are sourced and checked", "Ours are collected from public sources, checked with in-house SMTP tests and re-verified every 60 days."],
+    ["Ask how contacts are sourced and checked", "Ours are collected from public sources, refreshed every 90 days."],
     ["Plan the lawful use up front", "You are responsible for following the laws that apply to your sending. Our lawful-use policy applies to every list."],
   ] as [string, string][],
 };
@@ -67,7 +67,7 @@ export function industryView(c: Category) {
     lead: `${c.description} Check a masked sample, pay once, and keep the file.`,
     whatIs: [
       `A ${s} email list is a ready-made database of ${c.reachLabel}. Each record is one business with its name, address, city, country, phone, email and website, so you can contact a whole market without researching it one business at a time.`,
-      `Our team collects the data from public listings, company websites, registries and directories, checks emails with in-house SMTP tests, and re-verifies every list every 60 days. Not every business publishes every detail, so some cells can be empty.`,
+      `Our team collects the data from public listings, company websites, registries and directories, refreshes every list every 90 days. Not every business publishes every detail, so some cells can be empty.`,
     ],
     choose: [
       ["Look at the fields", "Check that the fields you need, such as email or phone, are in the list."],
@@ -101,7 +101,7 @@ export const FIELD_NOTES: Record<string, string> = {
   City: "City, for local targeting.",
   Country: "Country of operation.",
   Phone: "Business phone number.",
-  Email: "Business email, SMTP-checked.",
+  Email: "Business email, refreshed every 90 days.",
   Website: "The business's own site.",
 };
 export const STANDARD_FIELDS = FIELDS;

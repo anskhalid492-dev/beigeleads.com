@@ -91,7 +91,7 @@ export function Why({ items }: { items: readonly (readonly [string, string])[] }
 export const WHY_BEIGE: [string, string][] = [
   ["Pay once, no subscription", "One purchase per list. No seats, credits or monthly fees."],
   ["Masked sample first", "Every ready-made list page shows a masked sample, and you can request a free sample by email."],
-  ["Checked, then re-checked", "Emails are checked with in-house SMTP tests and every list is re-verified every 60 days."],
+  ["Checked, then re-checked", "BeigeLeads refreshes its databases every 90 days."],
   ["Replacement policy", "If more than 5% of emails bounce, we replace them or refund proportionally. See the refund policy."],
   ["Targeted selection", "Choose by industry and place instead of buying one giant file."],
   ["Custom sourcing", "Need something we do not list? Send a request and we tell you what we can source."],

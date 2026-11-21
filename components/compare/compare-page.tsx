@@ -17,9 +17,9 @@ const SOURCES = ["Business listings and maps", "Company websites", "Public gover
 const PIPELINE = [
   ["Collect", "Our team gathers raw business data from the sources above."],
   ["Enrich", "We fill gaps: owners, tech stack and emails, from published addresses, pattern inference and waterfall enrichment."],
-  ["Verify", "Every email goes through our own SMTP checks."],
+  ["Verify", "Every email is checked by our team."],
   ["Organize", "Records are cleaned and sorted by category, place and fields."],
-  ["Re-verify", "All data is re-verified every 60 days."],
+  ["Re-verify", "All data is re-verified every 90 days."],
 ] as const;
 
 
@@ -56,7 +56,7 @@ export function ComparePage({ c }: { c: Comparison }) {
           <div>
             <h2 id="intro" className={h2}>Business contacts from sources you can trace</h2>
             <p className="mt-5 text-lg">
-              BeigeLeads is a marketplace for ready-made business contact lists. Our team collects the data from named public and licensed sources, verifies every email in-house and re-verifies it every 60 days. You buy a list once, no account needed.
+              BeigeLeads is a marketplace for ready-made business contact lists. Our team collects the data from named public and licensed sources, checks every email and refreshes its databases every 90 days. You buy a list once, no account needed.
             </p>
             <p className="mt-4">
               {group ? "Subscription tools sell ongoing access to a database." : `${c.about}`}

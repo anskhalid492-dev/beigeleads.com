@@ -1,8 +1,8 @@
-/** 60-day re-verification cycle, drawn as a slowly rotating sweep. */
+/** 90-day re-verification cycle, drawn as a slowly rotating sweep. */
 export function VerifyRing() {
   const ticks = Array.from({ length: 60 }, (_, i) => i);
   return (
-    <svg viewBox="0 0 200 200" className="mx-auto w-full max-w-xs" role="img" aria-label="A 60-day cycle: every record is re-checked every 60 days">
+    <svg viewBox="0 0 200 200" className="mx-auto w-full max-w-xs" role="img" aria-label="A 90-day cycle: every record is re-checked every 90 days">
       <circle cx="100" cy="100" r="86" fill="none" stroke="var(--color-forest-700)" strokeWidth="1" />
       {ticks.map((i) => {
         const a = (i / 60) * Math.PI * 2 - Math.PI / 2;

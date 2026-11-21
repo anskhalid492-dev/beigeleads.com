@@ -22,7 +22,7 @@ const steps = [
   ["Collect raw data", "Our team gathers raw business records from public listings, websites, registries, directories, licensed providers, surveys and our own research. At this point a record is just a name and a place."],
   ["Append and clean", "We add the basics that were missing, such as address, phone and website, then standardise formats and remove duplicates so one business appears once."],
   ["Find what is missing", "We look for the details that make a list useful: the owner or decision maker, the tech stack a business uses, and a working email address."],
-  ["Verify", "Our in-house team runs SMTP checks on emails. Records that fail are corrected or dropped, not shipped."],
+  ["Verify", "Our team checks every email. Records that fail are corrected or dropped, not shipped."],
   ["Organize", "Each record is tagged by category, country, city and size, so you can buy exactly the slice you need."],
   ["Put it on sale", "Only then does a record join a list. Every list page shows a masked sample and the date it was last verified."],
 ] as const;
@@ -32,7 +32,7 @@ const faq = [
   ["Do you collect data automatically?", "Some of it. We use a mix of automated collection from public pages, licensed data, surveys and manual research by our team. Everything goes through the same cleaning and verification steps."],
   ["How do you find email addresses?", "Three ways. We use business emails that companies publish themselves, we work out likely addresses from a company's naming pattern, and we use waterfall enrichment, which asks one source after another until an address is found. Every candidate is checked before it is kept."],
   ["How do you verify emails?", "Our own team runs SMTP checks. That means asking the recipient's mail server whether it accepts the address, without sending a message. No check is perfect, because some servers accept every address, so a small share can still bounce."],
-  ["How fresh is the data?", "All data is re-verified every 60 days. Each list page shows the date it was last verified so you can see how fresh it is before you buy."],
+  ["How fresh is the data?", "All data is re-verified every 90 days. Each list page shows the date it was last verified so you can see how fresh it is before you buy."],
   ["Can I email everyone on a list?", "That depends on your country and how you use the data. Read our lawful use policy and the pages for GDPR, CAN-SPAM and CASL before you send. We are not a law firm and this page is not legal advice."],
   ["How can someone be removed?", "Anyone can use the opt-out page. Removed addresses are left out of every file we deliver afterwards."],
 ] as const;
@@ -160,13 +160,13 @@ export default function DataSourcesPage() {
             <VerifyRing />
           </div>
           <div>
-            <h2 className="display text-5xl text-sand-50 sm:text-6xl">Checked by our team, then checked again every 60 days.</h2>
+            <h2 className="display text-5xl text-sand-50 sm:text-6xl">Checked by our team, then checked again every 90 days.</h2>
             <p className="mt-5 text-lg">
               Email addresses go stale as people change jobs and companies close. So the work does not stop when a list goes on sale.
-              All of our data is re-verified every 60 days, and each list page shows when it was last done.
+              All of our data is re-verified every 90 days, and each list page shows when it was last done.
             </p>
             <p className="mt-4">
-              We run the SMTP checks ourselves, in-house, rather than passing the work to a third party. Be aware that no check is
+              BeigeLeads refreshes its databases every 90 days. Be aware that no check is
               perfect: some mail servers accept every address, so a few contacts can still bounce. Our{" "}
               <Link href="/legal/refund-replacement" className="font-semibold text-sand-50 underline underline-offset-4">
                 Refund &amp; Returns policy

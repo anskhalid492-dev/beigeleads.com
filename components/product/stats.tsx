@@ -51,7 +51,7 @@ export function ProductStats({ product, country, cityCount }: { product: Product
             <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
               <CalendarCheck2 className="size-6 text-forest-300" aria-hidden />
               <p className="display mt-5 text-4xl text-sand-50">{verified}</p>
-              <p className="mt-1">Last verified. Re-checked every 60 days.</p>
+              <p className="mt-1">Last verified. Re-checked every 90 days.</p>
             </div>
           )}
           {product.fields.length > 0 && (

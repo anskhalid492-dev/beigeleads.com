@@ -51,7 +51,7 @@ export const legalDocs: LegalDoc[] = [
       ] },
       { h: "Delivery and refunds", p: ["Delivery is described in the delivery policy and problems with contacts in the refund and replacement policy."] },
       { h: "Acceptable use", p: ["You must follow the lawful use policy. We may refuse or stop service if you do not."] },
-      { h: "Data accuracy", p: ["We verify every list and re-check data every 60 days, but no contact data is perfect. We do not promise any particular result, such as a reply rate or sales."] },
+      { h: "Data accuracy", p: ["We verify every list and re-check data every 90 days, but no contact data is perfect. We do not promise any particular result, such as a reply rate or sales."] },
       { h: "Liability", p: ["Lists are provided as they are. No verification is perfect, and we do not promise sales, replies or any particular result. Our remedy for faulty data is the Refund & Returns policy. To the extent the law allows, our total liability for an order is limited to the amount you paid for it, and we are not liable for indirect or consequential loss. You agree to cover us against claims that arise from your use of a list in breach of the lawful use policy."] },
       { h: "Governing law", p: ["These terms are governed by the laws of the State of Missouri, United States. Disputes are settled in the state or federal courts located in Jackson County, Missouri."] },
       { h: "Changes", p: ["We may update these terms. The terms in force when you order apply to that order. Last updated: the date shown at the top of this page."] },

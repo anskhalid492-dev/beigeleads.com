@@ -21,7 +21,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "email-lists", name: "Email Lists", menuName: "Email Lists", icon: "mail", status: "available",
     short: "Verified business emails by industry and place.",
-    blurb: "Ready-made business email lists. Each one is checked with in-house SMTP tests and re-verified every 60 days, with a masked sample on the page before you pay.",
+    blurb: "Ready-made business email lists. Each one is refreshed every 90 days, with a masked sample on the page before you pay.",
     children: [
       live("b2b-email-lists", "B2B Email Lists", "Business contacts, ready to download", "Business-to-business email lists with business name, address, city, country, phone, email and website."),
       live("industry-email-lists", "Industry Email Lists", "Pick one industry", "Email lists scoped to a single industry, so one message can fit every recipient."),
@@ -123,7 +123,7 @@ export const TAXONOMY: TaxGroup[] = [
   {
     slug: "business-email-lists", name: "Business Email Lists", menuName: "Business Email Lists", icon: "mail", status: "available",
     short: "Verified business email databases by country and industry.",
-    blurb: "Ready-made business email databases. Each one is checked with in-house SMTP tests and re-verified every 60 days, with a masked sample on the page before you pay.",
+    blurb: "Ready-made business email databases. Each one is refreshed every 90 days, with a masked sample on the page before you pay.",
     children: [
       live("by-country", "Business Emails by Country", "A whole country", "Business email databases that cover a whole country."),
       live("by-industry", "Business Emails by Industry", "One industry", "Business email databases scoped to a single industry."),
@@ -176,6 +176,6 @@ export function nodeFaqs(name: string, status: TaxStatus, compliance?: Complianc
   if (compliance === "whatsapp") out.push([`Does having a phone number mean I can message it on WhatsApp?`, `Not by itself. Yes, we do sell WhatsApp number lists, and marketing on WhatsApp generally needs the recipient's opt-in, so follow WhatsApp's rules and your local law when you message.`]);
   else if (compliance === "consumer") out.push([`Do consumer lists have special rules?`, `Yes, we sell them. Consumer contact data is regulated differently from business data and often needs consent, so follow the rules where you operate.`]);
   else if (compliance === "phone") out.push([`Are there rules for calling or texting these contacts?`, `Yes. They differ by country and by number type. You are responsible for following them, and our lawful-use policy applies to every list.`]);
-  else out.push([`How is the data checked?`, `Emails are checked with in-house SMTP tests and every list is re-verified every 60 days. See the verification page for the full process.`]);
+  else out.push([`How is the data checked?`, `BeigeLeads refreshes its databases every 90 days. See the verification page for the full process.`]);
   return out;
 }

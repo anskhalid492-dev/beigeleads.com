@@ -160,11 +160,11 @@ export const articlesB: readonly HelpArticle[] = [
   {
     category: "data-quality", slug: "how-we-verify-data",
     title: "How BeigeLeads verifies business data",
-    description: "Our team collects, cleans and checks data, verifies emails in-house and re-verifies everything every 60 days.",
+    description: "Our team collects, cleans and checks data, verifies emails and refreshes everything every 90 days.",
     keywords: ["verify", "verification", "quality", "accuracy", "clean", "process"],
     body: [
-      ["p", "Our team collects raw business data from public sources, cleans and organises it, adds missing details such as owners and emails, and verifies emails with our own SMTP checks."],
-      ["p", "All data is re-verified every 60 days. No verification is perfect, so we back every list with a [replacement policy](/legal/refund-replacement) for bounced emails."],
+      ["p", "Our team collects raw business data from public sources, cleans and organises it, adds missing details such as owners and emails, and verifies emails."],
+      ["p", "All data is re-verified every 90 days. No verification is perfect, so we back every list with a [replacement policy](/legal/refund-replacement) for bounced emails."],
       ["p", "The full process is on the [verification page](/verification), and the sources are on the [data sources page](/data-sources)."],
     ],
     related: ["data-quality/email-verification", "data-quality/data-freshness", "privacy-compliance/data-sources"],
@@ -173,7 +173,7 @@ export const articlesB: readonly HelpArticle[] = [
   {
     category: "data-quality", slug: "email-verification",
     title: "Understanding email verification",
-    description: "We check emails with in-house SMTP checks. Some servers accept every address, so no check is perfect.",
+    description: "We check emails. Some servers accept every address, so no check is perfect.",
     keywords: ["email verification", "smtp", "bounce", "valid", "deliverability", "accept all"],
     body: [
       ["p", "SMTP verification asks the receiving mail server whether an address can receive mail, without sending a message. We run these checks ourselves on every email."],
@@ -191,7 +191,7 @@ export const articlesB: readonly HelpArticle[] = [
     keywords: ["outdated", "stale", "old", "decay", "bounce", "change jobs"],
     body: [
       ["p", "Business contact data changes all the time. Businesses close or move, owners change, websites and domains change, and mailboxes are retired."],
-      ["p", "That is why we re-verify all data every 60 days, and why the list page shows when it was last verified. The newer the date, the fresher the list."],
+      ["p", "That is why we re-verify all data every 90 days, and why the list page shows when it was last verified. The newer the date, the fresher the list."],
     ],
     related: ["data-quality/data-freshness", "data-quality/email-verification", "data-quality/report-data-quality"],
   },
@@ -210,10 +210,10 @@ export const articlesB: readonly HelpArticle[] = [
   {
     category: "data-quality", slug: "data-freshness",
     title: "What data freshness means",
-    description: "Freshness is how recently a list was verified. All data is re-verified every 60 days.",
-    keywords: ["freshness", "last verified", "up to date", "60 days", "recent"],
+    description: "Freshness is how recently a list was verified. All data is re-verified every 90 days.",
+    keywords: ["freshness", "last verified", "up to date", "90 days", "recent"],
     body: [
-      ["p", "Freshness tells you how recently the data was checked. Each list page shows a last-verified date. All data is re-verified every 60 days."],
+      ["p", "Freshness tells you how recently the data was checked. Each list page shows a last-verified date. All data is re-verified every 90 days."],
       ["p", "Fresh does not mean perfect. Read [understanding email verification](/help/data-quality/email-verification) for what checks can and can not catch."],
     ],
     related: ["data-quality/emails-become-outdated", "data-quality/how-we-verify-data", "products/record-counts"],

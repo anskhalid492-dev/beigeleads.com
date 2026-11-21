@@ -38,12 +38,12 @@ const sources = [
 ] as const;
 
 const quality = [
-  { icon: MailCheck, t: "Email validity", means: "Whether the recipient's mail server accepts the address.", why: "Dead addresses bounce, waste sends and hurt your sending reputation. We run SMTP checks in-house.", limit: "Some servers accept everything, so a small share can still bounce." },
+  { icon: MailCheck, t: "Email validity", means: "Whether the recipient's mail server accepts the address.", why: "Dead addresses bounce, waste sends and hurt your sending reputation. We check every email address.", limit: "Some servers accept everything, so a small share can still bounce." },
   { icon: Copy, t: "Duplicate records", means: "The same business appearing more than once.", why: "Duplicates mean double calls, double emails and inflated counts. We remove them so one business appears once.", limit: "Businesses listed under very different names can slip through." },
   { icon: Wand2, t: "Business information consistency", means: "Name, address, phone and website agreeing with each other.", why: "A record that contradicts itself is hard to trust or to match against your CRM.", limit: "Sources can disagree, and we cannot confirm every record by phone." },
   { icon: Layers, t: "Formatting and standardization", means: "Phone numbers, addresses and names written one consistent way.", why: "Clean formats sort, filter and import properly in a CRM or spreadsheet.", limit: "Formats follow the source; unusual entries may remain." },
   { icon: Eraser, t: "Missing information", means: "Empty fields such as a phone number, website or email.", why: "A gap limits how you can reach a business. Our team fills missing basics and looks for emails and owners.", limit: "Not every business publishes every detail, so some fields stay empty." },
-  { icon: CalendarClock, t: "Outdated information", means: "Details that were right once and have since changed.", why: "Businesses move, close and change numbers. We re-verify all data every 60 days.", limit: "Changes between checks can still go unnoticed for a while." },
+  { icon: CalendarClock, t: "Outdated information", means: "Details that were right once and have since changed.", why: "Businesses move, close and change numbers. We re-verify all data every 90 days.", limit: "Changes between checks can still go unnoticed for a while." },
   { icon: Tags, t: "Industry classification", means: "Tagging each record with its category.", why: "You buy a dentist list or a restaurant list, not a mix, so the tag decides what you receive.", limit: "A business that fits two categories sits in one list." },
   { icon: MapPin, t: "Geographic accuracy", means: "Tagging each record with its country and city.", why: "Local campaigns and territories depend on the right place.", limit: "Addresses follow what the source publishes." },
 ] as const;
@@ -86,8 +86,8 @@ const dbCards = [
 const faq = [
   ["Where does BeigeLeads get its business data?", "From public business listings and maps, company websites, public government registries, business directories, licensed data providers, public professional profiles and social handles, surveys, and our own research. Every record then goes through the same cleaning and checking steps. The data sources page describes each type in more detail."],
   ["How does BeigeLeads collect business information?", "We use a mix of automated collection from public pages, licensed data, surveys and manual research by our team. Raw records are then cleaned, completed and checked before they join a list. Collection is only the first step, because a raw record is just a name and a place until it has been organised and verified."],
-  ["How does BeigeLeads check email addresses?", "Our in-house team runs SMTP checks. That means asking the recipient's mail server whether it accepts the address, without sending a message to the person. Addresses that fail are corrected or dropped. Some mail servers accept every address, so no check is perfect and a small share can still bounce."],
-  ["How often is business data updated?", "All data is re-verified every 60 days. Each list page shows the date it was last verified, so you can see how fresh a list is before you buy. Businesses can change between checks, so we recommend looking at that date and requesting a sample first."],
+  ["How does BeigeLeads check email addresses?", "Our team checks every email address. That means asking the recipient's mail server whether it accepts the address, without sending a message to the person. Addresses that fail are corrected or dropped. Some mail servers accept every address, so no check is perfect and a small share can still bounce."],
+  ["How often is business data updated?", "All data is re-verified every 90 days. Each list page shows the date it was last verified, so you can see how fresh a list is before you buy. Businesses can change between checks, so we recommend looking at that date and requesting a sample first."],
   ["Does email verification guarantee email delivery?", "No. Verification shows that a mail server accepted the address when we checked. Whether a message reaches an inbox also depends on your sending domain, your content and how recipients react. We do not promise delivery, but we do stand behind bounce rates: above 5%, we replace bounced emails under our Refund & Returns policy."],
   ["How does BeigeLeads handle duplicate records?", "During data organisation we standardise names, addresses and phone formats, then remove duplicates so one business appears once. Standardising first makes matching more reliable. A business listed under very different names in different sources can still slip through, so a quick duplicate check against your own CRM is worthwhile."],
   ["What information is included in your databases?", "Each list has seven fields: business name, address, city, country, phone, email and website. Every product page shows the exact fields and a masked sample. Our research can find extra details, but they are not part of the current lists. Ask through the custom list page if you need more."],
@@ -119,7 +119,7 @@ export default function VerificationPage() {
                 <Button asChild size="lg" variant="secondary"><Link href="/data-sources">See where data comes from</Link></Button>
               </div>
               <ul className="rise mt-8 flex flex-wrap gap-2" style={{ animationDelay: "600ms" }}>
-                {["In-house SMTP checks", "Re-verified every 60 days", "Masked sample on every list page"].map((t) => (
+                {["Refreshed every 90 days", "Re-verified on a set cycle", "Masked sample on every list page"].map((t) => (
                   <li key={t} className="rounded-full border border-forest-300/40 px-3 py-1 text-sm text-forest-100">{t}</li>
                 ))}
               </ul>
@@ -148,7 +148,7 @@ export default function VerificationPage() {
               [Network, "Collect", "Gather records from public and licensed sources."],
               [Layers, "Organize", "Clean, complete and de-duplicate."],
               [ShieldCheck, "Check", "Run SMTP checks and quality checks."],
-              [CalendarClock, "Maintain", "Re-verify all data every 60 days."],
+              [CalendarClock, "Maintain", "Re-verify all data every 90 days."],
             ].map(([Icon, t, d], i) => {
               const I = Icon as typeof Network;
               return (
@@ -228,7 +228,7 @@ export default function VerificationPage() {
         <div className={`${wrap} relative`}>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className={h2Dark}>Email verification, explained</h2>
-            <p className="mt-4 text-lg">Email verification means checking, before you send, whether an address is likely to work. Ours is done in-house by our own team.</p>
+            <p className="mt-4 text-lg">Email verification means checking, before you send, whether an address is likely to work. BeigeLeads refreshes its databases every 90 days.</p>
           </div>
           <div className="mt-14"><EmailFlow /></div>
 
@@ -272,7 +272,7 @@ export default function VerificationPage() {
             <h2 className={h2}>Data freshness and maintenance</h2>
             <div className="mt-6 space-y-5 text-lg leading-relaxed">
               <p>Businesses move, close, rename and change numbers all the time, and people leave the jobs their email addresses belonged to. A database that is never revisited slowly gets worse.</p>
-              <p>That is why all BeigeLeads data is re-verified every 60 days. Every list page shows the date it was last verified, so you can judge freshness yourself before you buy.</p>
+              <p>That is why all BeigeLeads data is re-verified every 90 days. Every list page shows the date it was last verified, so you can judge freshness yourself before you buy.</p>
               <p>Re-verification helps, but it is not instant. Changes between checks can still go unnoticed for a while, so treat any list as a recent snapshot and check the date.</p>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function VerificationPage() {
               <h3 className="display text-3xl text-sand-50">What we do</h3>
               <ul className="mt-5 space-y-3">
                 {[
-                  "Check emails with in-house SMTP tests and re-verify all data every 60 days.",
+                  "Refresh all data every 90 days.",
                   "Show a masked sample and the last-verified date before you buy.",
                   "Apply opt-outs to every file we generate.",
                   "Replace bounced emails if more than 5% bounce, until the list is back to 95% verified and 95% accurate, under our Refund & Returns policy.",

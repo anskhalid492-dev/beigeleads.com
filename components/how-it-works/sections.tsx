@@ -51,8 +51,8 @@ const pipeline = [
   [Eraser, "Clean and organize", "Records are tidied and structured."],
   [Copy, "Remove duplicates", "Duplicate entries are removed."],
   [Sparkles, "Enrich", "Relevant business details are added where missing."],
-  [MailCheck, "Verify emails", "In-house SMTP checks by our team."],
-  [RefreshCw, "Re-verify", "All data is checked again every 60 days."],
+  [MailCheck, "Verify emails", "BeigeLeads refreshes its databases every 90 days."],
+  [RefreshCw, "Re-verify", "All data is checked again every 90 days."],
 ] as const;
 
 export function VerificationPipeline() {

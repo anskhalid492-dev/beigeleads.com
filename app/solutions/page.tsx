@@ -23,7 +23,7 @@ const faq = [
 
 const trust = [
   { icon: EyeOff, t: "Masked sample on every list page", d: "See real columns before you pay." },
-  { icon: CalendarCheck2, t: "Re-verified every 60 days", d: "A last-verified date sits on every list." },
+  { icon: CalendarCheck2, t: "Re-verified every 90 days", d: "A last-verified date sits on every list." },
   { icon: ShieldCheck, t: "Opt-outs honoured", d: "People who ask to be removed are left out of delivered files." },
   { icon: Wallet, t: "Pay once", d: "No subscription, no account." },
 ] as const;

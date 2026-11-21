@@ -264,7 +264,7 @@ export function OthersPanel({ s }: { s: Solution }) {
 
 const resources = [
   { href: "/data-sources", t: "Where our data comes from", d: "The sources our team collects and enriches data from." },
-  { href: "/verification", t: "How we verify data", d: "SMTP checks and 60-day re-verification, explained." },
+  { href: "/verification", t: "How we verify data", d: "How we collect and refresh data, explained." },
   { href: "/legal/lawful-use", t: "Lawful use policy", d: "What you agree to when you use a BeigeLeads file." },
   { href: "/legal/refund-replacement", t: "Refund & Returns", d: "What happens if bounced emails exceed 5%." },
 ];

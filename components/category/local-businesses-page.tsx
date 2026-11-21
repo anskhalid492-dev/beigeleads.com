@@ -105,7 +105,7 @@ export function LocalBusinessesPage({ products }: { products: ShopProduct[] }) {
       <Block title="Why Choose BeigeLeads" tone="sand">
         <Why items={WHY_BEIGE.slice(0, 4)} />
         <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-          {([[Mail, "Checked with in-house SMTP tests"], [RefreshCw, "Re-verified every 60 days"], [FileDown, "CSV, Excel or TXT, delivered by email"]] as const).map(([Icon, t]) => <li key={t} className="flex items-center gap-3 rounded-2xl bg-white p-4 text-sm font-semibold text-forest-900 ring-1 ring-sand-300"><Icon className="size-4 text-forest-500" aria-hidden />{t}</li>)}
+          {([[Mail, "Databases refreshed every 90 days"], [RefreshCw, "Re-verified every 90 days"], [FileDown, "CSV, Excel or TXT, delivered by email"]] as const).map(([Icon, t]) => <li key={t} className="flex items-center gap-3 rounded-2xl bg-white p-4 text-sm font-semibold text-forest-900 ring-1 ring-sand-300"><Icon className="size-4 text-forest-500" aria-hidden />{t}</li>)}
         </ul>
       </Block>
 

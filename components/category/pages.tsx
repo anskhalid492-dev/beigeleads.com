@@ -26,7 +26,7 @@ export function IndustryPage({ c, products, geo }: { c: Category; products: Shop
   const faqs: [string, string][] = [
     ["What data is included?", `Each record is one business: ${STANDARD_FIELDS.join(", ").toLowerCase()}. Some businesses do not publish every detail, so a cell can be empty.`],
     ["Can I preview the contacts?", "Yes. The list page shows a masked sample, and you can request a free sample file by email."],
-    ["How current is the database?", "Lists are re-verified every 60 days and emails are checked with in-house SMTP tests."],
+    ["How current is the database?", "BeigeLeads refreshes its databases every 90 days."],
     [`Can I target specific cities?`, "Ready-made lists are national. Place pages show where we have recorded inventory, and a custom request can target a city."],
     ["How does one-time pricing work?", "You pay once per list, in crypto. No subscription, seats or credits."],
     ["How is the list delivered?", "By email, as a link to your file in CSV, Excel or TXT format. No account is needed."],

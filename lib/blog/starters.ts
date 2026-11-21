@@ -106,7 +106,7 @@ Verification has limits, and it helps to know them:
 
 - **Catch-all domains** accept mail for any address, so a check cannot prove a specific mailbox exists. Treat those addresses as lower confidence.
 - **Role addresses** such as info@ or sales@ usually reach a team, not a person. They are fine for some campaigns and poor for personal outreach.
-- **Results go stale.** A mailbox that was valid last quarter may not be valid today, which is why re-checking matters. BeigeLeads re-verifies all data every 60 days.
+- **Results go stale.** A mailbox that was valid last quarter may not be valid today, which is why re-checking matters. BeigeLeads re-verifies all data every 90 days.
 
 No verification process is perfect, so a good provider also tells you what happens when addresses still bounce. Our [replacement and refund policy](/legal/refund-replacement) covers that.
 

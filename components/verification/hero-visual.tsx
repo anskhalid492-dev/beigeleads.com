@@ -56,7 +56,7 @@ export function HeroVisual() {
         </dl>
       </div>
       <div className="parallax-down absolute bottom-[3%] left-0 hidden rounded-2xl border border-white/15 bg-forest-900/90 px-4 py-3 text-xs shadow-xl backdrop-blur sm:block">
-        <p className="font-semibold text-sand-50">Re-checked every 60 days</p>
+        <p className="font-semibold text-sand-50">Re-checked every 90 days</p>
         <div className="mt-2 h-1.5 w-36 overflow-hidden rounded-full bg-white/10">
           <span className="block h-full w-2/3 rounded-full bg-forest-300" />
         </div>

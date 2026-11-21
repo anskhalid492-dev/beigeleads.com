@@ -202,7 +202,7 @@ const RAW: S[] = [
  "To find a contact's email, a team first checks published addresses on the company website, then pattern inference, then a licensed provider, and verifies the result.",
  ["Data Enrichment", "Email Verification", "Data Decay"]],
 ["Data Decay", "data-enrichment", "Data decay is the gradual loss of accuracy in records as people change jobs, companies move and mailboxes close.",
- "Business data goes out of date continuously. Without regular checks, a list that was good last year gradually fills with addresses that bounce and details that are wrong.\n\nRe-verifying on a schedule is the usual remedy. BeigeLeads re-verifies its data every 60 days.",
+ "Business data goes out of date continuously. Without regular checks, a list that was good last year gradually fills with addresses that bounce and details that are wrong.\n\nRe-verifying on a schedule is the usual remedy. BeigeLeads re-verifies its data every 90 days.",
  "Decay is why old lists perform badly and why a verification date matters.",
  "A team reuses a two-year-old list and finds many people have moved on. After re-verification, only the current records remain.",
  ["Email Verification", "Data Enrichment", "B2B Database"]],

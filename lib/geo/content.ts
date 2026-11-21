@@ -37,10 +37,10 @@ export function geoCopy(i: GeoCopyInput) {
 
   const faqs: [string, string][] = [
     [`What does the ${h1} include?`, product ? `Each record can include ${fields}. The product page lists the exact fields in the file.` : "There is no ready-made list for this place yet. A custom list can include the fields you choose, subject to sourcing."],
-    [`How many ${c.singular.toLowerCase()} contacts do you have in ${where}?`, have ? `${n(records!)} records are recorded for ${full} at the moment. The number is updated when we re-verify the data, which we do every 60 days.` : `None are recorded for ${where} at the moment, and we do not estimate. The figure appears here as soon as real records exist.`],
+    [`How many ${c.singular.toLowerCase()} contacts do you have in ${where}?`, have ? `${n(records!)} records are recorded for ${full} at the moment. The number is updated when we re-verify the data, which we do every 90 days.` : `None are recorded for ${where} at the moment, and we do not estimate. The figure appears here as soon as real records exist.`],
     [`Can I buy only the ${where} contacts?`, product ? `Not as a separate file today. This page is a view of the ${product.name} for ${k.name}: you buy that list once and filter it by ${place ? (place.level === "city" ? "city" : "state or region") : "place"} in Excel or your CRM. If you need a ${where}-only file, request it on the custom list page.` : `Not yet. Request it on the custom list page and we will tell you what is possible.`],
     ...(children.length ? [[`Which places inside ${where} are covered?`, `Places with recorded inventory: ${children.slice(0, 8).map((x) => `${x.name} (${n(x.records)})`).join(", ")}.`] as [string, string]] : []),
-    ["How are the emails verified?", "Our team runs SMTP checks and re-verifies all data every 60 days. No check is perfect, so a small share can still bounce. Above a 5% bounce rate our Refund & Returns policy replaces the bounced emails."],
+    ["How are the emails verified?", "BeigeLeads refreshes its databases every 90 days. No check is perfect, so a small share can still bounce. Above a 5% bounce rate our Refund & Returns policy replaces the bounced emails."],
     [`Can I see a sample before buying?`, "Yes. Request a free masked sample by email. Sample files only ever contain masked data."],
   ];
   return { h1, title, description: description.slice(0, 158), intro, faqs, fullName: full, levelWord };

@@ -16,7 +16,7 @@ export function ProductOverview({ product, category, country }: { product: Produ
             <p key={t}>{t}</p>
           ))}
           <p>
-            Our team collects data from public listings, company websites, registries and directories, checks emails with SMTP checks and re-verifies every list every 60 days. Read how we{" "}
+            Our team collects data from public listings, company websites, registries and directories, refreshes every list every 90 days. Read how we{" "}
             <Link href="/verification" className={link}>verify data</Link> and{" "}
             <Link href="/data-sources" className={link}>where it comes from</Link>.
           </p>

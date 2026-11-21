@@ -6,7 +6,7 @@ import type { StarterArticle } from "./starters";
  * is used. They name no customer, show no logo, and state no conversion rate, revenue, ROI or campaign result. Every study says so in its first lines
  * and on its page. Replace or add real, permissioned customer stories only with the customer's written approval, and add the slug to
  * REAL_CUSTOMER_SLUGS in lib/case-studies.ts so the "Illustrative use case" label is removed for that one.
- * Facts about BeigeLeads come from the site's own policies (seven fields, in-house SMTP checks, 60-day re-verification, replacement policy).
+ * Facts about BeigeLeads come from the site's own policies (seven fields, email checks, 90-day refresh, replacement policy).
  */
 const NOTE = (extra = "") => `:::info
 **Illustrative use case.** This is a composite scenario written to show how targeted business data can be used. It is not a report about a real customer, and it contains no customer names, logos, testimonials or measured results.${extra}
@@ -82,7 +82,7 @@ Every BeigeLeads list page has a masked sample, and the [free sample](/sample) i
 With the data chosen, the agency builds a repeatable weekly routine.
 
 1. **Segment the file.** The list is sorted by city. The agency starts with one or two cities where it already has a local reference.
-2. **Clean before sending.** The agency removes duplicates, rows missing an email, and obvious role mailboxes that are unlikely to reach a decision-maker. BeigeLeads checks emails with in-house SMTP verification and re-verifies data every 60 days, but a quick tidy on the agency's side is still sensible, and it makes the spreadsheet easier to work with.
+2. **Clean before sending.** The agency removes duplicates, rows missing an email, and obvious role mailboxes that are unlikely to reach a decision-maker. BeigeLeads refreshes its databases every 90 days, but a quick tidy on the agency's side is still sensible, and it makes the spreadsheet easier to work with.
 3. **Research a small batch.** The owner picks twenty practices, opens each website and notes one specific observation: an outdated page, a missing service page, no clear booking path.
 4. **Write one message per batch.** Each email references the observation, offers one concrete next step and includes the sender's real name, postal address and an easy way to opt out. The [CAN-SPAM guidance](/legal/can-spam) applies to business email in the United States, and the agency treats unsubscribe requests as final.
 5. **Send small, then review.** The agency sends a small batch, watches bounces and replies, and only then sends the next. A rising bounce rate is a signal to stop and look at the list, not to push harder.
@@ -288,7 +288,7 @@ Treating the groups differently keeps effort proportional. The most research goe
 Cleaning and verification are two different things, and a good workflow does both.
 
 - **Cleaning** is what the team does on its own: remove duplicates, drop rows with no email and no phone, standardise city and country spellings, and flag generic mailboxes such as info@ for a lower priority.
-- **Verification** is a check that an address can receive mail. BeigeLeads verifies emails with in-house SMTP checks, and re-verifies its data every 60 days; the [verification page](/verification) explains the process. A bounce still can happen, which is why the policy on [refunds and replacements](/legal/refund-replacement) exists.
+- **Verification** is a check that an address can receive mail. BeigeLeads refreshes its databases every 90 days; the [verification page](/verification) explains the process. A bounce still can happen, which is why the policy on [refunds and replacements](/legal/refund-replacement) exists.
 
 Neither step replaces the other. Cleaning makes the file easier to work with. Verification makes it safer to send.
 

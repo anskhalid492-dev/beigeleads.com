@@ -44,7 +44,7 @@ export async function buildView(db: Db, t: Term): Promise<TermView> {
 export function ctaFor(category: string): { title: string; text: string; href: string; label: string } {
   if (["b2b-databases", "b2c-data", "data-segmentation", "crm"].includes(category)) return { title: "See real lists", text: "Every list page shows a masked sample, so you can judge the data before you buy.", href: "/lists", label: "Browse lists" };
   if (["lead-generation", "sales-prospecting"].includes(category)) return { title: "Need a specific audience?", text: "Tell us the industry, place and size you need and we will say what we can source.", href: "/custom-list", label: "Build my custom list" };
-  if (["email-verification", "data-enrichment"].includes(category)) return { title: "See how we verify data", text: "In-house SMTP checks, and every list is re-verified every 60 days.", href: "/verification", label: "How verification works" };
+  if (["email-verification", "data-enrichment"].includes(category)) return { title: "See how we verify data", text: "BeigeLeads refreshes its databases every 90 days.", href: "/verification", label: "How verification works" };
   if (category === "privacy-compliance") return { title: "How we handle compliance", text: "Read how we source data, what you agree to when you buy and how opt-outs work.", href: "/legal/lawful-use", label: "Read the lawful-use policy" };
   return { title: "Check the data first", text: "Request a free masked sample and judge the quality yourself.", href: "/sample", label: "Request a free sample" };
 }

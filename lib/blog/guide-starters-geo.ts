@@ -96,7 +96,7 @@ Location filters only help if the underlying data is accurate. Before a campaign
 - **Does the business exist at that address?** A quick look at the website or a map listing usually answers it.
 - **Do the emails look right?** Check for typos, role addresses such as info@ or sales@, and addresses at free providers when you expected a company domain.
 - **Are there duplicates?** The same business can appear under slightly different names.
-- **How old is the data?** Ask when it was last verified. People change roles and companies close or move, so any list decays. BeigeLeads re-verifies its data every 60 days, and you should still re-check anything you have held for a while.
+- **How old is the data?** Ask when it was last verified. People change roles and companies close or move, so any list decays. BeigeLeads re-verifies its data every 90 days, and you should still re-check anything you have held for a while.
 
 Email verification, including SMTP checks, reduces bounces but is never perfect, because some mail servers accept every address. Plan for a small share of bounces and remove them after each send. Our [verification page](/verification) explains what we check, and the [data sources page](/data-sources) explains where the data comes from.
 
@@ -170,7 +170,7 @@ No. The United States, the European Union and the United Kingdom, and Canada all
 
 ### How do I know the data for a place is current?
 
-Ask when it was last verified and check a sample yourself. BeigeLeads re-verifies all data every 60 days, and each list page shows the verification date once real data is in place.
+Ask when it was last verified and check a sample yourself. BeigeLeads re-verifies all data every 90 days, and each list page shows the verification date once real data is in place.
 
 ### What if my country or city is not listed?
 
