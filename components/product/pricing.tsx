@@ -35,7 +35,6 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
             const dark = pk.highlighted;
             const sp = shownPrice(promos, { slug: product.slug, categorySlug: product.categorySlug }, pk);
             const shown = sp.auto ?? sp.code;
-            const per1000 = pk.records > 0 ? (pk.priceUsdCents / 100 / (pk.records / 1000)).toFixed(2) : "";
             return (
               <div
                 key={pk.name}
@@ -65,7 +64,6 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
                 ) : (
                   <p className={`display mt-6 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{formatUsd(pk.priceUsdCents)}</p>
                 )}
-                <p className="mt-1 text-sm">{pk.records > 0 ? `$${per1000} per 1,000 records. ` : ""}Paid once.</p>
                 <ul className="mt-6 flex-1 space-y-3 text-sm">
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fields.length}+ data fields per record</li>
                   <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fileFormats?.trim() || "CSV, Excel or TXT"} file</li>
