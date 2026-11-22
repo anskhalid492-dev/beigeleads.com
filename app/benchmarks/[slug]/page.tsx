@@ -35,7 +35,7 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
         <header className={`${wrap} pb-6 pt-4`}>
           <h1 className="display max-w-[22ch] text-[2.5rem] leading-[0.98] text-forest-900 sm:text-[3.6rem]">{b.title}</h1>
           <p className="mt-4 max-w-[62ch] text-lg text-forest-700">{r.summary}</p>
-          <p className="mt-3 text-sm text-forest-700">Third-party research summarised by BeigeLeads. Source: <a href={r.source.url} rel="noopener noreferrer" target="_blank" className="font-semibold text-forest-900 underline">{r.source.name}</a>. Reviewed {fmtDate(r.reviewed)}.</p>
+          <p className="mt-3 text-sm text-forest-700">A BeigeLeads benchmark report compiled from published research. Source: <a href={r.source.url} rel="noopener noreferrer" target="_blank" className="font-semibold text-forest-900 underline">{r.source.name}</a>. Reviewed {fmtDate(r.reviewed)}.</p>
         </header>
 
         <section className={`${wrap} py-6`} aria-labelledby="summary">
