@@ -4,6 +4,7 @@ import { comparisons } from "@/lib/compare-data";
 import { articleHref, helpArticles, helpCategories } from "@/lib/help";
 import { legalDocs } from "@/lib/legal/docs";
 import { solutions } from "@/lib/solutions";
+import { publishedBenchmarks } from "@/lib/benchmarks";
 
 export type SitePage = { path: string; label: string; group: string };
 
@@ -21,6 +22,7 @@ export function sitePages(): SitePage[] {
     ...comparisons.map((c) => ({ path: `/compare/beigeleads-vs-${c.slug}`, label: `BeigeLeads vs ${c.slug}`, group: "Comparisons" })),
     ...helpCategories.map((c) => ({ path: `/help/${c.slug}`, label: `Help: ${c.slug}`, group: "Help Center" })),
     ...helpArticles.map((a) => ({ path: articleHref(a), label: a.title, group: "Help Center" })),
+    ...publishedBenchmarks().map((b) => ({ path: `/benchmarks/${b.slug}`, label: b.title, group: "Benchmarks" })),
     ...legalDocs.map((d) => ({ path: `/legal/${d.slug}`, label: d.title, group: "Legal" })),
   ];
 }

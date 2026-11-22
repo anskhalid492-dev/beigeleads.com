@@ -8,6 +8,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { authorSitemap } from "@/lib/blog/authors";
 import { publishedSitemap } from "@/lib/blog/posts";
 import { excludedSitemapPaths } from "@/lib/seo/sitemap";
+import { publishedBenchmarks } from "@/lib/benchmarks";
 import { SITE_URL } from "@/lib/site";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { hydrateCatalog } from "@/lib/catalog-db";
@@ -57,6 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/partners` },
     { url: `${SITE_URL}/team-purchase-requests` },
     { url: `${SITE_URL}/benchmarks` },
+    ...publishedBenchmarks().map((b) => ({ url: `${SITE_URL}/benchmarks/${b.slug}` })),
     { url: `${SITE_URL}/email-list-verification` },
     { url: `${SITE_URL}/ai-assistant` },
     { url: `${SITE_URL}/solutions` },

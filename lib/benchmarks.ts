@@ -1,4 +1,4 @@
-// B2B Benchmarks (section 138). The 20 planned reports as code records. NO figures live here: a report is published only when it has verified,
+// B2B Benchmarks (section 138). The 20 planned reports as code records. Figures live only in lib/benchmarks-reports.ts: a report is published only when it has verified,
 // attributable data (first-party aggregate the owner approves, or a credible third-party study with permission). Until then it is a draft with a
 // documented data requirement, is not linked as a report, and is not in the sitemap.
 export type BenchCategory = "email-outreach" | "data-quality" | "lead-generation" | "industry-geo";
@@ -8,9 +8,10 @@ export const BENCH_CATEGORIES: { slug: BenchCategory; name: string; text: string
   { slug: "lead-generation", name: "Lead Generation", text: "Conversion, prospecting effort, SDR output, cost per lead and sales cycles." },
   { slug: "industry-geo", name: "Industry & Geographic Research", text: "How the same metrics differ by industry and by country." },
 ];
-export type BenchRecord = { slug: string; title: string; category: BenchCategory; keyword: string; need: string; status: "draft" | "published" };
+import { REPORTS, type Report } from "@/lib/benchmarks-reports";
+export type BenchRecord = { slug: string; title: string; category: BenchCategory; keyword: string; need: string; status: "draft" | "published"; report?: Report };
 const R = (slug: string, title: string, category: BenchCategory, keyword: string, need: string): BenchRecord => ({ slug, title, category, keyword, need, status: "draft" });
-export const BENCHMARKS: BenchRecord[] = [
+const BASE: BenchRecord[] = [
   R("cold-email-response-rate", "Cold Email Response Rate Benchmarks", "email-outreach", "cold email response rate benchmarks", "A cited third-party study or BeigeLeads-approved aggregate with sample size, period and a written reply definition."),
   R("cold-email-bounce-rate", "Cold Email Bounce Rate Benchmarks", "email-outreach", "cold email bounce rate benchmarks", "Bounce data by list source with sample size, period and hard/soft bounce definitions."),
   R("b2b-email-deliverability", "B2B Email Deliverability Benchmarks", "email-outreach", "b2b email deliverability benchmarks", "Inbox-placement or deliverability study with method, sample and period."),
@@ -32,4 +33,5 @@ export const BENCHMARKS: BenchRecord[] = [
   R("b2b-email-by-country", "B2B Email Benchmarks by Country", "industry-geo", "b2b email benchmarks by country", "Country-level deliverability or response data with sample per country."),
   R("b2b-outreach-by-industry", "B2B Outreach Benchmarks by Industry", "industry-geo", "b2b outreach benchmarks by industry", "Outreach metrics split by industry from one consistent dataset."),
 ];
+export const BENCHMARKS: BenchRecord[] = BASE.map((b) => (REPORTS[b.slug] ? { ...b, status: "published" as const, report: REPORTS[b.slug] } : b));
 export const publishedBenchmarks = () => BENCHMARKS.filter((b) => b.status === "published");

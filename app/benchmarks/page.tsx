@@ -37,9 +37,9 @@ export default function BenchmarksPage() {
       </section>
 
       <section className={`${wrap} py-8`} aria-labelledby="status">
-        <h2 id="status" className="display text-[1.9rem] leading-tight text-forest-900 sm:text-[2.4rem]">{live.length ? "Published research" : "Research in preparation"}</h2>
+        <h2 id="status" className="display text-[1.9rem] leading-tight text-forest-900 sm:text-[2.4rem]">Published and upcoming research</h2>
         <p className="mt-3 max-w-[64ch] text-forest-700">
-          {live.length ? "Reports below have verified sources and a documented method." : "No report is published yet. We list the 20 planned benchmarks below, and each one goes live only when it has data we can source and explain. We do not publish estimates to fill a chart."}
+          {live.length ? "Published reports summarise third-party studies with a link to the original, its period, population and limits. The rest are in preparation and go live only when we can source and explain the data. We do not publish estimates to fill a chart." : "No report is published yet."}
         </p>
       </section>
 
