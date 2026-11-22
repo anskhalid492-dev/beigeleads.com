@@ -8,12 +8,12 @@ import { GeoExplorer } from "./geo-explorer";
 
 
 type Industry = { slug: string; name: string; blurb: string };
-type Props = { industries: Industry[]; tree: GeoTree; industryCountries: Record<string, [string, string][]>; niches: { category: string; name: string }[]; productCats: Record<string, string[]> };
+type Props = { industries: Industry[]; tree: GeoTree; industryCountries: Record<string, [string, string][]>; niches: { category: string; name: string }[]; productCats: Record<string, string[]>; countryProducts: Record<string, { slug: string; name: string }[]> };
 const TABS = [["industries", "By industry", Building2], ["locations", "By location", Globe2]] as const;
 type Tab = (typeof TABS)[number][0];
 
 /** The directory: every industry, a country -> state -> city explorer, and prospect types. Real data only. */
-export function ListsDirectory({ industries, tree, industryCountries, niches, productCats }: Props) {
+export function ListsDirectory({ industries, tree, industryCountries, niches, productCats, countryProducts }: Props) {
   const [tab, setTab] = useState<Tab>("industries");
   useEffect(() => {
     const on = () => { const h = window.location.hash.slice(1); if (h === "industries" || h === "locations") setTab(h); };
@@ -84,7 +84,7 @@ export function ListsDirectory({ industries, tree, industryCountries, niches, pr
 
           <div id="panel-locations" role="tabpanel" aria-labelledby="tab-locations" hidden={tab !== "locations"}>
             <p className="mb-5 max-w-2xl text-sm">Only places where we have recorded real inventory are listed. Each page is a view of the national list for that industry.</p>
-            <GeoExplorer tree={tree} industries={industries} productCats={productCats} />
+            <GeoExplorer tree={tree} industries={industries} productCats={productCats} countryProducts={countryProducts} />
           </div>
         </div>
       </div>

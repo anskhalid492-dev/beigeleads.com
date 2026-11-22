@@ -49,7 +49,7 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
   // Every US state is selectable; a state view shows the national lists, so it carries every category that has a US product.
   const us = tree.find((c) => c.slug === "united-states");
   if (us) {
-    const usCats = [...new Set(products.filter((p) => p.countrySlug === "united-states").map((p) => p.categorySlug))];
+    const usCats = [...new Set(products.filter((p) => p.countrySlug === "united-states" && p.scope !== "city" && !p.region).map((p) => p.categorySlug))];
     for (const st of US_STATES) {
       const r = us.regions.find((x) => x.slug === st.slug) ?? (us.regions.push({ slug: st.slug, name: st.name, cats: [] }), us.regions[us.regions.length - 1]);
       for (const k of usCats) touch(r.cats, k);

@@ -40,7 +40,12 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
   const productCats: Record<string, string[]> = {};
   const industryCountries: Record<string, [string, string][]> = {};
   for (const p of data.products) { const l = (industryCountries[p.categorySlug] ??= []); if (!l.some((x) => x[0] === p.countryCode)) l.push([p.countryCode, p.countryName]); }
-  for (const p of data.products) { const l = (productCats[p.countrySlug] ??= []); if (!l.includes(p.categorySlug)) l.push(p.categorySlug); }
+  // Only NATIONAL lists have a /lists/<category>/<country> page; regional or city-only lists open their own product page instead.
+  const countryProducts: Record<string, { slug: string; name: string }[]> = {};
+  for (const p of data.products) {
+    if (p.scope !== "city" && !p.region) { const l = (productCats[p.countrySlug] ??= []); if (!l.includes(p.categorySlug)) l.push(p.categorySlug); }
+    else (countryProducts[p.countrySlug] ??= []).push({ slug: p.slug, name: p.name ?? p.title });
+  }
 
   const tax = await getTax();
   // Filter, sort and page on the server: the browser only receives one page of products.
@@ -65,7 +70,7 @@ export default async function ListsPage({ searchParams }: { searchParams: SP }) 
         page && <ListsCatalog items={page.items} page={page.page} pages={page.pages} fac={facets(data, f)} active={chips(f, data)} readsAs={readsAs} industries={data.industries.map((i) => ({ slug: i.slug, name: i.name }))} countries={data.countries.map((c) => ({ slug: c.slug, name: c.name }))} initial={f} />
       )}
 
-      <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} industryCountries={industryCountries} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} />
+      <ListsDirectory industries={data.industries.map((i) => ({ slug: i.slug, name: i.name, blurb: i.blurb ?? "" }))} tree={data.tree} industryCountries={industryCountries} niches={data.niches.map((n) => ({ category: n.category, name: n.name }))} productCats={productCats} countryProducts={countryProducts} />
 
       <section className="border-t border-sand-200 bg-forest-900 py-14 text-sand-50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4">
         <div><h2 className="display text-3xl !text-sand-50">Can&apos;t find your list?</h2><p className="mt-1 text-sand-200">Describe the industry, place and size you need.</p></div>

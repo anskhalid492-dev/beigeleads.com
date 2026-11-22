@@ -67,11 +67,20 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
                 ) : (
                   <p className={`display mt-6 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{formatUsd(pk.priceUsdCents)}</p>
                 )}
-                <ul className="mt-6 flex-1 space-y-3 text-sm">
-                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fields.length}+ data fields per record</li>
-                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />{product.fileFormats?.trim() || "CSV, Excel or TXT"} file</li>
-                  <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden />Download link by email, unlimited downloads</li>
-                </ul>
+                {pk.records > 0 && pk.priceUsdCents > 0 && (
+                  <p className={`mt-2 text-sm ${dark ? "text-sand-200" : ""}`}>About {formatUsd(Math.max(1, Math.round((pk.priceUsdCents / pk.records) * 1000)))} per 1,000 records</p>
+                )}
+                <div className={`mt-6 border-t pt-5 ${dark ? "border-forest-700" : "border-sand-300"}`}>
+                  <p className={`text-xs font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>What you get</p>
+                  <ul className="mt-3 flex-1 space-y-3 text-sm">
+                    {pk.records > 0 && <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{pk.records.toLocaleString("en-US")} records</strong> of {product.name}</span></li>}
+                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{product.fields.length}+ data fields</strong> per record, including business email</span></li>
+                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span>Format: <strong>{product.fileFormats?.trim() || "CSV, Excel or TXT"}</strong></span></li>
+                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span>Download link by email, <strong>unlimited downloads</strong>; delivery is usually instant, up to 12 hours</span></li>
+                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>Refreshed every 90 days</strong> and covered by our replacement policy for bounced emails</span></li>
+                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>One payment, you own the list.</strong> No subscription, no account</span></li>
+                  </ul>
+                </div>
                 <AddToCartButton slug={product.slug} pkg={pk.name} variant={dark ? "primary" : "secondary"} className="mt-8" label="Get This Package" />
               </div>
             );
