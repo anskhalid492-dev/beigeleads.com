@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { saveBundleAction, searchProductsAction, type PickProduct } from "./actions";
 
@@ -25,6 +25,7 @@ export function BundleForm({ initial, categories }: { initial: BundleFormState; 
   const list = s.items.reduce((n, i) => n + i.priceCents, 0);
   const price = s.priceMode === "percent" ? Math.round(list * (1 - (Number(s.discountPercent) || 0) / 100)) : Math.round((Number(s.fixedPrice) || 0) * 100);
   const valid = s.items.length >= 2 && price > 0 && price < list;
+  useEffect(() => { start(async () => setFound(await searchProductsAction(""))); }, []);
   const search = () => start(async () => setFound(await searchProductsAction(q)));
   const add = (p: PickProduct, pkg: string) => {
     const k = p.packages.find((x) => x.name === pkg); if (!k) return;
@@ -71,7 +72,7 @@ export function BundleForm({ initial, categories }: { initial: BundleFormState; 
             <ul className="space-y-2">
               {found.map((p) => (
                 <li key={p.slug} className="rounded-xl border border-sand-200 p-3 text-sm">
-                  <p className="font-semibold text-forest-900">{p.name} <span className="font-normal text-forest-700">· {p.category}</span></p>
+                  <p className="font-semibold text-forest-900">{p.name} <span className="font-normal text-forest-700">· {p.category} · {p.status}</span></p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {p.packages.map((k) => <Button key={k.name} type="button" size="sm" variant={s.items.some((i) => i.slug === p.slug && i.pkg === k.name) ? "primary" : "secondary"} onClick={() => add(p, k.name)}>{k.name} · {usd(k.priceCents)}</Button>)}
                   </div>

@@ -55,7 +55,7 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
   const c = getCategory(category);
   if (!c) notFound();
   if (c.imported) {
-    const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug);
+    const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug || !!p.extraCats?.includes(c.slug));
     if (!rows.length) notFound();
     return <ImportedCategoryPage c={c} products={rows} />;
   }
@@ -78,7 +78,7 @@ export default async function CategoryPage(props: PageProps<"/lists/[category]">
   }));
 
   // Every industry uses the shopping landing page.
-  const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug);
+  const rows = (await loadListsData()).products.filter((p) => p.categorySlug === c.slug || !!p.extraCats?.includes(c.slug));
   if (!rows.length) notFound(); // every list of this industry was filed elsewhere (e.g. Local Businesses Database)
   return <IndustryPage c={c} products={rows} geo={geo.map((g) => ({ name: g.k.name, regions: g.regions, cities: g.cities }))} />;
 }

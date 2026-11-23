@@ -9,6 +9,8 @@ import { schema } from "@/lib/db";
 import { getProductRow, rowFields, rowSamples, rowFlags, rowPackages, rowRestricted } from "@/lib/import/store";
 import { EditForm } from "./edit-form";
 
+function extraNames(sj: string | null): string[] { try { const v = (JSON.parse(sj || "{}") as { extraCategories?: { name?: unknown }[] }).extraCategories; return (Array.isArray(v) ? v : []).flatMap((x) => (typeof x?.name === "string" ? [x.name] : [])); } catch { return []; } }
+
 export const dynamic = "force-dynamic";
 
 export default async function EditImported({ params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +27,7 @@ export default async function EditImported({ params }: { params: Promise<{ id: s
     <>
       <PageHeader title={r.name} text={`${r.status} · ${r.categoryName} · ${r.countryName}${r.region ? ` · ${r.region}` : ""} · /lists/${r.slug}`} actions={<Link href="/admin/products" className="text-sm underline">Back to imported products</Link>} />
       <EditForm categories={categories} samples={rowSamples(r)} origin={r.origin} id={r.id} status={r.status} slug={r.slug} restricted={rowRestricted(r)} flags={rowFlags(r)}
-        initial={{ categoryName: r.categoryName, recordCount: r.recordCount, dataFields: rowFields(r).join("\n"), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale, name: r.name, title: r.title, description: r.description, seoTitle: r.seoTitle ?? "", metaDescription: r.metaDescription ?? "", packages: rowPackages(r).map((k) => ({ name: k.name as "Starter" | "Professional" | "Complete", records: k.records, priceUsdCents: k.priceUsdCents, highlighted: !!k.highlighted })) }} />
+        initial={{ categoryName: r.categoryName, extraCategories: extraNames(r.sourceJson), recordCount: r.recordCount, dataFields: rowFields(r).join("\n"), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale, name: r.name, title: r.title, description: r.description, seoTitle: r.seoTitle ?? "", metaDescription: r.metaDescription ?? "", packages: rowPackages(r).map((k) => ({ name: k.name as "Starter" | "Professional" | "Complete", records: k.records, priceUsdCents: k.priceUsdCents, highlighted: !!k.highlighted })) }} />
     </>
   );
 }

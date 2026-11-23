@@ -26,6 +26,8 @@ export type City = { slug: string; name: string; countrySlug: string };
 export type Product = {
   slug: string;
   categorySlug: string;
+  /** Further categories this product is also listed under (admin choice). The primary category above stays its main one. */
+  extraCategories?: readonly string[];
   countrySlug: string;
   title: string;
   // null means "not known yet". Never show an invented number.
@@ -313,8 +315,10 @@ export const getCountry = (slug: string) => countries.find((c) => c.slug === slu
 export const getCities = (countrySlug: string) => cities.filter((c) => c.countrySlug === countrySlug);
 export const getCity = (countrySlug: string, slug: string) =>
   cities.find((c) => c.countrySlug === countrySlug && c.slug === slug);
+/** True when the product is filed under this category as its main one or as an extra one. */
+export const inCategory = (p: Pick<Product, "categorySlug" | "extraCategories">, slug: string) => p.categorySlug === slug || !!p.extraCategories?.includes(slug);
 export const getProducts = (categorySlug?: string) =>
-  categorySlug ? allProducts().filter((p) => p.categorySlug === categorySlug) : allProducts();
+  categorySlug ? allProducts().filter((p) => inCategory(p, categorySlug)) : allProducts();
 export const getProduct = (slug: string) => {
   const all = allProducts();
   return all.find((p) => p.slug === slug) ?? (slugAliases.has(slug) ? all.find((p) => p.slug === slugAliases.get(slug)) : undefined);

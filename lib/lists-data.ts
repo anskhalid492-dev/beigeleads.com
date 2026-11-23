@@ -20,7 +20,7 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
     const k = cname.get(p.countrySlug) ?? getCountry(p.countrySlug);
     const from = startingPriceCents(p);
     const real = !p.placeholderData; // placeholder counts and prices never reach the browser
-    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, channel: p.channel ?? "", region: p.region ?? "", description: p.imported ? p.description.slice(0, 160) : p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
+    return { slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, ...(p.extraCategories?.length ? { extraCats: [...p.extraCategories] } : {}), categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, channel: p.channel ?? "", region: p.region ?? "", description: p.imported ? p.description.slice(0, 160) : p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
   });
 
   // Geography with REAL inventory only (count above zero, place allowed to be shown).
@@ -62,13 +62,14 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
   const extraCty = new Map<string, { slug: string; name: string; code: string }>();
   for (const p of products) {
     if (!cats.some((c) => c.slug === p.categorySlug) && !extraInd.has(p.categorySlug)) extraInd.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, hints: [p.categoryName] });
+    for (const x of p.extraCats ?? []) { const k = getCategory(x); if (k && !cats.some((c) => c.slug === x) && !extraInd.has(x)) extraInd.set(x, { slug: x, name: k.name, blurb: k.name, hints: [k.name] }); }
     if (!countries.some((c) => c.slug === p.countrySlug) && !extraCty.has(p.countrySlug)) extraCty.set(p.countrySlug, { slug: p.countrySlug, name: p.countryName, code: p.countryCode });
   }
   const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
   const subs = await loadSubindustries(db);
   return {
     products, tree,
-    industries: [...cats.filter((c) => products.some((p) => p.categorySlug === c.slug)).map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })), ...[...extraInd.values()].sort(byName)],
+    industries: [...cats.filter((c) => products.some((p) => p.categorySlug === c.slug || p.extraCats?.includes(c.slug))).map((c) => ({ slug: c.slug, name: c.name, blurb: c.blurb, hints: [...(HINTS[c.slug] ?? []), c.singular] })), ...[...extraInd.values()].sort(byName)],
     countries: [...countries.map((c) => ({ slug: c.slug, name: c.name, code: c.code })), ...[...extraCty.values()].sort(byName)],
     niches: subs.rows.map((s) => ({ category: s.categorySlug, categoryName: catName.get(s.categorySlug) ?? "", name: s.name })),
   };

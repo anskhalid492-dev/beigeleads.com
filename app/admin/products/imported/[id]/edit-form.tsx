@@ -6,7 +6,7 @@ import { maskRows, type SampleRowData } from "@/lib/product-samples";
 import { duplicateProductAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
-type Init = { categoryName: string; recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
+type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
 
 export function EditForm({ categories, samples, id, origin, status, slug, restricted, flags, initial }: { categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
@@ -26,6 +26,8 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
   }
+  const [extraDraft, setExtraDraft] = useState("");
+  const addExtra = () => { const v = extraDraft.trim(); if (v && v.toLowerCase() !== f.categoryName.trim().toLowerCase() && !f.extraCategories.some((x) => x.toLowerCase() === v.toLowerCase())) set("extraCategories", [...f.extraCategories, v]); setExtraDraft(""); };
   async function saveSample(remove = false) {
     setBusy(true); setMsg("Saving sample...");
     try { const r = await saveSampleAction(id, remove ? "" : csv); setMsg(r.message); if (r.ok) { setSaved(remove ? [] : preview); setCsv(""); } } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
@@ -42,8 +44,16 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
       <label className="block"><span className="mb-1 block font-semibold">Category</span>
         <input className={box} list="category-options" value={f.categoryName} maxLength={120} onChange={(e) => set("categoryName", e.target.value)} />
         <datalist id="category-options">{categories.map((c) => <option key={c} value={c} />)}</datalist>
-        <span className="mt-1 block text-xs">Pick an existing category or type a new name. The page moves to that category (the product URL does not change). Your choice stays even when the automatic grouping would pick another.</span>
+        <span className="mt-1 block text-xs">Main category. Pick an existing category or type a new name. The page moves to that category (the product URL does not change). Your choice stays even when the automatic grouping would pick another.</span>
       </label>
+      <div className="block"><span className="mb-1 block font-semibold">Also list under (optional)</span>
+        <div className="mb-2 flex flex-wrap gap-2">{f.extraCategories.map((x) => <button key={x} type="button" onClick={() => set("extraCategories", f.extraCategories.filter((y) => y !== x))} className="rounded-full bg-sand-200 px-3 py-1 text-xs font-semibold text-forest-900">{x} ✕</button>)}{f.extraCategories.length === 0 && <span className="text-xs">No extra categories.</span>}</div>
+        <div className="flex gap-2">
+          <input className={box} list="category-options" value={extraDraft} maxLength={120} placeholder="Pick or type a category" onChange={(e) => setExtraDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExtra(); } }} />
+          <button type="button" onClick={addExtra} className="rounded-xl border border-sand-300 px-4 text-sm font-semibold">Add</button>
+        </div>
+        <span className="mt-1 block text-xs">The product also appears on each of these category pages. Its URL and main category do not change.</span>
+      </div>
       <label className="block"><span className="mb-1 block font-semibold">Name (shown as the page heading)</span><input className={box} value={f.name} maxLength={200} onChange={(e) => set("name", e.target.value)} /></label>
       <label className="block"><span className="mb-1 block font-semibold">Title (short description line)</span><input className={box} value={f.title} maxLength={200} onChange={(e) => set("title", e.target.value)} /></label>
       <label className="block"><span className="mb-1 block font-semibold">Description</span><textarea className={`${box} h-32`} value={f.description} maxLength={2000} onChange={(e) => set("description", e.target.value)} /><span className="text-xs">{f.description.length} / 2000. Say only what is true about this list.</span></label>

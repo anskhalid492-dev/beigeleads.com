@@ -101,18 +101,18 @@ export async function saveBuilderAction(_: unknown, form: FormData): Promise<Res
   return { ok: true, message: "Saved. The builder updates within a minute." };
 }
 
-export type PickProduct = { slug: string; name: string; category: string; packages: { name: string; priceCents: number; records: number }[] };
+export type PickProduct = { slug: string; name: string; category: string; status: string; packages: { name: string; priceCents: number; records: number }[] };
 /** Admin product search for the bundle form (any catalog product, including drafts, so a bundle can be prepared before its lists are on sale). */
 export async function searchProductsAction(q: string): Promise<PickProduct[]> {
   if (!(await actor())) return [];
   const env = getCloudflareContext().env;
   await hydrateCatalog(env);
-  const { getProducts, getCategory, offeredPackages } = await import("@/lib/catalog");
+  const { getProducts, getCategory } = await import("@/lib/catalog");
   const t = String(q).toLowerCase().trim().slice(0, 80);
   const words = t.split(/\s+/).filter(Boolean);
   return getProducts()
-    .filter((p) => offeredPackages(p).length > 0)
+    .filter((p) => p.packages.length > 0)
     .filter((p) => { const hay = `${p.name} ${p.slug} ${getCategory(p.categorySlug)?.name ?? ""}`.toLowerCase(); return words.every((w) => hay.includes(w)); })
-    .slice(0, 15)
-    .map((p) => ({ slug: p.slug, name: p.name, category: getCategory(p.categorySlug)?.name ?? "", packages: offeredPackages(p).map((k) => ({ name: k.name, priceCents: k.priceUsdCents, records: k.records })) }));
+    .slice(0, 30)
+    .map((p) => ({ slug: p.slug, name: p.name, category: getCategory(p.categorySlug)?.name ?? "", status: p.status === "live" && !p.placeholderData ? "On sale" : "Not on sale yet", packages: p.packages.map((k) => ({ name: k.name, priceCents: k.priceUsdCents, records: k.records })) }));
 }

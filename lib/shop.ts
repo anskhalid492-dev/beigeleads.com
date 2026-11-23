@@ -10,6 +10,8 @@ export const PAGE_SIZE = 12;
 export type ShopProduct = {
   slug: string; name: string; title: string;
   categorySlug: string; categoryName: string;
+  /** Other categories the product is also listed under. */
+  extraCats?: string[];
   countrySlug: string; countryName: string; countryCode: string;
   fields: string[]; status: "draft" | "live";
   recordCount: number | null; fromCents: number | null;
@@ -174,7 +176,7 @@ export function applyFilters(data: ShopData, f: Filters, featured: string[] = []
   const live = (p: ShopProduct) => (p.status === "live" ? 0 : 1);
   let list = data.products.filter((p) => {
     if (f.kind && productKind(p) !== f.kind) return false;
-    if (industries.length && !industries.includes(p.categorySlug)) return false;
+    if (industries.length && !industries.includes(p.categorySlug) && !p.extraCats?.some((x) => industries.includes(x))) return false;
     if (countries.length && !countries.includes(p.countrySlug)) return false;
     if ((state || city) && !inPlace(p, data.tree, { state, city })) return false;
     if (f.q && !structured && !textMatches(p, f.q)) return false;

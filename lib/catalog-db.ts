@@ -21,6 +21,7 @@ export type PubProduct = {
   // Section 96 (migration 0036). Missing on payloads read before the migration.
   manualCat?: boolean; dataFields?: string[]; fileFormats?: string; coverage?: string; lastUpdated?: string; placeholder?: boolean; forSale?: boolean; accuracyPct?: number | null;
   scope?: "country" | "city" | null; citySlug?: string; samples?: SampleRowData[];
+  extraCats?: { slug: string; name: string }[];
 };
 type Payload = { products: PubProduct[]; hidden: string[]; aliases?: Record<string, string>; defaultSample?: SampleRowData[] };
 export const DEFAULT_SAMPLE_KEY = "sample.default";
@@ -34,15 +35,18 @@ export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Re
   });
   const products = list.map((p): Product => {
     if (!cats.has(p.categorySlug)) cats.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, description: `${p.categoryName} contact lists.`, buyers: [], singular: p.categoryName, reachLabel: p.categoryName.toLowerCase(), useCases: [], imported: true });
+    for (const x of p.extraCats ?? []) if (!cats.has(x.slug)) cats.set(x.slug, { slug: x.slug, name: x.name, blurb: x.name, description: `${x.name} contact lists.`, buyers: [], singular: x.name, reachLabel: x.name.toLowerCase(), useCases: [], imported: true });
     if (!ctry.has(p.countrySlug)) ctry.set(p.countrySlug, { slug: p.countrySlug, code: p.countryCode, name: p.countryName });
     return {
       slug: p.slug, categorySlug: p.categorySlug, countrySlug: p.countrySlug, title: p.title, name: p.name, description: p.description, recordCount: p.recordCount,
       lastVerified: p.lastUpdated || null, accuracyPct: p.accuracyPct ?? null, status: p.forSale === false ? "draft" : "live", fields: p.dataFields ?? [], placeholderData: !!p.placeholder, packages: p.packages,
-      ...(p.scope ? { scope: p.scope } : {}), ...(p.citySlug ? { citySlug: p.citySlug } : {}), ...(p.fileFormats ? { fileFormats: p.fileFormats } : {}), ...(p.coverage ? { coverage: p.coverage } : {}), ...(p.samples?.length ? { samples: p.samples } : {}), imported: true, channel: p.channel, region: p.region || undefined, seoTitle: p.seoTitle || undefined, metaDescription: p.metaDescription || undefined,
+      ...(p.extraCats?.length ? { extraCategories: p.extraCats.map((x) => x.slug).filter((s) => s !== p.categorySlug) } : {}), ...(p.scope ? { scope: p.scope } : {}), ...(p.citySlug ? { citySlug: p.citySlug } : {}), ...(p.fileFormats ? { fileFormats: p.fileFormats } : {}), ...(p.coverage ? { coverage: p.coverage } : {}), ...(p.samples?.length ? { samples: p.samples } : {}), imported: true, channel: p.channel, region: p.region || undefined, seoTitle: p.seoTitle || undefined, metaDescription: p.metaDescription || undefined,
     };
   });
   return { products, categories: [...cats.values()], countries: [...ctry.values()], hidden, aliases, defaultSample };
 }
+
+const cleanExtra = (v: unknown): { slug: string; name: string }[] => (Array.isArray(v) ? v : []).flatMap((x) => (x && typeof x === "object" && typeof (x as { slug?: unknown }).slug === "string" && typeof (x as { name?: unknown }).name === "string" ? [{ slug: (x as { slug: string }).slug, name: (x as { name: string }).name }] : [])).slice(0, 10);
 
 const clean = (r: { slug: string; name: string; title: string; description: string; categorySlug: string; categoryName: string; channel: string; countrySlug: string; countryCode: string; countryName: string; region: string | null; recordCount: number | null; packagesJson: string; seoTitle: string | null; metaDescription: string | null }): PubProduct => ({
   slug: r.slug, name: r.name, title: r.title, description: r.description, categorySlug: r.categorySlug, categoryName: r.categoryName, channel: r.channel,
@@ -59,7 +63,7 @@ async function read(env: CloudflareEnv): Promise<Payload | null> {
     const pub = rows.map((r): PubProduct => {
       const parse = <T,>(v: string | null, d: T): T => { try { return v ? (JSON.parse(v) as T) : d; } catch { return d; } };
       return {
-        ...clean(r), manualCat: !!parse<{ manualCategory?: boolean }>(r.sourceJson, {}).manualCategory, dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
+        ...clean(r), manualCat: !!parse<{ manualCategory?: boolean }>(r.sourceJson, {}).manualCategory, extraCats: cleanExtra(parse<{ extraCategories?: unknown }>(r.sourceJson, {}).extraCategories), dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
         accuracyPct: r.accuracyPct, scope: r.scope === "city" || r.scope === "country" ? r.scope : null, citySlug: r.scope === "city" ? r.city ?? "" : "", samples: cleanStored(parse<unknown>(r.sampleJson, [])),
       };
     });

@@ -98,6 +98,12 @@ describe("catalog import", () => {
     const moved = (await getProductRow(db, pub.id))!;
     expect(moved.categoryName).toBe("Zoo Keepers"); expect(moved.categorySlug).toBe("zoo-keepers"); expect(JSON.parse(moved.sourceJson).manualCategory).toBe(true);
     expect((await updateProduct(db, pub.id, { ...edit, categoryName: "Cities" })).ok).toBe(false);
+    // Extra categories: stored beside the main one, never duplicated, removable.
+    expect((await updateProduct(db, pub.id, { ...edit, categoryName: "Zoo Keepers", extraCategories: ["Farm Shops", "zoo keepers", "Farm Shops"] })).ok).toBe(true);
+    const withExtra = (await getProductRow(db, pub.id))!;
+    expect(withExtra.categorySlug).toBe("zoo-keepers"); expect(JSON.parse(withExtra.sourceJson).extraCategories).toEqual([{ slug: "farm-shops", name: "Farm Shops" }]);
+    expect((await updateProduct(db, pub.id, { ...edit, extraCategories: [] })).ok).toBe(true);
+    expect(JSON.parse((await getProductRow(db, pub.id))!.sourceJson).extraCategories).toBeUndefined();
     expect((await getProductRow(db, pub.id))!.categoryName).toBe("Zoo Keepers");
   });
   it("built-in products become editable rows that replace the code version, and unpublishing hides them", async () => {
