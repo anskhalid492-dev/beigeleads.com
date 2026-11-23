@@ -5,7 +5,7 @@ describe("local business fields", () => {
   it("has unique names, each with meta, and the declared count", () => {
     expect(new Set(LOCAL_FIELD_NAMES).size).toBe(LOCAL_FIELD_NAMES.length);
     expect(LOCAL_FIELD_NAMES.length).toBe(64);
-    expect(LOCAL_FIELD_COUNT).toBe(74);
+    expect(LOCAL_FIELD_COUNT).toBe(64);
     for (const n of LOCAL_FIELD_NAMES) expect(fieldMeta[n]).toBeTruthy();
   });
 });

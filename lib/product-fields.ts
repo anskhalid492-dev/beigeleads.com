@@ -69,8 +69,7 @@ export const FIELD_CATALOG = [
   ]),
 ] as const;
 
-// Owner decision (23 Nov 2026): local business lists carry this field set and state it as 74 fields (owner-declared; the list holds 64 named fields).
-export const LOCAL_FIELD_COUNT = 74;
+// Owner decision (23 Nov 2026): local business lists carry this field set (64 fields).
 export const LOCAL_FIELD_CATALOG = [
   ...g("Business", [
     ["Business Name", "Name of the business as listed."],
@@ -150,6 +149,7 @@ export const LOCAL_FIELD_CATALOG = [
   ]),
 ] as const;
 export const LOCAL_FIELD_NAMES: readonly string[] = LOCAL_FIELD_CATALOG.map((f) => f.name);
+export const LOCAL_FIELD_COUNT = LOCAL_FIELD_NAMES.length;
 
 export const FIELD_NAMES: readonly string[] = FIELD_CATALOG.map((f) => f.name);
 
