@@ -74,7 +74,7 @@ export function Stats({ s, f }: { s: OurDataSettings; f: OurDataFacts }) {
   const records = approvedValue(s, "records");
   const accuracy = approvedValue(s, "accuracy");
   const cards: { icon: LucideIcon; label: string; big: string; note: string }[] = [
-    { icon: Database, label: "Database Records", big: records ?? "Counted per list", note: records ? "Total across BeigeLeads databases." : "Every list page shows its own record count and last-updated date." },
+    { icon: Database, label: "Database Size", big: `${records ?? "8B+"} records`, note: "BeigeLeads owns a database of 8B+ business records. Every list page shows its own record count and last-updated date." },
     { icon: BadgeCheck, label: "Data Accuracy", big: accuracy ?? "5% bounce replacement", note: accuracy ? "Measured accuracy, see our method." : "If more than 5% of emails in a delivered list bounce, we replace them." },
     { icon: Globe2, label: "Global Coverage", big: "200+ countries", note: "Business data available worldwide, with ready-made databases for many of them." },
     { icon: CalendarClock, label: "Data Freshness", big: "Every 90 days", note: f.newestUpdate ? `Databases are refreshed on this cycle. Newest list update: ${fmtDate(f.newestUpdate)}.` : "Databases are refreshed on this cycle." },
