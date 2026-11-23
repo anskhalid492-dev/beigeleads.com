@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaqAnswer } from "@/components/shared/faq-answer";
 import { ArrowRight, Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs, type Crumb } from "@/components/shared/breadcrumbs";
@@ -374,7 +375,7 @@ export function SolutionFaq({ name, items }: { name: string; items: readonly (re
                   <Plus className="size-4" aria-hidden />
                 </span>
               </summary>
-              <p className="px-6 pb-6 leading-relaxed">{a}</p>
+              <p className="px-6 pb-6 leading-relaxed"><FaqAnswer text={a} /></p>
             </details>
           ))}
         </div>

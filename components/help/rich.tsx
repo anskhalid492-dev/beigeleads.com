@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaqAnswer } from "@/components/shared/faq-answer";
 import { AlertTriangle, Info, Lightbulb } from "lucide-react";
 import type { Block } from "@/lib/help";
 
@@ -81,7 +82,7 @@ export function Body({ blocks }: { blocks: readonly Block[] }) {
               {b[1].map(([q, a]) => (
                 <details key={q} className="group px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-forest-900">{q}<span aria-hidden className="text-xl transition-transform group-open:rotate-45">+</span></summary>
-                  <p className="mt-3"><Inline text={a} /></p>
+                  <p className="mt-3">{a.includes("](") ? <Inline text={a} /> : <FaqAnswer text={a} />}</p>
                 </details>
               ))}
             </div>

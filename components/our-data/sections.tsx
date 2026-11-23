@@ -397,7 +397,7 @@ export function Delivery() {
   return (
     <section className="bg-sand-100 py-20 lg:py-24" id="delivery" aria-labelledby="delivery-h">
       <div className={wrap}>
-        <Head id="delivery-h" title="Formats and Delivery" text="Lists come as CSV, Excel or TXT. After your crypto payment is confirmed, an email brings the link to your file." />
+        <Head id="delivery-h" title="Formats and Delivery" text="Lists come as CSV, Excel or TXT. After your payment is confirmed, an email brings the link to your file." />
         <ol className="relative mt-12 grid gap-8 md:grid-cols-4 md:gap-5">
           <span className="absolute left-[12%] right-[12%] top-6 hidden border-t-2 border-dashed border-forest-500/40 md:block" aria-hidden />
           {steps.map(([I, t, d], i) => (

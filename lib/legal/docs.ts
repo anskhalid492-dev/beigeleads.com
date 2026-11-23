@@ -46,7 +46,7 @@ export const legalDocs: LegalDoc[] = [
       { h: "What we sell", p: ["We sell digital contact lists as a one-time purchase. There is no subscription and no account. You receive a download file for the list and tier you paid for."] },
       { h: "Licence", p: ["After payment you get a licence to use the file for your own business outreach, under our lawful use policy. The licence is non-exclusive, non-transferable and has no end date. It covers your own organisation and its staff, and campaigns you run for clients on their behalf. You may not resell, publish or hand the file itself to anyone else."] },
       { h: "Orders and payment", p: [
-        "Prices are in US dollars and paid in crypto. The coin amount is locked for 30 minutes when you start checkout. Crypto payments cannot be reversed, so read the crypto payment policy before you pay.",
+        "Prices are in US dollars and paid in crypto. The coin amount is locked for 30 minutes when you start checkout. Payments are made in crypto and cannot be reversed, so check the amount, coin and network before you pay.",
         "An order is complete only when your payment is confirmed on the network.",
       ] },
       { h: "Delivery and refunds", p: ["Delivery is described in the delivery policy and problems with contacts in the refund and replacement policy."] },
@@ -70,7 +70,7 @@ export const legalDocs: LegalDoc[] = [
       { h: "How to claim", p: ["Contact us within 30 days of delivery with your order details and the bounce report from your email tool. We will check it against the list we delivered."] },
       { h: "What we do", p: ["We replace the bounced emails with verified ones from the same list. If we cannot bring the list back to 95%, we refund the price paid for the bounced emails, in proportion, in crypto."] },
       { h: "What is not covered", p: ["Bounces caused by misuse (for example sending from a blocked or brand-new domain), claims made after the claim window, lists that were shared or resold against the licence, and a lack of replies or sales."] },
-      { h: "Refunds are paid in crypto", p: ["Because payments are crypto, any refund is sent in the coin you paid with, to an address you give us. Network fees are deducted from the refund, and rate changes are explained in the crypto payment policy."] },
+      { h: "Refunds are paid in crypto", p: ["Because payments are crypto, any refund is sent in the coin you paid with, to an address you give us. Network fees are deducted from the refund, and the rate is the one locked when you started checkout."] },
       { h: "Overpayments and late payments", p: ["If you overpay, we flag it and refund or credit the difference. If a payment arrives after the 30-minute quote has expired, we review it by hand and decide on a refund or a re-quote."] },
       { h: "How long it takes", p: ["We aim to answer within 3 working days of receiving your claim."] },
     ],

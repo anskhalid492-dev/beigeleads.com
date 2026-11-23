@@ -12,7 +12,7 @@ export const productTitle = (p: Product, k: Country) => `${p.name} ${short(k)}: 
 export function productMetaDescription(p: Product, c: Category, k: Country) {
   const fields = ["email", "phone", "address", "website"].filter((f) => p.fields.some((x) => x.toLowerCase() === f));
   const list = fields.length ? fieldSummary(fields) : "contact details";
-  return `Buy the ${p.name} for ${withThe(k)}: ${c.reachLabel} with ${list}. Masked sample first, one-time crypto payment, CSV, Excel or TXT.`;
+  return `Buy the ${p.name} for ${withThe(k)}: ${c.reachLabel} with ${list}. Masked sample first, one-time payment, CSV, Excel or TXT.`;
 }
 
 /** Original, honest overview copy. Built only from catalog facts (no counts, no accuracy, no prices). */

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const CARDS = [
   { icon: Mail, title: "General Inquiries", text: "Questions about BeigeLeads, how lists work, or whether a list fits your campaign.", cta: "Ask a question", href: "/contact?type=general#contact-form" },
-  { icon: CreditCard, title: "Order & Payment Support", text: "Help with an existing order, a crypto payment, or delivery of your list.", cta: "Get order help", href: "/contact?type=order#contact-form" },
+  { icon: CreditCard, title: "Order & Payment Support", text: "Help with an existing order, a payment, or delivery of your list.", cta: "Get order help", href: "/contact?type=order#contact-form" },
   { icon: ClipboardList, title: "Custom Data Requests", text: "Need a niche, location or set of fields you cannot find? Describe it in the custom list builder.", cta: "Open the builder", href: "/custom-list" },
   { icon: LifeBuoy, title: "Help Center", text: "Step-by-step answers on payments, delivery, data quality and policies, available any time.", cta: "Browse the Help Center", href: "/help-center" },
 ] as const;

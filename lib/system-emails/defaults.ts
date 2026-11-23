@@ -504,7 +504,7 @@ export const TEMPLATES: TemplateDef[] = [
       blocks: [
         { t: "p", text: "Hi {{first_name}}, your order for **{{product_name}}** has not been confirmed as paid yet." },
         { t: "kv", rows: [{ label: "Order number:", value: "{{order_number}}" }, { label: "Total:", value: "{{order_total}}" }, { label: "Status:", value: "{{payment_status}}" }] },
-        { t: "p", text: "Crypto payments need network confirmations, so this can take a little while after you send them. You don't need to do anything if you have already paid. We confirm automatically and email you the moment it is verified." },
+        { t: "p", text: "Your payment needs network confirmations, so this can take a little while after you send it. You don't need to do anything if you have already paid. We confirm automatically and email you the moment it is verified." },
         { t: "p", text: "If you paid and the status does not change, open your order and use the \"I already paid\" form, or contact us with your order number." },
       ],
       cta: { label: "View Your Order", url: "{{order_url}}" },

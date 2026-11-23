@@ -1402,3 +1402,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Not browser-tested; admin behind Access, Lighthouse, screen reader not checked.
 
 - Update (23 Nov 2026): the first /our-data stat card is now "Database Size" with "8B+ records" (OWNER-DECLARED figure, used unless an admin approves a different value in /admin/our-data). The owner also asked to say it is "the largest on this planet"; that superlative was NOT added because it cannot be backed with data (§2) and stays a pending claim in /admin/our-data (needs a named comparison and sources).
+
+## 144. "Crypto payment" wording and FAQ internal links (23 Nov 2026)
+
+- Owner request: remove the phrase "crypto payment(s)" from all pages and keep "payment". Done in 17 places (FAQs, pricing, product/bundle/solution copy, contact card, our-data delivery text, help topic descriptions, legal, llms.txt, a system email). The fact that payment is in crypto is NOT hidden: checkout, "Pay once in crypto" steps and the irreversibility warnings stay ("Payments are made in crypto and cannot be reversed"). The legal text no longer points at the removed crypto payment policy (§42). Payment articles already imported into D1 (Help CMS) keep their stored wording until edited in /admin/help.
+- FAQ internal links: `lib/faq-links.ts` (pure, `tests/faq-links.test.ts`) + `components/shared/faq-answer.tsx` add up to 2 links per answer for known phrases (policies, Help Center, sample, custom list, bundles, DFY, partners, verification...). Used by SolutionFaq, shared Faq, how-it-works FAQ, PanelFaq and Help FAQ blocks (answers that already hold a markdown link are left alone). FAQPage JSON-LD stays plain text. Add a phrase by adding one rule (real site paths only). Answers written in the CMS or code stay plain text; only phrases in the rule list are linked.
+- Footer CTA is no longer hidden on /our-data (the page's own final CTA band was removed).

@@ -200,7 +200,7 @@ export const faqsB: Record<string, FaqPairs> = {
     ["Can I call?", "No. Support is by form and chat."],
   ],
   "account-support/how-refunds-cancellations-and-disputes-are-handled": [
-    ["Are there chargebacks?", "No. Crypto payments are irreversible, so problems are resolved under our policy."],
+    ["Are there chargebacks?", "No. Payments are made in crypto and cannot be reversed, so problems are resolved under our policy."],
     ["How do I claim for bounces?", "Contact us within 30 days of delivery with your order details and the bounce report."],
     ["How are refunds paid?", "In the coin you paid with, to an address you give us, with network fees deducted."],
     ["What is not covered?", "Misuse such as sending from a blocked or brand-new domain, late claims, resold lists and lack of replies or sales."],

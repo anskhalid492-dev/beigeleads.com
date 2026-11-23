@@ -1,6 +1,6 @@
 // Seven product-specific FAQs per solution (84 in total). Every answer sticks to what BeigeLeads
 // actually offers today (see the lists page), seven fields, a masked
-// sample, a 90-day re-verification cycle and a one-time crypto payment. No legal advice is given:
+// sample, a 90-day re-verification cycle and a one-time payment. No legal advice is given:
 // compliance answers point to the lawful-use page and say that rules depend on the buyer's country.
 // Needs lawyer review before launch (see TODO-BEFORE-LAUNCH.md).
 

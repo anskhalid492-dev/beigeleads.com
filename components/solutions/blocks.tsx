@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaqAnswer } from "@/components/shared/faq-answer";
 import { ArrowRight, Check, Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -299,7 +300,7 @@ export function FaqPanel({ name, items }: { name: string; items: readonly (reado
               {q}
               <span className="grid size-8 shrink-0 place-items-center rounded-full bg-forest-900 text-forest-300 transition-transform duration-300 group-open:rotate-45"><Plus className="size-4" aria-hidden /></span>
             </summary>
-            <p className="px-6 pb-6 leading-relaxed">{a}</p>
+            <p className="px-6 pb-6 leading-relaxed"><FaqAnswer text={a} /></p>
           </details>
         ))}
       </div>

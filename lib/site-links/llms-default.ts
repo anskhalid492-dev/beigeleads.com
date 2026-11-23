@@ -87,7 +87,7 @@ The problem BeigeLeads addresses is paying monthly for access to contact data th
 ## Pricing and Payment
 
 - Prices are on each list page and on https://beigeleads.com/pricing. Package sizes and prices differ per database.
-- Cryptocurrency only. Crypto payments cannot be reversed, so buyers should check the amount, coin and network on checkout before sending.
+- Cryptocurrency only. Payments are made in crypto and cannot be reversed, so buyers should check the amount, coin and network on checkout before sending.
 - A volume discount for buying several databases and a partner discount for approved data reseller partners exist; the site shows any discount in the cart before payment.
 
 ## Delivery

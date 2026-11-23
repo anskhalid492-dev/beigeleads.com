@@ -1,4 +1,5 @@
 import { JsonLd } from "./json-ld";
+import { FaqAnswer } from "./faq-answer";
 
 export type FaqItem = readonly [question: string, answer: string];
 
@@ -19,7 +20,7 @@ export function Faq({ items, heading = "Questions", split = false }: { items: re
                   +
                 </span>
               </summary>
-              <p className="mt-3 max-w-xl">{a}</p>
+              <p className="mt-3 max-w-xl"><FaqAnswer text={a} /></p>
             </details>
           ))}
         </div>

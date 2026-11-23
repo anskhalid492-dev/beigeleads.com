@@ -419,7 +419,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     steps: [
       { t: "Pick the practice type", d: "Start with the dentist list or request another category." },
       { t: "Read the sample", d: "Check that the fields suit your outreach." },
-      { t: "Pay once", d: "Download a file after your crypto payment is confirmed." },
+      { t: "Pay once", d: "Download a file after your payment is confirmed." },
       { t: "Reach out responsibly", d: "Follow the lawful use policy and honour opt-outs." },
     ],
     related: ["b2b-lead-generation", "recruitment-staffing", "marketing-agencies"],

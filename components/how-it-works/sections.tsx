@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaqAnswer } from "@/components/shared/faq-answer";
 import type { ReactNode } from "react";
 import {
   ArrowRight, Check, Copy, Eraser, FileSpreadsheet, Globe, LifeBuoy, MailCheck, Minus, Package, RefreshCw, ShieldCheck, Sparkles, Table2, UserX, Wallet, Plus,
@@ -204,7 +205,7 @@ export function HowFaq() {
                 {q}
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-forest-900 text-forest-300 transition-transform duration-300 group-open:rotate-45"><Plus className="size-4" aria-hidden /></span>
               </summary>
-              <p className="px-6 pb-6 leading-relaxed">{a}</p>
+              <p className="px-6 pb-6 leading-relaxed"><FaqAnswer text={a} skip={["/how-it-works"]} /></p>
             </details>
           ))}
         </div>

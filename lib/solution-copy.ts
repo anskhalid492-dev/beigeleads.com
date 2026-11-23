@@ -1,6 +1,6 @@
 // Audience-specific copy for each solution: one named reader, their real pain points, and a
 // specific closing line. Only claims what exists today: the lists on the lists page,
-// seven fields, masked samples, 90-day re-verification, one-time crypto payment.
+// seven fields, masked samples, 90-day re-verification, one-time payment.
 // No statistics, no promised results. Needs lawyer review for compliance wording.
 
 export type Pain = { pain: string; fix: string };
