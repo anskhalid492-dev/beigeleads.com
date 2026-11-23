@@ -224,7 +224,7 @@ export const productEditSchema = z.object({
   extraCategories: z.array(z.string().trim().min(1).max(120)).max(10).optional(),
   recordCount: z.number().int().min(0).max(5_000_000_000).nullable(), dataFields: z.array(z.string().trim().min(1).max(60)).max(80), fieldsCustom: z.boolean().optional(),
   fileFormats: z.string().trim().max(80), coverage: z.string().trim().max(160), lastUpdated: isoDate, placeholder: z.boolean(), forSale: z.boolean(),
-  packages: z.array(z.object({ name: z.enum(["Starter", "Professional", "Complete"]), records: z.number().int().min(0).max(5_000_000_000), priceUsdCents: z.number().int().min(0).max(100_000_00), highlighted: z.boolean().optional() })).min(1).max(3),
+  packages: z.array(z.object({ name: z.string().trim().min(1).max(40), records: z.number().int().min(0).max(5_000_000_000), priceUsdCents: z.number().int().min(0).max(100_000_00), highlighted: z.boolean().optional() })).min(1).max(8),
 });
 export type ProductEdit = z.infer<typeof productEditSchema>;
 

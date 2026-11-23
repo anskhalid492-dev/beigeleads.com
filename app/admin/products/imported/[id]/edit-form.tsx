@@ -5,7 +5,7 @@ import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { maskRows, type SampleRowData } from "@/lib/product-samples";
 import { deleteProductsAction, duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
-type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
+type Pk = { name: string; records: number; priceUsdCents: number; highlighted: boolean };
 type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fieldsCustom?: boolean; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
 
@@ -63,6 +63,8 @@ export function EditForm({ defaults, categories, samples, id, origin, status, sl
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter(); const [csv, setCsv] = useState(""); const [saved, setSaved] = useState(samples);
   const preview = csv.trim() ? maskRows(tableFromGrid(parseCsv(csv)).rows) : [];
   const set = <K extends keyof Init>(k: K, v: Init[K]) => setF((x) => ({ ...x, [k]: v }));
+  const addPk = () => { setF((x) => ({ ...x, packages: [...x.packages, { name: `Package ${x.packages.length + 1}`, records: 0, priceUsdCents: 0, highlighted: false }] })); setPrice((p) => [...p, "0"]); };
+  const removePk = (i: number) => { setF((x) => ({ ...x, packages: x.packages.filter((_, j) => j !== i) })); setPrice((p) => p.filter((_, j) => j !== i)); };
   const setPk = (i: number, p: Partial<Pk>) => setF((x) => ({ ...x, packages: x.packages.map((k, j) => (j === i ? { ...k, ...p } : k)) }));
 
   async function save() {
@@ -148,12 +150,14 @@ export function EditForm({ defaults, categories, samples, id, origin, status, sl
       <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
         <legend className="px-1 font-semibold">Packages (price is in US dollars)</legend>
         <div className="space-y-3">{f.packages.map((k, i) => (
-          <div key={k.name} className="grid grid-cols-2 items-end gap-3 sm:grid-cols-4">
-            <div><span className="mb-1 block text-xs font-semibold">Package</span><p className="py-2">{k.name}</p></div>
+          <div key={i} className="grid grid-cols-2 items-end gap-3 sm:grid-cols-5">
+            <label><span className="mb-1 block text-xs font-semibold">Package name</span><input className={box} maxLength={40} value={k.name} onChange={(e) => setPk(i, { name: e.target.value })} /></label>
             <label><span className="mb-1 block text-xs font-semibold">Records</span><input className={box} inputMode="numeric" value={k.records} onChange={(e) => setPk(i, { records: Math.max(0, Math.floor(Number(e.target.value.replace(/\D/g, "")) || 0)) })} /></label>
             <label><span className="mb-1 block text-xs font-semibold">Price (USD)</span><input className={box} inputMode="decimal" value={price[i]} onChange={(e) => setPrice((p) => p.map((v, j) => (j === i ? e.target.value : v)))} /></label>
             <label className="flex items-center gap-2 py-2"><input type="checkbox" checked={k.highlighted} onChange={(e) => setPk(i, { highlighted: e.target.checked })} /> Recommended</label>
+            <div className="py-2">{f.packages.length > 1 && <button type="button" onClick={() => removePk(i)} className="text-sm text-red-800 underline">Remove</button>}</div>
           </div>))}</div>
+        {f.packages.length < 8 && <button type="button" onClick={addPk} className="mt-3 rounded-full border border-forest-900 px-4 py-1.5 text-sm font-semibold">Add package</button>}
         {status === "published" && <p className="mt-3 text-xs">This product is published: every package needs a price above 0.</p>}
       </fieldset>
       <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
