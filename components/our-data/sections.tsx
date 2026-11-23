@@ -320,7 +320,7 @@ export function Accuracy({ s }: { s: OurDataSettings }) {
             </div>
             <div className="rounded-2xl border border-sand-200 bg-white p-6">
               <h3 className="display flex items-center gap-2 text-xl text-forest-900"><Fingerprint className="size-5 text-forest-500" aria-hidden />What it is not</h3>
-              <p className="mt-2 text-forest-700">Accuracy figures on list pages are BeigeLeads&rsquo; own statements, not independent audits. They are not a promise of replies or sales.</p>
+              <p className="mt-2 text-forest-700">Accuracy figures on list pages are BeigeLeads&rsquo; clear promise, but BeigeLeads doesn&rsquo;t promise replies or sales.</p>
             </div>
             {a && <div className="rounded-2xl border border-sand-200 bg-white p-6"><h3 className="display flex items-center gap-2 text-xl text-forest-900"><BadgeCheck className="size-5 text-forest-500" aria-hidden />Measured accuracy: {a}</h3><p className="mt-2 text-forest-700">{s.claims.accuracy.evidence}{s.claims.accuracy.evidenceUrl && <> <Link href={s.claims.accuracy.evidenceUrl} className={link}>Method</Link></>}</p></div>}
           </div>
