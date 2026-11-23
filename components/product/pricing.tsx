@@ -8,7 +8,7 @@ import { fmtNum } from "./meta";
 import { PromoBanner } from "@/components/promos/banner";
 import { loadSalesSettings } from "@/lib/sales/settings";
 
-export async function ProductPricing({ product, forSale }: { product: Product; forSale: boolean }) {
+export async function ProductPricing({ product, forSale: _forSale }: { product: Product; forSale: boolean }) {
   const volMsg = await (async () => { try { const { volume: v } = await loadSalesSettings(getCloudflareContext().env); if (!v.enabled || v.excludedProducts.includes(product.slug) || v.excludedCategories.includes(product.categorySlug)) return ""; const t = v.tiers[0]; const top = v.tiers[v.tiers.length - 1]; return t ? `Buy ${t.min}+ databases and save ${t.percent}%${top.percent > t.percent ? ` (up to ${top.percent}%)` : ""} in your cart.` : ""; } catch { return ""; } })();
   // Promotions only change what is SHOWN here; the cart and checkout re-price everything on the server.
   const promos = await getPublicPromos(getCloudflareContext().env).catch(() => []);
@@ -26,10 +26,6 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
     <section id="pricing" className="scroll-mt-20 bg-sand-100 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className={`display max-w-3xl text-5xl text-forest-900 sm:text-6xl ${offeredPackages(product).length < 3 ? "mx-auto text-center" : ""}`}>{product.name} pricing: pick a package, pay once</h2>
-        <p className={`mt-4 max-w-2xl text-lg ${offeredPackages(product).length < 3 ? "mx-auto text-center" : ""}`}>
-          <strong className="text-forest-900">One-time payment. No subscription.</strong> You pay in crypto, download your file and keep it. No account needed.
-        </p>
-
         <PromoBanner place="product" slug={product.slug} className="mt-6" />
         {volMsg && <p className="mx-auto mt-4 max-w-xl text-center text-sm font-semibold text-forest-900">{volMsg}</p>}
 
@@ -47,28 +43,33 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
                     : "border border-sand-300 bg-sand-50"
                 }`}
               >
-                <h3 className={`text-lg font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>{pk.name}</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className={`rounded-full px-3 py-1 text-sm font-semibold ${dark ? "bg-forest-700 text-forest-100" : "bg-forest-100 text-forest-700"}`}>{pk.name}</h3>
+                  {dark && <span className="text-xs font-semibold text-forest-300">Recommended</span>}
+                </div>
                 {pk.records > 0 ? (
                   <>
-                    <p className={`display mt-3 text-6xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{fmtNum(pk.records)}</p>
-                    <p className="mt-1">records</p>
+                    <p className={`mt-6 flex items-baseline gap-2 ${dark ? "text-sand-50" : "text-forest-900"}`}>
+                      <span className="display text-6xl">{fmtNum(pk.records)}</span>
+                      <span className="display text-3xl opacity-70">records</span>
+                    </p>
+                    <div className={`mt-4 h-1.5 overflow-hidden rounded-full ${dark ? "bg-forest-700" : "bg-sand-200"}`} aria-hidden>
+                      <div className={`h-full rounded-full ${dark ? "bg-forest-300" : "bg-forest-500"}`} style={{ width: `${Math.max(8, Math.round((pk.records / Math.max(...offeredPackages(product).map((x) => x.records), 1)) * 100))}%` }} />
+                    </div>
                   </>
                 ) : (
-                  <p className={`display mt-3 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>Full list</p>
+                  <p className={`display mt-6 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>Full list</p>
                 )}
                 {shown ? (
                   <div className="mt-6">
                     <p className="text-sm">Original: <s>{formatUsd(shown.originalCents)}</s></p>
-                    <p className={`display text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}><span className="sr-only">Now </span>{formatUsd(shown.nowCents)}</p>
+                    <p className={`display text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}><span className="sr-only">Now </span>{formatUsd(shown.nowCents)} <span className="text-base font-semibold opacity-70">one-time</span></p>
                     <p className="mt-1 inline-block rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold text-purple-700">
                       Save {shown.savePercent}% ({formatUsd(shown.saveCents)}){shown.code ? ` with code ${shown.code}` : ", applied automatically"}
                     </p>
                   </div>
                 ) : (
-                  <p className={`display mt-6 text-5xl ${dark ? "text-sand-50" : "text-forest-900"}`}>{formatUsd(pk.priceUsdCents)}</p>
-                )}
-                {pk.records > 0 && pk.priceUsdCents > 0 && (
-                  <p className={`mt-2 text-sm ${dark ? "text-sand-200" : ""}`}>About {formatUsd(Math.max(1, Math.round((pk.priceUsdCents / pk.records) * 1000)))} per 1,000 records</p>
+                  <p className={`mt-6 flex items-baseline gap-2 ${dark ? "text-sand-50" : "text-forest-900"}`}><span className="display text-5xl">{formatUsd(pk.priceUsdCents)}</span><span className="text-base font-semibold opacity-70">one-time</span></p>
                 )}
                 <div className={`mt-6 border-t pt-5 ${dark ? "border-forest-700" : "border-sand-300"}`}>
                   <p className={`text-xs font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>What you get</p>
@@ -87,11 +88,11 @@ export async function ProductPricing({ product, forSale }: { product: Product; f
           })}
         </div>
 
-        <p className={`mt-8 text-sm ${offeredPackages(product).length < 3 ? "text-center" : ""}`}>
-          Not sure which size? <Link href={`/sample?product=${product.slug}`} className="font-semibold text-forest-900 underline underline-offset-4">Get a free sample first</Link>, or{" "}
-          <Link href="/custom-list" className="font-semibold text-forest-900 underline underline-offset-4">ask for a custom list</Link>.
-          {!forSale && " Package sizes and prices shown here are not final, and checkout is not open yet."}
-        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-sm">
+          <span className="font-semibold text-forest-900">Not sure which size?</span>
+          <Link href={`/sample?product=${product.slug}`} className="rounded-full border border-forest-900 px-4 py-2 font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">Get a free sample</Link>
+          <Link href="/custom-list" className="rounded-full border border-sand-300 bg-sand-50 px-4 py-2 font-semibold text-forest-900 hover:border-forest-900">Ask for a custom list</Link>
+        </div>
       </div>
     </section>
   );

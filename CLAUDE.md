@@ -1438,3 +1438,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 
 - `/admin/products/imported/<id>` has a "Page URL" box (`/lists/` + editable name, "Change URL", confirm dialog; saved at once, separate from "Save changes"). `setProductSlug` (`lib/import/store.ts`) slugifies, REFUSES (no auto-suffix) a slug that is empty, reserved (pages, categories, taxonomy) or used by another product or old-slug alias, then reuses `renameProduct`: the old URL 308-redirects, delivery links, promotions and page-SEO override move along. Action `renameProductSlugAction` is audited and clears the catalog cache (live in about a minute). Test in `tests/import-e2e.test.ts`. Not browser-tested (behind Access).
 - Product page "at a glance" country card no longer prints "N city pages." (owner, 23 Nov 2026); the `cityCount` prop is unused.
+
+## 150. Product pricing card redesign, Pilo welcome rows (23 Nov 2026) — amends sections 22, 84, 108-110
+
+- Product pricing (`components/product/pricing.tsx`): removed the "One-time payment. No subscription. You pay in crypto..." intro, the "About $X per 1,000 records" line and the "Not sure which size? ... not final" note (replaced by two link buttons: free sample, custom list). Cards: tier chip (the catalog's highlighted package says "Recommended"), "5,000 records" as one display line (number and unit both display type), a size bar relative to the largest package, price with "one-time". No popularity claim is made.
+- Pilo welcome screen: the four 2x2 tiles are now full-width rows (dark icon tile, title, chevron; invert on hover). Same actions and admin settings.
+- Not browser-checked (screenshots not taken).

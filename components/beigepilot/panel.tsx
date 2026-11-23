@@ -294,11 +294,12 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
             <div ref={hero} key={openN}><Pilo className={landing ? "pl-land" : ""} mood={landing ? "idle" : mood === "idle" ? "wave" : mood} size={132} intensity={cfg.motion} title={`${name}, your little BeigeLeads friend`} /></div>
             <h2 className="display mt-1 text-[1.7rem] leading-none text-forest-900">{t(lang, "welcomeTitle")}</h2>
             <p className="mt-2 max-w-[22rem] text-[0.92rem] text-forest-700">{t(lang, "welcomeSub")}</p>
-            <div className="mt-4 grid w-full grid-cols-2 gap-2 text-start">
+            <div className="mt-4 grid w-full gap-2 text-start">
               {welcome.map(({ id, Icon, title, ask }) => (
-                <button key={id} type="button" onClick={() => send(ask)} className="group rounded-2xl border border-sand-300 bg-white p-3 transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-forest-500 hover:shadow-md focus-visible:outline-2 focus-visible:outline-purple-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                  <span className="mb-1.5 grid size-8 place-items-center rounded-full bg-forest-100 text-forest-900"><Icon className="size-4" aria-hidden /></span>
-                  <span className="block text-[0.82rem] font-bold leading-tight text-forest-900">{title}</span>
+                <button key={id} type="button" onClick={() => send(ask)} className="group flex items-center gap-3 rounded-2xl border border-sand-300 bg-white py-2 ps-2 pe-3.5 transition-[transform,border-color,background-color,box-shadow] duration-150 hover:border-forest-900 hover:bg-forest-900 hover:shadow-md focus-visible:outline-2 focus-visible:outline-purple-600 motion-reduce:transition-none">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-forest-900 text-sand-50 transition-colors group-hover:bg-sand-50 group-hover:text-forest-900"><Icon className="size-[1.1rem]" aria-hidden /></span>
+                  <span className="flex-1 text-[0.9rem] font-bold leading-tight text-forest-900 transition-colors group-hover:text-sand-50">{title}</span>
+                  <span aria-hidden className="text-forest-500 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-sand-50 rtl:rotate-180 rtl:group-hover:-translate-x-0.5">&rsaquo;</span>
                 </button>
               ))}
               {welcome.length === 0 && chips.map((c) => <button key={c.id} type="button" onClick={() => pickChip(c)} className="col-span-2 rounded-full border border-sand-300 bg-white px-3.5 py-1.5 text-[0.8rem] font-semibold text-forest-900">{c.label}</button>)}
