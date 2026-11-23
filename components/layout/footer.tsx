@@ -43,7 +43,7 @@ const columns: Column[] = [
   },
   {
     title: "Compare",
-    links: [...competitors.slice(0, 5).map((c) => [`BeigeLeads vs ${compareLabel(c.name)}`, compareHref(c.slug)] as const), ["All Comparisons", "/compare"]],
+    links: [...competitors.map((c) => [`vs ${compareLabel(c.name)}`, compareHref(c.slug)] as const), ["All Comparisons", "/compare"]],
   },
   {
     title: "Resources",
