@@ -45,7 +45,7 @@ export const DEFAULT_FAQS: { q: string; a: string }[] = [
   { q: "How often is the data refreshed?", a: "BeigeLeads refreshes its databases every 90 days. Each product page shows the date that list was last updated." },
   { q: "What fields does a database include?", a: "Fields cover business details, location, contact, online presence and operations. Which fields are filled varies by product and by record, so check the sample on the list page before you buy." },
   { q: "How accurate is the data?", a: "No data set is perfect. If more than 5% of the emails in a delivered list bounce, we replace them under our replacement policy. We publish a measured accuracy figure only when we can show how it was measured." },
-  { q: "Which countries do you cover?", a: "Coverage is shown on this page from the lists that are actually available, and it grows as lists are added. Each country page links to its real databases." },
+  { q: "Which countries do you cover?", a: "BeigeLeads offers business data in 200+ countries. Ready-made databases are listed on the site for many of them and the list grows as databases are added. For any other country, send a custom list request." },
   { q: "Which formats do you deliver?", a: "CSV, Excel or TXT. After payment is confirmed, you receive an emailed link. Delivery is usually quick but can take up to 12 hours in some cases." },
   { q: "Can I see the data before I buy?", a: "Yes. Every list page has a masked sample, and you can request a free sample. Sample rows are masked so no working contact is exposed." },
   { q: "Is the data compliant with privacy laws?", a: "We publish how we collect and use data in our privacy, GDPR, CCPA and lawful-use pages, and anyone can ask to be removed through the opt-out page. Buyers are responsible for using the data lawfully in their own region. We do not make blanket compliance guarantees." },
@@ -55,8 +55,8 @@ export const DEFAULT_FAQS: { q: string; a: string }[] = [
 export const DEFAULT_OUR_DATA: OurDataSettings = {
   published: true,
   claims: { records: pending(), accuracy: pending(), largest: pending() },
-  seoTitle: "Our Data: Sources, Coverage and Verification | BeigeLeads",
-  seoDescription: "See what is inside BeigeLeads databases: fields, countries, industries, sourcing, email verification, refresh cycle and delivery formats.",
+  seoTitle: "B2B Business Data: Sources, Coverage, Verification",
+  seoDescription: "See what is inside BeigeLeads B2B business databases: fields, 200+ countries, industries, sources, email verification, 90-day refresh and delivery.",
   faqs: DEFAULT_FAQS,
 };
 

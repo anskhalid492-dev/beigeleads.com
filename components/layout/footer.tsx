@@ -17,10 +17,12 @@ const columns: Column[] = [
     title: "Company",
     links: [
       ["About", "/about"],
-      ["Contact", "/contact"],
+      ["Our Data", "/our-data"],
+      ["DFY Outbound", "/dfy-outbound"],
       ["Data Reseller Partners", "/partners"],
       ["Request a Category", "/request-category"],
       ["Opt Out", "/opt-out"],
+      ["Contact", "/contact"],
     ],
   },
   {
@@ -51,7 +53,6 @@ const columns: Column[] = [
       ["Request a Sample", "/sample"],
       ["Email List Verification", "/email-list-verification"],
       ["Team Purchase Requests", "/team-purchase-requests"],
-      ["Our Data", "/our-data"],
       ["AI Assistant", "/ai-assistant"],
       ["Case Studies", "/case-studies"],
       ["Benchmarks", "/benchmarks"],

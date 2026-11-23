@@ -250,7 +250,7 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         ctx.sources.push({ title: "Our Data", url: "/our-data" });
         return {
           page: "/our-data", countries: f.countries.map((c) => c.name), industries: f.industries.map((i) => i.name), newestListUpdate: f.newestUpdate,
-          refreshCycle: "BeigeLeads refreshes its databases every 90 days", fieldsPerRecordUpTo: f.fieldCount,
+          refreshCycle: "BeigeLeads refreshes its databases every 90 days", coverage: "BeigeLeads states it offers business data in 200+ countries (owner statement); the countries array lists only those with a ready-made database on the site today",
           replacementPolicy: "If more than 5% of emails in a delivered list bounce, bounced emails are replaced (see /legal/refund-replacement)",
           verifiedClaims: CLAIM_KEYS.filter((k) => approvedValue(st, k)).map((k) => ({ claim: CLAIM_INFO[k].label, wording: st.claims[k].value, evidence: st.claims[k].evidence })),
           unverifiedClaims: CLAIM_KEYS.filter((k) => !approvedValue(st, k)).map((k) => CLAIM_INFO[k].label),

@@ -4,7 +4,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SolutionFaq } from "@/components/solutions/sections";
-import { Accuracy, Coverage, Delivery, FinalCta, Freshness, Hero, Industries, Inside, Privacy, Roles, Sourcing, Verification } from "@/components/our-data/sections";
+import { Accuracy, Coverage, Delivery, FinalCta, Freshness, Hero, Industries, Inside, Privacy, Roles, Sourcing, Stats, Verification } from "@/components/our-data/sections";
 import { loadOurData } from "@/lib/our-data/settings";
 import { loadOurDataFacts } from "@/lib/our-data/facts";
 import { fitMeta } from "@/lib/seo/fit";
@@ -32,10 +32,11 @@ export default async function OurDataPage() {
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Our Data", url: `${SITE_URL}/our-data`, description: s.seoDescription, isPartOf: { "@type": "WebSite", url: SITE_URL } }} />
       <div className="bg-sand-50"><Breadcrumbs wide items={[{ name: "Our Data", href: "/our-data" }]} /></div>
-      <Hero s={s} f={f} />
-      <Inside f={f} />
+      <Hero s={s} />
+      <Stats s={s} f={f} />
+      <Inside />
       <Coverage f={f} />
-      <Industries f={f} />
+      <Industries />
       <Roles />
       <Sourcing />
       <Verification />

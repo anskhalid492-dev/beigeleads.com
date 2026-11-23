@@ -776,3 +776,20 @@ li > span > .ev-res, li > .relative > .ev-res { opacity: 0; }
 }
 
 .font-footer, .font-footer * { font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif; font-stretch: 100%; }
+
+/* /our-data page motion (CLAUDE.md section 143). Decorative only; everything stops under prefers-reduced-motion. */
+@keyframes od-scan { 0% { transform: translateY(-10%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(110%); opacity: 0; } }
+@keyframes od-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes od-dash { to { stroke-dashoffset: -24; } }
+@keyframes od-lit { 0%, 100% { background-color: var(--od-base, #D8EADF); } 12%, 24% { background-color: #7C3AED; } }
+@keyframes od-ring { to { transform: rotate(360deg); } }
+@keyframes od-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes od-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.od-scan { animation: od-scan 3.6s ease-in-out infinite; }
+.od-float { animation: od-float 6s ease-in-out infinite; }
+.od-dash { stroke-dasharray: 4 8; animation: od-dash 1.4s linear infinite; }
+.od-lit { animation: od-lit 9s ease-in-out infinite; animation-delay: calc(var(--i) * 1.5s); }
+.od-ring { animation: od-ring 40s linear infinite; transform-origin: 50% 50%; }
+.od-in { animation: od-in 320ms ease-out both; }
+.od-grow { transform-origin: left; animation: od-grow 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .od-scan, .od-float, .od-dash, .od-lit, .od-ring, .od-in, .od-grow { animation: none !important; } .od-scan { opacity: 0; } }
