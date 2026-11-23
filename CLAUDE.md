@@ -1433,3 +1433,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 148. Category picker on the product edit page (23 Nov 2026) — amends sections 118 and 139
 
 - Owner report: categories could not be selected. Cause: the fields used a native `<datalist>`, which only shows options matching the text already typed (a filled field showed just its own value). Now: main category = a real `<select>` of every category plus "+ New category..."; "Also list under" = search box + scrollable checkbox list of every category (tick several), chips to remove, Enter or button to add a new name. Same save action and rules as before; press Save to keep changes. Not browser-tested (behind Access).
+
+## 149. Product URL slug editor (23 Nov 2026) — extends sections 96 and 98
+
+- `/admin/products/imported/<id>` has a "Page URL" box (`/lists/` + editable name, "Change URL", confirm dialog; saved at once, separate from "Save changes"). `setProductSlug` (`lib/import/store.ts`) slugifies, REFUSES (no auto-suffix) a slug that is empty, reserved (pages, categories, taxonomy) or used by another product or old-slug alias, then reuses `renameProduct`: the old URL 308-redirects, delivery links, promotions and page-SEO override move along. Action `renameProductSlugAction` is audited and clears the catalog cache (live in about a minute). Test in `tests/import-e2e.test.ts`. Not browser-tested (behind Access).
+- Product page "at a glance" country card no longer prints "N city pages." (owner, 23 Nov 2026); the `cityCount` prop is unused.

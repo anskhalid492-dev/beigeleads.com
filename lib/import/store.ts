@@ -385,6 +385,19 @@ export async function renameProduct(db: Db, id: number, base: string): Promise<{
   return { changed: true, from, to };
 }
 
+/** Admin-chosen slug: refuses (instead of suffixing) a slug that is empty, reserved or used by another product. */
+export async function setProductSlug(db: Db, id: number, wanted: string): Promise<{ ok: boolean; message: string; slug?: string }> {
+  const row = await getProductRow(db, id);
+  if (!row) return { ok: false, message: "Product not found." };
+  const slug = wanted.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 140);
+  if (!slug) return { ok: false, message: "Enter a URL name using letters or numbers." };
+  if (slug === row.slug) return { ok: true, message: "The URL name is unchanged.", slug };
+  const free = await uniqueSlug(db, slug, row.slug);
+  if (free !== slug) return { ok: false, message: `"${slug}" is already used by another page or product (or reserved by the site). Choose a different name.` };
+  const r = await renameProduct(db, id, slug);
+  return { ok: true, message: `URL changed to /lists/${r.to}. The old address /lists/${r.from} redirects to it.`, slug: r.to };
+}
+
 export type SeoOptions = { slugs: boolean; names: boolean; titles: boolean; categories?: boolean };
 const GENERIC_CATS = new Set(["general targeted lists", "job titles", "healthcare professionals", "targeted email lists"]);
 const catKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/(ies)$/, "y").replace(/s$/, "");

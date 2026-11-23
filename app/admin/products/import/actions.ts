@@ -9,7 +9,7 @@ import { reservedSlugs } from "@/lib/import/reserved";
 import { maskRows } from "@/lib/product-samples";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
-import { saveDefaultSample, applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { saveDefaultSample, applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, setProductSlug, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -213,4 +213,13 @@ export async function saveDefaultSampleAction(csv: unknown): Promise<{ ok: boole
   await saveDefaultSample(db(), rows, a.email);
   await audit(a.email, `Default sample: ${rows.length} masked row(s)`); await refresh();
   return { ok: true, count: rows.length, message: rows.length ? `Saved ${rows.length} masked rows. Every product without its own sample now shows them.` : "Default sample removed." };
+}
+
+export async function renameProductSlugAction(id: unknown, slug: unknown): Promise<{ ok: boolean; message: string; slug?: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const i = z.number().int().safeParse(id), s = z.string().trim().min(1).max(160).safeParse(slug);
+  if (!i.success || !s.success) return { ok: false, message: "Enter a URL name." };
+  const r = await setProductSlug(db(), i.data, s.data);
+  if (r.ok && r.slug) { await audit(a.email, `Changed URL of product #${i.data} to ${r.slug}`); await refresh(); }
+  return r;
 }

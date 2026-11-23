@@ -21,7 +21,7 @@ function Ring({ pct }: { pct: number }) {
 }
 
 /** Only stats that exist in the product data are drawn (no phone/website counts yet). */
-export function ProductStats({ product, country, cityCount }: { product: Product; country: Country; cityCount: number }) {
+export function ProductStats({ product, country, cityCount: _cityCount }: { product: Product; country: Country; cityCount: number }) {
   const records = fmtNum(product.recordCount);
   const verified = fmtDate(product.lastVerified);
   return (
@@ -64,7 +64,6 @@ export function ProductStats({ product, country, cityCount }: { product: Product
           <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
             <MapPinned className="size-6 text-forest-300" aria-hidden />
             <p className="display mt-5 text-4xl text-sand-50">{country.name}</p>
-            <p className="mt-1">{cityCount > 0 ? `${cityCount} city pages.` : "Coverage area."}</p>
           </div>
         </div>
       </div>

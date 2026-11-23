@@ -11,7 +11,7 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
-import { saveDefaultSample, applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
+import { saveDefaultSample, applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, setProductSlug, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
 import { maskRows } from "@/lib/product-samples";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { getStaticProducts } from "@/lib/catalog";
@@ -166,6 +166,18 @@ describe("catalog import", () => {
     const second = await renameProduct(db, c.id!, "plumbers-list");
     expect(second.changed).toBe(true);
     expect((await db.select().from(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, old)))[0].newSlug).toBe("plumbers-list");
+  });
+  it("admin slug edit: redirects old URL, refuses taken, reserved and empty slugs", async () => {
+    const db = getDbFromEnv(env);
+    const mk = (name: string) => createProduct(db, { name, title: "", description: "", seoTitle: "", metaDescription: "", recordCount: 10, dataFields: [], fileFormats: "", coverage: "", lastUpdated: "", placeholder: false, forSale: true, packages: [{ name: "Starter", records: 10, priceUsdCents: 500 }], categoryName: "Roofers", countryName: "United States", countryCode: "US", region: "", channel: "business-email" });
+    const a = await mk("Roofers One"), b = await mk("Roofers Two");
+    const ok = await setProductSlug(db, a.id!, "My Custom Roofers URL");
+    expect(ok.ok).toBe(true); expect(ok.slug).toBe("my-custom-roofers-url");
+    expect((await db.select().from(schema.slugAliases).where(eq(schema.slugAliases.oldSlug, a.slug!)))[0].newSlug).toBe("my-custom-roofers-url");
+    expect((await setProductSlug(db, b.id!, "my-custom-roofers-url")).ok).toBe(false);
+    expect((await setProductSlug(db, b.id!, a.slug!)).ok).toBe(false);
+    expect((await setProductSlug(db, b.id!, "bundles")).ok).toBe(false);
+    expect((await setProductSlug(db, b.id!, "  !!  ")).ok).toBe(false);
   });
   it("one real default sample is shown on every product without its own, and recategorizes catch-all products", async () => {
     const db = getDbFromEnv(env);

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { maskRows, type SampleRowData } from "@/lib/product-samples";
-import { duplicateProductAction, saveProductAction, saveSampleAction } from "../../import/actions";
+import { duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
 type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
@@ -25,6 +25,13 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
       setMsg(r.ok ? "Saved. A published product shows the change within about a minute." : r.message);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
+  }
+  const [slugNow, setSlugNow] = useState(slug); const [slugIn, setSlugIn] = useState(slug); const [slugMsg, setSlugMsg] = useState("");
+  async function changeSlug() {
+    if (slugIn.trim() === slugNow) return;
+    if (!window.confirm(`Change the URL to /lists/${slugIn.trim()}? The old address will redirect to the new one.`)) return;
+    setBusy(true); const r = await renameProductSlugAction(id, slugIn); setBusy(false); setSlugMsg(r.message);
+    if (r.ok && r.slug) { setSlugNow(r.slug); setSlugIn(r.slug); router.refresh(); }
   }
   const [extraDraft, setExtraDraft] = useState(""); const [mainIsNew, setMainIsNew] = useState(false);
   const all = [...new Set([...categories, ...f.extraCategories])].filter((c) => c.toLowerCase() !== f.categoryName.trim().toLowerCase()).sort((x, y) => x.localeCompare(y));
@@ -102,6 +109,12 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
         <div className="mt-2 flex gap-2"><button type="button" disabled={busy || !preview.length} onClick={() => saveSample(false)} className="rounded-full border border-forest-900 px-4 py-1.5 font-semibold disabled:opacity-40">Save masked sample</button>{saved.length > 0 && <button type="button" disabled={busy} onClick={() => saveSample(true)} className="underline">Remove saved sample</button>}</div>
       </fieldset>
       <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
+        <legend className="px-1 font-semibold">Page URL</legend>
+        <div className="flex flex-wrap items-center gap-2"><span className="text-sm">/lists/</span><input aria-label="URL name" className={`${box} max-w-md flex-1`} value={slugIn} maxLength={140} onChange={(e) => setSlugIn(e.target.value)} /><button type="button" disabled={busy || slugIn.trim() === slugNow} onClick={changeSlug} className="rounded-full border border-forest-900 px-4 py-1.5 font-semibold disabled:opacity-40">Change URL</button></div>
+        <p className="mt-2 text-xs">Saved at once, separate from &ldquo;Save changes&rdquo;. The old address redirects to the new one. Orders, delivery links and promotions move with it. Live within about a minute.</p>
+        {slugMsg && <p role="status" aria-live="polite" className="mt-1 text-xs font-semibold text-forest-900">{slugMsg}</p>}
+      </fieldset>
+      <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
         <legend className="px-1 font-semibold">Search results (optional)</legend>
         <label className="block"><span className="mb-1 block text-xs font-semibold">SEO title ({f.seoTitle.length}/60 is a good length)</span><input className={box} value={f.seoTitle} maxLength={200} onChange={(e) => set("seoTitle", e.target.value)} /></label>
         <label className="mt-3 block"><span className="mb-1 block text-xs font-semibold">Meta description ({f.metaDescription.length}/160 is a good length)</span><textarea className={`${box} h-20`} value={f.metaDescription} maxLength={400} onChange={(e) => set("metaDescription", e.target.value)} /></label>
@@ -110,7 +123,7 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
       <div className="flex items-center gap-3">
         <button type="button" disabled={busy} onClick={save} className="rounded-full bg-purple-600 px-5 py-2 font-semibold text-white disabled:opacity-40">Save changes</button>
         <button type="button" disabled={busy} onClick={copy} className="rounded-full border border-forest-900 px-4 py-2 font-semibold disabled:opacity-40">Duplicate as draft</button>
-        {status === "published" && <a href={`/lists/${slug}`} target="_blank" rel="noreferrer" className="underline">View live page</a>}
+        {status === "published" && <a href={`/lists/${slugNow}`} target="_blank" rel="noreferrer" className="underline">View live page</a>}
         {msg && <span role="status" aria-live="polite" className="font-semibold text-forest-900">{msg}</span>}
       </div>
     </div>
