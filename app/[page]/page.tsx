@@ -7,7 +7,6 @@ import { fitMeta } from "@/lib/seo/fit";
 // (pricing/compare/use-cases/blog/etc.: phase 5).
 const pages: Record<string, { title: string; note: string }> = {
   compare: { title: "Compare", note: "Honest comparisons with other list providers are being written." },
-  creators: { title: "Creators", note: "Creator and influencer lists are on the way." },
 };
 
 export const dynamicParams = false;

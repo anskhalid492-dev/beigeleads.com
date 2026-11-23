@@ -17,6 +17,7 @@ export function suggestSubjects(def: TemplateDef, _c: Content): SubjectIdea[] {
     sample_request_received: ["We received your BeigeLeads sample request", `${name}we've received your sample request`, "Sample request received"],
     sample_delivery: [`Your BeigeLeads sample for ${what} is ready`, `${name}your sample is ready to review`, `View your ${what} sample`],
     custom_request_received: [`Your custom list request${ref} is under review`, `${name}we're reviewing your custom list request`, `Custom list request${ref} received`],
+    creator_inquiry_received: ["We received your creator list inquiry — BeigeLeads", `We received your creator list inquiry${has("first_name") ? ", {{first_name}}" : ""}`, "Creator list inquiry received"],
     contact_received: ["We have received your message to BeigeLeads", `We've received your message${has("first_name") ? ", {{first_name}}" : ""}`, `Message received${ref}`],
     order_confirmation: [`Your BeigeLeads order${ref} is confirmed`, `${name}your BeigeLeads order${ref} is confirmed`, `Order${ref} confirmed`],
     payment_received: [`Payment confirmed for ${what}`, `Thanks${has("first_name") ? ", {{first_name}}" : ""}: your payment is confirmed`, `Payment confirmed`],

@@ -95,6 +95,7 @@ export const TOOLS: ToolDef[] = [
   { name: "showDfyPackages", description: "Use for questions about DFY Outbound (done-for-you cold email outbound: domains, inboxes, verified leads, copy, managed sending; one-time packages). Returns the real packages and shows package cards to the visitor. Pass names to show only some (for example the smallest package that covers a lead volume). Package numbers are the only source of truth: never promise anything else, never promise replies, meetings or inbox placement. Domain and inbox numbers are estimates until onboarding.", parameters: { type: "object", properties: { names: { type: "array", items: { type: "string" } } } } },
   { name: "searchKnowledge", description: "Search answers written by the BeigeLeads team (custom FAQs). Use it for questions about policies, process or products that the catalog tools do not cover, before searchHelpArticles.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "searchHelpArticles", description: "Search published Help Center articles for how-to, delivery, payment, data and policy answers.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "getCreatorPricing", description: "Use for any question about influencer or creator contact lists, a creator database, or the price of influencer contacts. Returns the per-contact price, an estimate for a quantity (if given), the inquiry page and the reply promise. A creator list is built custom from an inquiry, never bought instantly; never promise availability or a finished list.", parameters: { type: "object", properties: { quantity: { type: "number" } } } },
   { name: "getOurDataFacts", description: "Facts from the public Our Data page (/our-data): countries and industries with ready-made databases, newest list update date, refresh cycle, and which headline claims are verified. Use it for questions about data coverage, sources, verification, accuracy, freshness or how big the data is. Never state a claim listed under unverifiedClaims.", parameters: { type: "object", properties: {} } },
   { name: "searchGlossary", description: "Look up a B2B data, email or outreach term (for example MX record, bounce rate, SPF, DMARC, ICP, GDPR) in the published BeigeLeads Glossary. This is general education, NOT BeigeLeads policy: when you answer, say so, and use searchHelpArticles or getPolicyDetails for what BeigeLeads actually does.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "getPolicyDetails", description: "Read a published policy page. topic is one of: " + POLICY_SLUGS.join(", "), parameters: { type: "object", properties: { topic: { type: "string" } }, required: ["topic"] } },
@@ -240,6 +241,18 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         if (!hits.length) ctx.miss = true;
         for (const h of hits) ctx.sources.push({ title: h.title, url: h.href });
         return { articles: hits.map((h) => ({ title: h.title, url: h.href, excerpt: (text.get(h.id) ?? "").slice(0, 900) })), note: hits.length ? undefined : "No matching article. Do not guess; offer /contact." };
+      }
+      case "getCreatorPricing": {
+        const { parseQuantity, estimateCents, formatEstimate } = await import("@/lib/creators/pricing");
+        const { PRICE_PER_VERIFIED_CONTACT_USD, RESPONSE_HOURS } = await import("@/lib/creators/config");
+        const n = parseQuantity(args.quantity);
+        ctx.sources.push({ title: "Creator database", url: "/creators" });
+        return {
+          page: "/creators", inquiryForm: "/creators#inquiry", pricePerVerifiedContactUsd: PRICE_PER_VERIFIED_CONTACT_USD,
+          ...(n ? { quantity: n, estimatedPrice: formatEstimate(estimateCents(n)) } : {}),
+          replyPromise: `The team replies within ${RESPONSE_HOURS} hours of an inquiry`,
+          note: "Lists are custom-built from the visitor's inquiry (platform, niche, country, follower range, quantity). The price is an estimate: quantity x $0.10, with no discounts or minimums added. Final availability and total are confirmed by the team. Not every creator in the database has an available verified contact. Do not promise a finished list, a sample, or a delivery time; do not ask unnecessary questions.",
+        };
       }
       case "getOurDataFacts": {
         const { loadOurData, approvedValue, CLAIM_INFO, CLAIM_KEYS } = await import("@/lib/our-data/settings");

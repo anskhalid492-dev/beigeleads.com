@@ -618,7 +618,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Local businesses to pitch", d: "Local businesses that want attention in their area are natural partners for local creators." },
       { t: "Contact details included", d: "Email, phone and website help you send a personal proposal." },
       { t: "City-level targeting", d: "Match a creator's audience location with businesses in the same city." },
-      { t: "Creator lists are on the way", d: "Yes, we sell creator lists. Request the platform and niche you need." },
+      { t: "Custom creator lists", d: "Describe the platform, niche, country and follower range you need on the creators page and we build the list around it." },
     ],
     productSlugs: ["restaurants-us", "ski-shops-us", "dentists-us"],
     productNote: "Today's lists are of businesses, which is who creators pitch. Lists of creators and influencers are available on request.",

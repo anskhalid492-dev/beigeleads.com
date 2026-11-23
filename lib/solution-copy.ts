@@ -343,7 +343,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       "Find local businesses to pitch for sponsorships. Local business contacts with email, phone and website. No influencer or social handle data.",
     h1: "Local business contacts for creators who want sponsors close to home",
     lede:
-      "Creators and influencer agencies often pitch national brands and ignore the local businesses that would pay for a nearby audience. These lists give you local businesses to approach, with email, phone and website. Influencer lists are available on request.",
+      "Creators and influencer agencies often pitch national brands and ignore the local businesses that would pay for a nearby audience. These lists give you local businesses to approach, with email, phone and website. Custom influencer lists are available through the creators page.",
     challenge: {
       heading: "Local sponsors exist, but you have to find them first",
       paragraphs: [
@@ -356,7 +356,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "Pitching national brands with no reply.", fix: "A local business can say yes in one email, and your audience is already near them." },
       { pain: "Unsure which businesses suit your content.", fix: "Businesses with a visual product or a place people visit suit creator content." },
       { pain: "Social handle data is missing.", fix: "Not part of the data today. Use the website to find the business's profiles." },
-      { pain: "You need an influencer database.", fix: "We do not have one. Request it, and we will say honestly whether we can source it." },
+      { pain: "You need an influencer database.", fix: "Send a custom creator inquiry with your platform, niche, country and follower range. We confirm availability and price before you pay." },
     ],
     applications: [
       { t: "Pitch a local business in your city", d: "Offer a visit, a post and a story in exchange for a meal or a fee." },

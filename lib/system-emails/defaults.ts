@@ -317,6 +317,27 @@ export const TEMPLATES: TemplateDef[] = [
       signoff: "The BeigeLeads team",
     },
   },
+  // ---- Creator Database inquiries (section 152) ------------------------------------------------------------
+  {
+    key: "creator_inquiry_received", name: "Creator list inquiry received", audience: "customer", category: "Creator Database", canDisable: false, connection: "connected",
+    event: "Someone submits the custom creator database inquiry on /creators (sent once per inquiry; a plain-text version with the same wording is used if this template cannot be built).",
+    vars: ["first_name", "request_reference", "creator_platforms", "creator_niche", "country", "creator_followers", "quantity", "estimated_price"], required: ["request_reference"],
+    content: {
+      subject: "We received your creator list inquiry — BeigeLeads",
+      preheader: "Our team will review your requirements and get back to you within 12 hours.",
+      heading: "We received your inquiry",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "Thanks for reaching out to BeigeLeads!" },
+        { t: "p", text: "We've received your custom creator database inquiry. Here is your request summary:" },
+        { t: "kv", rows: [{ label: "Platforms:", value: "{{creator_platforms}}" }, { label: "Creator niche:", value: "{{creator_niche}}" }, { label: "Country/region:", value: "{{country}}" }, { label: "Follower range:", value: "{{creator_followers}}" }, { label: "Requested contacts:", value: "{{quantity}}" }, { label: "Estimated price:", value: "{{estimated_price}}" }] },
+        { t: "p", text: "Our team will review your requirements and get back to you within 12 hours." },
+        { t: "p", text: "Your Inquiry ID: **{{request_reference}}**" },
+        { t: "note", text: "The final quantity and pricing are subject to data availability and confirmation." },
+      ],
+      signoff: "Talk soon,\nThe BeigeLeads Team",
+    },
+  },
   // ---- Data Reseller Partners ---------------------------------------------------------------------------
   {
     key: "partner_application_received", name: "Partner application received", audience: "customer", category: "Data Reseller Partners", canDisable: true, connection: "connected",

@@ -46,24 +46,28 @@ export function RelatedProducts({ items }: { items: readonly Product[] }) {
           })}
         </ul>
         {more.length > 0 && (
-          <nav aria-label="More lists" className="mt-16">
-            <div className="flex flex-wrap items-end justify-between gap-3">
+          <nav aria-label="More lists" className="mt-20">
+            <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-forest-900 pb-4">
               <h3 className="display text-3xl text-forest-900 sm:text-4xl">More lists you can open</h3>
-              <Link href="/lists" className="inline-flex items-center gap-1.5 text-sm font-semibold text-forest-900 underline decoration-sand-300 underline-offset-4 hover:decoration-forest-900">Browse every list <ArrowRight className="size-4" aria-hidden /></Link>
+              <Link href="/lists" className="inline-flex items-center gap-1.5 rounded-full bg-forest-900 px-5 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-purple-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Browse every list <ArrowRight className="size-4" aria-hidden /></Link>
             </div>
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {more.map((r) => (
-                <li key={r.slug}>
-                  <Link href={`/lists/${r.slug}`} className="group flex items-center gap-3 rounded-2xl border border-sand-300 bg-sand-50 p-3 pr-4 transition duration-200 hover:border-forest-500 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 motion-reduce:transition-none">
-                    <DbBadge category={r.categorySlug} hint={r.name} country={getCountry(r.countrySlug)?.code} size="sm" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[0.95rem] font-semibold leading-tight text-forest-900">{r.name}</span>
-                      <span className="mt-0.5 block truncate text-xs text-forest-500">{getCategory(r.categorySlug)?.name}</span>
-                    </span>
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-sand-100 text-forest-900 transition-colors duration-200 group-hover:bg-purple-600 group-hover:text-white" aria-hidden><ArrowRight className="size-4" /></span>
-                  </Link>
-                </li>
-              ))}
+            <ul className="grid md:grid-cols-2 md:gap-x-12">
+              {more.map((r) => {
+                const country = getCountry(r.countrySlug)?.name;
+                const recs = fmtNum(r.recordCount);
+                return (
+                  <li key={r.slug} className="border-b border-sand-300">
+                    <Link href={`/lists/${r.slug}`} className="group flex items-center gap-4 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 motion-reduce:transition-none">
+                      <DbBadge category={r.categorySlug} hint={r.name} country={getCountry(r.countrySlug)?.code} size="sm" />
+                      <span className="min-w-0 flex-1">
+                        <span className="line-clamp-2 text-[1.02rem] font-bold leading-snug text-forest-900 group-hover:underline group-hover:decoration-forest-500 group-hover:underline-offset-4">{r.name}</span>
+                        <span className="mt-1 block truncate text-sm text-forest-500">{[country, recs ? `${recs} records` : null].filter(Boolean).join(" · ") || getCategory(r.categorySlug)?.name}</span>
+                      </span>
+                      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-sand-300 text-forest-900 transition-all duration-200 group-hover:translate-x-1 group-hover:border-purple-600 group-hover:bg-purple-600 group-hover:text-white motion-reduce:transition-none" aria-hidden><ArrowRight className="size-4" /></span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         )}

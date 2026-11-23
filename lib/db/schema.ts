@@ -266,6 +266,46 @@ export const contactInquiries = sqliteTable(
   (t) => [uniqueIndex("contact_inquiries_dedupe_uq").on(t.dedupeKey), uniqueIndex("contact_inquiries_reference_uq").on(t.reference)],
 );
 
+export const creatorInquiries = sqliteTable(
+  "creator_inquiries",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    reference: text("reference").notNull(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    company: text("company"),
+    /** JSON array of platform names. */
+    platforms: text("platforms").notNull(),
+    niche: text("niche").notNull(),
+    country: text("country").notNull(),
+    followerRange: text("follower_range").notNull(),
+    quantity: integer("quantity").notNull(),
+    language: text("language"),
+    audienceGeo: text("audience_geo"),
+    engagement: text("engagement"),
+    notes: text("notes"),
+    /** Computed on the server from quantity x the price constant; an estimate, never a charge. */
+    estimatedCents: integer("estimated_cents").notNull(),
+    dedupeKey: text("dedupe_key").notNull(),
+    status: text("status", { enum: ["new", "in_review", "quoted", "contacted", "won", "lost"] }).notNull().default("new"),
+    internalNote: text("internal_note"),
+    assignedTo: text("assigned_to"),
+    /** Epoch ms: submission time + 12 hours. */
+    respondBy: integer("respond_by").notNull(),
+    /** Set ONLY when an admin records a real customer-facing response. */
+    respondedAt: integer("responded_at"),
+    reminderSentAt: integer("reminder_sent_at"),
+    overdueSentAt: integer("overdue_sent_at"),
+    emailStatus: text("email_status", { enum: ["pending", "sent", "failed", "not_configured"] }).notNull().default("pending"),
+    emailError: text("email_error"),
+    attempts: integer("attempts").notNull().default(0),
+    ownerNotify: text("owner_notify", { enum: ["pending", "sent", "failed", "skipped"] }).notNull().default("pending"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => [uniqueIndex("creator_inquiries_dedupe_uq").on(t.dedupeKey), uniqueIndex("creator_inquiries_reference_uq").on(t.reference)],
+);
+
 export const categoryRequests = sqliteTable("category_requests", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull(),

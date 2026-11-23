@@ -9,7 +9,7 @@ import { PromoBanner } from "@/components/promos/banner";
 import { loadSalesSettings } from "@/lib/sales/settings";
 
 export async function ProductPricing({ product, forSale: _forSale }: { product: Product; forSale: boolean }) {
-  const volMsg = await (async () => { try { const { volume: v } = await loadSalesSettings(getCloudflareContext().env); if (!v.enabled || v.excludedProducts.includes(product.slug) || v.excludedCategories.includes(product.categorySlug)) return ""; const t = v.tiers[0]; const top = v.tiers[v.tiers.length - 1]; return t ? `Buy ${t.min}+ databases and save ${t.percent}%${top.percent > t.percent ? ` (up to ${top.percent}%)` : ""} in your cart.` : ""; } catch { return ""; } })();
+  const volTiers = await (async () => { try { const { volume: v } = await loadSalesSettings(getCloudflareContext().env); if (!v.enabled || v.excludedProducts.includes(product.slug) || v.excludedCategories.includes(product.categorySlug)) return []; return v.tiers.map((t) => ({ min: t.min, percent: t.percent })); } catch { return []; } })();
   // Promotions only change what is SHOWN here; the cart and checkout re-price everything on the server.
   const promos = await getPublicPromos(getCloudflareContext().env).catch(() => []);
   if (!offeredPackages(product).length) {
@@ -27,7 +27,6 @@ export async function ProductPricing({ product, forSale: _forSale }: { product: 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className={`display max-w-3xl text-5xl text-forest-900 sm:text-6xl ${offeredPackages(product).length < 3 ? "mx-auto text-center" : ""}`}>{product.name} pricing: pick a package, pay once</h2>
         <PromoBanner place="product" slug={product.slug} className="mt-6" />
-        {volMsg && <p className="mx-auto mt-4 max-w-xl text-center text-sm font-semibold text-forest-900">{volMsg}</p>}
 
         <div className={`mt-12 grid items-stretch gap-6 ${offeredPackages(product).length === 1 ? "mx-auto max-w-md" : offeredPackages(product).length === 2 ? "mx-auto max-w-3xl lg:grid-cols-2" : "lg:grid-cols-3"}`}>
           {offeredPackages(product).map((pk) => {
@@ -73,13 +72,14 @@ export async function ProductPricing({ product, forSale: _forSale }: { product: 
                 )}
                 <div className={`mt-6 border-t pt-5 ${dark ? "border-forest-700" : "border-sand-300"}`}>
                   <p className={`text-xs font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>What you get</p>
-                  <ul className="mt-3 flex-1 space-y-3 text-sm">
-                    {pk.records > 0 && <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{pk.records.toLocaleString("en-US")} records</strong> of {product.name}</span></li>}
-                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{product.fields.length}+ data fields</strong> per record, including business email</span></li>
-                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span>Format: <strong>{product.fileFormats?.trim() || "CSV, Excel or TXT"}</strong></span></li>
-                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span>Download link by email, <strong>unlimited downloads</strong>; delivery is usually instant, up to 12 hours</span></li>
-                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>Refreshed every 90 days</strong> and covered by our replacement policy for bounced emails</span></li>
-                    <li className="flex gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>One payment, you own the list.</strong> No subscription, no account</span></li>
+                  <ul className="mt-4 flex-1 space-y-3 text-[0.82rem]">
+                    {pk.records > 0 && <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{pk.records.toLocaleString("en-US")} records</strong> included</span></li>}
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{product.fields.length}+ data fields</strong> per record</span></li>
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span>Format: <strong>{product.fileFormats?.trim() || "CSV, Excel or TXT"}</strong></span></li>
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span>Emailed link, <strong>unlimited downloads</strong></span></li>
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>Refreshed every 90 days</strong></span></li>
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span>Bounced emails replaced</span></li>
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>Pay once</strong>, you own the list</span></li>
                   </ul>
                 </div>
                 <AddToCartButton slug={product.slug} pkg={pk.name} variant={dark ? "primary" : "secondary"} className="mt-8" label="Get This Package" />
@@ -88,7 +88,18 @@ export async function ProductPricing({ product, forSale: _forSale }: { product: 
           })}
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-sm">
+        {volTiers.length > 0 && (
+          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-2xl border border-sand-300 bg-sand-50 px-6 py-4">
+            <p className="text-sm font-semibold text-forest-900">Buying more than one list?</p>
+            <ul className="flex flex-wrap justify-center gap-2">
+              {volTiers.map((t) => (
+                <li key={t.min} className="rounded-full bg-forest-100 px-3.5 py-1.5 text-sm font-semibold text-forest-900">{t.min}+ lists <span className="text-forest-500">·</span> {t.percent}% off</li>
+              ))}
+            </ul>
+            <p className="w-full text-center text-xs">Applied automatically in your cart.</p>
+          </div>
+        )}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm">
           <span className="font-semibold text-forest-900">Not sure which size?</span>
           <Link href={`/sample?product=${product.slug}`} className="rounded-full border border-forest-900 px-4 py-2 font-semibold text-forest-900 hover:bg-forest-900 hover:text-sand-50">Get a free sample</Link>
           <Link href="/custom-list" className="rounded-full border border-sand-300 bg-sand-50 px-4 py-2 font-semibold text-forest-900 hover:border-forest-900">Ask for a custom list</Link>
