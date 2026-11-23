@@ -59,6 +59,8 @@ export type Product = {
   fileFormats?: string;
   /** The admin chose this list's data fields by hand (section 156): `fields` is shown as is instead of the full catalog. */
   fieldsCustom?: boolean;
+  /** Owner-declared number of fields to state (local business lists: 74). Falls back to fields.length. */
+  fieldCount?: number;
   coverage?: string;
   /** Real masked sample rows entered by the owner (section 97). */
   samples?: readonly { business: string; address: string; city: string; phone: string; email: string; website: string }[];
@@ -71,7 +73,7 @@ export type Package = {
   highlighted?: boolean;
 };
 
-import { FIELD_NAMES, PRODUCT_ACCURACY, PRODUCT_VERIFIED, fieldSummary } from "@/lib/product-fields";
+import { FIELD_NAMES, LOCAL_FIELD_COUNT, LOCAL_FIELD_NAMES, PRODUCT_ACCURACY, PRODUCT_VERIFIED, fieldSummary } from "@/lib/product-fields";
 export const FIELDS = [
   "Business name",
   "Address",
@@ -258,7 +260,7 @@ let normFrom: readonly Product[] | null = null;
 let normTo: readonly Product[] = [];
 const allProducts = (): readonly Product[] => {
   const raw = rawProducts();
-  if (raw !== normFrom) { normFrom = raw; normTo = raw.map((p) => ({ ...p, fields: p.fieldsCustom && p.fields.length ? p.fields : FIELD_NAMES, lastVerified: p.lastVerified && p.lastVerified > PRODUCT_VERIFIED ? p.lastVerified : PRODUCT_VERIFIED, accuracyPct: PRODUCT_ACCURACY })); }
+  if (raw !== normFrom) { normFrom = raw; normTo = raw.map((p) => ({ ...p, fields: p.fieldsCustom && p.fields.length ? p.fields : p.categorySlug === "local-businesses-database" ? LOCAL_FIELD_NAMES : FIELD_NAMES, ...(p.categorySlug === "local-businesses-database" && !(p.fieldsCustom && p.fields.length) ? { fieldCount: LOCAL_FIELD_COUNT } : {}), lastVerified: p.lastVerified && p.lastVerified > PRODUCT_VERIFIED ? p.lastVerified : PRODUCT_VERIFIED, accuracyPct: PRODUCT_ACCURACY })); }
   return normTo;
 };
 /** The products defined in code (used to copy them into the database). */

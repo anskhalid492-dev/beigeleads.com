@@ -74,7 +74,7 @@ export async function ProductPricing({ product, forSale: _forSale }: { product: 
                   <p className={`text-xs font-semibold ${dark ? "text-forest-300" : "text-forest-500"}`}>What you get</p>
                   <ul className="mt-4 flex-1 space-y-3 text-[0.82rem]">
                     {pk.records > 0 && <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{pk.records.toLocaleString("en-US")} records</strong> included</span></li>}
-                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{product.fields.length}+ data fields</strong> per record</span></li>
+                    <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>{product.fieldCount ?? `${product.fields.length}+`} data fields</strong> per record</span></li>
                     <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span>Format: <strong>{product.fileFormats?.trim() || "CSV, Excel or TXT"}</strong></span></li>
                     <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span>Emailed link, <strong>unlimited downloads</strong></span></li>
                     <li className="flex items-center gap-2.5 whitespace-nowrap"><Check className="size-4 shrink-0 text-forest-500" aria-hidden /><span><strong>Refreshed every 90 days</strong></span></li>

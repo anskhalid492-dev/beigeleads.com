@@ -2,8 +2,9 @@
 export const PRODUCT_VERIFIED = "2026-11-18";
 export const PRODUCT_ACCURACY = 95;
 
-export type FieldGroup = "Business" | "Location" | "Contact" | "Online presence" | "Operations";
+export type FieldGroup = "Business" | "Location" | "Contact" | "Online presence" | "Operations" | "Google listing";
 export const FIELD_GROUPS: readonly FieldGroup[] = ["Business", "Location", "Contact", "Online presence", "Operations"];
+export const ALL_FIELD_GROUPS: readonly FieldGroup[] = [...FIELD_GROUPS, "Google listing"];
 
 const g = (group: FieldGroup, rows: [string, string][]) => rows.map(([name, text]) => ({ name, group, text }));
 
@@ -67,6 +68,88 @@ export const FIELD_CATALOG = [
     ["Source type", "Where the record was collected from."],
   ]),
 ] as const;
+
+// Owner decision (23 Nov 2026): local business lists carry this field set and state it as 74 fields (owner-declared; the list holds 64 named fields).
+export const LOCAL_FIELD_COUNT = 74;
+export const LOCAL_FIELD_CATALOG = [
+  ...g("Business", [
+    ["Business Name", "Name of the business as listed."],
+    ["Pricing", "Price level shown on the listing."],
+    ["Description", "Description from the business listing."],
+    ["Summary", "Short summary of the business."],
+    ["First Category", "Main business category."],
+    ["Second Category", "Second category, when listed."],
+    ["Claimed GMB", "Whether the Google listing is claimed."],
+    ["Price", "Price range symbol, when listed."],
+    ["Business Status", "Open, closed or temporarily closed."],
+    ["Uuid", "Unique record identifier."],
+    ["Offerings", "Products or services offered."],
+    ["From the Business", "Text the business wrote about itself."],
+  ]),
+  ...g("Location", [
+    ["Full Address", "Complete address on one line."],
+    ["Street Address", "Street line of the address."],
+    ["City", "City of the business."],
+    ["Zip", "ZIP or postal code."],
+    ["Municipality", "Municipality or locality."],
+    ["State", "State or region."],
+    ["Country", "Country of the business."],
+    ["Timezone", "Local time zone."],
+    ["Latitude", "Map latitude."],
+    ["Longitude", "Map longitude."],
+    ["Coordinates", "Latitude and longitude together."],
+    ["Plus Code", "Google Plus Code for the location."],
+  ]),
+  ...g("Contact", [
+    ["Phone 1", "Main phone number."],
+    ["Phone Standard Format", "Phone number in a standard international format."],
+    ["Phone Numbers", "All phone numbers found."],
+    ["Email", "Business email address."],
+  ]),
+  ...g("Online presence", [
+    ["Website", "The business's website."],
+    ["Domain", "Root domain of the website."],
+    ["Image URL", "Main listing image link."],
+    ["Favicon", "Website icon link."],
+    ["Facebook URL", "Facebook page link."],
+    ["LinkedIn URL", "LinkedIn page link."],
+    ["Twitter URL", "X (Twitter) profile link."],
+    ["Instagram URL", "Instagram profile link."],
+    ["Meta Description", "Meta description of the website."],
+    ["Meta Keywords", "Meta keywords of the website."],
+    ["YouTube URL", "YouTube channel link."],
+    ["Yelp URL", "Yelp page link."],
+  ]),
+  ...g("Operations", [
+    ["Hours", "Opening hours summary."],
+    ["Saturday", "Opening hours on Saturday."],
+    ["Sunday", "Opening hours on Sunday."],
+    ["Monday", "Opening hours on Monday."],
+    ["Tuesday", "Opening hours on Tuesday."],
+    ["Wednesday", "Opening hours on Wednesday."],
+    ["Thursday", "Opening hours on Thursday."],
+    ["Friday", "Opening hours on Friday."],
+    ["Menu Link", "Link to the menu, when listed."],
+    ["Reserve a Table", "Reservation link, when listed."],
+    ["Accessibility", "Accessibility features listed."],
+    ["Amenities", "Amenities listed."],
+    ["Service Options", "Service options such as dine-in or delivery."],
+    ["Payments", "Accepted payment methods."],
+    ["Crowd", "Customer crowd details listed."],
+    ["Planning", "Planning details listed, such as booking."],
+  ]),
+  ...g("Google listing", [
+    ["Reviews Count", "Number of public reviews."],
+    ["Average Rating", "Average public review rating."],
+    ["Place ID", "Google Place ID."],
+    ["GMB URL", "Link to the Google Business listing."],
+    ["CID", "Google customer ID of the listing."],
+    ["Google Knowledge URL", "Google Knowledge Panel link."],
+    ["Kgmid", "Google Knowledge Graph ID."],
+    ["Review URL", "Link to the reviews page."],
+  ]),
+] as const;
+export const LOCAL_FIELD_NAMES: readonly string[] = LOCAL_FIELD_CATALOG.map((f) => f.name);
 
 export const FIELD_NAMES: readonly string[] = FIELD_CATALOG.map((f) => f.name);
 

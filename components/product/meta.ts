@@ -1,14 +1,14 @@
 import { Building2, Clock, Globe, Link2, Mail, MapPin, MapPinned, Phone, Share2, type LucideIcon } from "lucide-react";
-import { FIELD_CATALOG, FIELD_GROUPS, type FieldGroup } from "@/lib/product-fields";
+import { ALL_FIELD_GROUPS, FIELD_CATALOG, LOCAL_FIELD_CATALOG, type FieldGroup } from "@/lib/product-fields";
 
 /** Icon, group and one-line meaning for each field a list can contain. Unknown fields still render. */
-const GROUP_ICON: Record<FieldGroup, LucideIcon> = { Business: Building2, Location: MapPin, Contact: Phone, "Online presence": Share2, Operations: Clock };
+const GROUP_ICON: Record<FieldGroup, LucideIcon> = { Business: Building2, Location: MapPin, Contact: Phone, "Online presence": Share2, Operations: Clock, "Google listing": MapPinned };
 const SPECIAL: Record<string, LucideIcon> = { City: MapPinned, Country: Globe, Email: Mail, Website: Link2 };
 export const fieldMeta: Record<string, { icon: LucideIcon; group: FieldGroup; text: string }> = Object.fromEntries(
-  FIELD_CATALOG.map((f) => [f.name, { icon: SPECIAL[f.name] ?? GROUP_ICON[f.group], group: f.group, text: f.text }]),
+  [...LOCAL_FIELD_CATALOG, ...FIELD_CATALOG].map((f) => [f.name, { icon: SPECIAL[f.name] ?? GROUP_ICON[f.group], group: f.group, text: f.text }]).reverse(),
 );
 
-export const groupOrder = FIELD_GROUPS;
+export const groupOrder = ALL_FIELD_GROUPS;
 
 export function fmtDate(iso: string | null): string | null {
   if (!iso) return null;

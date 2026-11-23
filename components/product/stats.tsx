@@ -57,7 +57,7 @@ export function ProductStats({ product, country, cityCount: _cityCount }: { prod
           {product.fields.length > 0 && (
             <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
               <Layers3 className="size-6 text-forest-300" aria-hidden />
-              <p className="display mt-5 text-4xl text-sand-50">{product.fields.length} fields</p>
+              <p className="display mt-5 text-4xl text-sand-50">{product.fieldCount ?? product.fields.length} fields</p>
               <p className="mt-1">{product.fields.slice(0, 6).join(", ")} and more.</p>
             </div>
           )}

@@ -10,6 +10,7 @@ const BLURB: Record<FieldGroup, string> = {
   Contact: "How to reach it: email, phone and a named contact where one was found.",
   "Online presence": "Where it shows up online: website, social handles and listings.",
   Operations: "How it runs: details that help you qualify and segment.",
+  "Google listing": "What the Google listing holds: IDs, links and review details.",
 };
 
 /** Premium field explorer: one group at a time, every field named, no counts. */
