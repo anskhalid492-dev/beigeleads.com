@@ -24,13 +24,12 @@ export function AuthorLinksList({ links, className = "" }: { links: AuthorLinks;
 
 export function Byline({ author, plainName, date }: { author: ArticleAuthor | null; plainName: string; date: Date }) {
   const name = author?.name ?? publicName(plainName);
-  if (!name) return null;
   return (
-    <div className="mt-6 flex items-center gap-3" data-testid="byline">
-      <AuthorAvatar photo={author?.photo} name={name} size={48} />
-      <div className="min-w-0 text-sm">
-        <p>Written by {author ? <Link href={`/blog/author/${author.slug}`} rel="author" className="font-bold text-forest-900 hover:underline">{name}</Link> : <span className="font-bold text-forest-900">{name}</span>}</p>
-        <p>{author?.title ? `${author.title} · ` : ""}<time dateTime={date.toISOString()}>{fmtDate(date)}</time></p>
+    <div className="mt-5 flex items-center gap-3 border-y border-sand-200 py-4" data-testid="byline">
+      {name ? <AuthorAvatar photo={author?.photo} name={name} size={52} /> : <img src="/brand/svg/beigeleads-symbol-light.svg" alt="" width={52} height={52} className="size-[52px] rounded-xl" />}
+      <div className="min-w-0 text-sm leading-snug">
+        <p>{name ? "Written by " : "By "}{author ? <Link href={`/blog/author/${author.slug}`} rel="author" className="text-base font-bold text-forest-900 hover:underline">{name}</Link> : <span className="text-base font-bold text-forest-900">{name || "BeigeLeads"}</span>}</p>
+        <p className="mt-0.5">{author?.title ? `${author.title} · ` : ""}<time dateTime={date.toISOString()}>{fmtDate(date)}</time></p>
       </div>
     </div>
   );

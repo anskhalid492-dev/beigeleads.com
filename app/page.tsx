@@ -317,18 +317,6 @@ export default async function Home() {
 
       {/* 12. FAQ */}
       <SolutionFaq name="BeigeLeads" items={faq} />
-
-      {/* 13. Final CTA */}
-      <section aria-labelledby="final" className="px-2 py-16 sm:px-4">
-        <div className="mx-auto max-w-[96rem] rounded-[2rem] bg-gradient-to-br from-forest-900 via-forest-700 to-forest-500 px-4 py-20 text-center text-sand-50">
-          <h2 id="final" className="display text-5xl text-white sm:text-7xl">Your next prospects are one search away.</h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-sand-100">Find an available business contact list or tell us exactly what you need.</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg"><Link href="/#find-leads">Find my leads</Link></Button>
-            <Button asChild variant="secondary" size="lg"><Link href="/custom-list">Build a custom list</Link></Button>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

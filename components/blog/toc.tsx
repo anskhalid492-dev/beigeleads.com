@@ -21,20 +21,20 @@ export function Toc({ items }: { items: H[] }) {
   }, [items]);
 
   const list = (
-    <ol className="space-y-1 border-l border-sand-300 text-sm">
+    <ol className="space-y-0.5 text-sm">
       {items.map((h) => (
-        <li key={h.id} style={{ paddingLeft: h.level === 3 ? "1.5rem" : "0.75rem" }}>
+        <li key={h.id} style={{ paddingLeft: h.level === 3 ? "0.9rem" : 0 }}>
           <a href={`#${h.id}`} aria-current={active === h.id ? "true" : undefined}
-            className={`-ml-px block border-l-2 py-1 pl-3 leading-snug transition-colors hover:text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600 ${active === h.id ? "border-purple-600 font-bold text-forest-900" : "border-transparent"}`}>{h.text}</a>
+            className={`block rounded-lg px-3 py-1.5 leading-snug transition-colors hover:bg-sand-100 hover:text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600 ${h.level === 3 ? "text-[0.8rem]" : ""} ${active === h.id ? "bg-forest-100 font-bold text-forest-900" : ""}`}>{h.text}</a>
         </li>
       ))}
     </ol>
   );
   return (
     <>
-      <nav aria-label="Table of contents" className="hidden lg:block">
-        <p className="mb-3 text-sm font-bold text-forest-900">In this article</p>
-        {list}
+      <nav aria-label="Table of contents" className="hidden rounded-2xl border border-sand-200 bg-white p-3 shadow-sm lg:block">
+        <p className="px-3 pb-2 pt-1 text-sm font-bold text-forest-900">In this article</p>
+        <div className="max-h-[52vh] overflow-y-auto pr-1">{list}</div>
       </nav>
       <details className="rounded-2xl border border-sand-200 bg-white lg:hidden">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-forest-900 focus-visible:outline-2 focus-visible:outline-purple-600">In this article <span aria-hidden className="float-right">+</span></summary>

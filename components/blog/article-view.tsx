@@ -2,7 +2,6 @@ import Link from "next/link";
 import { KINDS, catHref as catHrefOf, type Kind } from "@/lib/blog/kind";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
-import { Button } from "@/components/ui/button";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { headingsOf, type DocNode } from "@/lib/blog/doc";
 import type { PublicCard } from "@/lib/blog/posts";
@@ -13,6 +12,7 @@ import { ReadingProgress } from "./client";
 import { CASE_CTA, isIllustrative } from "@/lib/case-studies";
 import { InlineCta, ctaFor } from "./inline-cta";
 import { Share } from "./share";
+import { SideCta } from "./side-cta";
 import { Toc } from "./toc";
 import { ArticleBody } from "./render";
 
@@ -55,10 +55,10 @@ export function ArticleView({ a, related, preview = false, newsletter = false, g
       {!preview && nonBlog && faq.length >= 2 && <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />}
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-4xl">
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-2">{k === "case" && isIllustrative(a.slug) && <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-forest-900">Illustrative use case</span>}{a.category && <Link href={catHref(a.category.slug)} className="text-sm font-bold text-forest-500 hover:underline">{a.category.name}</Link>}</p>
-          <h1 className="display mt-2 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{a.title}</h1>
-          {a.excerpt && <p className="mt-4 max-w-3xl text-lg sm:text-xl">{a.excerpt}</p>}
+          <p className="flex flex-wrap items-center gap-2">{k === "case" && isIllustrative(a.slug) && <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-forest-900">Illustrative use case</span>}{a.category && <Link href={catHref(a.category.slug)} className="rounded-full border border-forest-700/30 bg-forest-100 px-3 py-1 text-sm font-bold text-forest-900 hover:bg-forest-500 hover:text-white">{a.category.name}</Link>}</p>
+          <h1 className="display mt-3 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{a.title}</h1>
           <Byline author={a.authorProfile ?? null} plainName={a.author} date={a.publishedAt} />
+          {a.excerpt && <p className="mt-5 max-w-3xl text-lg sm:text-xl">{a.excerpt}</p>}
           <p className="mt-3 text-sm">{a.updatedAt.getTime() - a.publishedAt.getTime() > 86_400_000 ? `Updated ${fmtDate(a.updatedAt)} · ` : ""}{a.readingMinutes} min read</p>
         </header>
         {a.featuredImage && (
@@ -82,11 +82,7 @@ export function ArticleView({ a, related, preview = false, newsletter = false, g
           <aside className="hidden lg:col-start-3 lg:row-start-1 lg:block">
             <div className="sticky top-32 space-y-6">
               {toc.length > 1 && <Toc items={toc} />}
-              <div className="rounded-2xl bg-sand-100 p-4 text-sm">
-                <p className="font-bold text-forest-900">See a sample first</p>
-                <p className="mt-1">Request a free masked sample of a business contact list.</p>
-                <Button asChild size="sm" className="mt-3"><Link href="/sample">Request a sample</Link></Button>
-              </div>
+              <SideCta cta={k === "case" ? CASE_CTA : ctaFor(a)} />
             </div>
           </aside>
         </div>

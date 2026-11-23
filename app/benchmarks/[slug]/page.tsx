@@ -9,7 +9,7 @@ import { Toc } from "@/components/blog/toc";
 import { Md } from "@/components/benchmarks/md";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
-import { Button } from "@/components/ui/button";
+import { SideCta } from "@/components/blog/side-cta";
 import { BENCHMARKS, BENCH_CATEGORIES, benchAlt, benchImage, benchMinutes, publishedBenchmarks } from "@/lib/benchmarks";
 import { fitMeta } from "@/lib/seo/fit";
 import { SITE_URL } from "@/lib/site";
@@ -57,13 +57,13 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
       <Breadcrumbs wide items={[{ name: "Benchmarks", href: "/benchmarks" }, ...(cat ? [{ name: cat.name, href: `/benchmarks#${cat.slug}` }] : []), { name: b.title, href: `/benchmarks/${b.slug}` }]} />
       <article className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-4xl">
-          {cat ? <p><Link href={`/benchmarks#${cat.slug}`} className="text-sm font-bold text-forest-500 hover:underline">{cat.name}</Link></p> : null}
-          <h1 className="display mt-2 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{b.title}</h1>
-          <p className="mt-4 max-w-3xl text-lg sm:text-xl">{r.summary}</p>
-          <div className="mt-6 flex items-center gap-3">
-            <img src="/brand/svg/beigeleads-symbol-light.svg" alt="" width={40} height={40} className="size-10 rounded-[10px]" />
-            <p className="text-sm leading-snug"><span className="font-bold text-forest-900">By BeigeLeads</span><br />Compiled from published research · Source: <a href={r.source.url} rel="noopener noreferrer" target="_blank" className="font-semibold text-forest-900 underline underline-offset-2">{r.source.name}</a></p>
+          {cat ? <p><Link href={`/benchmarks#${cat.slug}`} className="inline-block rounded-full border border-forest-700/30 bg-forest-100 px-3 py-1 text-sm font-bold text-forest-900 hover:bg-forest-500 hover:text-white">{cat.name}</Link></p> : null}
+          <h1 className="display mt-3 text-4xl text-forest-900 sm:text-6xl lg:text-7xl">{b.title}</h1>
+          <div className="mt-5 flex items-center gap-3 border-y border-sand-200 py-4">
+            <img src="/brand/svg/beigeleads-symbol-light.svg" alt="" width={52} height={52} className="size-[52px] rounded-xl" />
+            <p className="text-sm leading-snug"><span className="text-base font-bold text-forest-900">By BeigeLeads</span><br />Compiled from published research · Source: <a href={r.source.url} rel="noopener noreferrer" target="_blank" className="font-semibold text-forest-900 underline underline-offset-2">{r.source.name}</a></p>
           </div>
+          <p className="mt-5 max-w-3xl text-lg sm:text-xl">{r.summary}</p>
           <p className="mt-3 text-sm">Reviewed {fmtDate(r.reviewed)} · {minutes} min read</p>
         </header>
         <figure className="mx-auto mt-8 w-full max-w-5xl">
@@ -134,11 +134,7 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
           <aside className="hidden lg:col-start-3 lg:row-start-1 lg:block">
             <div className="sticky top-32 space-y-6">
               <Toc items={TOC} />
-              <div className="rounded-2xl bg-sand-100 p-4 text-sm">
-                <p className="font-bold text-forest-900">See a sample first</p>
-                <p className="mt-1">Request a free masked sample of a business contact list.</p>
-                <Button asChild size="sm" className="mt-3"><Link href="/sample">Request a sample</Link></Button>
-              </div>
+              <SideCta cta={{ title: r.cta.label, text: r.cta.text, label: r.cta.label, href: r.cta.href }} />
             </div>
           </aside>
         </div>

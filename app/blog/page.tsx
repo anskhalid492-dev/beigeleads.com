@@ -11,7 +11,7 @@ import { listPublished, publishedCategories } from "@/lib/blog/posts";
 import { fitMeta } from "@/lib/seo/fit";
 export const dynamic = "force-dynamic";
 const metadataRaw: Metadata = {
-  title: "The BeigeLeads Journal: B2B data and prospecting guides",
+  title: { absolute: "Data Evolution: Navigating B2B & GTM with BeigeLeads" },
   description: "Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business prospects.",
   alternates: { canonical: "/blog" },
 };
@@ -41,19 +41,19 @@ export default async function BlogIndex(props: PageProps<"/blog">) {
     <>
       <Breadcrumbs wide items={[{ name: "Blog", href: "/blog" }]} />
       <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+        <header className="grid gap-8 rounded-[2rem] bg-sand-100 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
           <div>
-            <p className="text-sm font-bold tracking-[0.18em] text-forest-500">THE BEIGELEADS JOURNAL</p>
-            <h1 className="display mt-3 text-5xl text-forest-900 sm:text-7xl lg:text-8xl">Insights for Smarter B2B Growth.</h1>
+            <p className="inline-block rounded-full bg-forest-100 px-3 py-1 text-sm font-bold text-forest-900">The BeigeLeads Journal</p>
+            <h1 className="display mt-4 text-5xl text-forest-900 sm:text-7xl lg:text-[5.5rem]">Data Evolution: Navigating B2B &amp; GTM with BeigeLeads</h1>
             <p className="mt-5 max-w-2xl text-lg sm:text-xl">Practical guides on B2B data, sales prospecting, lead generation, cold outreach, and finding the right business prospects.</p>
           </div>
           <form action="/blog" method="get" role="search" className="flex gap-2">
-            <input name="q" defaultValue={q} placeholder="Search articles" aria-label="Search articles" className="h-11 min-w-0 flex-1 rounded-xl border border-sand-300 bg-white px-4 text-sm" />
+            <input name="q" defaultValue={q} placeholder="Search articles" aria-label="Search articles" className="h-12 min-w-0 flex-1 rounded-full border border-sand-300 bg-white px-5 text-sm" />
             <Button type="submit">Search</Button>
           </form>
         </header>
 
-        <nav aria-label="Categories" className="mt-8 flex flex-wrap gap-2 border-y border-sand-200 py-4">
+        <nav aria-label="Categories" className="mt-6 flex flex-wrap gap-2 py-2">
           <Link href="/blog" aria-current={!q ? "page" : undefined} className="rounded-full border border-forest-700 bg-forest-100 px-4 py-1.5 text-sm font-semibold text-forest-900">All articles</Link>
           {data?.cats.map((c) => <Link key={c.id} href={`/blog/category/${c.slug}`} className="rounded-full border border-sand-300 px-4 py-1.5 text-sm font-semibold text-forest-900 hover:bg-sand-100">{c.name} <span className="text-forest-500">{c.posts}</span></Link>)}
         </nav>
@@ -69,7 +69,7 @@ export default async function BlogIndex(props: PageProps<"/blog">) {
           <>
             {q && <p className="mt-6 text-sm" role="status">{data.total} result{data.total === 1 ? "" : "s"} for “{q}”.</p>}
             {featured && (
-              <article className="mt-10 grid overflow-hidden rounded-3xl border border-sand-200 bg-white lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+              <article className="mt-8 grid overflow-hidden rounded-[2rem] border border-sand-200 bg-white shadow-sm lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
                 <Link href={`/blog/${featured.slug}`} tabIndex={-1} aria-hidden className="block">
                   {featured.featuredImage ? (
                     <img src={featured.featuredImage} alt="" style={{ objectPosition: `${featured.focalX}% ${featured.focalY}%` }} className="aspect-[16/10] h-full w-full object-cover lg:aspect-auto" />
