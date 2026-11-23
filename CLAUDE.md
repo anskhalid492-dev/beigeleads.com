@@ -1492,5 +1492,3 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Tests: `tests/placeholder-rule.test.ts`. Not browser-tested (admin behind Access).
 
 - Card sub category (23 Nov 2026, amends §75/§85): the purple chip on `/lists` cards shows the product's SUB category (`ShopProduct.subName`: its first "Also list under" category, else the local-business industry label from `classifyLocal`), and only falls back to "Country/City/Industry database" when none exists. To make a list say "Building Materials", add that category under "Also list under" on its edit page.
-
-- Card sub category, fix (23 Nov 2026): the chip also falls back to the product's OWN category name (unless it is a catch-all such as Local Businesses Database or General Targeted Lists, where the local-business industry label is used), so a list filed under "Building Materials" shows that. New local-business rule "Building materials" (glass, hardware, lumber, building supply, paint, tile).

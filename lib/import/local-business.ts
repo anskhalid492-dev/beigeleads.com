@@ -13,7 +13,6 @@ export type LocalVerdict = { decision: "move" | "review" | "keep"; industry: str
 
 // Each rule: pattern over the audience words, and the industry label used on the category page.
 const LOCAL: [RegExp, string][] = [
-  [/\b(glass|glaziers?|hardware stores?|lumber|building (?:suppl\w+|materials?)|paint stores?|tile (?:shops?|stores?)|building materials?)\b/i, "Building materials"],
   [/\b(restaurants?|cafes?|caf[eé]s?|coffee shops?|bakery|bakeries|bars?|pubs?|bistros?|pizzer\w+|diners?|catering|food trucks?|breweries|brewery|bubble tea|ice cream)\b/i, "Restaurants, cafes and bars"],
   [/\b(hotels?|motels?|hostels?|resorts?|inns?|bed and breakfast|lodging|guest ?houses?|vacation rentals?)\b/i, "Hotels and hospitality"],
   [/\b(beauty|hair|salons?|barber\w*|nail|spas?|day spas?|cosmetic|tattoo|massage|lash|waxing|skin ?care clinics?)\b/i, "Salons, barbers and spas"],
