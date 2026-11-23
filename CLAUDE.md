@@ -1389,3 +1389,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Admin `/admin/our-data` (sidebar Content): publish switch, SEO title (max 59) and description (max 149), claim review with evidence, FAQs (min 8). Unpublished = 404 + out of the sitemap. Defaults: 10 FAQs from owner facts only.
 - Pilo: tool `getOurDataFacts` + prompt rule 4c: only verified claims may be stated; unverified ones are never repeated. Reuses live reads, so no sync step.
 - Tests: `tests/our-data.test.ts`. Build, tsc, eslint clean; page rendered on dev (1 H1, all section ids). NOT checked: mobile/visual review by eye, admin screen behind Access, Lighthouse, real production counts.
+
+## 142. SEO regeneration: smaller chunks and retry (23 Nov 2026) — amends section 98
+
+- Owner report: "Apply to all products" on `/admin/products/seo` stopped with "Failed to fetch". Likely cause: a chunk of 40 products made about 400 D1 statements (`renameProduct` does ~10 per product), so one request could outlast the Worker and the browser lost the connection. `app/admin/products/seo/runner.tsx` now sends 8 products per request and retries a dropped chunk up to 3 times (the run is idempotent). If it still stops, the message says where; press Apply again to resume. Server limit (40 ids) unchanged.
+- NOT verified against production D1 (no access from the build environment, admin behind Access). If it still fails, `seoIdsAction` (copies built-ins, lists up to 5000 ids) is the next suspect.

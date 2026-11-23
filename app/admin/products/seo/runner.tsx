@@ -22,9 +22,17 @@ export function Runner() {
       const ids = await seoIdsAction();
       if (!ids.ok) { setMsg(ids.message ?? "Failed."); setBusy(false); return; }
       let changed = 0, slugChanged = 0;
-      for (let i = 0; i < ids.ids.length; i += 40) {
-        setMsg(`Working: ${Math.min(i + 40, ids.ids.length)} of ${ids.ids.length}...`);
-        const r = await seoApplyAction(ids.ids.slice(i, i + 40), o);
+      // Small chunks: each product makes about ten database writes, so 40 at once could outlast one request.
+      const STEP = 8;
+      for (let i = 0; i < ids.ids.length; i += STEP) {
+        setMsg(`Working: ${Math.min(i + STEP, ids.ids.length)} of ${ids.ids.length}...`);
+        let r: Awaited<ReturnType<typeof seoApplyAction>> | null = null;
+        // A dropped connection is retried (the run is idempotent, so repeating a chunk is safe).
+        for (let attempt = 0; attempt < 3 && !r; attempt++) {
+          try { r = await seoApplyAction(ids.ids.slice(i, i + STEP), o); }
+          catch { await new Promise((res) => setTimeout(res, 1500 * (attempt + 1))); }
+        }
+        if (!r) { setMsg(`Stopped at ${i} of ${ids.ids.length}: the connection kept dropping. Press Apply again; finished products are not changed twice.`); setBusy(false); return; }
         if (!r.ok) { setMsg(r.message); setBusy(false); return; }
         changed += r.changed ?? 0; slugChanged += r.slugChanged ?? 0;
       }
