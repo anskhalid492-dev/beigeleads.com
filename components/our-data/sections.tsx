@@ -385,22 +385,37 @@ export function Freshness() {
   );
 }
 
-/** Formats and delivery. */
+/** Formats and delivery: a four-stage path from pick to inbox, then the three file formats. */
 export function Delivery() {
   const fm: [LucideIcon, string, string][] = [[FileText, "CSV", "Opens in any spreadsheet, CRM or email tool."], [FileSpreadsheet, "Excel", "Ready to sort and filter in a workbook."], [FileType, "TXT", "Plain text for scripts and simple imports."]];
-  const steps: [string, string][] = [["Pick a list", "Choose a database and package. No account needed."], ["Pay once in crypto", "One payment. No subscription."], ["Payment confirmed", "The network confirms your payment."], ["Open your email", "A link to your file arrives in your inbox."]];
+  const steps: [LucideIcon, string, string][] = [
+    [Search, "Pick a list", "Choose a database and package. No account needed."],
+    [KeyRound, "Pay once in crypto", "One payment. No subscription."],
+    [BadgeCheck, "Payment confirmed", "The network confirms your payment."],
+    [Inbox, "Open your email", "A link to your file arrives in your inbox."],
+  ];
   return (
     <section className="bg-sand-100 py-20 lg:py-24" id="delivery" aria-labelledby="delivery-h">
       <div className={wrap}>
         <Head id="delivery-h" title="Formats and Delivery" text="Lists come as CSV, Excel or TXT. After your crypto payment is confirmed, an email brings the link to your file." />
-        <ul className="mt-10 grid gap-4 md:grid-cols-3">
-          {fm.map(([I, t, d]) => <li key={t} className="rounded-2xl border border-sand-200 bg-white p-6"><span className="grid size-11 place-items-center rounded-xl bg-forest-900 text-sand-50"><I className="size-5" aria-hidden /></span><h3 className="display mt-4 text-2xl text-forest-900">{t}</h3><p className="mt-1 text-forest-700">{d}</p></li>)}
-        </ul>
-        <ol className="mt-5 grid gap-4 md:grid-cols-4">
-          {steps.map(([t, d], i) => <li key={t} className="relative rounded-2xl bg-forest-900 p-5 text-sand-100"><span className="text-sm font-semibold text-forest-300">Step {i + 1}</span><h3 className="display mt-1 text-xl text-sand-50">{t}</h3><p className="mt-1 text-sm text-sand-200">{d}</p></li>)}
+        <ol className="relative mt-12 grid gap-8 md:grid-cols-4 md:gap-5">
+          <span className="absolute left-[12%] right-[12%] top-6 hidden border-t-2 border-dashed border-forest-500/40 md:block" aria-hidden />
+          {steps.map(([I, t, d], i) => (
+            <li key={t} className="relative flex gap-4 md:block md:text-center">
+              <span className="relative grid size-12 shrink-0 place-items-center rounded-full bg-forest-900 text-sand-50 ring-8 ring-sand-100 md:mx-auto"><I className="size-5" aria-hidden /><span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-purple-100 text-[11px] font-bold text-purple-700">{i + 1}</span></span>
+              <div className="md:mt-4"><h3 className="display text-xl text-forest-900">{t}</h3><p className="mt-1 text-forest-700">{d}</p></div>
+            </li>
+          ))}
         </ol>
-        <p className="mt-6 max-w-2xl text-forest-700">Delivery is usually instant and can take up to 12 hours in some cases. You can download your file as often as you need.</p>
-        <p className="mt-4 flex flex-wrap gap-x-6 gap-y-2"><Link href="/help/delivery/how-you-receive-your-list" className={link}>How delivery works</Link><Link href="/help/delivery/file-formats" className={link}>File formats</Link><Link href="/legal/delivery" className={link}>Delivery policy</Link></p>
+        <div className="mt-12 grid gap-6 rounded-[2rem] border border-sand-200 bg-white p-6 sm:p-8 lg:grid-cols-[1fr_2fr] lg:items-center">
+          <div>
+            <h3 className="display text-2xl text-forest-900">Your file, your format</h3>
+            <p className="mt-2 text-forest-700">Delivery is usually instant and can take up to 12 hours in some cases. You can download your file as often as you need.</p>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {fm.map(([I, t, d]) => <li key={t} className="rounded-2xl bg-sand-50 p-4"><span className="flex items-center gap-2"><I className="size-5 text-forest-500" aria-hidden /><span className="display text-xl text-forest-900">{t}</span></span><p className="mt-2 text-sm text-forest-700">{d}</p></li>)}
+          </ul>
+        </div>
       </div>
     </section>
   );
@@ -425,22 +440,6 @@ export function Privacy() {
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {links.map(([t, h]) => <li key={h}><Link href={h} className="flex items-center justify-between rounded-2xl border border-sand-200 bg-white px-5 py-4 font-semibold text-forest-900 transition-colors hover:border-forest-500 focus-visible:outline-2 focus-visible:outline-purple-600">{t}<ArrowRight className="size-4 text-forest-500" aria-hidden /></Link></li>)}
         </ul>
-      </div>
-    </section>
-  );
-}
-
-/** 14: final call to action. */
-export function FinalCta() {
-  return (
-    <section className="bg-forest-900 py-20 text-center text-sand-100 lg:py-24">
-      <div className={wrap}>
-        <h2 className="display mx-auto max-w-3xl text-4xl text-sand-50 sm:text-6xl">Find the Business Data You Need</h2>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-sand-200">Pay once. Own the list. See a masked sample on every list page.</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/lists" className={btnP}>Browse Databases</Link>
-          <Link href="/custom-list" className={btnS}>Request Custom Data</Link>
-        </div>
       </div>
     </section>
   );

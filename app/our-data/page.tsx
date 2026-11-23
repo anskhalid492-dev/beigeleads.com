@@ -4,7 +4,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SolutionFaq } from "@/components/solutions/sections";
-import { Accuracy, Coverage, Delivery, FinalCta, Freshness, Hero, Industries, Inside, Privacy, Roles, Sourcing, Stats, Verification } from "@/components/our-data/sections";
+import { Accuracy, Coverage, Delivery, Freshness, Hero, Industries, Inside, Privacy, Roles, Sourcing, Stats, Verification } from "@/components/our-data/sections";
 import { loadOurData } from "@/lib/our-data/settings";
 import { loadOurDataFacts } from "@/lib/our-data/facts";
 import { fitMeta } from "@/lib/seo/fit";
@@ -45,7 +45,6 @@ export default async function OurDataPage() {
       <Delivery />
       <Privacy />
       <SolutionFaq name="Our Data" items={s.faqs.map((x) => [x.q, x.a] as const)} />
-      <FinalCta />
     </>
   );
 }
