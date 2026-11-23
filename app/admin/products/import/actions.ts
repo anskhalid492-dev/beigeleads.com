@@ -80,7 +80,7 @@ export async function bulkStatusAction(idsIn: unknown, to: unknown, allowRestric
 /** Apply a status to EVERY product matching the admin's filters (all pages), in chunks. Same rules as bulkStatusAction. */
 export async function bulkStatusByFilterAction(filtersIn: unknown, to: unknown, allowRestricted: unknown = false): Promise<{ ok: boolean; message: string; refused?: { slug: string; reasons: string[] }[] }> {
   const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
-  const f = z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), importId: z.number().int().optional() }).safeParse(filtersIn);
+  const f = z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), category: z.string().max(120).optional(), importId: z.number().int().optional() }).safeParse(filtersIn);
   const st = z.enum(["draft", "published", "archived"]).safeParse(to);
   if (!f.success || !st.success) return { ok: false, message: "Those filters were not valid." };
   const override = allowRestricted === true;
@@ -135,7 +135,7 @@ export async function importBuiltinAction(): Promise<{ ok: boolean; message: str
 export async function bulkLastUpdatedAction(target: unknown, dateIn: unknown): Promise<{ ok: boolean; message: string }> {
   const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
   const date = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use the format YYYY-MM-DD").safeParse(dateIn);
-  const t = z.union([z.object({ ids: z.array(z.number().int()).max(200) }), z.object({ filters: z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), importId: z.number().int().optional() }) })]).safeParse(target);
+  const t = z.union([z.object({ ids: z.array(z.number().int()).max(200) }), z.object({ filters: z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), category: z.string().max(120).optional(), importId: z.number().int().optional() }) })]).safeParse(target);
   if (!date.success || !t.success) return { ok: false, message: "Enter the date as YYYY-MM-DD." };
   const ids = "ids" in t.data ? t.data.ids : await listIds(db(), t.data.filters, 5000);
   if (!ids.length) return { ok: false, message: "No products selected." };

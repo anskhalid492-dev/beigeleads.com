@@ -1463,3 +1463,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 153. /creators visual pass (23 Nov 2026) — amends section 152
 
 - Hero card with the example request and price was replaced by `components/creators/hero-animation.tsx` (CSS-only: creators orbit a campaign node, pulse rings, floating reactions; platform-neutral lucide icons, no brand marks, no numbers or prices; `cr-*` keyframes in `globals.css`, static under reduced motion). Pricing section: price badge plus proportional bar ladder (linear, no tiers); steps section: connected numbered cards. Copy and facts unchanged. Not checked by eye on mobile.
+
+## 154. Category filter in the product manager (23 Nov 2026) — amends section 96
+
+- `/admin/products` filter bar has "Any category" (every category present in `catalog_products`, by slug). `Filters.category` in `lib/import/store.ts`; also honoured by "Select all N matching" and the bulk actions (zod schemas in `app/admin/products/import/actions.ts` accept `category`). Not browser-tested (behind Access).

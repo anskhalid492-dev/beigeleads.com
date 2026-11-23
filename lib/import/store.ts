@@ -138,7 +138,7 @@ export const rowPackages = (r: Pick<Row, "packagesJson">) => parse<Pkg[]>(r.pack
 export const rowRestricted = (r: Pick<Row, "restrictedJson">) => parse<string[]>(r.restrictedJson, []);
 export const rowFlags = (r: Pick<Row, "flagsJson">) => parse<string[]>(r.flagsJson, []);
 
-export type Filters = { q?: string; status?: string; channel?: string; country?: string; restricted?: "yes" | "no"; flag?: string; importId?: number };
+export type Filters = { q?: string; status?: string; channel?: string; country?: string; restricted?: "yes" | "no"; flag?: string; category?: string; importId?: number };
 const PAGE = 50;
 function whereOf(f: Filters) {
   return and(
@@ -147,6 +147,7 @@ function whereOf(f: Filters) {
     f.channel ? eq(schema.catalogProducts.channel, f.channel) : undefined,
     f.country ? eq(schema.catalogProducts.countrySlug, f.country) : undefined,
     f.restricted === "yes" ? sql`${schema.catalogProducts.restrictedJson} != '[]'` : f.restricted === "no" ? sql`${schema.catalogProducts.restrictedJson} = '[]'` : undefined,
+    f.category ? eq(schema.catalogProducts.categorySlug, f.category) : undefined,
     f.flag ? like(schema.catalogProducts.flagsJson, `%${f.flag}%`) : undefined,
     f.importId ? eq(schema.catalogProducts.importId, f.importId) : undefined,
   );

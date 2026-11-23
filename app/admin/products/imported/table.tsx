@@ -5,7 +5,7 @@ import { bulkLastUpdatedAction, bulkStatusAction, bulkStatusByFilterAction } fro
 
 type R = { id: number; slug: string; name: string; status: string; category: string; country: string; channel: string; packages: string; restricted: string[]; flags: number };
 
-export type F = { q?: string; status?: string; channel?: string; restricted?: "yes" | "no"; flag?: string; importId?: number };
+export type F = { q?: string; status?: string; channel?: string; restricted?: "yes" | "no"; flag?: string; category?: string; importId?: number };
 export function Table({ rows, total, filters }: { rows: R[]; total: number; filters: F }) {
   const [all, setAll] = useState(false); const [date, setDate] = useState(""); const [dateAsk, setDateAsk] = useState(false);
   const [sel, setSel] = useState<Set<number>>(new Set());
