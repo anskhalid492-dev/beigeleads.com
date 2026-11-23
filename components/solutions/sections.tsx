@@ -1,3 +1,4 @@
+import { solutionProducts } from "@/lib/solution-products";
 import Link from "next/link";
 import { FaqAnswer } from "@/components/shared/faq-answer";
 import { ArrowRight, Check, Plus } from "lucide-react";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumbs, type Crumb } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { DbBadge } from "@/components/shared/db-icon";
-import { formatUsd, getCountry, getProduct, startingPriceCents } from "@/lib/catalog";
+import { formatUsd, getCountry, startingPriceCents } from "@/lib/catalog";
 import { getSolution, type Solution } from "@/lib/solutions";
 import { fmtNum } from "@/components/product/meta";
 import { SolutionIcon } from "./icons";
@@ -111,10 +112,7 @@ export function HeroShell({
 
 export function SolutionHero({ s }: { s: Solution }) {
   const chips: Chip[] = [
-    ...s.productSlugs.flatMap((x) => {
-      const p = getProduct(x);
-      return p ? [{ label: p.name, category: p.categorySlug, country: getCountry(p.countrySlug)?.code }] : [];
-    }),
+    ...solutionProducts(s).map((p) => ({ label: p.name, category: p.categorySlug, country: getCountry(p.countrySlug)?.code })),
     ...Object.keys(s.fieldUse).map((f) => ({ label: f })),
   ];
   return (
@@ -187,7 +185,7 @@ export function PainPoints({ s }: { s: Solution }) {
 }
 
 export function RecommendedDatabases({ s, heading = "Recommended databases" }: { s: Solution; heading?: string }) {
-  const items = s.productSlugs.map((x) => getProduct(x)).filter((p) => !!p);
+  const items = solutionProducts(s);
   return (
     <section className="bg-sand-50 py-20 lg:py-24">
       <div className={wrap}>

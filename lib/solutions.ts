@@ -233,11 +233,11 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "White-label friendly", d: "If you prospect on behalf of clients, check the licence terms and our lawful use policy first." },
     ],
     productSlugs: ["dentists-us", "restaurants-us", "ski-shops-us"],
-    productNote: "Agencies often start with one local-service niche, such as dental practices or restaurants, and build a case study there.",
+    productNote: "Agencies often start with one local-service niche, and build a case study there.",
     applications: [
       { t: "Audit-led outreach", d: "Open a business's website, spot one fixable issue, and open your email with it." },
-      { t: "Niche positioning", d: "Become the agency for dental practices or restaurants in a region and write messages that speak to that niche." },
-      { t: "Seasonal campaigns", d: "Reach ski shops before the season, or restaurants before the holiday rush, using a list sized to the campaign." },
+      { t: "Niche positioning", d: "Become the agency for one industry in a region and write messages that speak to that niche." },
+      { t: "Seasonal campaigns", d: "Reach a seasonal industry just before its busy period, using a list sized to the campaign." },
       { t: "Lead lists for clients", d: "Where the licence allows, support a client's own outreach with a list tailored to their market." },
       { t: "Keep a standing pipeline", d: "Send a few messages a day from one list over several weeks rather than one burst." },
     ],
@@ -305,7 +305,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       Address: "Geocode businesses and map them.",
     },
     steps: [
-      { t: "Define the question", d: "For example: how many dental practices are in each of these cities?" },
+      { t: "Define the question", d: "For example: how many businesses in your industry are in each of these cities?" },
       { t: "Choose the matching list", d: "Look at the fields and coverage on the product page." },
       { t: "Download and load", d: "Open the file in your analysis tool." },
       { t: "Record the snapshot date", d: "Note the last-verified date next to your findings." },
@@ -343,7 +343,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Checked regularly", d: "All data is re-verified every 90 days, with the date shown on each list." },
     ],
     productSlugs: ["restaurants-us", "dentists-us", "ski-shops-us"],
-    productNote: "Local-service businesses such as restaurants, dental practices and shops are good places to start.",
+    productNote: "Pick one local-service industry you already understand and start there.",
     applications: [
       { t: "Neighbourhood route planning", d: "Sort by address and plan a day of visits to introduce a product or service." },
       { t: "Local partnership offers", d: "Find complementary businesses nearby for cross-promotions." },
@@ -451,13 +451,13 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     helps: [
       { t: "Addresses included", d: "Every record carries a business address and city, so you can sort a list by area and plan visits." },
       { t: "Contact details for follow-up", d: "Phone and email sit alongside the address, so a visit can be followed by a call or message." },
-      { t: "Industry-based lists", d: "Target the sectors that tend to lease space, such as restaurants, dental practices and retail." },
+      { t: "Industry-based lists", d: "Target the sectors that tend to lease space, such as hospitality, healthcare and retail." },
       { t: "Honest about gaps", d: "Yes, we sell lists of real estate agents and landlords. Request the one you need." },
     ],
     productSlugs: ["restaurants-us", "dentists-us", "ski-shops-us"],
     productNote: "These are lists of operating businesses, which are useful as tenant and buyer prospects. Real estate agent and landlord lists are available on request.",
     applications: [
-      { t: "Tenant prospecting", d: "Contact restaurants, practices and shops in a district about available space or lease renewals." },
+      { t: "Tenant prospecting", d: "Contact businesses in a district about available space or lease renewals." },
       { t: "Neighbour outreach for a listing", d: "Tell nearby businesses about a space coming to market before it is advertised widely." },
       { t: "Route planning", d: "Sort by address and plan a day of introductions on foot." },
       { t: "Property services", d: "Offer cleaning, maintenance, security or fit-out to businesses in a building." },
@@ -501,11 +501,11 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       paragraphs: [
         "A desk is usually busy with live roles. New-client calls happen in the evenings or not at all, and the client base slowly narrows to a few large accounts.",
         "Employers, in turn, hear from agencies constantly. The ones that respond tend to be contacted by someone who already understands their industry and city.",
-        "Staffing firms that specialise, for example in dental or hospitality staff, need lists of that specialism, not a general directory.",
+        "Staffing firms that specialise, for example in healthcare or hospitality staff, need lists of that specialism, not a general directory.",
       ],
     },
     helps: [
-      { t: "Employers by industry", d: "Choose the sector you place in, such as dental practices or restaurants." },
+      { t: "Employers by industry", d: "Choose the sector you place in." },
       { t: "Local focus", d: "City and country fields let you cover one labour market at a time." },
       { t: "Phone and email together", d: "Call the business, then follow up by email with a short introduction." },
       { t: "Businesses, not candidates", d: "Our lists describe employers. They do not contain job seekers or candidate profiles." },
@@ -514,7 +514,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     productNote: "These industries hire constantly and often rely on agencies and temporary staff, especially in busy seasons.",
     applications: [
       { t: "Win a first brief", d: "Offer help with one hard-to-fill role at a business that fits your specialism." },
-      { t: "Seasonal staffing", d: "Contact ski shops before winter or restaurants before the holidays to offer temporary staff." },
+      { t: "Seasonal staffing", d: "Contact seasonal employers just before their busy period to offer temporary staff." },
       { t: "Build a niche desk", d: "Become the agency for one sector in one city and write to every business in it." },
       { t: "Reactivate lapsed clients", d: "Compare a list with your CRM to find employers you stopped talking to." },
       { t: "Market-map before opening an office", d: "Count employers in a city before you decide to recruit there." },
@@ -566,7 +566,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "A dated snapshot", d: "Each list shows its last-verified date, which helps you compare a niche over time." },
     ],
     productSlugs: ["ski-shops-us", "restaurants-us"],
-    productNote: "Ski shops are an example of a specialist retail niche. If your niche is different, request a category.",
+    productNote: "Pick a specialist retail niche from the databases below. If yours is missing, request a category.",
     applications: [
       { t: "Stockist outreach", d: "Contact specialist shops to carry your brand and offer wholesale terms." },
       { t: "Competitor mapping", d: "Review retailers by city to see how crowded a niche is in each place." },
@@ -603,7 +603,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       "Creators, talent managers and agencies can find businesses to pitch for sponsorships and partnerships. Business contact lists, one-time purchase, sample first.",
     h1: "Influencer marketing begins with a brand that is ready to say yes",
     lede:
-      "Creators and talent agencies spend as much time pitching brands as making content. BeigeLeads lists give you businesses to approach for partnerships, such as local restaurants, shops and practices that want attention in their area.",
+      "Creators and talent agencies spend as much time pitching brands as making content. BeigeLeads lists give you businesses to approach for partnerships, such as local shops, venues and practices that want attention in their area.",
     ctaLabel: "Request a free sample",
     flow: ["Choose a local niche", "Find the businesses", "Pitch a collaboration", "Agree a deal"],
     challenge: {
@@ -615,7 +615,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       ],
     },
     helps: [
-      { t: "Local businesses to pitch", d: "Restaurants, dental practices and shops that want local attention are natural partners for local creators." },
+      { t: "Local businesses to pitch", d: "Local businesses that want attention in their area are natural partners for local creators." },
       { t: "Contact details included", d: "Email, phone and website help you send a personal proposal." },
       { t: "City-level targeting", d: "Match a creator's audience location with businesses in the same city." },
       { t: "Creator lists are on the way", d: "Yes, we sell creator lists. Request the platform and niche you need." },
@@ -623,9 +623,9 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
     productSlugs: ["restaurants-us", "ski-shops-us", "dentists-us"],
     productNote: "Today's lists are of businesses, which is who creators pitch. Lists of creators and influencers are available on request.",
     applications: [
-      { t: "Pitch a local collaboration", d: "Offer a restaurant or shop a video series, a review or an event in exchange for a fee or product." },
+      { t: "Pitch a local collaboration", d: "Offer a local business a video series, a review or an event in exchange for a fee or product." },
       { t: "Build an agency roster of clients", d: "Talent agencies can find businesses that need creator campaigns." },
-      { t: "Plan seasonal campaigns", d: "Approach ski shops before winter with creator content tied to the season." },
+      { t: "Plan seasonal campaigns", d: "Approach seasonal businesses ahead of their peak with creator content tied to the season." },
       { t: "Research who sponsors in a niche", d: "Check business websites to see which already work with creators." },
       { t: "Package local deals", d: "Offer a bundle across several businesses in one city." },
     ],
@@ -676,7 +676,7 @@ const base: readonly Omit<Solution, "faqs" | "pains">[] = [
       { t: "Request what is missing", d: "If you need another country, tell us and we will build it." },
     ],
     productSlugs: ["dentists-us", "restaurants-us", "ski-shops-us"],
-    productNote: "Lists are added country by country. Today the lists cover the United States.",
+    productNote: "Lists are added country by country. Pick the country you are opening in from the databases below.",
     applications: [
       { t: "Pick the first city", d: "Compare cities by how many businesses in your industry operate there." },
       { t: "Find distribution partners", d: "Contact local businesses that could resell, install or service your product." },

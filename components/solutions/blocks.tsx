@@ -1,3 +1,4 @@
+import { solutionProducts } from "@/lib/solution-products";
 import Link from "next/link";
 import { FaqAnswer } from "@/components/shared/faq-answer";
 import { ArrowRight, Check, Lock, Plus } from "lucide-react";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { JsonLd } from "@/components/shared/json-ld";
 import { DbBadge } from "@/components/shared/db-icon";
 import { fieldMeta, fmtDate, fmtNum } from "@/components/product/meta";
-import { FIELDS, formatUsd, getCategory, getCities, getCountry, getProduct, startingPriceCents, type Product } from "@/lib/catalog";
+import { FIELDS, formatUsd, getCategory, getCities, getCountry, startingPriceCents, type Product } from "@/lib/catalog";
 import { sampleRowsOf } from "@/lib/catalog";
 import type { ProductSampleRow } from "@/lib/sample-data";
 import { getFocus } from "@/lib/solution-focus";
@@ -45,7 +46,7 @@ const cols: { field: string; label: string; key: keyof ProductSampleRow }[] = [
 const masked = new Set(["address", "phone", "email"]);
 
 export function primaryProduct(s: Solution): Product | undefined {
-  return getProduct(s.productSlugs[0]);
+  return solutionProducts(s, 1)[0];
 }
 
 export function PreviewPanel({ s }: { s: Solution }) {
@@ -162,7 +163,7 @@ export function StepsPanel({ s }: { s: Solution }) {
 }
 
 export function ListsPanel({ s }: { s: Solution }) {
-  const prods = s.productSlugs.flatMap((x) => { const p = getProduct(x); return p ? [p] : []; });
+  const prods = solutionProducts(s);
   const { focus } = getFocus(s.slug);
   const country = getCountry("united-states");
   const cities = country ? getCities(country.slug) : [];

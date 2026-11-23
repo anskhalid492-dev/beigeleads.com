@@ -27,7 +27,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
     challenge: {
       heading: "Your pipeline is empty because the list never got built",
       paragraphs: [
-        "A founder or a two-person sales team usually knows who the ideal customer is: dental practices, restaurants, ski shops. What is missing is the list. Copying names from maps and directories takes days, and half of it is out of date before the first email goes out.",
+        "A founder or a two-person sales team usually knows who the ideal customer is: one industry in one country. What is missing is the list. Copying names from maps and directories takes days, and half of it is out of date before the first email goes out.",
         "Lead platforms fix the speed but charge every month, even in the weeks you do no outreach. When you stop paying, the list stops being yours.",
       ],
     },
@@ -124,7 +124,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       heading: "Agency growth stalls when finding prospects is nobody's job",
       paragraphs: [
         "New-business outreach is the first thing to slip when client work is busy. When it restarts, someone has to rebuild a prospect list from scratch, and the pipeline goes quiet again.",
-        "Generic national lists do not help much either. A pitch to a dentist in Denver needs to mention Denver, and that means a list you can filter by place.",
+        "Generic national lists do not help much either. A pitch to a business in Denver needs to mention Denver, and that means a list you can filter by place.",
       ],
     },
     pains: [
@@ -135,7 +135,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { pain: "Only a few niches are available.", fix: "Browse the lists page for what is available now. Request a category and we will say honestly whether we can build it." },
     ],
     applications: [
-      { t: "Pitch a niche you already serve", d: "If you work with dental practices, take the dentist list and pitch the ones in a city you can reference." },
+      { t: "Pitch a niche you already serve", d: "If you already serve one industry, take that industry's list and pitch the businesses in a city you can reference." },
       { t: "Open with a missing website", d: "Filter for rows with no website and lead with what you would build for them." },
       { t: "Keep client data apart", d: "Use the same list for several client campaigns by filtering by city, and keep each client's reporting separate." },
       { t: "Run a monthly outreach sprint", d: "Pick fifty businesses, write fifty short messages, log replies, repeat." },
@@ -148,7 +148,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "market-research": {
     seoTitle: "Business Data for Market Research",
     seoDescription:
-      "Count and compare local businesses by city for market sizing. Dentist, restaurant and ski shop databases with city, website and contact fields.",
+      "Count and compare local businesses by city for market sizing. Industry databases with city, website and contact fields.",
     h1: "Business data for analysts who have to put a number on a market",
     lede:
       "Before a plan or a pitch, someone has to say how many businesses are out there and where. These databases let you count by city, compare places, and see how many have a website, a phone and an email, without a long research project.",
@@ -244,7 +244,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "real-estate-prospecting": {
     seoTitle: "Lists for Commercial Real Estate Prospecting",
     seoDescription:
-      "Find businesses by city and address for commercial brokers and property services. Restaurant, dentist and ski shop databases. No property or owner data.",
+      "Find businesses by city and address for commercial brokers and property services. Industry databases by city. No property or owner data.",
     h1: "Commercial real estate prospecting starts with the tenants already on the street",
     lede:
       "Commercial brokers and property services can use business lists to see who occupies a district and how to reach them. We list businesses, not property records, and there is no real estate agent database yet. That is said plainly so you know exactly what you are buying.",
@@ -276,27 +276,27 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "recruitment-staffing": {
     seoTitle: "Employer Lists for Staffing Agencies",
     seoDescription:
-      "Find local employers to win as staffing clients. Restaurant, dentist and ski shop contact lists with phone, email and website. Business data only.",
+      "Find local employers to win as staffing clients. Industry contact lists with phone, email and website. Business data only.",
     h1: "Win staffing clients by reaching local employers first",
     lede:
       "Staffing and recruitment firms grow on employer relationships. These lists give you the businesses in an industry and city, with phone and email, so you can offer to fill their roles. They contain businesses only. There are no candidate lists.",
     challenge: {
       heading: "Recruiters know candidates well and employers poorly",
       paragraphs: [
-        "A recruiter often has a strong candidate pool and no steady stream of employers. Finding every restaurant or dental practice in a city that might need staff is repetitive work that gets skipped.",
+        "A recruiter often has a strong candidate pool and no steady stream of employers. Finding every business in a city that might need staff is repetitive work that gets skipped.",
         "The lists do not show who is hiring. They show who exists and how to reach them, which is the start of a conversation about hiring needs.",
       ],
     },
     pains: [
       { pain: "Too few employer relationships.", fix: "Pick one industry and one city and work the full list of employers one by one." },
       { pain: "No way to know who might hire.", fix: "The data does not show vacancies. A short call asking whether they need help is the quickest way to find out." },
-      { pain: "Seasonal industries are hard to time.", fix: "Restaurants and ski shops hire before busy seasons. Contact them just ahead of the rush." },
+      { pain: "Seasonal industries are hard to time.", fix: "Seasonal businesses hire before busy periods. Contact them just ahead of the rush." },
       { pain: "Hiring contact names are missing.", fix: "The seven fields do not include job titles. Ask the front desk who hires." },
       { pain: "Confusion about candidate data.", fix: "We sell no candidate or job seeker data. Candidate sourcing needs its own tools and consent rules." },
     ],
     applications: [
-      { t: "Open a dental-practice staffing line", d: "Contact practices in one city and offer to find hygienists or assistants." },
-      { t: "Build a seasonal restaurant pipeline", d: "Reach restaurants before peak months with a short offer." },
+      { t: "Open a niche staffing line", d: "Contact businesses in one sector and city and offer to find the staff they need." },
+      { t: "Build a seasonal employer pipeline", d: "Reach seasonal employers before peak months with a short offer." },
       { t: "Reactivate lapsed clients", d: "Match the list against your CRM to find employers you stopped calling." },
       { t: "Specialise in one city", d: "Become the known agency for one industry in one place by contacting every business there." },
       { t: "Log every contact", d: "Add status and last-contact columns so a team never double-calls an employer." },
@@ -308,10 +308,10 @@ export const solutionCopy: Record<string, SolutionCopy> = {
   "ecommerce-market-research": {
     seoTitle: "Retailer Lists for E-commerce Research",
     seoDescription:
-      "Research a retail niche and reach shops directly. Ski shop, restaurant and dentist lists with website, email and phone. No sales or traffic data.",
+      "Research a retail niche and reach shops directly. Industry lists with website, email and phone. No sales or traffic data.",
     h1: "Research a retail niche and reach its shops without guessing",
     lede:
-      "Brands, wholesalers and e-commerce researchers can use the ski shop list to see how many shops exist, which have websites, and how to contact them. It shows who is out there. It does not show traffic, revenue or prices.",
+      "Brands, wholesalers and e-commerce researchers can use a retail niche list to see how many shops exist, which have websites, and how to contact them. It shows who is out there. It does not show traffic, revenue or prices.",
     challenge: {
       heading: "You cannot sell to a niche you have not counted",
       paragraphs: [
@@ -320,7 +320,7 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       ],
     },
     pains: [
-      { pain: "You do not know how many shops are in a niche.", fix: "Count rows per city in the ski shop list and compare places." },
+      { pain: "You do not know how many shops are in a niche.", fix: "Count rows per city in a niche list and compare places." },
       { pain: "You cannot tell which shops are online.", fix: "The website column shows which shops have a site at all." },
       { pain: "Supplier outreach has no direct contacts.", fix: "Phone, email and website are on every row for a direct trade approach." },
       { pain: "Expecting revenue, traffic or product data.", fix: "That is not in the data. Use other tools for performance figures." },
@@ -334,45 +334,45 @@ export const solutionCopy: Record<string, SolutionCopy> = {
       { t: "Prioritise outreach", d: "Contact shops that have both email and website first." },
     ],
     finalHeading: "Turn a niche into a trade-outreach list",
-    finalText: "Check the ski shop sample and see how many shops you could reach in the city you care about.",
+    finalText: "Check a sample and see how many businesses you could reach in the city you care about.",
   },
 
   "influencer-marketing": {
     seoTitle: "Local Business Contacts for Creators",
     seoDescription:
-      "Find local businesses to pitch for sponsorships. Restaurant and ski shop contacts with email, phone and website. No influencer or social handle data.",
+      "Find local businesses to pitch for sponsorships. Local business contacts with email, phone and website. No influencer or social handle data.",
     h1: "Local business contacts for creators who want sponsors close to home",
     lede:
-      "Creators and influencer agencies often pitch national brands and ignore the local businesses that would pay for a nearby audience. These lists give you restaurants and ski shops to approach, with email, phone and website. Influencer lists are available on request.",
+      "Creators and influencer agencies often pitch national brands and ignore the local businesses that would pay for a nearby audience. These lists give you local businesses to approach, with email, phone and website. Influencer lists are available on request.",
     challenge: {
       heading: "Local sponsors exist, but you have to find them first",
       paragraphs: [
-        "A creator with a city audience is worth more to a nearby restaurant than to a distant brand. The hard part is finding contact details for those businesses at scale.",
+        "A creator with a city audience is worth more to a nearby business than to a distant brand. The hard part is finding contact details for those businesses at scale.",
         "To be clear, this is a list of businesses. It does not include creators, follower counts or social handles.",
       ],
     },
     pains: [
       { pain: "No contact details for local sponsors.", fix: "Every row carries email, phone and website for the business." },
       { pain: "Pitching national brands with no reply.", fix: "A local business can say yes in one email, and your audience is already near them." },
-      { pain: "Unsure which businesses suit your content.", fix: "Restaurants and ski shops have a visual product and a place people visit." },
+      { pain: "Unsure which businesses suit your content.", fix: "Businesses with a visual product or a place people visit suit creator content." },
       { pain: "Social handle data is missing.", fix: "Not part of the data today. Use the website to find the business's profiles." },
       { pain: "You need an influencer database.", fix: "We do not have one. Request it, and we will say honestly whether we can source it." },
     ],
     applications: [
-      { t: "Pitch a restaurant in your city", d: "Offer a visit, a post and a story in exchange for a meal or a fee." },
-      { t: "Approach ski shops before the season", d: "Propose a gear review or a launch post ahead of winter." },
+      { t: "Pitch a local business in your city", d: "Offer a visit, a post and a story in exchange for a meal or a fee." },
+      { t: "Approach seasonal businesses before their peak", d: "Propose a gear review or a launch post ahead of winter." },
       { t: "Package a local bundle for an agency", d: "An agency can pitch several nearby businesses with one audience report." },
       { t: "Send a short rate card", d: "Share your audience location, one example and a price in under a hundred words." },
       { t: "Track replies by city", d: "Log pitches and responses so you learn which local businesses say yes." },
     ],
     finalHeading: "Turn a local business list into sponsor pitches",
-    finalText: "Request a sample of the restaurant or ski shop list and pick the first ten businesses to pitch.",
+    finalText: "Request a sample of a list and pick the first ten businesses to pitch.",
   },
 
   "business-expansion": {
     seoTitle: "Market Entry Data: Business Lists by US City",
     seoDescription:
-      "Scout a new US city before you open: count local businesses, find partners and test demand. Dentist, restaurant and ski shop lists by city.",
+      "Scout a new US city before you open: count local businesses, find partners and test demand. Industry lists by city.",
     h1: "Scout a new US city before you commit to it",
     lede:
       "Entering a new market means knowing who is already there. City-level business lists let you count the businesses, find possible partners and call a few to test your offer before you sign a lease or hire a team.",
