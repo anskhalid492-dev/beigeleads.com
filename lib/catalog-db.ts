@@ -22,6 +22,7 @@ export type PubProduct = {
   manualCat?: boolean; dataFields?: string[]; fileFormats?: string; coverage?: string; lastUpdated?: string; placeholder?: boolean; forSale?: boolean; accuracyPct?: number | null;
   scope?: "country" | "city" | null; citySlug?: string; samples?: SampleRowData[];
   extraCats?: { slug: string; name: string }[];
+  fieldsCustom?: boolean;
 };
 type Payload = { products: PubProduct[]; hidden: string[]; aliases?: Record<string, string>; defaultSample?: SampleRowData[] };
 export const DEFAULT_SAMPLE_KEY = "sample.default";
@@ -39,7 +40,7 @@ export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Re
     if (!ctry.has(p.countrySlug)) ctry.set(p.countrySlug, { slug: p.countrySlug, code: p.countryCode, name: p.countryName });
     return {
       slug: p.slug, categorySlug: p.categorySlug, countrySlug: p.countrySlug, title: p.title, name: p.name, description: p.description, recordCount: p.recordCount,
-      lastVerified: p.lastUpdated || null, accuracyPct: p.accuracyPct ?? null, status: p.forSale === false ? "draft" : "live", fields: p.dataFields ?? [], placeholderData: !!p.placeholder, packages: p.packages,
+      lastVerified: p.lastUpdated || null, accuracyPct: p.accuracyPct ?? null, status: p.forSale === false ? "draft" : "live", fields: p.dataFields ?? [], ...(p.fieldsCustom ? { fieldsCustom: true } : {}), placeholderData: !!p.placeholder, packages: p.packages,
       ...(p.extraCats?.length ? { extraCategories: p.extraCats.map((x) => x.slug).filter((s) => s !== p.categorySlug) } : {}), ...(p.scope ? { scope: p.scope } : {}), ...(p.citySlug ? { citySlug: p.citySlug } : {}), ...(p.fileFormats ? { fileFormats: p.fileFormats } : {}), ...(p.coverage ? { coverage: p.coverage } : {}), ...(p.samples?.length ? { samples: p.samples } : {}), imported: true, channel: p.channel, region: p.region || undefined, seoTitle: p.seoTitle || undefined, metaDescription: p.metaDescription || undefined,
     };
   });
@@ -63,7 +64,7 @@ async function read(env: CloudflareEnv): Promise<Payload | null> {
     const pub = rows.map((r): PubProduct => {
       const parse = <T,>(v: string | null, d: T): T => { try { return v ? (JSON.parse(v) as T) : d; } catch { return d; } };
       return {
-        ...clean(r), manualCat: !!parse<{ manualCategory?: boolean }>(r.sourceJson, {}).manualCategory, extraCats: cleanExtra(parse<{ extraCategories?: unknown }>(r.sourceJson, {}).extraCategories), dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
+        ...clean(r), manualCat: !!parse<{ manualCategory?: boolean }>(r.sourceJson, {}).manualCategory, fieldsCustom: !!parse<{ fieldsCustom?: boolean }>(r.sourceJson, {}).fieldsCustom, extraCats: cleanExtra(parse<{ extraCategories?: unknown }>(r.sourceJson, {}).extraCategories), dataFields: parse<string[]>(r.dataFieldsJson, []), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale,
         accuracyPct: r.accuracyPct, scope: r.scope === "city" || r.scope === "country" ? r.scope : null, citySlug: r.scope === "city" ? r.city ?? "" : "", samples: cleanStored(parse<unknown>(r.sampleJson, [])),
       };
     });

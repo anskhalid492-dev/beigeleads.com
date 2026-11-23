@@ -57,6 +57,8 @@ export type Product = {
   metaDescription?: string;
   /** Admin-edited display texts (section 96). Empty = automatic. */
   fileFormats?: string;
+  /** The admin chose this list's data fields by hand (section 156): `fields` is shown as is instead of the full catalog. */
+  fieldsCustom?: boolean;
   coverage?: string;
   /** Real masked sample rows entered by the owner (section 97). */
   samples?: readonly { business: string; address: string; city: string; phone: string; email: string; website: string }[];
@@ -256,7 +258,7 @@ let normFrom: readonly Product[] | null = null;
 let normTo: readonly Product[] = [];
 const allProducts = (): readonly Product[] => {
   const raw = rawProducts();
-  if (raw !== normFrom) { normFrom = raw; normTo = raw.map((p) => ({ ...p, fields: FIELD_NAMES, lastVerified: p.lastVerified && p.lastVerified > PRODUCT_VERIFIED ? p.lastVerified : PRODUCT_VERIFIED, accuracyPct: PRODUCT_ACCURACY })); }
+  if (raw !== normFrom) { normFrom = raw; normTo = raw.map((p) => ({ ...p, fields: p.fieldsCustom && p.fields.length ? p.fields : FIELD_NAMES, lastVerified: p.lastVerified && p.lastVerified > PRODUCT_VERIFIED ? p.lastVerified : PRODUCT_VERIFIED, accuracyPct: PRODUCT_ACCURACY })); }
   return normTo;
 };
 /** The products defined in code (used to copy them into the database). */

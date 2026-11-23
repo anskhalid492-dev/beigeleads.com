@@ -6,8 +6,45 @@ import { maskRows, type SampleRowData } from "@/lib/product-samples";
 import { duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
-type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
+type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fieldsCustom?: boolean; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
+
+import { FIELD_CATALOG, FIELD_GROUPS, FIELD_NAMES } from "@/lib/product-fields";
+
+/** The fields cards of the product page: tick what this list really contains. Names outside the catalog go in the box below. */
+function FieldPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const list = value.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
+  const on = new Set(list);
+  const extra = list.filter((n) => !FIELD_NAMES.includes(n));
+  const emit = (names: string[]) => onChange(names.join("\n"));
+  const toggle = (n: string) => emit(FIELD_NAMES.filter((x) => (x === n ? !on.has(x) : on.has(x))).concat(extra));
+  const setGroup = (g: string, all: boolean) => emit(FIELD_NAMES.filter((x) => { const gr = FIELD_CATALOG.find((c) => c.name === x)?.group; return gr === g ? all : on.has(x); }).concat(extra));
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs font-semibold">Data fields shown on the product page ({list.length} selected)</span>
+        <span className="flex gap-2 text-xs">
+          <button type="button" className="underline" onClick={() => emit([...FIELD_NAMES, ...extra])}>Select all</button>
+          <button type="button" className="underline" onClick={() => emit(extra)}>Clear</button>
+        </span>
+      </div>
+      <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {FIELD_GROUPS.map((g) => (
+          <div key={g} className="rounded-lg border border-sand-200 bg-sand-50 p-3">
+            <div className="mb-1 flex items-center justify-between"><b className="text-sm">{g}</b><span className="flex gap-2 text-[11px]"><button type="button" className="underline" onClick={() => setGroup(g, true)}>All</button><button type="button" className="underline" onClick={() => setGroup(g, false)}>None</button></span></div>
+            {FIELD_CATALOG.filter((c) => c.group === g).map((c) => (
+              <label key={c.name} className="flex items-start gap-2 py-0.5 text-xs"><input type="checkbox" className="mt-0.5" checked={on.has(c.name)} onChange={() => toggle(c.name)} /><span>{c.name}</span></label>
+            ))}
+          </div>
+        ))}
+      </div>
+      <label className="mt-2 block"><span className="mb-1 block text-xs font-semibold">Other fields not in the list above (one per line)</span>
+        <textarea key={extra.join("|")} className="w-full rounded-lg border border-sand-300 bg-white p-2 text-sm h-16" defaultValue={extra.join("\n")} onBlur={(e) => emit([...FIELD_NAMES.filter((x) => on.has(x)), ...e.target.value.split("\n")])} />
+      </label>
+      <p className="text-xs">Untouched = all {FIELD_NAMES.length} standard fields. Only tick what the file really contains; the refund policy applies to what the page promises.</p>
+    </div>
+  );
+}
 
 export function EditForm({ categories, samples, id, origin, status, slug, restricted, flags, initial }: { categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
   const [f, setF] = useState(initial); const [price, setPrice] = useState(initial.packages.map((k) => (k.priceUsdCents / 100).toString()));
@@ -19,9 +56,10 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
   async function save() {
     setBusy(true); setMsg("Saving...");
     try {
+      const chosen = f.dataFields.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
       const packages = f.packages.map((k, i) => ({ ...k, priceUsdCents: Math.round(Number(price[i] || "0") * 100) }));
       if (packages.some((k) => !Number.isFinite(k.priceUsdCents) || k.priceUsdCents < 0)) { setMsg("A price is not a valid number."); setBusy(false); return; }
-      const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: f.dataFields.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean), packages });
+      const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: chosen, fieldsCustom: !(chosen.length === FIELD_NAMES.length && FIELD_NAMES.every((n) => chosen.includes(n))), packages });
       setMsg(r.ok ? "Saved. A published product shows the change within about a minute." : r.message);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
@@ -81,7 +119,7 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
           <label><span className="mb-1 block text-xs font-semibold">File formats</span><input className={box} placeholder="CSV, Excel or TXT" value={f.fileFormats} maxLength={80} onChange={(e) => set("fileFormats", e.target.value)} /></label>
           <label><span className="mb-1 block text-xs font-semibold">Coverage</span><input className={box} placeholder="Automatic from country and state" value={f.coverage} maxLength={160} onChange={(e) => set("coverage", e.target.value)} /></label>
         </div>
-        <label className="mt-3 block"><span className="mb-1 block text-xs font-semibold">Data fields (one per line)</span><textarea className={`${box} h-28`} value={f.dataFields} onChange={(e) => set("dataFields", e.target.value)} placeholder={"Business name\nAddress\nPhone\nEmail"} /><span className="text-xs">Leave empty if you do not know the exact fields: the page then claims none.</span></label>
+        <FieldPicker value={f.dataFields} onChange={(v) => set("dataFields", v)} />
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.forSale} onChange={(e) => set("forSale", e.target.checked)} /> For sale (off = preview only, cannot be bought)</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.placeholder} onChange={(e) => set("placeholder", e.target.checked)} /> These figures are placeholders (the page says so)</label>

@@ -94,6 +94,11 @@ describe("catalog import", () => {
     await db.update(schema.catalogProducts).set({ placeholder: 1, recordCount: 7 }).where(eq(schema.catalogProducts.id, pub.id));
     expect((await updateProduct(db, pub.id, { ...edit, placeholder: true, recordCount: 5555 })).ok).toBe(true);
     expect((await getProductRow(db, pub.id))!.placeholder).toBe(0);
+    // Hand-picked data fields reach the public catalog; the full catalog again clears the flag.
+    expect((await updateProduct(db, pub.id, { ...edit, dataFields: ["Email", "Phone", "Custom thing"], fieldsCustom: true })).ok).toBe(true);
+    expect(JSON.parse((await getProductRow(db, pub.id))!.sourceJson).fieldsCustom).toBe(true);
+    expect((await updateProduct(db, pub.id, { ...edit, dataFields: ["Email"], fieldsCustom: false })).ok).toBe(true);
+    expect(JSON.parse((await getProductRow(db, pub.id))!.sourceJson).fieldsCustom).toBeUndefined();
     const zero = await updateProduct(db, pub.id, { ...edit, packages: edit.packages.map((k) => ({ ...k, priceUsdCents: 0 })) });
     expect(zero.ok).toBe(false);
     expect((await updateProduct(db, pub.id, { ...edit, packages: [edit.packages[0], edit.packages[0]] })).ok).toBe(false);
