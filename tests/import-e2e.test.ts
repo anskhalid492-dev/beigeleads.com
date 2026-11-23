@@ -11,7 +11,7 @@ import { hydrateCatalog } from "@/lib/catalog-db";
 import { priceCart } from "@/lib/cart/model";
 import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
-import { saveDefaultSample, applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, setProductSlug, importBuiltin, setLastUpdated, updateProduct } from "@/lib/import/store";
+import { saveDefaultSample, applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, setProductSlug, importBuiltin, deleteProducts, setLastUpdated, updateProduct } from "@/lib/import/store";
 import { maskRows } from "@/lib/product-samples";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { getStaticProducts } from "@/lib/catalog";
@@ -208,5 +208,15 @@ describe("catalog import", () => {
     const [imp] = await db.select().from(schema.catalogImports);
     const r = await rollbackImport(db, imp.id);
     expect(r.kept).toBe(2); expect(r.removed).toBe(2);
+  });
+
+  it("delete removes a manual product and its links; ordered or built-in products are archived", async () => {
+    const db = getDbFromEnv(env);
+    const c = await createProduct(db, { name: "Delete Me Plumbers", title: "", description: "", seoTitle: "", metaDescription: "", recordCount: 10, dataFields: [], fileFormats: "", coverage: "", lastUpdated: "", placeholder: false, forSale: true, packages: [{ name: "Starter", records: 10, priceUsdCents: 500 }], categoryName: "Lawyers", countryName: "Canada", countryCode: "ca", region: "", channel: "business-email" });
+    expect(c.ok).toBe(true);
+    const id = c.id as number;
+    const r = await deleteProducts(db, [id]);
+    expect(r.deleted).toBe(1);
+    expect(await getProductRow(db, id)).toBeFalsy();
   });
 });

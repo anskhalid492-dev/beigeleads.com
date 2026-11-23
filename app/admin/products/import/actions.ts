@@ -9,7 +9,7 @@ import { reservedSlugs } from "@/lib/import/reserved";
 import { maskRows } from "@/lib/product-samples";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
-import { saveDefaultSample, applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, setProductSlug, type DupPolicy, type PlanItem } from "@/lib/import/store";
+import { deleteProducts, saveDefaultSample, applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, setProductSlug, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
 const db = () => getDbFromEnv(env());
@@ -94,6 +94,33 @@ export async function bulkStatusByFilterAction(filtersIn: unknown, to: unknown, 
   await audit(a.email, `${changed} of ${ids.length} filtered product(s) set to ${st.data}${refused.length ? `, ${refused.length} refused` : ""}${override && st.data === "published" ? " (restricted override ticked by the owner)" : ""}`);
   await refresh();
   return { ok: true, message: `${changed} of ${ids.length} product(s) set to ${st.data}.${refused.length ? ` ${refused.length} could not be published (for example no price).` : ""}${noLink.length ? ` ${noLink.length} have no delivery link yet: add links in Delivery Links, paid orders wait until then.` : ""}`, refused: refused.slice(0, 50) };
+}
+
+const delMsg = (r: { deleted: number; archived: number }) => `${r.deleted} product(s) deleted.${r.archived ? ` ${r.archived} could not be deleted (they have orders or are built in), so they were archived and hidden from the site.` : ""}`;
+
+/** Delete the selected products. They disappear from the public site within about a minute. */
+export async function deleteProductsAction(idsIn: unknown): Promise<{ ok: boolean; message: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const ids = z.array(z.number().int()).max(200).safeParse(idsIn);
+  if (!ids.success || !ids.data.length) return { ok: false, message: "Select at least one product." };
+  const r = await deleteProducts(db(), ids.data);
+  await audit(a.email, `deleted ${r.deleted}, archived ${r.archived} product(s)`);
+  await refresh();
+  return { ok: true, message: delMsg(r) };
+}
+
+/** Delete every product matching the filters (all pages). */
+export async function deleteProductsByFilterAction(filtersIn: unknown): Promise<{ ok: boolean; message: string }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again." };
+  const f = z.object({ q: z.string().max(80).optional(), status: z.string().max(20).optional(), channel: z.string().max(40).optional(), restricted: z.enum(["yes", "no"]).optional(), flag: z.string().max(40).optional(), category: z.string().max(120).optional(), importId: z.number().int().optional() }).safeParse(filtersIn);
+  if (!f.success) return { ok: false, message: "Those filters were not valid." };
+  const ids = await listIds(db(), f.data);
+  if (!ids.length) return { ok: false, message: "No products match the filters." };
+  const t = { deleted: 0, archived: 0 };
+  for (let i = 0; i < ids.length; i += 40) { const r = await deleteProducts(db(), ids.slice(i, i + 40)); t.deleted += r.deleted; t.archived += r.archived; }
+  await audit(a.email, `deleted ${t.deleted}, archived ${t.archived} filtered product(s)`);
+  await refresh();
+  return { ok: true, message: delMsg(t) };
 }
 
 export async function saveProductAction(id: unknown, dataIn: unknown): Promise<{ ok: boolean; message: string }> {

@@ -1492,3 +1492,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Tests: `tests/placeholder-rule.test.ts`. Not browser-tested (admin behind Access).
 
 - Card sub category (23 Nov 2026, amends §75/§85): if a product has a secondary category ("Also list under"), the purple chip on `/lists` cards shows it (`ShopProduct.subName`, resolved with `getCategory` so imported categories work); otherwise the old "Country/City/Industry database" chip. Nothing else is inferred.
+
+## 159. Delete products (Nov 2026) — amends section 96
+
+- Owner request (23 Nov 2026): products must be deletable from the admin and disappear from the frontend. `/admin/products` bulk bar has "Delete" (selected, or every match with "Select all", confirmation) and the edit page has "Delete product". `deleteProducts` (`lib/import/store.ts`) removes the row plus its `delivery_links` and old-slug aliases; a product with ORDERS or a built-in (code) origin is ARCHIVED instead (deleting it would break order history or let the code product reappear) and the message says so. Audited; the catalog cache is cleared (gone from the site in about a minute). "New product" already exists in the page header. Bundles that contain a deleted list stop being purchasable (server checks the catalog). Test in `tests/import-e2e.test.ts`.

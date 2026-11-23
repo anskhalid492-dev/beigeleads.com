@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { bulkLastUpdatedAction, bulkStatusAction, bulkStatusByFilterAction } from "../import/actions";
+import { bulkLastUpdatedAction, bulkStatusAction, bulkStatusByFilterAction, deleteProductsAction, deleteProductsByFilterAction } from "../import/actions";
 
 type R = { id: number; slug: string; name: string; status: string; category: string; country: string; channel: string; packages: string; restricted: string[]; flags: number };
 
@@ -9,7 +9,7 @@ export type F = { q?: string; status?: string; channel?: string; restricted?: "y
 export function Table({ rows, total, filters }: { rows: R[]; total: number; filters: F }) {
   const [all, setAll] = useState(false); const [date, setDate] = useState(""); const [dateAsk, setDateAsk] = useState(false);
   const [sel, setSel] = useState<Set<number>>(new Set());
-  const [msg, setMsg] = useState(""); const [refused, setRefused] = useState<{ slug: string; reasons: string[] }[]>([]); const [busy, setBusy] = useState(false); const [askPub, setAskPub] = useState(false); const [override, setOverride] = useState(false);
+  const [msg, setMsg] = useState(""); const [refused, setRefused] = useState<{ slug: string; reasons: string[] }[]>([]); const [busy, setBusy] = useState(false); const [askDel, setAskDel] = useState(false); const [askPub, setAskPub] = useState(false); const [override, setOverride] = useState(false);
   const toggle = (id: number) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   async function go(to: "draft" | "published" | "archived") {
     if (!sel.size && !all) return;
@@ -17,6 +17,14 @@ export function Table({ rows, total, filters }: { rows: R[]; total: number; filt
     try {
       const r = all ? await bulkStatusByFilterAction(filters, to, to === "published" && override) : await bulkStatusAction([...sel], to, to === "published" && override); setMsg(r.message); setRefused(r.refused ?? []); setSel(new Set()); setAll(false);
       if (r.ok) setTimeout(() => location.reload(), r.refused?.length ? 4000 : 900);
+    } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
+    setBusy(false);
+  }
+  async function del() {
+    setAskDel(false); setMsg("Deleting..."); setRefused([]); setBusy(true);
+    try {
+      const r = all ? await deleteProductsByFilterAction(filters) : await deleteProductsAction([...sel]);
+      setMsg(r.message); if (r.ok) { setSel(new Set()); setAll(false); setTimeout(() => location.reload(), 2500); }
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
   }
@@ -41,6 +49,10 @@ export function Table({ rows, total, filters }: { rows: R[]; total: number; filt
         {!all && total > rows.length && <button onClick={() => setAll(true)} className="underline">Select all {total} matching the filter (all pages)</button>}
         {all && <button onClick={() => setAll(false)} className="underline">Clear</button>}
         {(["published", "draft", "archived"] as const).map((s) => <button key={s} disabled={busy || (!sel.size && !all)} onClick={() => (s === "published" ? setAskPub(true) : go(s))} className="rounded-full border border-forest-900 px-3 py-1 font-semibold disabled:opacity-40">{s === "published" ? "Publish" : s === "draft" ? "Back to draft" : "Archive"}</button>)}
+        <button type="button" disabled={busy || (!sel.size && !all)} onClick={() => setAskDel(true)} className="rounded-full border border-red-700 px-3 py-1 font-semibold text-red-800 disabled:opacity-40">Delete</button>
+        {askDel && <span className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-1">Delete {all ? total : sel.size} product(s) for good? They are removed from the site. Products with orders or built in are archived instead.
+          <button type="button" onClick={del} className="rounded-full bg-red-700 px-3 py-1 font-semibold text-white">Yes, delete</button>
+          <button type="button" onClick={() => setAskDel(false)} className="underline">Cancel</button></span>}
         {askPub && <span className="flex items-center gap-2 rounded-lg bg-sand-100 px-3 py-1">Publish {all ? total : sel.size} product(s)? They become visible and buyable.
           <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} /> Also publish restricted products (phone, consumer, sensitive). I confirm I may lawfully sell this data.</label>
           <button onClick={() => go("published")} className="rounded-full bg-forest-900 px-3 py-1 font-semibold text-sand-50">Yes, publish</button>

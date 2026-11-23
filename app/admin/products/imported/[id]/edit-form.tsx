@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { maskRows, type SampleRowData } from "@/lib/product-samples";
-import { duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
+import { deleteProductsAction, duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; priceUsdCents: number; highlighted: boolean };
 type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fieldsCustom?: boolean; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
@@ -93,6 +93,12 @@ export function EditForm({ defaults, categories, samples, id, origin, status, sl
     try { const r = await saveSampleAction(id, remove ? "" : csv); setMsg(r.message); if (r.ok) { setSaved(remove ? [] : preview); setCsv(""); } } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
   }
+  async function remove() {
+    if (!window.confirm("Delete this product? It is removed from the site. (If it has orders or is built in, it is archived instead.)")) return;
+    setBusy(true); setMsg("Deleting...");
+    try { const r = await deleteProductsAction([id]); setMsg(r.message); if (r.ok) setTimeout(() => router.push("/admin/products"), 1500); } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
+    setBusy(false);
+  }
   async function copy() {
     setBusy(true); setMsg("Copying...");
     try { const r = await duplicateProductAction(id); if (r.ok && r.id) router.push(`/admin/products/imported/${r.id}`); else setMsg(r.message); } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
@@ -174,6 +180,7 @@ export function EditForm({ defaults, categories, samples, id, origin, status, sl
       <div className="flex items-center gap-3">
         <button type="button" disabled={busy} onClick={save} className="rounded-full bg-purple-600 px-5 py-2 font-semibold text-white disabled:opacity-40">Save changes</button>
         <button type="button" disabled={busy} onClick={copy} className="rounded-full border border-forest-900 px-4 py-2 font-semibold disabled:opacity-40">Duplicate as draft</button>
+        <button type="button" disabled={busy} onClick={remove} className="rounded-full border border-red-700 px-4 py-2 font-semibold text-red-800 disabled:opacity-40">Delete product</button>
         {status === "published" && <a href={`/lists/${slugNow}`} target="_blank" rel="noreferrer" className="underline">View live page</a>}
         {msg && <span role="status" aria-live="polite" className="font-semibold text-forest-900">{msg}</span>}
       </div>

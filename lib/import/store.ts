@@ -132,6 +132,26 @@ export async function rollbackImport(db: Db, importId: number): Promise<{ remove
   return { removed: del.length, kept: rows.length - del.length };
 }
 
+/** Delete products so they disappear from the site. Rows with orders or built-in origin cannot be removed without breaking history / bringing the code product back, so they are archived (hidden) instead. */
+export async function deleteProducts(db: Db, ids: number[]): Promise<{ deleted: number; archived: number }> {
+  let deleted = 0, archived = 0;
+  for (let i = 0; i < ids.length; i += 40) {
+    const rows = await db.select({ id: schema.catalogProducts.id, slug: schema.catalogProducts.slug, origin: schema.catalogProducts.origin }).from(schema.catalogProducts).where(inArray(schema.catalogProducts.id, ids.slice(i, i + 40)));
+    if (!rows.length) continue;
+    const ordered = new Set((await db.select({ s: schema.orderItems.productSlug }).from(schema.orderItems).where(inArray(schema.orderItems.productSlug, rows.map((r) => r.slug)))).map((x) => x.s));
+    const keep = rows.filter((r) => r.origin === "builtin" || ordered.has(r.slug)), del = rows.filter((r) => !keep.includes(r));
+    if (keep.length) { await db.update(schema.catalogProducts).set({ status: "archived", updatedAt: Math.floor(Date.now() / 1000) }).where(inArray(schema.catalogProducts.id, keep.map((r) => r.id))); archived += keep.length; }
+    if (del.length) {
+      const slugs = del.map((r) => r.slug);
+      await db.delete(schema.deliveryLinks).where(inArray(schema.deliveryLinks.productSlug, slugs));
+      await db.delete(schema.slugAliases).where(inArray(schema.slugAliases.newSlug, slugs));
+      await db.delete(schema.catalogProducts).where(inArray(schema.catalogProducts.id, del.map((r) => r.id)));
+      deleted += del.length;
+    }
+  }
+  return { deleted, archived };
+}
+
 export type Row = typeof schema.catalogProducts.$inferSelect;
 export type Pkg = { name: string; records: number; priceUsdCents: number; link?: string; highlighted?: boolean };
 export const rowPackages = (r: Pick<Row, "packagesJson">) => parse<Pkg[]>(r.packagesJson, []);
