@@ -95,6 +95,7 @@ export const TOOLS: ToolDef[] = [
   { name: "showDfyPackages", description: "Use for questions about DFY Outbound (done-for-you cold email outbound: domains, inboxes, verified leads, copy, managed sending; one-time packages). Returns the real packages and shows package cards to the visitor. Pass names to show only some (for example the smallest package that covers a lead volume). Package numbers are the only source of truth: never promise anything else, never promise replies, meetings or inbox placement. Domain and inbox numbers are estimates until onboarding.", parameters: { type: "object", properties: { names: { type: "array", items: { type: "string" } } } } },
   { name: "searchKnowledge", description: "Search answers written by the BeigeLeads team (custom FAQs). Use it for questions about policies, process or products that the catalog tools do not cover, before searchHelpArticles.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "searchHelpArticles", description: "Search published Help Center articles for how-to, delivery, payment, data and policy answers.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "getOurDataFacts", description: "Facts from the public Our Data page (/our-data): countries and industries with ready-made databases, newest list update date, refresh cycle, and which headline claims are verified. Use it for questions about data coverage, sources, verification, accuracy, freshness or how big the data is. Never state a claim listed under unverifiedClaims.", parameters: { type: "object", properties: {} } },
   { name: "searchGlossary", description: "Look up a B2B data, email or outreach term (for example MX record, bounce rate, SPF, DMARC, ICP, GDPR) in the published BeigeLeads Glossary. This is general education, NOT BeigeLeads policy: when you answer, say so, and use searchHelpArticles or getPolicyDetails for what BeigeLeads actually does.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "getPolicyDetails", description: "Read a published policy page. topic is one of: " + POLICY_SLUGS.join(", "), parameters: { type: "object", properties: { topic: { type: "string" } }, required: ["topic"] } },
   { name: "requestDiscount", description: "ONLY when the visitor has explicitly asked for a discount, coupon or better price. Asks the server whether an offer is available for the cart. Never call it on your own. The server decides; you cannot set or change a percentage.", parameters: { type: "object", properties: {}, required: [] } },
@@ -239,6 +240,22 @@ export async function runTool(ctx: ToolCtx, name: string, args: Record<string, u
         if (!hits.length) ctx.miss = true;
         for (const h of hits) ctx.sources.push({ title: h.title, url: h.href });
         return { articles: hits.map((h) => ({ title: h.title, url: h.href, excerpt: (text.get(h.id) ?? "").slice(0, 900) })), note: hits.length ? undefined : "No matching article. Do not guess; offer /contact." };
+      }
+      case "getOurDataFacts": {
+        const { loadOurData, approvedValue, CLAIM_INFO, CLAIM_KEYS } = await import("@/lib/our-data/settings");
+        const { loadOurDataFacts } = await import("./../our-data/facts");
+        const st = await loadOurData(ctx.env);
+        if (!st.published) return { error: "The Our Data page is not published." };
+        const f = await loadOurDataFacts();
+        ctx.sources.push({ title: "Our Data", url: "/our-data" });
+        return {
+          page: "/our-data", countries: f.countries.map((c) => c.name), industries: f.industries.map((i) => i.name), newestListUpdate: f.newestUpdate,
+          refreshCycle: "BeigeLeads refreshes its databases every 90 days", fieldsPerRecordUpTo: f.fieldCount,
+          replacementPolicy: "If more than 5% of emails in a delivered list bounce, bounced emails are replaced (see /legal/refund-replacement)",
+          verifiedClaims: CLAIM_KEYS.filter((k) => approvedValue(st, k)).map((k) => ({ claim: CLAIM_INFO[k].label, wording: st.claims[k].value, evidence: st.claims[k].evidence })),
+          unverifiedClaims: CLAIM_KEYS.filter((k) => !approvedValue(st, k)).map((k) => CLAIM_INFO[k].label),
+          note: "Only verifiedClaims may be stated as facts. Unverified claims must not be repeated, even if the visitor asks about them: say we do not publish that figure. Link /our-data.",
+        };
       }
       case "searchGlossary": {
         const q = str(args.query, 120); if (!q) return { error: "empty query" };

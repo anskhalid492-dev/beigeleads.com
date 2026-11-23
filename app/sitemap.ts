@@ -3,6 +3,7 @@ import { KINDS, asKind } from "@/lib/blog/kind";
 import { getTax } from "@/lib/taxonomy-route";
 import { geoSitemapPaths } from "@/lib/geo/store";
 import { getDbFromEnv } from "@/lib/db";
+import { loadOurData } from "@/lib/our-data/settings";
 import type { MetadataRoute } from "next";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { authorSitemap } from "@/lib/blog/authors";
@@ -35,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const geoPaths = await geoSitemapPaths(getDbFromEnv(getCloudflareContext().env));
   const help = await loadHelp(getCloudflareContext().env);
   const tax = await getTax();
+  const ourDataLive = (await loadOurData(getCloudflareContext().env)).published;
   const glossary = await glossaryPaths(getDbFromEnv(getCloudflareContext().env));
   const bundles = (await loadBundlesView(getCloudflareContext().env).catch(() => ({ bundles: [] }))).bundles; // only bundles whose lists are all really on sale
   const all: MetadataRoute.Sitemap = [
@@ -57,6 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...bundles.map((b) => ({ url: `${SITE_URL}/bundles/${b.slug}` })),
     { url: `${SITE_URL}/partners` },
     { url: `${SITE_URL}/team-purchase-requests` },
+    ...(ourDataLive ? [{ url: `${SITE_URL}/our-data` }] : []),
     { url: `${SITE_URL}/benchmarks` },
     ...publishedBenchmarks().map((b) => ({ url: `${SITE_URL}/benchmarks/${b.slug}` })),
     { url: `${SITE_URL}/email-list-verification` },

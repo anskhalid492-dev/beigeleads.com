@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronDown, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, UsersRound, Menu, Package, Send, Settings, ShieldCheck, ShoppingCart, Wallet, X } from "lucide-react";
+import { Database, Bot, TicketPercent, Handshake, BookMarked, BookOpen, Presentation, BarChart3, ChevronDown, ChevronsLeft, ChevronsRight, ClipboardList, Globe, FileText, Inbox, Search, ImageIcon, LifeBuoy, Mail, MailCheck, MessageSquare, LogOut, Users, UsersRound, Menu, Package, Send, Settings, ShieldCheck, ShoppingCart, Wallet, X } from "lucide-react";
 import { ToastProvider } from "./toast";
 
 const NAV = [
@@ -35,6 +35,7 @@ const NAV = [
   ["Guides", "/admin/guides", BookOpen],
   ["Case Studies", "/admin/case-studies", Presentation],
   ["Glossary", "/admin/glossary", BookMarked],
+  ["Our Data page", "/admin/our-data", Database],
   ["Help Center", "/admin/help", LifeBuoy],
   ["Media", "/admin/media", ImageIcon],
   ["Media Kit", "/admin/media-kit", ImageIcon],
@@ -61,7 +62,7 @@ const GROUPS: { name: string; hrefs: string[] }[] = [
   { name: "Catalog", hrefs: ["/admin/products", "/admin/bundles", "/admin/categories", "/admin/catalog", "/admin/geography", "/admin/geography/pages"] },
   { name: "Services", hrefs: ["/admin/dfy", "/admin/dfy/settings", "/admin/email-verification", "/admin/email-verification/settings", "/admin/custom-requests"] },
   { name: "Inbox", hrefs: ["/admin/sample-requests", "/admin/contact-inquiries"] },
-  { name: "Content", hrefs: ["/admin/blog", "/admin/blog/authors", "/admin/guides", "/admin/case-studies", "/admin/glossary", "/admin/help", "/admin/media", "/admin/media-kit", "/admin/newsletter"] },
+  { name: "Content", hrefs: ["/admin/blog", "/admin/blog/authors", "/admin/guides", "/admin/case-studies", "/admin/glossary", "/admin/our-data", "/admin/help", "/admin/media", "/admin/media-kit", "/admin/newsletter"] },
   { name: "SEO", hrefs: ["/admin/seo", "/admin/seo/site-pages", "/admin/seo/keywords", "/admin/seo/redirects", "/admin/seo/sitemap", "/admin/seo/audit", "/admin/seo/search-console"] },
   { name: "Assistant & Messaging", hrefs: ["/admin/beigepilot", "/admin/popups", "/admin/system-emails"] },
   { name: "Website", hrefs: ["/admin/website/social-links", "/admin/website/ai-platforms", "/admin/website/ai-information", "/admin/settings"] },
