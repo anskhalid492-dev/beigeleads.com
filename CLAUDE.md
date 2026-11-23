@@ -1467,3 +1467,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 154. Category filter in the product manager (23 Nov 2026) — amends section 96
 
 - `/admin/products` filter bar has "Any category" (every category present in `catalog_products`, by slug). `Filters.category` in `lib/import/store.ts`; also honoured by "Select all N matching" and the bulk actions (zod schemas in `app/admin/products/import/actions.ts` accept `category`). Not browser-tested (behind Access).
+
+## 155. Placeholder flag no longer hides real figures after an admin edit (23 Nov 2026) — amends sections 74, 96
+
+- Bug: a list edited in `/admin/products` still showed "Count to be confirmed", "Preview only" and "On the list page" on `/lists`, because the public cards strip counts/prices while `placeholder` is ticked and show "Preview only" while "For sale" is off, and imported products start with the placeholder box ticked.
+- Fix: `updateProduct` clears `placeholder` when the save brings a new positive record count or new package prices (all packages priced) and the box was left as it was; ticking it on purpose in that same save is not possible to distinguish, so untick/tick again afterwards if needed. The edit form now says what visitors currently see ("no count or price", "Preview only") and which box to change. "For sale" is NOT auto-changed (buying stays an explicit owner decision). Changes appear after the ~60 s catalog/edge cache.
+- Test: case in `tests/import-e2e.test.ts`.

@@ -256,11 +256,15 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
     const sj = j(next);
     cat = cat ? { ...cat, sourceJson: sj } : { categorySlug: row.categorySlug, categoryName: row.categoryName, sourceJson: sj };
   }
+  // Real figures entered while the "placeholder" box was left as it was: the admin has now supplied a count and prices, so the old flag must not keep hiding them from visitors (the box can still be ticked on purpose in the same save).
+  const priced = e.packages.length > 0 && e.packages.every((k) => k.priceUsdCents > 0);
+  const figuresNew = (e.recordCount ?? 0) > 0 && priced && (e.recordCount !== row.recordCount || JSON.stringify(packages.map((k) => [k.name, k.records, k.priceUsdCents])) !== JSON.stringify(old.map((k) => [k.name, k.records, k.priceUsdCents])));
+  const placeholder = figuresNew && e.placeholder && !!row.placeholder ? false : e.placeholder;
   await db.update(schema.catalogProducts).set({
     ...(cat ?? {}),
     name: e.name, title: e.title || e.name, description: e.description, seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null,
     recordCount: e.recordCount, dataFieldsJson: j([...new Set(e.dataFields)]), fileFormats: e.fileFormats || null, coverage: e.coverage || null, lastUpdated: e.lastUpdated || null,
-    placeholder: e.placeholder ? 1 : 0, forSale: e.forSale ? 1 : 0,
+    placeholder: placeholder ? 1 : 0, forSale: e.forSale ? 1 : 0,
     packagesJson: j(packages), updatedAt: Math.floor(Date.now() / 1000),
   }).where(eq(schema.catalogProducts.id, id));
   return { ok: true, message: "Saved." };

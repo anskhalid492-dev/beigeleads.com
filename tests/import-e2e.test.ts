@@ -90,6 +90,10 @@ describe("catalog import", () => {
     expect(after.recordCount).toBe(4321); expect(after.lastUpdated).toBe("2026-11-01"); expect(JSON.parse(after.dataFieldsJson)).toEqual(["Email", "Phone"]); expect(after.name).toBe("Renamed list"); expect(after.title).toBe("Renamed list"); expect(after.seoTitle).toBe("Custom SEO title"); expect(after.metaDescription).toBeNull();
     const links = (JSON.parse(after.packagesJson) as { link?: string }[]).map((k) => k.link);
     expect(links).toEqual(pk.map((k) => k.link));
+    // Real figures saved while the old placeholder flag is still ticked: the flag clears so visitors see the count and price.
+    await db.update(schema.catalogProducts).set({ placeholder: 1, recordCount: 7 }).where(eq(schema.catalogProducts.id, pub.id));
+    expect((await updateProduct(db, pub.id, { ...edit, placeholder: true, recordCount: 5555 })).ok).toBe(true);
+    expect((await getProductRow(db, pub.id))!.placeholder).toBe(0);
     const zero = await updateProduct(db, pub.id, { ...edit, packages: edit.packages.map((k) => ({ ...k, priceUsdCents: 0 })) });
     expect(zero.ok).toBe(false);
     expect((await updateProduct(db, pub.id, { ...edit, packages: [edit.packages[0], edit.packages[0]] })).ok).toBe(false);

@@ -86,6 +86,7 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.forSale} onChange={(e) => set("forSale", e.target.checked)} /> For sale (off = preview only, cannot be bought)</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.placeholder} onChange={(e) => set("placeholder", e.target.checked)} /> These figures are placeholders (the page says so)</label>
         </div>
+        {(f.placeholder || !f.forSale) && <p className="mt-2 rounded-lg bg-sand-100 p-2 text-xs font-semibold text-forest-900">Visitors currently see: {f.placeholder ? "no record count or price (\"Count to be confirmed\")" : "count and price"}{!f.forSale ? "; status \"Preview only\" and no buying" : "; status \"Available\""}. {f.placeholder ? "Untick the placeholder box to show your real figures. " : ""}{!f.forSale ? "Tick \"For sale\" to let people buy." : ""}</p>}
         {origin === "builtin" && <p className="mt-2 text-xs">This is a built-in product copied into the database. Your edits replace the code version.</p>}
       </fieldset>
       <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
