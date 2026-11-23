@@ -27,7 +27,7 @@ def frame(body):
 <filter id="big" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="{F9}" flood-opacity=".38"/></filter></defs>
 <rect width="{W}" height="{H}" fill="url(#bg)"/><rect width="{W}" height="{H}" fill="url(#grid)"/>
 <g transform="translate(800 450) scale(1.08) translate(-1100 -450)">{body}</g>
-{symbol(72, 72, 88)}</svg>'''
+{symbol(72, 72, 128)}</svg>'''
 
 def envelope(x, y, w=150, fill=S50, flap=F5, shadow=True):
     h = w * .68
