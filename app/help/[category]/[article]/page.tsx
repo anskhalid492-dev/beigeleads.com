@@ -1,3 +1,4 @@
+import { SITE_EMAIL, SITE_MAILTO } from "@/lib/site-contact";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -108,6 +109,7 @@ export default async function HelpArticlePage(props: PageProps<"/help/[category]
               <div className="text-sm">
                 <p className="font-bold text-forest-900">Need a person?</p>
                 <Link href="/contact" className="mt-2 inline-block font-semibold text-forest-900 underline underline-offset-4">Contact support</Link>
+                <p className="mt-2">Or email <a href={SITE_MAILTO} className="font-semibold text-forest-900 underline underline-offset-4">{SITE_EMAIL}</a></p>
               </div>
             </div>
           </aside>

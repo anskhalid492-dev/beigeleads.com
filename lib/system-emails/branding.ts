@@ -17,7 +17,7 @@ export const brandingSchema = z.object({
 });
 export type Branding = z.infer<typeof brandingSchema>;
 
-export const DEFAULT_BRANDING: Branding = { logoHeight: 34, cardRadius: 20, buttonColor: "primary", buttonRadius: 12, supportEmail: "", footerNote: "", social: [] };
+export const DEFAULT_BRANDING: Branding = { logoHeight: 34, cardRadius: 20, buttonColor: "primary", buttonRadius: 12, supportEmail: "hello@beigeleads.com", footerNote: "", social: [] };
 
 const KEY = "main";
 

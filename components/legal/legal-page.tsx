@@ -1,3 +1,4 @@
+import { SITE_EMAIL, SITE_MAILTO } from "@/lib/site-contact";
 import Link from "next/link";
 import { Fragment } from "react";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -80,7 +81,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
               </section>
             ))}
             <p className="mt-6 border-t border-sand-200 pt-6 text-sm">
-              Questions about this page? <Link href="/contact" className="underline underline-offset-4">Contact us</Link>. This page is general
+              Questions about this page? <Link href="/contact" className="underline underline-offset-4">Contact us</Link> or email <a href={SITE_MAILTO} className="underline underline-offset-4">{SITE_EMAIL}</a>. This page is general
               information and not legal advice.
             </p>
           </article>

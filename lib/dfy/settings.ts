@@ -64,7 +64,7 @@ export const DEFAULT_DFY: DfySettings = {
   ownershipAgreement: "",
   perInboxDaily: 30, sendingDaysPerMonth: 22, renewalReminderDays: 7,
   billingTerms: "DFY Outbound is a one-time purchase paid in crypto. There is no subscription and nothing renews. The optional ownership fee is charged once, together with your package.",
-  supportEmail: "",
+  supportEmail: "hello@beigeleads.com",
   upsellEnabled: true,
   upsellHeadline: "Got the Leads? Let Us Handle the Outreach. 🚀",
   upsellDescription: "Our team buys and configures your sending domains, sets up and warms your inboxes, writes your sequences, and manages the sending for you.",

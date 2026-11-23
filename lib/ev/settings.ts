@@ -47,7 +47,7 @@ export const DEFAULT_EV: EvSettings = {
     { name: "Enterprise", limit: 1_000_000, priceCents: 49_900, featured: false },
   ],
   maxUploadMb: 100, formats: ["csv", "xlsx", "txt"], submitLinkDays: 90, resultDownloadDays: 30, retainOriginalDays: 30, retainResultDays: 30, reminderHours: 48,
-  supportEmail: "", quoteRecipient: "", upsellEnabled: true,
+  supportEmail: "hello@beigeleads.com", quoteRecipient: "", upsellEnabled: true,
   upsellHeadline: "Need Your Email List Verified?",
   upsellDescription: "Identify invalid, duplicate, and risky addresses before your next campaign. Add professional email list verification to your order.",
   upsellPlacement: "after_items",

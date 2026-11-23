@@ -1,3 +1,4 @@
+import { SITE_EMAIL, SITE_MAILTO } from "@/lib/site-contact";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ApiForm } from "@/components/forms/api-form";
@@ -28,7 +29,7 @@ export default function OptOutPage() {
         <Link href="/contact" className="font-semibold underline underline-offset-4">
           contact form
         </Link>{" "}
-        and we will confirm it with you first.
+        or email <a href={SITE_MAILTO} className="font-semibold underline underline-offset-4">{SITE_EMAIL}</a>, and we will confirm it with you first.
       </p>
     </FormPage>
   );

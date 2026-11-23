@@ -1,3 +1,4 @@
+import { SITE_EMAIL, SITE_MAILTO } from "@/lib/site-contact";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, LifeBuoy, ListPlus, ShieldOff } from "lucide-react";
@@ -112,6 +113,7 @@ export default async function HelpCenterPage() {
               </li>
             ))}
           </ul>
+          <p className="mt-4 text-sm">Or email us at <a href={SITE_MAILTO} className="font-semibold text-forest-900 underline underline-offset-4">{SITE_EMAIL}</a>.</p>
         </section>
       </div>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: "BeigeLeads Help Center", url: `${SITE_URL}/help-center`, description: "Answers about BeigeLeads business contact lists.", hasPart: helpCategories.map((c) => ({ "@type": "CollectionPage", name: c.name, url: `${SITE_URL}/help/${c.slug}` })) }} />

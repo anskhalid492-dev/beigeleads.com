@@ -15,7 +15,7 @@ export const legalDocs: LegalDoc[] = [
     title: "Privacy policy",
     summary: "What personal data BeigeLeads collects from visitors and buyers, why, and what you can do about it.",
     sections: [
-      { h: "Who we are", p: ["BeigeLeads is operated by BeigeLeads LLC, 215 W Pershing Rd, Kansas City, MO 64108, United States. You can reach us through the contact page."] },
+      { h: "Who we are", p: ["BeigeLeads is operated by BeigeLeads LLC, 215 W Pershing Rd, Kansas City, MO 64108, United States. You can reach us through the contact page or at hello@beigeleads.com."] },
       { h: "What we collect from visitors and buyers", p: [
         "Order email: you give us an email address so we can send your download link. There are no accounts and no passwords.",
         "Payment data: the coin and network you pick, the amount, the receiving address and the transaction hash. We never receive bank card details.",
