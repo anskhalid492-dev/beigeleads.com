@@ -1416,3 +1416,9 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - `/blog`: title "Data Evolution: Navigating B2B & GTM with BeigeLeads" (metadata title and H1), hero in a sand panel. The global footer CTA ("See a sample before you spend a cent.") now shows on `/` too; the homepage's own final CTA ("Your next prospects are one search away.") was removed (supersedes §39 note).
 
 - Footer Compare column (23 Nov 2026, amends §39): lists all 10 comparisons as "vs LeadsMunch", "vs Apollo", ... (no "BeigeLeads" prefix) plus "All Comparisons".
+
+## 146. Pilo sales talk (23 Nov 2026) — extends sections 108-122
+
+- Owner brief "Train Pilo to sell smarter, talk simpler, be funnier". No migration, no env var. `lib/beigepilot/v2/sales-talk.ts`: static `SALES_TALK` rules (added to `buildSystem` after `CONVERSATION`; grounding rules still win) + pure `classify`/`turnHint` that read the visitor's REAL last message and add one "THIS TURN" hint: vague price (ask their goal, no number), specific price (real published price now), repeated price (give real prices, no second redirect), objections (too expensive -> smaller real option; discount -> only if `requestDiscount` really runs; sample; "I'll think"; trust), buying signal (real product/package, never "added" or "paid"), support and frustrated (no jokes, no emojis, no selling, person via `suggestContact`), info (facts first). After two assistant questions the hint tells the model to stop qualifying and search.
+- Style rules: very simple English, 10-30 words, max one question per reply, never re-ask what memory holds, 80% helpful / 15% wit / 5% charm, humor limits unchanged. Behaviour depends on the model following the prompt; helper functions are tested, live model output is not.
+- Tests: `tests/pilo-sales-talk.test.ts` (12 areas). Not tested against a live AI provider.

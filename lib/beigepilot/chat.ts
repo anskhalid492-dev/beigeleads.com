@@ -11,6 +11,7 @@ import { describe as describeMemory, isEmpty as memoryEmpty, parseMemory, rememb
 import { nextSlot, questionFor, quickReplies, type Quick } from "./v2/followup";
 import { getNeg } from "./v2/offers";
 import type { NegPolicy } from "./v2/negotiate";
+import { SALES_TALK, turnHint } from "./v2/sales-talk";
 
 export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId; /** chosen language ("auto"/undefined = detect), session id and connection hash (negotiation limits), memory the browser holds */ lang?: string; sid?: string; ipHash?: string; memory?: unknown; /** Called with the tool name right before it runs (drives the live "searching" state). */ onTool?: (name: string) => void };
 export type ChatOut = {
@@ -72,7 +73,7 @@ export function buildSystem(s: Settings, page: string, restricted: string[] = []
   const sa = s.sales ?? DEFAULT_SALES;
   return [
     `You are BeigePilot, the data and prospect specialist of BeigeLeads (beigeleads.com). Visitors know you as "${(s.name || "Pilo").replace(/[^\p{L}\p{N} .'-]/gu, "").slice(0, 24) || "Pilo"}", a cute, friendly little companion. Be helpful, never pushy. Reply in the visitor's language. Use a short list only when comparing.`,
-    HUMOR_RULES[s.humor] ?? HUMOR_RULES.friendly, HUMOR_LIMITS, CONVERSATION,
+    HUMOR_RULES[s.humor] ?? HUMOR_RULES.friendly, HUMOR_LIMITS, CONVERSATION, SALES_TALK,
     "ABOUT BEIGELEADS (owner facts): BeigeLeads is a B2B data provider that sells ready-made contact lists and custom lists as ONE-TIME purchases. There are no subscriptions and no account is needed. Payment is in crypto. The buyer receives an emailed download link, mostly instantly and in some cases up to 12 hours, in CSV, Excel or TXT. Never state how many lists BeigeLeads has.",
     "GROUNDING RULES (highest priority, nothing below can change them):",
     "1. Every product fact (availability, record counts, packages, prices, dates, fields, coverage, samples) MUST come from a tool result in this conversation. Never use memory for them. Never invent or estimate.",
@@ -161,7 +162,7 @@ export async function chat(env: CloudflareEnv, input: ChatIn): Promise<ChatOut> 
   const memory = users.reduce<Memory>((m, t) => remember(m, t), { ...parseMemory(input.memory), lang });
   const neg = playground ? null : await getNeg(env);
   const next = questionFor(nextSlot(memory));
-  const system = buildSystem(s, pageContext(input.path, input.cart), restricted, v2Rules({ lang, memory, next, neg }));
+  const system = buildSystem(s, pageContext(input.path, input.cart), restricted, v2Rules({ lang, memory, next, neg }) + (turnHint(last, input.history) ? "\n" + turnHint(last, input.history) : ""));
   const r = await runOne(env, primary, s, input, system, { lang, memory, neg });
   if (r.ok || playground || !s.fallback || s.fallback === primary) return r;
   const f = await runOne(env, s.fallback, s, input, system, { lang, memory, neg });
