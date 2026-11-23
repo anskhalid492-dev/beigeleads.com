@@ -12,6 +12,8 @@ export type ShopProduct = {
   categorySlug: string; categoryName: string;
   /** Other categories the product is also listed under. */
   extraCats?: string[];
+  /** Sub category shown on the card (first extra category, else the local-business industry). */
+  subName?: string;
   countrySlug: string; countryName: string; countryCode: string;
   fields: string[]; status: "draft" | "live";
   recordCount: number | null; fromCents: number | null;

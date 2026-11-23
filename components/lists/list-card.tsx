@@ -18,7 +18,7 @@ export function ListCard({ p, view = "grid" }: { p: ShopProduct; view?: "grid" |
       <div className={`flex items-start gap-4 ${row ? "md:w-[23rem] md:shrink-0" : ""}`}>
         <DbBadge category={p.categorySlug} hint={p.name} country={p.countryCode} region={p.region} size="lg" />
         <div className="min-w-0">
-          <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-bold text-forest-900">{kind === "city" && p.region && p.scope !== "city" ? "State database" : KIND[kind]}</span>
+          <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-bold text-forest-900">{p.subName ?? (kind === "city" && p.region && p.scope !== "city" ? "State database" : KIND[kind])}</span>
           <h3 className="display mt-1.5 text-[1.55rem] leading-[1.05] text-forest-900"><Link href={`/lists/${p.slug}`} className="after:absolute after:inset-0 after:rounded-[1.4rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">{p.name}</Link></h3>
           <p className="mt-1 flex items-center gap-1.5 text-sm"><Flag code={p.countryCode} className="h-3 w-[18px]" /><MapPin className="size-3.5 text-forest-500" aria-hidden />{place}</p>
         </div>
