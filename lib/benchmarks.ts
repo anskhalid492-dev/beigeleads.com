@@ -9,6 +9,7 @@ export const BENCH_CATEGORIES: { slug: BenchCategory; name: string; text: string
   { slug: "industry-geo", name: "Industry & Geographic Research", text: "How the same metrics differ by industry and by country." },
 ];
 import { REPORTS, type Report } from "@/lib/benchmarks-reports";
+import { LONG } from "@/lib/benchmarks-long";
 export type BenchRecord = { slug: string; title: string; category: BenchCategory; keyword: string; need: string; status: "draft" | "published"; report?: Report };
 const R = (slug: string, title: string, category: BenchCategory, keyword: string, need: string): BenchRecord => ({ slug, title, category, keyword, need, status: "draft" });
 const BASE: BenchRecord[] = [
@@ -33,7 +34,7 @@ const BASE: BenchRecord[] = [
   R("b2b-email-by-country", "B2B Email Benchmarks by Country", "industry-geo", "b2b email benchmarks by country", "Country-level deliverability or response data with sample per country."),
   R("b2b-outreach-by-industry", "B2B Outreach Benchmarks by Industry", "industry-geo", "b2b outreach benchmarks by industry", "Outreach metrics split by industry from one consistent dataset."),
 ];
-export const BENCHMARKS: BenchRecord[] = BASE.map((b) => (REPORTS[b.slug] ? { ...b, status: "published" as const, report: REPORTS[b.slug] } : b));
+export const BENCHMARKS: BenchRecord[] = BASE.map((b) => (REPORTS[b.slug] ? { ...b, status: "published" as const, report: { ...REPORTS[b.slug], long: LONG[b.slug] } } : b));
 export const publishedBenchmarks = () => BENCHMARKS.filter((b) => b.status === "published");
 
 // Featured images: one 1600x900 WebP per published benchmark with the official BeigeLeads symbol (scripts/benchmarks/build.py). Decorative shapes only, no data.
@@ -49,7 +50,10 @@ const IMAGE_ALT: Record<string, string> = {
   "b2b-sales-cycle": "BeigeLeads symbol beside a rising timeline of milestones",
 };
 export const benchAlt = (b: { slug: string; title: string }) => IMAGE_ALT[b.slug] ?? `BeigeLeads symbol beside an illustration for ${b.title}`;
-export const benchMinutes = (r: Report) => {
-  const words = [r.summary, ...r.meaning, ...r.limits, r.table.caption, ...r.table.rows.flat(), ...r.stats.map((s) => `${s.label} ${s.value} ${s.note ?? ""}`)].join(" ").match(/\S+/g)?.length ?? 0;
-  return Math.max(2, Math.round((words + 180) / 220));
-};
+// Table pipes and markdown separators are not words.
+const wordsOf = (t: string) => (t.replace(/\|/g, " ").replace(/^\s*[-: ]{3,}\s*$/gm, " ").match(/[^\s|]+/g) ?? []).filter((w) => !/^[-:]+$/.test(w)).length;
+// Every visible word of the article (used for reading time and the 2,500-word test).
+export const benchWords = (r: Report) =>
+  wordsOf([r.summary, ...r.meaning, ...r.limits, r.table.caption, ...r.table.rows.flat(), ...r.stats.map((s) => `${s.label} ${s.value} ${s.note ?? ""}`),
+    ...(r.long?.sections.map((x) => `${x.heading} ${x.body}`) ?? []), ...(r.long?.faq.map((f) => `${f.q} ${f.a}`) ?? [])].join(" "));
+export const benchMinutes = (r: Report) => Math.max(2, Math.round((benchWords(r) + 180) / 220));

@@ -6,6 +6,7 @@ import { ReadingProgress } from "@/components/blog/client";
 import { InlineCta } from "@/components/blog/inline-cta";
 import { Share } from "@/components/blog/share";
 import { Toc } from "@/components/blog/toc";
+import { Md } from "@/components/benchmarks/md";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { JsonLd } from "@/components/shared/json-ld";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 const num = (v: string) => parseFloat(v.replace(/[^0-9.]/g, "")) || 0;
 const fmtDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const TOC = [{ id: "summary", text: "Benchmark summary", level: 2 }, { id: "data", text: "The data", level: 2 }, { id: "mean", text: "What the findings mean", level: 2 }, { id: "method", text: "Methodology and limitations", level: 2 }];
 
 export default async function BenchmarkPage({ params }: { params: Promise<{ slug: string }> }) {
   const b = find((await params).slug);
@@ -41,6 +41,10 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
   const cat = BENCH_CATEGORIES.find((c) => c.slug === b.category);
   const url = `${SITE_URL}/benchmarks/${b.slug}`;
   const minutes = benchMinutes(r);
+  const long = r.long;
+  const TOC = [{ id: "summary", text: "Benchmark summary", level: 2 }, { id: "data", text: "The data", level: 2 }, { id: "mean", text: "What the findings mean", level: 2 },
+    ...(long?.sections.map((x) => ({ id: x.id, text: x.heading, level: 2 })) ?? []), ...(long?.faq.length ? [{ id: "faq", text: "Frequently asked questions", level: 2 }] : []),
+    { id: "method", text: "Methodology and limitations", level: 2 }];
   return (
     <>
       <ReadingProgress />
@@ -49,6 +53,7 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
         author: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL }, publisher: { "@type": "Organization", name: "BeigeLeads", url: SITE_URL },
         mainEntityOfPage: url, image: [`${SITE_URL}${benchImage(b.slug)}`], citation: r.source.url,
       }} />
+      {long?.faq.length ? <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: long.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a.replace(/\*\*|\[([^\]]+)\]\([^)]*\)/g, "$1") } })) }} /> : null}
       <Breadcrumbs wide items={[{ name: "Benchmarks", href: "/benchmarks" }, ...(cat ? [{ name: cat.name, href: `/benchmarks#${cat.slug}` }] : []), { name: b.title, href: `/benchmarks/${b.slug}` }]} />
       <article className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-4xl">
@@ -103,6 +108,14 @@ export default async function BenchmarkPage({ params }: { params: Promise<{ slug
 
               <h2 id="mean">What the findings mean</h2>
               {r.meaning.map((m) => <p key={m}>{m}</p>)}
+
+              {long?.sections.map((x) => (<section key={x.id}><h2 id={x.id}>{x.heading}</h2><Md text={x.body} /></section>))}
+              {long?.faq.length ? (
+                <section>
+                  <h2 id="faq">Frequently asked questions</h2>
+                  {long.faq.map((f) => (<div key={f.q}><h3>{f.q}</h3><Md text={f.a} /></div>))}
+                </section>
+              ) : null}
 
               <h2 id="method">Methodology and limitations</h2>
               <dl className="grid gap-x-6 gap-y-3 rounded-2xl border border-sand-200 bg-white p-5 text-base sm:grid-cols-[8rem_1fr]">

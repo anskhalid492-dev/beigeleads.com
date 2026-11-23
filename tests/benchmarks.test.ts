@@ -37,3 +37,21 @@ describe("benchmark featured images", () => {
     }
   });
 });
+
+import { benchWords } from "@/lib/benchmarks";
+describe("benchmark long-form", () => {
+  it("every published benchmark has at least 2,500 visible words and a FAQ", () => {
+    for (const b of pubs()) {
+      expect(benchWords(b.report!), b.slug).toBeGreaterThanOrEqual(2500);
+      expect(b.report!.long?.faq.length, b.slug).toBeGreaterThanOrEqual(5);
+    }
+  });
+  it("long-form text uses only safe links and unique section ids", () => {
+    for (const b of pubs()) {
+      const ids = b.report!.long!.sections.map((s) => s.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      const text = b.report!.long!.sections.map((s) => s.body).join("\n");
+      for (const m of text.matchAll(/\]\(([^)]+)\)/g)) expect(/^(\/|https:\/\/)/.test(m[1]), m[1]).toBe(true);
+    }
+  });
+});

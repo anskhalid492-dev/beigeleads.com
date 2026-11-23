@@ -1,5 +1,6 @@
 // Published benchmark reports (section 138). Every figure below was read on the source's own page on 22 Nov 2026 and is stated the way the source states it.
 // These are THIRD-PARTY findings from vendors' own platform data: BeigeLeads did not run them. Add a report only with a source URL, period, population and limits.
+import type { Long } from "./benchmarks-long/types";
 export type Report = {
   seoTitle: string; seoDesc: string; summary: string;
   stats: { label: string; value: string; note?: string }[];
@@ -8,6 +9,7 @@ export type Report = {
   source: { name: string; title: string; url: string; published: string; period: string; population: string; definition: string };
   limits: string[]; reviewed: string; related: string[];
   cta: { text: string; href: string; label: string };
+  long?: Long;
 };
 const INSTANTLY = { name: "Instantly", title: "Cold Email Benchmark Report: Reply Rates, Deliverability and Trends", url: "https://instantly.ai/cold-email-benchmark-report-2026", published: "Updated 12 January 2026", period: "1 January to 18 December 2025", population: "Aggregated, anonymised activity across thousands of active Instantly workspaces. The page gives no exact send count." };
 const VALIDITY = { name: "Validity", title: "2026 Email Deliverability Benchmark Report", url: "https://www.validity.com/wp-content/uploads/2026/03/2026-Benchmark-Report.pdf", published: "March 2026", period: "Calendar year 2025", population: "Seed-test data from Validity customers who approved aggregation. The report gives no seed count." };
