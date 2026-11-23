@@ -35,3 +35,21 @@ const BASE: BenchRecord[] = [
 ];
 export const BENCHMARKS: BenchRecord[] = BASE.map((b) => (REPORTS[b.slug] ? { ...b, status: "published" as const, report: REPORTS[b.slug] } : b));
 export const publishedBenchmarks = () => BENCHMARKS.filter((b) => b.status === "published");
+
+// Featured images: one 1600x900 WebP per published benchmark with the official BeigeLeads symbol (scripts/benchmarks/build.py). Decorative shapes only, no data.
+export const benchImage = (slug: string) => `/benchmark-images/${slug}.webp`;
+const IMAGE_ALT: Record<string, string> = {
+  "cold-email-response-rate": "BeigeLeads symbol beside outgoing emails and reply bubbles",
+  "cold-email-follow-ups": "BeigeLeads symbol beside a sequence of emails sent one after another",
+  "b2b-email-deliverability": "BeigeLeads symbol beside an inbox receiving an email and a separate spam folder",
+  "b2b-email-by-country": "BeigeLeads symbol beside a dotted map of world regions",
+  "b2b-outreach-by-industry": "BeigeLeads symbol beside a ranked list of horizontal bars",
+  "b2b-data-decay": "BeigeLeads symbol beside a grid of dots that fade out over time",
+  "email-verification": "BeigeLeads symbol beside a list of addresses marked valid or invalid",
+  "b2b-sales-cycle": "BeigeLeads symbol beside a rising timeline of milestones",
+};
+export const benchAlt = (b: { slug: string; title: string }) => IMAGE_ALT[b.slug] ?? `BeigeLeads symbol beside an illustration for ${b.title}`;
+export const benchMinutes = (r: Report) => {
+  const words = [r.summary, ...r.meaning, ...r.limits, r.table.caption, ...r.table.rows.flat(), ...r.stats.map((s) => `${s.label} ${s.value} ${s.note ?? ""}`)].join(" ").match(/\S+/g)?.length ?? 0;
+  return Math.max(2, Math.round((words + 180) / 220));
+};

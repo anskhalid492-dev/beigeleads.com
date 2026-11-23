@@ -26,3 +26,14 @@ describe("benchmarks", () => {
     for (const b of BENCHMARKS) if (!slugs.has(b.slug)) expect(b.report).toBeUndefined();
   });
 });
+
+import { existsSync } from "node:fs";
+import { benchAlt, benchImage, publishedBenchmarks as pubs } from "@/lib/benchmarks";
+describe("benchmark featured images", () => {
+  it("every published benchmark has an image file and a specific alt text", () => {
+    for (const b of pubs()) {
+      expect(existsSync(`public${benchImage(b.slug)}`), b.slug).toBe(true);
+      expect(benchAlt(b)).toMatch(/^BeigeLeads symbol beside/);
+    }
+  });
+});
