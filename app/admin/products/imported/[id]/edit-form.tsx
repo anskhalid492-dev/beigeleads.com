@@ -9,44 +9,56 @@ type Pk = { name: "Starter" | "Professional" | "Complete"; records: number; pric
 type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fieldsCustom?: boolean; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
 
-import { FIELD_CATALOG, FIELD_GROUPS, FIELD_NAMES } from "@/lib/product-fields";
+import { FIELD_CATALOG, LOCAL_FIELD_CATALOG } from "@/lib/product-fields";
 
 /** The fields cards of the product page: tick what this list really contains. Names outside the catalog go in the box below. */
-function FieldPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const list = value.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
-  const on = new Set(list);
-  const extra = list.filter((n) => !FIELD_NAMES.includes(n));
-  const emit = (names: string[]) => onChange(names.join("\n"));
-  const toggle = (n: string) => emit(FIELD_NAMES.filter((x) => (x === n ? !on.has(x) : on.has(x))).concat(extra));
-  const setGroup = (g: string, all: boolean) => emit(FIELD_NAMES.filter((x) => { const gr = FIELD_CATALOG.find((c) => c.name === x)?.group; return gr === g ? all : on.has(x); }).concat(extra));
+function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (v: string) => void; defaults: string[] }) {
+  const list = value.split("\n").map((x) => x.trim()).filter(Boolean);
+  const [draft, setDraft] = useState("");
+  const emit = (names: string[]) => onChange([...new Set(names.map((n) => n.trim()).filter(Boolean))].join("\n"));
+  const has = (n: string) => list.some((x) => x.toLowerCase() === n.toLowerCase());
+  const add = () => { const v = draft.trim(); if (v && !has(v)) emit([...list, v]); setDraft(""); };
+  const catalog = [...LOCAL_FIELD_CATALOG, ...FIELD_CATALOG];
+  const groups = [...new Set(catalog.map((c) => c.group))];
   return (
     <div className="mt-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-semibold">Data fields shown on the product page ({list.length} selected)</span>
+        <span className="text-xs font-semibold">Data fields shown on the product page ({list.length})</span>
         <span className="flex gap-2 text-xs">
-          <button type="button" className="underline" onClick={() => emit([...FIELD_NAMES, ...extra])}>Select all</button>
-          <button type="button" className="underline" onClick={() => emit(extra)}>Clear</button>
+          <button type="button" className="underline" onClick={() => emit(defaults)}>Reset to the standard {defaults.length}</button>
+          <button type="button" className="underline" onClick={() => emit([])}>Remove all</button>
         </span>
       </div>
-      <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {FIELD_GROUPS.map((g) => (
-          <div key={g} className="rounded-lg border border-sand-200 bg-sand-50 p-3">
-            <div className="mb-1 flex items-center justify-between"><b className="text-sm">{g}</b><span className="flex gap-2 text-[11px]"><button type="button" className="underline" onClick={() => setGroup(g, true)}>All</button><button type="button" className="underline" onClick={() => setGroup(g, false)}>None</button></span></div>
-            {FIELD_CATALOG.filter((c) => c.group === g).map((c) => (
-              <label key={c.name} className="flex items-start gap-2 py-0.5 text-xs"><input type="checkbox" className="mt-0.5" checked={on.has(c.name)} onChange={() => toggle(c.name)} /><span>{c.name}</span></label>
-            ))}
-          </div>
+      <ul className="mt-2 grid gap-1.5 md:grid-cols-2 xl:grid-cols-3">
+        {list.map((n, i) => (
+          <li key={i} className="flex items-center gap-1 rounded-lg border border-sand-200 bg-sand-50 p-1">
+            <input aria-label={`Field ${i + 1}`} className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1.5 py-1 text-xs focus:border-sand-300 focus:bg-white" value={n} maxLength={80} onChange={(e) => emit(list.map((x, j) => (j === i ? e.target.value : x)))} onBlur={(e) => { if (!e.target.value.trim()) emit(list.filter((_, j) => j !== i)); }} />
+            <button type="button" aria-label={`Remove ${n}`} className="rounded px-1.5 text-sm font-bold text-forest-700 hover:bg-sand-200" onClick={() => emit(list.filter((_, j) => j !== i))}>×</button>
+          </li>
         ))}
+      </ul>
+      <div className="mt-2 flex gap-2">
+        <input className="min-w-0 flex-1 rounded-lg border border-sand-300 bg-white p-2 text-sm" placeholder="Add a new field, for example Opening Year" value={draft} maxLength={80} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
+        <button type="button" className="rounded-lg bg-forest-900 px-3 text-sm font-semibold text-sand-50" onClick={add}>Add field</button>
       </div>
-      <label className="mt-2 block"><span className="mb-1 block text-xs font-semibold">Other fields not in the list above (one per line)</span>
-        <textarea key={extra.join("|")} className="w-full rounded-lg border border-sand-300 bg-white p-2 text-sm h-16" defaultValue={extra.join("\n")} onBlur={(e) => emit([...FIELD_NAMES.filter((x) => on.has(x)), ...e.target.value.split("\n")])} />
-      </label>
-      <p className="text-xs">Untouched = all {FIELD_NAMES.length} standard fields. Only tick what the file really contains; the refund policy applies to what the page promises.</p>
+      <details className="mt-2 rounded-lg border border-sand-200 p-2">
+        <summary className="cursor-pointer text-xs font-semibold">Add from the standard field lists</summary>
+        <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {groups.map((g) => (
+            <div key={g} className="rounded-lg bg-sand-50 p-2"><b className="text-xs">{g}</b>
+              {catalog.filter((c) => c.group === g).map((c) => (
+                <label key={c.name} className="flex items-start gap-2 py-0.5 text-xs"><input type="checkbox" className="mt-0.5" checked={has(c.name)} onChange={() => emit(has(c.name) ? list.filter((x) => x.toLowerCase() !== c.name.toLowerCase()) : [...list, c.name])} /><span>{c.name}</span></label>
+              ))}
+            </div>
+          ))}
+        </div>
+      </details>
+      <p className="mt-1 text-xs">Rename a field by editing its text, remove it with ×, add your own above (max 80). Untouched = the standard {defaults.length}. Only list what the file really contains; the refund policy applies to what the page promises.</p>
     </div>
   );
 }
 
-export function EditForm({ categories, samples, id, origin, status, slug, restricted, flags, initial }: { categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
+export function EditForm({ defaults, categories, samples, id, origin, status, slug, restricted, flags, initial }: { defaults: string[]; categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
   const [f, setF] = useState(initial); const [price, setPrice] = useState(initial.packages.map((k) => (k.priceUsdCents / 100).toString()));
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter(); const [csv, setCsv] = useState(""); const [saved, setSaved] = useState(samples);
   const preview = csv.trim() ? maskRows(tableFromGrid(parseCsv(csv)).rows) : [];
@@ -56,10 +68,10 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
   async function save() {
     setBusy(true); setMsg("Saving...");
     try {
-      const chosen = f.dataFields.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
+      const chosen = f.dataFields.split("\n").map((x) => x.trim()).filter(Boolean);
       const packages = f.packages.map((k, i) => ({ ...k, priceUsdCents: Math.round(Number(price[i] || "0") * 100) }));
       if (packages.some((k) => !Number.isFinite(k.priceUsdCents) || k.priceUsdCents < 0)) { setMsg("A price is not a valid number."); setBusy(false); return; }
-      const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: chosen, fieldsCustom: !(chosen.length === FIELD_NAMES.length && FIELD_NAMES.every((n) => chosen.includes(n))), packages });
+      const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: chosen, fieldsCustom: !(chosen.length === defaults.length && defaults.every((n) => chosen.includes(n))), packages });
       setMsg(r.ok ? "Saved. A published product shows the change within about a minute." : r.message);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
@@ -119,7 +131,7 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
           <label><span className="mb-1 block text-xs font-semibold">File formats</span><input className={box} placeholder="CSV, Excel or TXT" value={f.fileFormats} maxLength={80} onChange={(e) => set("fileFormats", e.target.value)} /></label>
           <label><span className="mb-1 block text-xs font-semibold">Coverage</span><input className={box} placeholder="Automatic from country and state" value={f.coverage} maxLength={160} onChange={(e) => set("coverage", e.target.value)} /></label>
         </div>
-        <FieldPicker value={f.dataFields} onChange={(v) => set("dataFields", v)} />
+        <FieldPicker value={f.dataFields} defaults={defaults} onChange={(v) => set("dataFields", v)} />
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.forSale} onChange={(e) => set("forSale", e.target.checked)} /> For sale (off = preview only, cannot be bought)</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.placeholder} onChange={(e) => set("placeholder", e.target.checked)} /> These figures are placeholders (the page says so)</label>

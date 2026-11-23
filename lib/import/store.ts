@@ -261,7 +261,8 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
   // Real figures entered while the "placeholder" box was left as it was: the admin has now supplied a count and prices, so the old flag must not keep hiding them from visitors (the box can still be ticked on purpose in the same save).
   const priced = e.packages.length > 0 && e.packages.every((k) => k.priceUsdCents > 0);
   const figuresNew = (e.recordCount ?? 0) > 0 && priced && (e.recordCount !== row.recordCount || JSON.stringify(packages.map((k) => [k.name, k.records, k.priceUsdCents])) !== JSON.stringify(old.map((k) => [k.name, k.records, k.priceUsdCents])));
-  const placeholder = figuresNew && e.placeholder && !!row.placeholder ? false : e.placeholder;
+  // A list that is for sale with a real count and real prices is not a placeholder, whatever the box says (visitors would see "Count to be confirmed" on a list that can be bought).
+  const placeholder = e.forSale && (e.recordCount ?? 0) > 0 && priced ? false : figuresNew && e.placeholder && !!row.placeholder ? false : e.placeholder;
   await db.update(schema.catalogProducts).set({
     ...(cat ?? {}),
     name: e.name, title: e.title || e.name, description: e.description, seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null,

@@ -40,7 +40,7 @@ export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Re
     if (!ctry.has(p.countrySlug)) ctry.set(p.countrySlug, { slug: p.countrySlug, code: p.countryCode, name: p.countryName });
     return {
       slug: p.slug, categorySlug: p.categorySlug, countrySlug: p.countrySlug, title: p.title, name: p.name, description: p.description, recordCount: p.recordCount,
-      lastVerified: p.lastUpdated || null, accuracyPct: p.accuracyPct ?? null, status: p.forSale === false ? "draft" : "live", fields: p.dataFields ?? [], ...(p.fieldsCustom ? { fieldsCustom: true } : {}), placeholderData: !!p.placeholder, packages: p.packages,
+      lastVerified: p.lastUpdated || null, accuracyPct: p.accuracyPct ?? null, status: p.forSale === false ? "draft" : "live", fields: p.dataFields ?? [], ...(p.fieldsCustom ? { fieldsCustom: true } : {}), placeholderData: !!p.placeholder && !(p.forSale !== false && (p.recordCount ?? 0) > 0 && p.packages.length > 0 && p.packages.every((k) => k.priceUsdCents > 0)), packages: p.packages,
       ...(p.extraCats?.length ? { extraCategories: p.extraCats.map((x) => x.slug).filter((s) => s !== p.categorySlug) } : {}), ...(p.scope ? { scope: p.scope } : {}), ...(p.citySlug ? { citySlug: p.citySlug } : {}), ...(p.fileFormats ? { fileFormats: p.fileFormats } : {}), ...(p.coverage ? { coverage: p.coverage } : {}), ...(p.samples?.length ? { samples: p.samples } : {}), imported: true, channel: p.channel, region: p.region || undefined, seoTitle: p.seoTitle || undefined, metaDescription: p.metaDescription || undefined,
     };
   });

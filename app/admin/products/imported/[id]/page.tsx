@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FIELD_NAMES } from "@/lib/product-fields";
+import { FIELD_NAMES, LOCAL_FIELD_NAMES } from "@/lib/product-fields";
 import { notFound } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { PageHeader } from "@/components/admin/ui";
@@ -25,11 +25,12 @@ export default async function EditImported({ params }: { params: Promise<{ id: s
   const names = new Set<string>(getCategories().map((c) => c.name));
   for (const c of await db.selectDistinct({ n: schema.catalogProducts.categoryName }).from(schema.catalogProducts)) names.add(c.n);
   const categories = [...names].sort((a, b) => a.localeCompare(b));
+  const defaults: string[] = r.categorySlug === "local-businesses-database" ? [...LOCAL_FIELD_NAMES] : [...FIELD_NAMES];
   return (
     <>
       <PageHeader title={r.name} text={`${r.status} · ${r.categoryName} · ${r.countryName}${r.region ? ` · ${r.region}` : ""} · /lists/${r.slug}`} actions={<Link href="/admin/products" className="text-sm underline">Back to imported products</Link>} />
-      <EditForm categories={categories} samples={rowSamples(r)} origin={r.origin} id={r.id} status={r.status} slug={r.slug} restricted={rowRestricted(r)} flags={rowFlags(r)}
-        initial={{ categoryName: r.categoryName, extraCategories: extraNames(r.sourceJson), recordCount: r.recordCount, dataFields: fieldsCustomOf(r.sourceJson) && rowFields(r).length ? rowFields(r).join("\n") : FIELD_NAMES.join("\n"), fieldsCustom: fieldsCustomOf(r.sourceJson), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale, name: r.name, title: r.title, description: r.description, seoTitle: r.seoTitle ?? "", metaDescription: r.metaDescription ?? "", packages: rowPackages(r).map((k) => ({ name: k.name as "Starter" | "Professional" | "Complete", records: k.records, priceUsdCents: k.priceUsdCents, highlighted: !!k.highlighted })) }} />
+      <EditForm defaults={defaults} categories={categories} samples={rowSamples(r)} origin={r.origin} id={r.id} status={r.status} slug={r.slug} restricted={rowRestricted(r)} flags={rowFlags(r)}
+        initial={{ categoryName: r.categoryName, extraCategories: extraNames(r.sourceJson), recordCount: r.recordCount, dataFields: fieldsCustomOf(r.sourceJson) && rowFields(r).length ? rowFields(r).join("\n") : defaults.join("\n"), fieldsCustom: fieldsCustomOf(r.sourceJson), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale, name: r.name, title: r.title, description: r.description, seoTitle: r.seoTitle ?? "", metaDescription: r.metaDescription ?? "", packages: rowPackages(r).map((k) => ({ name: k.name as "Starter" | "Professional" | "Complete", records: k.records, priceUsdCents: k.priceUsdCents, highlighted: !!k.highlighted })) }} />
     </>
   );
 }
