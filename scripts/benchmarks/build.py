@@ -1,5 +1,5 @@
 """Builds one 1600x900 WebP featured image per published benchmark, each with the official BeigeLeads symbol
-(path copied from public/brand/svg/beigeleads-symbol-light.svg) beside a text-free illustration of the topic.
+(path copied from public/brand/svg/beigeleads-symbol-light.svg) in the top-left corner, with a text-free illustration of the topic.
 No numbers, no data: the shapes are decorative. Palette tokens only.
 Run: python3 scripts/benchmarks/build.py   (needs playwright + chromium and Pillow)   Output: public/benchmark-images/*.webp"""
 import io, math, pathlib, random
@@ -16,7 +16,7 @@ SYMBOL_PATH = "M25 13H36A9.5 9.5 0 0 1 36 32H38A9.5 9.5 0 0 1 38 51H19V19ZM27.8 
 
 def symbol(x, y, size):
     s = size / 64
-    return (f'<g filter="url(#big)"><g transform="translate({x} {y}) scale({s})"><rect width="64" height="64" rx="15" fill="{F9}"/>'
+    return (f'<g filter="url(#sh)"><g transform="translate({x} {y}) scale({s})"><rect width="64" height="64" rx="15" fill="{F9}"/>'
             f'<path fill-rule="evenodd" d="{SYMBOL_PATH}" fill="{S50}"/></g></g>')
 
 def frame(body):
@@ -26,8 +26,8 @@ def frame(body):
 <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="{F9}" flood-opacity=".16"/></filter>
 <filter id="big" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="{F9}" flood-opacity=".38"/></filter></defs>
 <rect width="{W}" height="{H}" fill="url(#bg)"/><rect width="{W}" height="{H}" fill="url(#grid)"/>
-<circle cx="360" cy="450" r="330" fill="{S50}" fill-opacity=".7"/><circle cx="360" cy="450" r="250" fill="none" stroke="{S300}" stroke-width="2" stroke-dasharray="3 12" stroke-linecap="round"/>
-{symbol(190, 280, 340)}{body}</svg>'''
+<g transform="translate(800 450) scale(1.08) translate(-1100 -450)">{body}</g>
+{symbol(72, 72, 88)}</svg>'''
 
 def envelope(x, y, w=150, fill=S50, flap=F5, shadow=True):
     h = w * .68
