@@ -26,7 +26,10 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
   }
-  const [extraDraft, setExtraDraft] = useState("");
+  const [extraDraft, setExtraDraft] = useState(""); const [mainIsNew, setMainIsNew] = useState(false);
+  const all = [...new Set([...categories, ...f.extraCategories])].filter((c) => c.toLowerCase() !== f.categoryName.trim().toLowerCase()).sort((x, y) => x.localeCompare(y));
+  const mainList = [...new Set([...categories, f.categoryName].filter(Boolean))].sort((x, y) => x.localeCompare(y));
+  const shown = all.filter((c) => c.toLowerCase().includes(extraDraft.trim().toLowerCase()));
   const addExtra = () => { const v = extraDraft.trim(); if (v && v.toLowerCase() !== f.categoryName.trim().toLowerCase() && !f.extraCategories.some((x) => x.toLowerCase() === v.toLowerCase())) set("extraCategories", [...f.extraCategories, v]); setExtraDraft(""); };
   async function saveSample(remove = false) {
     setBusy(true); setMsg("Saving sample...");
@@ -41,18 +44,24 @@ export function EditForm({ categories, samples, id, origin, status, slug, restri
   return (
     <div className="max-w-3xl space-y-5 text-sm">
       {(restricted.length > 0 || flags.length > 0) && <div className="rounded-xl bg-sand-100 p-3 text-xs">{restricted.length > 0 && <p>Restricted: {restricted.join(", ")}</p>}{flags.length > 0 && <p>Flags: {flags.join("; ")}</p>}</div>}
-      <label className="block"><span className="mb-1 block font-semibold">Category</span>
-        <input className={box} list="category-options" value={f.categoryName} maxLength={120} onChange={(e) => set("categoryName", e.target.value)} />
-        <datalist id="category-options">{categories.map((c) => <option key={c} value={c} />)}</datalist>
-        <span className="mt-1 block text-xs">Main category. Pick an existing category or type a new name. The page moves to that category (the product URL does not change). Your choice stays even when the automatic grouping would pick another.</span>
-      </label>
-      <div className="block"><span className="mb-1 block font-semibold">Also list under (optional)</span>
-        <div className="mb-2 flex flex-wrap gap-2">{f.extraCategories.map((x) => <button key={x} type="button" onClick={() => set("extraCategories", f.extraCategories.filter((y) => y !== x))} className="rounded-full bg-sand-200 px-3 py-1 text-xs font-semibold text-forest-900">{x} ✕</button>)}{f.extraCategories.length === 0 && <span className="text-xs">No extra categories.</span>}</div>
-        <div className="flex gap-2">
-          <input className={box} list="category-options" value={extraDraft} maxLength={120} placeholder="Pick or type a category" onChange={(e) => setExtraDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExtra(); } }} />
-          <button type="button" onClick={addExtra} className="rounded-xl border border-sand-300 px-4 text-sm font-semibold">Add</button>
+      <div className="block"><span className="mb-1 block font-semibold">Main category</span>
+        <select className={box} value={mainIsNew ? "__new" : f.categoryName} onChange={(e) => { if (e.target.value === "__new") { setMainIsNew(true); set("categoryName", ""); } else { setMainIsNew(false); set("categoryName", e.target.value); } }}>
+          {mainList.map((c) => <option key={c} value={c}>{c}</option>)}
+          <option value="__new">+ New category...</option>
+        </select>
+        {mainIsNew && <input className={`${box} mt-2`} autoFocus placeholder="New category name" value={f.categoryName} maxLength={120} onChange={(e) => set("categoryName", e.target.value)} />}
+        <span className="mt-1 block text-xs">Decides the product&apos;s category page and breadcrumbs. The product URL does not change. Your choice stays even when the automatic grouping would pick another.</span>
+      </div>
+      <div className="block"><span className="mb-1 block font-semibold">Also list under (pick as many as you like)</span>
+        <div className="mb-2 flex flex-wrap gap-2">{f.extraCategories.map((x) => <button key={x} type="button" onClick={() => set("extraCategories", f.extraCategories.filter((y) => y !== x))} className="rounded-full bg-forest-100 px-3 py-1 text-xs font-semibold text-forest-900">{x} ✕</button>)}{f.extraCategories.length === 0 && <span className="text-xs">No extra categories.</span>}</div>
+        <input className={box} value={extraDraft} maxLength={120} placeholder="Search categories, or type a new name" onChange={(e) => setExtraDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExtra(); } }} />
+        <div className="mt-2 max-h-56 overflow-y-auto rounded-xl border border-sand-200 bg-white">
+          {shown.length === 0 && <p className="p-3 text-xs">No match. Press Enter to add &ldquo;{extraDraft.trim()}&rdquo; as a new category.</p>}
+          {shown.map((c) => { const on = f.extraCategories.some((x) => x.toLowerCase() === c.toLowerCase()); return (
+            <label key={c} className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-sand-100"><input type="checkbox" checked={on} onChange={() => set("extraCategories", on ? f.extraCategories.filter((y) => y.toLowerCase() !== c.toLowerCase()) : [...f.extraCategories, c])} />{c}</label>); })}
         </div>
-        <span className="mt-1 block text-xs">The product also appears on each of these category pages. Its URL and main category do not change.</span>
+        {extraDraft.trim() && !all.some((c) => c.toLowerCase() === extraDraft.trim().toLowerCase()) && <button type="button" onClick={addExtra} className="mt-2 rounded-xl border border-sand-300 px-4 py-1.5 text-xs font-semibold">Add &ldquo;{extraDraft.trim()}&rdquo; as new category</button>}
+        <span className="mt-1 block text-xs">The product also appears on each of these category pages. Its URL and main category do not change. Press Save below to keep your choices.</span>
       </div>
       <label className="block"><span className="mb-1 block font-semibold">Name (shown as the page heading)</span><input className={box} value={f.name} maxLength={200} onChange={(e) => set("name", e.target.value)} /></label>
       <label className="block"><span className="mb-1 block font-semibold">Title (short description line)</span><input className={box} value={f.title} maxLength={200} onChange={(e) => set("title", e.target.value)} /></label>
