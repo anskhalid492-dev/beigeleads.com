@@ -21,7 +21,9 @@ export async function loadListsData(): Promise<ShopData & { niches: { category: 
     const k = cname.get(p.countrySlug) ?? getCountry(p.countrySlug);
     const from = startingPriceCents(p);
     const real = !p.placeholderData; // placeholder counts and prices never reach the browser
-    const sub = p.extraCategories?.map((x) => catName.get(x)).find(Boolean) ?? (p.categorySlug === "local-businesses-database" ? classifyLocal({ name: p.name, categoryName: "", channel: p.channel ?? "", countryName: "" }).industry : "");
+    const generic = new Set(["local-businesses-database", "business", "general-targeted-lists", "targeted-email-lists", "business-email-lists", "job-titles"]);
+    const own = catName.get(p.categorySlug) ?? p.categorySlug;
+    const sub = p.extraCategories?.map((x) => catName.get(x)).find(Boolean) ?? (generic.has(p.categorySlug) ? (p.categorySlug === "local-businesses-database" ? classifyLocal({ name: p.name, categoryName: "", channel: p.channel ?? "", countryName: "" }).industry : "") : own);
     return { ...(sub ? { subName: sub } : {}), slug: p.slug, name: p.name, title: p.title, categorySlug: p.categorySlug, ...(p.extraCategories?.length ? { extraCats: [...p.extraCategories] } : {}), categoryName: catName.get(p.categorySlug) ?? getCategory(p.categorySlug)?.name ?? p.categorySlug, countrySlug: p.countrySlug, countryName: k?.name ?? p.countrySlug, countryCode: k?.code ?? "", fields: [...p.fields], status: p.status, scope: p.scope ?? "country", citySlug: p.citySlug ?? null, channel: p.channel ?? "", region: p.region ?? "", description: p.imported ? p.description.slice(0, 160) : p.description, recordCount: real ? p.recordCount : null, fromCents: real ? from : null };
   });
 
