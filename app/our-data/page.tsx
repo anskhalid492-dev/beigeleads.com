@@ -41,7 +41,7 @@ export default async function OurDataPage() {
       <Sourcing />
       <Verification />
       <Accuracy s={s} />
-      <Freshness f={f} />
+      <Freshness />
       <Delivery />
       <Privacy />
       <SolutionFaq name="Our Data" items={s.faqs.map((x) => [x.q, x.a] as const)} />

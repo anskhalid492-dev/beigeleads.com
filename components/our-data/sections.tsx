@@ -335,12 +335,17 @@ export function Accuracy({ s }: { s: OurDataSettings }) {
   );
 }
 
-/** Freshness: a 90-day cycle ring and plain reasons it matters. */
-export function Freshness({ f }: { f: OurDataFacts }) {
-  const pts: [string, string][] = [
-    ["On a 90-day cycle", "BeigeLeads refreshes its databases every 90 days. We do not claim real-time or daily updates."],
-    ["Dates you can see", `Each list page shows when that list was last updated.${f.newestUpdate ? ` The newest update on the site is ${fmtDate(f.newestUpdate)}.` : ""}`],
-    ["Why it matters", "People change jobs and businesses move or close, so email lists age. Older lists bounce more."],
+/** Freshness: a 90-day cycle ring, plain reasons it matters and three next-step tiles. */
+export function Freshness() {
+  const pts: [LucideIcon, string, string][] = [
+    [CalendarClock, "On a 90-day cycle", "BeigeLeads refreshes its databases every 90 days. We do not claim real-time or daily updates."],
+    [Search, "Dates you can see", "Each list page shows when that list was last updated."],
+    [UserRoundSearch, "Why it matters", "People change jobs and businesses move or close, so email lists age. Older lists bounce more."],
+  ];
+  const next: [LucideIcon, string, string, string][] = [
+    [Layers, "How freshness works", "The refresh cycle explained", "/help/data-quality/data-freshness"],
+    [Database, "B2B data decay research", "What published studies found", "/benchmarks/b2b-data-decay"],
+    [MailCheck, "Re-check an older list", "Verify a list you already own", "/email-list-verification"],
   ];
   return (
     <section className="bg-sand-50 py-20 lg:py-24" id="freshness" aria-labelledby="freshness-h">
@@ -355,10 +360,25 @@ export function Freshness({ f }: { f: OurDataFacts }) {
         </div>
         <div>
           <Head id="freshness-h" title="How Fresh Is the Data" text="Fresh data bounces less and reaches more of the people you meant to contact." />
-          <ul className="mt-6 space-y-3">
-            {pts.map(([t, d]) => <li key={t} className="rounded-2xl border border-sand-200 bg-white p-5"><h3 className="display text-xl text-forest-900">{t}</h3><p className="mt-1 text-forest-700">{d}</p></li>)}
+          <ul className="mt-8 divide-y divide-sand-200 border-y border-sand-200">
+            {pts.map(([I, t, d]) => (
+              <li key={t} className="flex gap-4 py-5">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-forest-900 text-sand-50"><I className="size-5" aria-hidden /></span>
+                <div><h3 className="display text-xl text-forest-900">{t}</h3><p className="mt-1 text-forest-700">{d}</p></div>
+              </li>
+            ))}
           </ul>
-          <p className="mt-5 flex flex-wrap gap-x-6 gap-y-2"><Link href="/help/data-quality/data-freshness" className={link}>How freshness works</Link><Link href="/benchmarks/b2b-data-decay" className={link}>B2B data decay research</Link><Link href="/email-list-verification" className={link}>Re-check an older list</Link></p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+            {next.map(([I, t, d, href]) => (
+              <li key={t}>
+                <Link href={href} className="group flex h-full flex-col rounded-2xl border border-sand-200 bg-white p-4 transition-colors hover:border-forest-700 hover:bg-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+                  <span className="flex items-center justify-between"><I className="size-5 text-forest-500 transition-colors group-hover:text-forest-300" aria-hidden /><ArrowRight className="size-4 text-forest-700 transition-all group-hover:translate-x-0.5 group-hover:text-purple-100" aria-hidden /></span>
+                  <span className="mt-4 font-semibold leading-snug text-forest-900 group-hover:text-sand-50">{t}</span>
+                  <span className="mt-1 text-sm text-forest-700 group-hover:text-sand-200">{d}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
