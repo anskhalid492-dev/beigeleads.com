@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { PRICE_PER_VERIFIED_CONTACT_USD } from "@/lib/creators/config";
 import { DATABASE_STATEMENT, DIMENSIONS, EXAMPLE_QUANTITIES, RESPONSE_HOURS, STEPS } from "@/lib/creators/content";
+import { CreatorsHeroAnimation } from "./hero-animation";
 import { estimateCents, formatEstimate } from "@/lib/creators/pricing";
 
 const wrap = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
@@ -9,8 +10,7 @@ const h2 = "display text-4xl text-forest-900 sm:text-5xl";
 const primary = "inline-flex h-12 items-center gap-2 rounded-full bg-purple-600 px-7 font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600";
 
 export function CreatorsHero() {
-  const rows: [string, string][] = [["Platform", "Instagram, TikTok"], ["Niche", "Fitness"], ["Country", "United States"], ["Followers", "10K to 100K"]];
-  return (
+    return (
     <section className="bg-sand-50">
       <div className={`${wrap} grid gap-12 pb-20 pt-10 lg:grid-cols-[1.25fr_1fr] lg:items-center lg:gap-16 lg:pb-28 lg:pt-16`}>
         <div className="hero-in">
@@ -22,19 +22,7 @@ export function CreatorsHero() {
           </div>
           <p className="mt-5 text-sm font-semibold text-forest-900">We&apos;ll get back to you within {RESPONSE_HOURS} hours.</p>
         </div>
-        {/* A worked example of one request: the four filters, then what it would cost. Illustration only. */}
-        <div className="rounded-[2rem] bg-forest-900 p-7 text-sand-100 shadow-[0_30px_60px_-30px_rgba(15,42,29,0.7)] sm:p-9" aria-label="Example request">
-          <p className="text-sm font-semibold text-forest-300">Example request</p>
-          <dl className="mt-4 divide-y divide-forest-700">
-            {rows.map(([k, val]) => <div key={k} className="flex items-baseline justify-between gap-4 py-3"><dt className="text-sm text-sand-200">{k}</dt><dd className="font-semibold text-sand-50">{val}</dd></div>)}
-            <div className="flex items-baseline justify-between gap-4 py-3"><dt className="text-sm text-sand-200">Contacts</dt><dd className="font-semibold text-sand-50">5,000</dd></div>
-          </dl>
-          <div className="mt-5 border-t border-forest-700 pt-5">
-            <p className="display text-7xl text-sand-50">$0.10</p>
-            <p className="mt-1 text-sm text-sand-200">per verified influencer contact</p>
-            <p className="mt-4 text-sm">5,000 × $0.10 = <strong className="text-sand-50">{formatEstimate(estimateCents(5000))}</strong> estimated</p>
-          </div>
-        </div>
+        <CreatorsHeroAnimation />
       </div>
     </section>
   );
@@ -62,24 +50,36 @@ export function CreatorsSegments() {
 }
 
 export function CreatorsPricing() {
+  const max = Math.max(...EXAMPLE_QUANTITIES);
+  const unit = PRICE_PER_VERIFIED_CONTACT_USD.toFixed(2);
   return (
     <section id="pricing" className="bg-sand-50 py-20 lg:py-28">
-      <div className={`${wrap} grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20`}>
+      <div className={`${wrap} grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16`}>
         <div>
           <h2 className={h2}>One price. No tiers to decode.</h2>
-          <p className="display mt-6 text-6xl text-forest-900 sm:text-7xl">${PRICE_PER_VERIFIED_CONTACT_USD.toFixed(2)}</p>
-          <p className="mt-2 text-xl font-semibold text-forest-900">per verified influencer contact.</p>
-          <p className="mt-5 max-w-md">Your estimate is the number of contacts you request times $0.10. No discounts or minimum charges are added to it. Not every creator in the database has an available verified contact, so our team confirms availability and your final total before anything is charged.</p>
+          <div className="mt-8 inline-flex items-end gap-3 rounded-[1.75rem] bg-forest-900 px-7 py-6 text-sand-50">
+            <span className="display text-7xl leading-none">${unit}</span>
+            <span className="pb-1 text-sm font-semibold text-forest-300">per verified<br />influencer contact</span>
+          </div>
+          <p className="mt-6 max-w-md">Your estimate is the number of contacts you request times ${unit}. No discounts or minimum charges are added to it.</p>
+          <p className="mt-3 max-w-md text-sm">Not every creator in the database has an available verified contact, so our team confirms availability and your final total before anything is charged.</p>
         </div>
-        <div className="overflow-hidden rounded-3xl border border-sand-300 bg-white">
-          <table className="w-full text-left">
-            <caption className="sr-only">Estimated price by number of contacts</caption>
-            <thead className="bg-sand-100 text-sm text-forest-900"><tr><th scope="col" className="px-6 py-4">Contacts</th><th scope="col" className="px-6 py-4 text-right">Estimated price</th></tr></thead>
-            <tbody className="divide-y divide-sand-200">
-              {EXAMPLE_QUANTITIES.map((q) => <tr key={q}><th scope="row" className="px-6 py-4 font-semibold text-forest-900">{q.toLocaleString("en-US")}</th><td className="display px-6 py-4 text-right text-3xl text-forest-900">{formatEstimate(estimateCents(q))}</td></tr>)}
-            </tbody>
-          </table>
-          <p className="border-t border-sand-200 px-6 py-4 text-sm">Estimates only. Final availability and total cost are confirmed by our team.</p>
+        <div className="rounded-[2rem] border border-sand-300 bg-white p-6 shadow-[0_24px_50px_-34px_rgba(15,42,29,0.45)] sm:p-8">
+          <div className="flex items-baseline justify-between text-sm font-semibold text-forest-700"><span>Contacts</span><span>Estimated price</span></div>
+          <ul className="mt-4 space-y-5">
+            {EXAMPLE_QUANTITIES.map((q) => (
+              <li key={q}>
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="font-semibold text-forest-900">{q.toLocaleString("en-US")}</span>
+                  <span className="display text-3xl text-forest-900">{formatEstimate(estimateCents(q))}</span>
+                </div>
+                <div className="mt-2 h-2.5 rounded-full bg-sand-100" aria-hidden>
+                  <div className="h-full rounded-full bg-forest-500" style={{ width: `${Math.max(3, (q / max) * 100)}%` }} />
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 rounded-xl bg-sand-50 px-4 py-3 text-sm">Estimates only. Final availability and total cost are confirmed by our team.</p>
         </div>
       </div>
     </section>
@@ -91,12 +91,13 @@ export function CreatorsSteps() {
     <section id="how-it-works" className="scroll-mt-24 bg-forest-900 py-20 text-sand-100 lg:py-28">
       <div className={wrap}>
         <h2 className="display max-w-2xl text-4xl text-sand-50 sm:text-5xl">From your brief to a confirmed quote.</h2>
-        <ol className="mt-12 grid gap-10 md:grid-cols-3">
+        <ol className="relative mt-14 grid gap-5 md:grid-cols-3">
+          <span className="absolute left-[16.6%] right-[16.6%] top-7 hidden h-px bg-gradient-to-r from-forest-500 via-forest-300 to-forest-500 md:block" aria-hidden />
           {STEPS.map((s, i) => (
-            <li key={s.t} className="border-t border-forest-500 pt-6">
-              <span className="display text-5xl text-forest-300" aria-hidden>{i + 1}</span>
-              <h3 className="mt-3 text-xl font-bold text-sand-50">{s.t}</h3>
-              <p className="mt-2 text-sand-200">{s.d}</p>
+            <li key={s.t} className="relative rounded-[1.75rem] border border-forest-700 bg-forest-700/40 p-7 pt-12">
+              <span className="display absolute -top-0 left-7 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-sand-100 text-2xl text-forest-900 ring-8 ring-forest-900" aria-hidden>{i + 1}</span>
+              <h3 className="text-xl font-bold text-sand-50">{s.t}</h3>
+              <p className="mt-3 text-sand-200">{s.d}</p>
             </li>
           ))}
         </ol>
