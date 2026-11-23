@@ -1,5 +1,5 @@
 // Pilo 2.0 analytics (anonymous, CLAUDE.md section 122): random chat id + event name + short detail (language code, page type). No message text.
-export const PILO_EVENTS = ["chat_open", "conversation_start", "language", "followup_click", "recommendation", "add_to_cart", "exit_impression", "exit_click", "exit_dismiss", "discount_inquiry", "offer_issued", "offer_accepted", "offer_kept_volume", "memory_cleared"] as const;
+export const PILO_EVENTS = ["chat_open", "conversation_start", "language", "followup_click", "recommendation", "add_to_cart", "exit_impression", "exit_click", "exit_dismiss", "discount_inquiry", "offer_issued", "offer_accepted", "offer_kept_volume", "memory_cleared", "conversation_new"] as const;
 export type PiloEvent = (typeof PILO_EVENTS)[number];
 export const isPiloEvent = (v: unknown): v is PiloEvent => typeof v === "string" && (PILO_EVENTS as readonly string[]).includes(v);
 

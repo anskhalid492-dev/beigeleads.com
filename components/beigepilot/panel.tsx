@@ -2,10 +2,11 @@
 // The BeigePilot chat panel (loaded only after the visitor first opens the assistant). State lives here so minimizing keeps the chat.
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, Check, Copy, Minus, MoreVertical, RotateCcw, Search, Send, Square, Tag, ThumbsDown, ThumbsUp, Wallet, GitCompare, X, LifeBuoy, ShieldCheck } from "lucide-react";
+import { ArrowDown, Check, Copy, MoreVertical, RotateCcw, Search, Send, Square, Tag, ThumbsDown, ThumbsUp, Wallet, GitCompare, X, LifeBuoy, ShieldCheck } from "lucide-react";
 import { useCart } from "@/lib/cart/client";
 import type { Bundle, Card, DfyCardData, OfferCard, Source } from "@/lib/beigepilot/tools";
 import { LANGS, detectLang, isLang, isRtl, t, type Lang } from "@/lib/beigepilot/v2/lang";
+import { browserStores, clearSession, dedupe, loadSession, newCid, saveSession } from "@/lib/beigepilot/v2/session";
 import { EMPTY_MEMORY, describe as describeMemory, parseMemory, remember, type Memory } from "@/lib/beigepilot/v2/memory";
 import type { Quick } from "@/lib/beigepilot/v2/followup";
 import { revealCut, stepSize, wordCount } from "@/lib/beigepilot/v2/reveal";
@@ -23,24 +24,33 @@ export type Cfg = { enabled: boolean; greeting: string; saving?: boolean; name: 
 type Msg = { role: "user" | "assistant"; text: string; rated?: 1 | -1; cards?: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources?: Source[]; handoff?: boolean; miss?: boolean; quick?: Quick[]; offer?: OfferCard | null; fresh?: boolean };
 type Done = { t?: string; ok?: boolean; text?: string; cards?: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources?: Source[]; handoff?: string | null; miss?: boolean; error?: string; lang?: string; memory?: unknown; quick?: Quick[]; offer?: OfferCard | null };
 
-const KEY = "bp-chat-v2";
 // A message Pilo wrote first (from a proactive bubble) is shown in the chat but not sent: providers need the visitor to speak first.
 const dropLeadingAssistant = (l: Msg[]) => { let i = 0; while (i < l.length && l[i].role === "assistant") i++; return l.slice(i); };
 const CID = "bp-cid-v1";
 const MEM_KEY = "bp-mem-v1", LANG_KEY = "bp-lang-v1", KEEP_KEY = "bl-pilo-remember-v1", KEEP_MEM = "bl-pilo-mem-v1", KEEP_DAYS = 30;
 const PACKAGE_TOOLS = new Set(["getProductPackages", "findWithinBudget", "prepareAddToCart"]);
 const SEARCH_TOOLS = new Set(["searchProducts", "getProductDetails", "getProductPackages", "getRelatedProducts", "getProductVerificationInfo", "showProductCards"]);
-function chatId(): string { try { let c = sessionStorage.getItem(CID); if (!c) { c = crypto.randomUUID().replace(/-/g, "").slice(0, 24); sessionStorage.setItem(CID, c); } return c; } catch { return `nostorage${Math.random().toString(36).slice(2, 12)}`; } }
+/** Stable for the whole conversation: survives close, refresh, navigation and return visits (24 h) until the visitor starts a new chat. */
+let liveCid = "";
+function chatId(): string {
+  if (liveCid) return liveCid;
+  const saved = loadSession<Msg>(browserStores());
+  liveCid = saved?.cid ?? newCid();
+  if (!saved) saveSession(browserStores(), { cid: liveCid, msgs: [], mem: null, at: Date.now() });
+  return liveCid;
+}
 
 export type Launch = { n: number; ask?: string; action?: "support"; seed?: string };
 
 export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cfg; path: string; open: boolean; launch?: Launch | null; onClosed: (clear: boolean) => void }) {
   const cart = useCart();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [msgs, setMsgs] = useState<Msg[]>(() => { const v = loadSession<Msg>(browserStores()); return v ? v.msgs.map((m) => ({ ...m, fresh: false })) : []; });
+  const epoch = useRef(0); // bumped by New chat / Clear so a late answer from the old conversation is dropped
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [tool, setTool] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  // A refresh in the middle of an answer leaves the visitor's last line unanswered: offer Retry instead of silence.
+  const [err, setErr] = useState<string | null>(() => (msgs[msgs.length - 1]?.role === "user" ? "That answer did not finish. Try again." : null));
   const [online, setOnline] = useState(true);
   const [form, setForm] = useState<number | "err" | "direct" | null>(null);
   const router = useRouter();
@@ -61,7 +71,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
   // BeigePilot 2.0: language ("auto" detects), memory, optional persistence on this device, scroll helper.
   const [langSel, setLangSel] = useState<Lang | "auto">("auto");
   const [lang, setLang] = useState<Lang>("en");
-  const [mem, setMem] = useState<Memory>(EMPTY_MEMORY);
+  const [mem, setMem] = useState<Memory>(() => { const v = loadSession<Msg>(browserStores()); return v ? parseMemory(v.mem) : EMPTY_MEMORY; });
   const [keep, setKeep] = useState(false);
   const [away, setAway] = useState(false);
   const rtl = isRtl(lang);
@@ -71,7 +81,6 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
 
   useEffect(() => {
     const tm = setTimeout(() => {
-      try { const s = sessionStorage.getItem(KEY); if (s) setMsgs((JSON.parse(s) as Msg[]).map((m) => ({ ...m, fresh: false }))); } catch { /* storage blocked */ }
       try {
         const l = sessionStorage.getItem(LANG_KEY); if (isLang(l)) { setLang(l); } const ls = sessionStorage.getItem(LANG_KEY + "-sel"); if (isLang(ls)) setLangSel(ls);
         const m = sessionStorage.getItem(MEM_KEY); if (m) setMem(parseMemory(JSON.parse(m)));
@@ -84,7 +93,8 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
     }, 0);
     return () => clearTimeout(tm);
   }, []);
-  useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify(msgs.slice(-30).map(({ fresh, ...m }) => (void fresh, m)))); } catch { /* ignore */ } }, [msgs]);
+  // Saved after every change (never while empty, so merely opening Pilo cannot overwrite or extend an old chat).
+  useEffect(() => { if (msgs.length) saveSession(browserStores(), { cid: chatId(), msgs: msgs.map(({ fresh, ...m }) => (void fresh, m)), mem, at: Date.now() }); }, [msgs, mem]);
   useEffect(() => {
     try { sessionStorage.setItem(MEM_KEY, JSON.stringify(mem)); sessionStorage.setItem(LANG_KEY, lang); sessionStorage.setItem(LANG_KEY + "-sel", langSel); } catch { /* ignore */ }
     try { if (keep) localStorage.setItem(KEEP_MEM, JSON.stringify({ mem, at: Date.now() })); } catch { /* ignore */ }
@@ -117,6 +127,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
 
   const run = useCallback(async (list: Msg[], uiLang: Lang, memory: Memory) => {
     setBusy(true); setTool(""); setErr(null);
+    const ep = epoch.current;
     const ac = new AbortController(); abort.current = ac;
     let final: Done | null = null; let reason = "";
     try {
@@ -142,6 +153,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
       }
     } catch (e) { if ((e as Error).name === "AbortError") { setBusy(false); setTool(""); abort.current = null; return; } reason = "I could not reach the server. Check your connection and try again."; }
     abort.current = null;
+    if (ep !== epoch.current) return; // a new chat was started meanwhile: drop this answer
     setBusy(false); setTool("");
     if (final?.text) {
       const hasCards = !!final.cards?.length;
@@ -178,12 +190,18 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
     if (rating === 1) doFlash("giggle", 1800);
     void fetch("/api/beigepilot/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ cid: chatId(), idx: i, rating }) }).catch(() => {});
   };
-  const close = (clear: boolean) => { if (closing) return; setClosing(true); setFlash("bye"); setMenu(false); setTimeout(() => { setClosing(false); setFlash(null); if (clear) { setMsgs([]); setErr(null); setForm(null); } onClosed(clear); }, 650); };
-  const clearAll = () => {
-    abort.current?.abort(); setMsgs([]); setErr(null); setForm(null); setMem(EMPTY_MEMORY); setConfirmClear(false); setMenu(false); setAway(false);
-    try { sessionStorage.removeItem(KEY); sessionStorage.removeItem(MEM_KEY); localStorage.removeItem(KEEP_MEM); } catch { /* ignore */ }
-    trackPilo(chatId(), "memory_cleared");
+  /** Hides the widget. It never ends or clears the conversation (an answer still being written lands in the kept chat). */
+  const close = () => { if (closing) return; setClosing(true); setFlash("bye"); setMenu(false); setTimeout(() => { setClosing(false); setFlash(null); onClosed(false); }, 650); };
+  /** Explicit visitor action: a fresh conversation with a NEW id. Closing never calls this. */
+  const startNew = (forgetDevice: boolean) => {
+    epoch.current++; abort.current?.abort(); abort.current = null;
+    clearSession(browserStores()); liveCid = newCid();
+    saveSession(browserStores(), { cid: liveCid, msgs: [], mem: null, at: Date.now() });
+    setMsgs([]); setErr(null); setForm(null); setText(""); setBusy(false); setTool(""); setMem({ ...EMPTY_MEMORY, lang }); setConfirmClear(false); setMenu(false); setAway(false);
+    try { sessionStorage.removeItem(MEM_KEY); if (forgetDevice) localStorage.removeItem(KEEP_MEM); } catch { /* ignore */ }
+    trackPilo(liveCid, forgetDevice ? "memory_cleared" : "conversation_new");
   };
+  const clearAll = () => startNew(true);
   const toggleKeep = () => {
     const on = !keep; setKeep(on);
     try { if (on) { localStorage.setItem(KEEP_KEY, "1"); localStorage.setItem(KEEP_MEM, JSON.stringify({ mem, at: Date.now() })); } else { localStorage.removeItem(KEEP_KEY); localStorage.removeItem(KEEP_MEM); } } catch { /* ignore */ }
@@ -212,7 +230,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
   useEffect(() => { if (text.trim()) setGaze(hero.current, 0, 0.9); }, [text]);
 
   const pickChip = (c: { ask?: string; focus?: boolean; action?: "cart" | "support" }) => {
-    if (c.action === "cart") { close(false); router.push("/cart"); return; }
+    if (c.action === "cart") { close(); router.push("/cart"); return; }
     if (c.action === "support") { setMsgs((m) => [...m, { role: "assistant", text: "Of course! I can send your question to the BeigeLeads support team. Fill in the form below." }]); setForm("direct"); return; }
     if (c.ask) send(c.ask); else input.current?.focus();
   };
@@ -231,7 +249,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
 
   return (
     <section ref={panel} tabIndex={-1} role="dialog" dir={rtl ? "rtl" : "ltr"} lang={lang} aria-label={`${name}, BeigeLeads assistant`} style={open || closing ? undefined : { display: "none" }}
-      onKeyDown={(e) => { if (e.key === "Escape") { if (menu) setMenu(false); else close(false); } }}
+      onKeyDown={(e) => { if (e.key === "Escape") { if (menu) setMenu(false); else close(); } }}
       className={`${closing ? "bp-close" : "bp-open"} fixed inset-0 z-50 flex flex-col overflow-hidden bg-sand-50 pb-[env(safe-area-inset-bottom)] outline-none sm:inset-auto sm:bottom-5 sm:h-[min(660px,calc(100vh-2.5rem))] sm:w-[400px] sm:rounded-[1.75rem] sm:border sm:border-sand-300 sm:pb-0 sm:shadow-[0_24px_60px_-24px_rgba(15,42,29,.5)] ${cfg.launcher === "left" ? "sm:left-5" : "sm:right-5"}`}>
       <header className="flex items-center gap-1.5 border-b border-sand-200 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
         <span className="shrink-0"><Pilo crop="avatar" mood={mood} size={42} intensity={cfg.motion} /></span>
@@ -245,8 +263,7 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
           {LANGS.map((l) => <option key={l.code} value={l.code}>{l.native}</option>)}
         </select>
         <button type="button" onClick={() => { setMenu((v) => !v); setConfirmClear(false); }} aria-expanded={menu} aria-haspopup="true" aria-label={t(lang, "options")} className={iconBtn}><MoreVertical className="size-4" aria-hidden /></button>
-        <button type="button" onClick={() => close(false)} aria-label={t(lang, "minimize")} className={iconBtn}><Minus className="size-4" aria-hidden /></button>
-        <button type="button" onClick={() => close(true)} aria-label={t(lang, "close")} className={iconBtn}><X className="size-[1.1rem]" aria-hidden /></button>
+        <button type="button" onClick={() => close()} aria-label={t(lang, "close")} className={iconBtn}><X className="size-[1.1rem]" aria-hidden /></button>
       </header>
 
       {menu && (
@@ -261,7 +278,10 @@ export function BeigePilotPanel({ cfg, path, open, launch, onClosed }: { cfg: Cf
             {confirmClear ? (
               <><span className="font-semibold">{t(lang, "clearAsk")}</span><button type="button" onClick={clearAll} className="rounded-full bg-forest-900 px-3 py-1 font-bold text-sand-50 hover:bg-forest-700">{t(lang, "yes")}</button><button type="button" onClick={() => setConfirmClear(false)} className="rounded-full border border-forest-900 px-3 py-1 font-bold">{t(lang, "no")}</button></>
             ) : (
+              <>
+              <button type="button" role="menuitem" onClick={() => startNew(false)} className="inline-flex items-center gap-1.5 font-bold text-forest-900 underline underline-offset-2"><RotateCcw className="size-3.5" aria-hidden />{t(lang, "newChat")}</button>
               <button type="button" role="menuitem" onClick={() => setConfirmClear(true)} className="inline-flex items-center gap-1.5 font-bold text-purple-700 underline underline-offset-2"><RotateCcw className="size-3.5" aria-hidden />{t(lang, "clear")}</button>
+              </>
             )}
             <Link href="/legal/privacy" className="font-semibold text-purple-700 underline underline-offset-2">Privacy policy</Link>
           </div>
