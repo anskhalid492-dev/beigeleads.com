@@ -223,6 +223,7 @@ export const productEditSchema = z.object({
   categoryName: z.string().trim().min(1).max(120).optional(),
   extraCategories: z.array(z.string().trim().min(1).max(120)).max(10).optional(),
   recordCount: z.number().int().min(0).max(5_000_000_000).nullable(), dataFields: z.array(z.string().trim().min(1).max(60)).max(80), fieldsCustom: z.boolean().optional(),
+  faqs: z.array(z.object({ q: z.string().trim().min(1).max(200), a: z.string().trim().min(1).max(1500) })).max(30).optional(), faqsCustom: z.boolean().optional(),
   fileFormats: z.string().trim().max(80), coverage: z.string().trim().max(160), lastUpdated: isoDate, placeholder: z.boolean(), forSale: z.boolean(),
   packages: z.array(z.object({ name: z.string().trim().min(1).max(40), records: z.number().int().min(0).max(5_000_000_000), priceUsdCents: z.number().int().min(0).max(100_000_00), highlighted: z.boolean().optional() })).min(1).max(8),
 });
@@ -271,9 +272,12 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
     }
   }
   const fieldsFlag = e.fieldsCustom !== undefined && !!src.fieldsCustom !== e.fieldsCustom;
-  if (cat || extras || fieldsFlag) {
+  const faqsWanted = e.faqsCustom && e.faqs?.length ? e.faqs : null;
+  const faqsFlag = e.faqsCustom !== undefined && JSON.stringify(src.faqs ?? null) !== JSON.stringify(faqsWanted);
+  if (cat || extras || fieldsFlag || faqsFlag) {
     const next: Record<string, unknown> = { ...src, ...(cat ? { manualCategory: true } : {}) };
     if (e.fieldsCustom !== undefined) { if (e.fieldsCustom && e.dataFields.length) next.fieldsCustom = true; else delete next.fieldsCustom; }
+    if (e.faqsCustom !== undefined) { if (faqsWanted) next.faqs = faqsWanted; else delete next.faqs; }
     if (extras) { if (extras.length) next.extraCategories = extras; else delete next.extraCategories; }
     const sj = j(next);
     cat = cat ? { ...cat, sourceJson: sj } : { categorySlug: row.categorySlug, categoryName: row.categoryName, sourceJson: sj };

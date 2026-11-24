@@ -6,7 +6,8 @@ import { maskRows, type SampleRowData } from "@/lib/product-samples";
 import { deleteProductsAction, duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: string; records: number; priceUsdCents: number; highlighted: boolean };
-type Init = { categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fieldsCustom?: boolean; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
+type Faq = { q: string; a: string };
+type Init = { faqs: Faq[]; categoryName: string; extraCategories: string[]; recordCount: number | null; dataFields: string; fieldsCustom?: boolean; fileFormats: string; coverage: string; lastUpdated: string; placeholder: boolean; forSale: boolean; name: string; title: string; description: string; seoTitle: string; metaDescription: string; packages: Pk[] };
 const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm";
 
 import { FIELD_CATALOG, LOCAL_FIELD_CATALOG } from "@/lib/product-fields";
@@ -58,13 +59,15 @@ function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (
   );
 }
 
-export function EditForm({ defaults, categories, samples, id, origin, status, slug, restricted, flags, initial }: { defaults: string[]; categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
+export function EditForm({ autoFaqs, defaults, categories, samples, id, origin, status, slug, restricted, flags, initial }: { autoFaqs: Faq[]; defaults: string[]; categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
   const [f, setF] = useState(initial); const [price, setPrice] = useState(initial.packages.map((k) => (k.priceUsdCents / 100).toString()));
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter(); const [csv, setCsv] = useState(""); const [saved, setSaved] = useState(samples);
   const preview = csv.trim() ? maskRows(tableFromGrid(parseCsv(csv)).rows) : [];
   const set = <K extends keyof Init>(k: K, v: Init[K]) => setF((x) => ({ ...x, [k]: v }));
   const addPk = () => { setF((x) => ({ ...x, packages: [...x.packages, { name: `Package ${x.packages.length + 1}`, records: 0, priceUsdCents: 0, highlighted: false }] })); setPrice((p) => [...p, "0"]); };
   const removePk = (i: number) => { setF((x) => ({ ...x, packages: x.packages.filter((_, j) => j !== i) })); setPrice((p) => p.filter((_, j) => j !== i)); };
+  const setFaq = (i: number, p: Partial<Faq>) => setF((x) => ({ ...x, faqs: x.faqs.map((q, j) => (j === i ? { ...q, ...p } : q)) }));
+  const moveFaq = (i: number, d: number) => setF((x) => { const a = [...x.faqs]; const j = i + d; if (j < 0 || j >= a.length) return x; [a[i], a[j]] = [a[j], a[i]]; return { ...x, faqs: a }; });
   const setPk = (i: number, p: Partial<Pk>) => setF((x) => ({ ...x, packages: x.packages.map((k, j) => (j === i ? { ...k, ...p } : k)) }));
 
   async function save() {
@@ -73,7 +76,9 @@ export function EditForm({ defaults, categories, samples, id, origin, status, sl
       const chosen = f.dataFields.split("\n").map((x) => x.trim()).filter(Boolean);
       const packages = f.packages.map((k, i) => ({ ...k, priceUsdCents: Math.round(Number(price[i] || "0") * 100) }));
       if (packages.some((k) => !Number.isFinite(k.priceUsdCents) || k.priceUsdCents < 0)) { setMsg("A price is not a valid number."); setBusy(false); return; }
-      const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: chosen, fieldsCustom: !(chosen.length === defaults.length && defaults.every((n) => chosen.includes(n))), packages });
+      const faqs = f.faqs.map((x) => ({ q: x.q.trim(), a: x.a.trim() })).filter((x) => x.q || x.a);
+      if (faqs.some((x) => !x.q || !x.a)) { setMsg("Every FAQ needs both a question and an answer."); setBusy(false); return; }
+      const r = await saveProductAction(id, { ...f, recordCount: f.recordCount, dataFields: chosen, faqs: faqs, faqsCustom: JSON.stringify(faqs) !== JSON.stringify(autoFaqs), fieldsCustom: !(chosen.length === defaults.length && defaults.every((n) => chosen.includes(n))), packages });
       setMsg(r.ok ? "Saved. A published product shows the change within about a minute." : r.message);
     } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
     setBusy(false);
@@ -159,6 +164,26 @@ export function EditForm({ defaults, categories, samples, id, origin, status, sl
           </div>))}</div>
         {f.packages.length < 8 && <button type="button" onClick={addPk} className="mt-3 rounded-full border border-forest-900 px-4 py-1.5 text-sm font-semibold">Add package</button>}
         {status === "published" && <p className="mt-3 text-xs">This product is published: every package needs a price above 0.</p>}
+      </fieldset>
+      <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
+        <legend className="px-1 font-semibold">FAQs on the product page ({f.faqs.length})</legend>
+        <p className="mb-3 text-xs">Edit any question or answer, add your own, reorder or remove. While nothing is changed, the automatic FAQs keep following this product&rsquo;s data (record count, fields, dates). After you change them, your text is shown as written. Saved with &ldquo;Save changes&rdquo;.</p>
+        <div className="space-y-3">
+          {f.faqs.map((q, i) => (
+            <div key={i} className="rounded-lg border border-sand-200 bg-sand-50 p-3">
+              <input aria-label={`Question ${i + 1}`} className={box} value={q.q} maxLength={200} onChange={(e) => setFaq(i, { q: e.target.value })} placeholder="Question" />
+              <textarea aria-label={`Answer ${i + 1}`} className={`${box} mt-2 h-24`} value={q.a} maxLength={1500} onChange={(e) => setFaq(i, { a: e.target.value })} placeholder="Answer" />
+              <div className="mt-2 flex gap-2 text-xs">
+                <button type="button" disabled={i === 0} onClick={() => moveFaq(i, -1)} className="rounded-full border border-sand-300 px-3 py-1 disabled:opacity-40">Up</button>
+                <button type="button" disabled={i === f.faqs.length - 1} onClick={() => moveFaq(i, 1)} className="rounded-full border border-sand-300 px-3 py-1 disabled:opacity-40">Down</button>
+                <button type="button" onClick={() => set("faqs", f.faqs.filter((_, j) => j !== i))} className="rounded-full border border-red-300 px-3 py-1 text-red-800">Remove</button>
+              </div>
+            </div>
+          ))}
+          {f.faqs.length === 0 && <p className="text-xs">No FAQs. Saving with an empty list brings back the automatic ones.</p>}
+        </div>
+        {f.faqs.length < 30 && <button type="button" onClick={() => set("faqs", [...f.faqs, { q: "", a: "" }])} className="mt-3 rounded-full border border-forest-900 px-4 py-1.5 text-sm font-semibold">Add FAQ</button>}
+        <button type="button" onClick={() => { if (window.confirm("Replace all FAQs with the automatic ones?")) set("faqs", autoFaqs); }} className="ml-2 mt-3 rounded-full border border-sand-300 px-4 py-1.5 text-sm">Reset to automatic</button>
       </fieldset>
       <fieldset className="rounded-xl border border-sand-200 bg-white p-4">
         <legend className="px-1 font-semibold">Real sample rows (shown masked)</legend>

@@ -1514,3 +1514,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 163. Header labels and trimmed Resources menu (24 Nov 2026) — amends section 162
 
 - Header nav: Lists, Solutions, DFY, Resellers, Help, Resources (labels shortened, `whitespace-nowrap` so they never wrap). Resources panel intro = headline + "Visit the Help Center" button only; link columns show names only (the `text` field in `lib/resources-nav.ts` is now unused by the panel). Not browser-checked.
+
+## 164. Editable product FAQs (24 Nov 2026) — amends sections 22 and 82
+
+- Owner request: every FAQ on a product page is editable and more can be added. NO migration: custom FAQs live in `catalog_products.source_json.faqs` (`[{q,a}]`, max 30, question 200 / answer 1,500 characters). `/admin/products/imported/<id>` has an "FAQs on the product page" box prefilled with the automatic FAQs (`autoProductFaqs`, the old templates), with edit, add, up/down, remove and "Reset to automatic". If the list still equals the automatic one nothing is stored and the FAQs keep following the product's data; otherwise the saved text is shown as written (`getProductFaqs` returns `Product.faqs` when set). The FAQPage JSON-LD follows the same list. Empty list = automatic again. Takes effect after the ~60 s catalog cache. Test: case in `tests/import-e2e.test.ts`. Not browser-tested (admin behind Access).

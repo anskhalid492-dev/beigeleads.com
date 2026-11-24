@@ -59,6 +59,8 @@ export type Product = {
   fileFormats?: string;
   /** The admin chose this list's data fields by hand (section 156): `fields` is shown as is instead of the full catalog. */
   fieldsCustom?: boolean;
+  /** FAQs written by the admin (section 164). Empty = the automatic ones from `autoProductFaqs`. */
+  faqs?: readonly { q: string; a: string }[];
   /** Owner-declared number of fields to state (local business lists: 74). Falls back to fields.length. */
   fieldCount?: number;
   coverage?: string;
@@ -293,6 +295,12 @@ export type ProductFaq = readonly [question: string, answer: string];
  * exists, read the `product_faqs` table (rows per product) and fall back to these.
  */
 export function getProductFaqs(p: Product, c: Category, k: Country): ProductFaq[] {
+  if (p.faqs?.length) return p.faqs.map((f) => [f.q, f.a] as const);
+  return autoProductFaqs(p, c, k);
+}
+
+/** The automatic FAQs (templates filled from the product's own data). */
+export function autoProductFaqs(p: Product, c: Category, k: Country): ProductFaq[] {
   const count = p.recordCount === null ? "not counted yet" : `${p.recordCount.toLocaleString("en-US")} records`;
   const verified = p.lastVerified ?? "not verified yet";
   return [

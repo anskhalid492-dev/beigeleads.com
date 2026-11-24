@@ -113,6 +113,11 @@ describe("catalog import", () => {
     expect(withExtra.categorySlug).toBe("zoo-keepers"); expect(JSON.parse(withExtra.sourceJson).extraCategories).toEqual([{ slug: "farm-shops", name: "Farm Shops" }]);
     expect((await updateProduct(db, pub.id, { ...edit, extraCategories: [] })).ok).toBe(true);
     expect(JSON.parse((await getProductRow(db, pub.id))!.sourceJson).extraCategories).toBeUndefined();
+    // Custom FAQs: stored when the admin changes them, removed again when the list is back to automatic.
+    expect((await updateProduct(db, pub.id, { ...edit, faqs: [{ q: "Q1?", a: "A1." }, { q: "Q2?", a: "A2." }], faqsCustom: true })).ok).toBe(true);
+    expect(JSON.parse((await getProductRow(db, pub.id))!.sourceJson).faqs).toEqual([{ q: "Q1?", a: "A1." }, { q: "Q2?", a: "A2." }]);
+    expect((await updateProduct(db, pub.id, { ...edit, faqs: [], faqsCustom: false })).ok).toBe(true);
+    expect(JSON.parse((await getProductRow(db, pub.id))!.sourceJson).faqs).toBeUndefined();
     expect((await getProductRow(db, pub.id))!.categoryName).toBe("Zoo Keepers");
   });
   it("built-in products become editable rows that replace the code version, and unpublishing hides them", async () => {
