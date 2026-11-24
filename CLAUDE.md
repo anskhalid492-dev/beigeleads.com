@@ -1510,3 +1510,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 162. Header order and Resources mega menu (24 Nov 2026) — amends sections 39 and 104
 
 - Header nav order (owner): Lists, Solutions, DFY, Help Center, Data Resellers, Resources. Blog moved into Resources. Resources opens an "intro + list" panel like Solutions (`components/layout/resources-mega.tsx`, mobile accordion included). Links live in ONE file, `lib/resources-nav.ts` (3 groups, same order feeds the footer Resources column), so add a resource there only. Not browser-checked.
+
+## 163. Header labels and trimmed Resources menu (24 Nov 2026) — amends section 162
+
+- Header nav: Lists, Solutions, DFY, Resellers, Help, Resources (labels shortened, `whitespace-nowrap` so they never wrap). Resources panel intro = headline + "Visit the Help Center" button only; link columns show names only (the `text` field in `lib/resources-nav.ts` is now unused by the panel). Not browser-checked.

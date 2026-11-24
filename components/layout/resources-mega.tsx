@@ -12,8 +12,6 @@ export function ResourcesMegaPanel({ onNavigate }: { onNavigate: () => void }) {
         <h3 className="display intro-rise relative text-[1.7rem] leading-[1.05] text-forest-900" style={{ "--d": 0 } as React.CSSProperties}>
           Everything to buy and learn <span className="relative inline-block">well.<span aria-hidden className="intro-draw absolute inset-x-0 -bottom-0.5 h-[3px] rounded-full bg-purple-600" /></span>
         </h3>
-        <p className="intro-rise relative mt-3 text-[0.95rem] text-forest-700" style={{ "--d": 1 } as React.CSSProperties}>Guides, answers and the details behind every list.</p>
-        <p className="intro-rise relative mt-3 text-[0.8rem] leading-5 text-forest-700/80" style={{ "--d": 2 } as React.CSSProperties}>Masked sample on every list page.</p>
         <div className="intro-rise relative mt-auto flex flex-col items-start gap-2 pt-5" style={{ "--d": 3 } as React.CSSProperties}>
           <Link href="/help-center" onClick={onNavigate} className="group/all inline-flex items-center gap-2 rounded-full bg-purple-600 px-[1.1rem] py-2.5 text-sm font-semibold text-white shadow-[0_6px_16px_-8px_rgba(124,58,237,0.7)] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
             Visit the Help Center <ArrowRight className="size-4 transition-transform duration-200 group-hover/all:translate-x-0.5" aria-hidden />
@@ -22,18 +20,17 @@ export function ResourcesMegaPanel({ onNavigate }: { onNavigate: () => void }) {
       </div>
       <div className="grid grid-cols-3">
         {RESOURCE_GROUPS.map((g) => (
-          <div key={g.heading} className="flex flex-col justify-center py-7 pl-6 pr-3">
+          <div key={g.heading} className="flex flex-col justify-start py-7 pl-6 pr-3">
             <p className="mb-4 text-[0.8rem] font-semibold text-forest-700/80">{g.heading}</p>
-            <ul className="flex flex-col gap-4">
+            <ul className="flex flex-col gap-3">
               {g.links.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} onClick={onNavigate} className="group flex gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
                     <span className="grid size-[2.2rem] shrink-0 place-items-center rounded-full border border-sand-300 text-forest-700 transition-[transform,color,border-color] duration-200 group-hover:-translate-y-0.5 group-hover:border-purple-600 group-hover:text-purple-600">
                       <l.icon className="size-[1.05rem]" aria-hidden />
                     </span>
-                    <span className="min-w-0">
+                    <span className="min-w-0 self-center">
                       <span className="block text-[0.95rem] font-bold leading-5 text-forest-900 transition-colors duration-200 group-hover:text-purple-700">{l.name}</span>
-                      <span className="mt-0.5 block truncate text-[0.82rem] leading-5 text-forest-700/80">{l.text}</span>
                     </span>
                   </Link>
                 </li>

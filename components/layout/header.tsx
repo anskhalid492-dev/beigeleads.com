@@ -22,8 +22,8 @@ const GROUPS = [
 
 const LINKS = [
   { label: "DFY", href: "/dfy-outbound" },
-  { label: "Help Center", href: "/help-center" },
-  { label: "Data Resellers", href: "/partners" },
+  { label: "Resellers", href: "/partners" },
+  { label: "Help", href: "/help-center" },
 ] as const;
 
 type Key = "lists" | "solutions" | "resources" | null;
@@ -98,7 +98,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
   }
 
   const linkClass = (href: string) =>
-    `relative rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${
+    `relative whitespace-nowrap rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${
       pathname === href || pathname.startsWith(`${href}/`) ? "bg-sand-100 after:absolute after:inset-x-4 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-forest-900" : ""
     }`;
   const trigger = (k: Exclude<Key, null>, label: string, active: boolean) => (
@@ -115,7 +115,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
         }
       }}
       onClick={() => setOpen((v) => (v === k ? null : k))}
-      className={`flex items-center gap-1 rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${open === k || active ? "bg-sand-100" : ""}`}
+      className={`flex items-center gap-1 whitespace-nowrap rounded-full px-4 py-2 text-base font-semibold tracking-[-0.005em] [font-stretch:90%] text-forest-900 transition-colors hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 ${open === k || active ? "bg-sand-100" : ""}`}
     >
       {label} <ChevronDown className={`size-4 transition-transform ${open === k ? "rotate-180" : ""}`} aria-hidden />
     </button>
