@@ -1,7 +1,7 @@
 import { fromHex, hmac, safeEqual, toHex } from "./crypto";
 
 export const SESSION_COOKIE = "__Host-bl_admin";
-export const SESSION_SECONDS = 15 * 60; // short on purpose: wallet changes need a fresh login
+export const SESSION_SECONDS = 12 * 60 * 60; // owner decision (24 Nov 2026): 12 hours
 
 export async function createSessionValue(secret: string, email: string, now = Date.now()): Promise<string> {
   // Email is hex-encoded so the cookie value only contains [0-9a-f.] and survives any cookie encoding.

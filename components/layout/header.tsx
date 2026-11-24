@@ -8,6 +8,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListsMegaPanel, ListsMobile } from "@/components/layout/lists-mega";
+import { ResourcesMegaPanel, ResourcesMobile } from "@/components/layout/resources-mega";
+import { RESOURCE_LINKS } from "@/lib/resources-nav";
 import { SolutionIcon } from "@/components/solutions/icons";
 import { getSolution } from "@/lib/solutions";
 import { TAXONOMY, type TaxGroup } from "@/lib/taxonomy";
@@ -20,12 +22,11 @@ const GROUPS = [
 
 const LINKS = [
   { label: "DFY", href: "/dfy-outbound" },
-  { label: "Blog", href: "/blog" },
   { label: "Help Center", href: "/help-center" },
   { label: "Data Resellers", href: "/partners" },
 ] as const;
 
-type Key = "lists" | "solutions" | null;
+type Key = "lists" | "solutions" | "resources" | null;
 
 export type ListsMenuData = { industries: { slug: string; name: string }[]; countries: { slug: string; name: string }[] };
 
@@ -142,6 +143,9 @@ export function Header({ lists }: { lists: ListsMenuData }) {
                 {l.label}
               </Link>
             ))}
+            <div onMouseEnter={() => hoverOpen("resources")} onMouseLeave={hoverClose}>
+              {trigger("resources", "Resources", RESOURCE_LINKS.some((r) => r.href !== "/help-center" && pathname.startsWith(r.href)))}
+            </div>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -172,7 +176,9 @@ export function Header({ lists }: { lists: ListsMenuData }) {
             onMouseEnter={() => hoverOpen(open)}
             onMouseLeave={hoverClose}
           >
-            {open === "solutions" ? (
+            {open === "resources" ? (
+              <ResourcesMegaPanel onNavigate={close} />
+            ) : open === "solutions" ? (
               <div id="menu-solutions" className="mega-in grid overflow-hidden rounded-[1.6rem] border border-sand-200 bg-sand-50 shadow-[0_14px_36px_-22px_rgba(15,42,29,0.3)] lg:grid-cols-[17rem_minmax(0,1fr)]">
                 <div className="relative flex flex-col overflow-hidden border-r border-sand-200 bg-sand-100 px-7 py-7">
                   <span aria-hidden className="intro-glow pointer-events-none absolute -bottom-12 -right-12 size-44 rounded-full bg-purple-100 opacity-80 blur-2xl" />
@@ -250,6 +256,7 @@ export function Header({ lists }: { lists: ListsMenuData }) {
               {LINKS.map((l) => (
                 <li key={l.href}><Link href={l.href} className="block rounded-xl px-3 py-3 hover:bg-sand-100">{l.label}</Link></li>
               ))}
+              <li><ResourcesMobile onNavigate={() => setMobile(false)} /></li>
             </ul>
             <div className="mt-3 grid gap-2 border-t border-sand-200 pt-3">
               <Button asChild size="lg" className="rounded-full"><Link href="/custom-list">Build My List</Link></Button>

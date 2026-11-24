@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FooterCta } from "./footer-cta";
 import { BottomFooter } from "./bottom-footer";
+import { RESOURCE_LINKS } from "@/lib/resources-nav";
 import { competitors, compareHref } from "@/lib/compare";
 
 import { solutions } from "@/lib/solutions";
@@ -47,21 +48,7 @@ const columns: Column[] = [
   },
   {
     title: "Resources",
-    links: [
-      ["Pricing", "/pricing"],
-      ["How It Works", "/how-it-works"],
-      ["Request a Sample", "/sample"],
-      ["Email List Verification", "/email-list-verification"],
-      ["Team Purchase Requests", "/team-purchase-requests"],
-      ["AI Assistant", "/ai-assistant"],
-      ["Case Studies", "/case-studies"],
-      ["Benchmarks", "/benchmarks"],
-      ["Blog", "/blog"],
-      ["Guides", "/guides"],
-      ["Glossary", "/glossary"],
-      ["Media Kit", "/media-kit"],
-      ["Help Center", "/help-center"],
-    ],
+    links: RESOURCE_LINKS.map((r) => [r.name, r.href] as [string, string]),
   },
   {
     title: "Legal",

@@ -1502,3 +1502,11 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 160. Custom fields on product pages (23 Nov 2026) — amends section 156
 
 - Fields added by the admin that are not in the field catalog no longer show as loose green chips; they render as an "Additional fields" card in the same grid, with the same icon tile and name styling as the standard fields (`components/product/fields.tsx`).
+
+## 161. Admin session is 12 hours (24 Nov 2026) — amends section 28
+
+- Owner request: the app-login session (`lib/admin/session.ts` `SESSION_SECONDS`) is now 12 h (was 15 min); cookie maxAge and signed expiry both follow it. The Cloudflare Access session (layer 1) is a dashboard setting and is NOT changed by code: set its session duration to 12 h too (Zero Trust > Access > Applications > session duration), otherwise Access can still ask for a sign-in sooner. A longer session means a stolen cookie works longer; wallet changes no longer rely on a fresh login.
+
+## 162. Header order and Resources mega menu (24 Nov 2026) — amends sections 39 and 104
+
+- Header nav order (owner): Lists, Solutions, DFY, Help Center, Data Resellers, Resources. Blog moved into Resources. Resources opens an "intro + list" panel like Solutions (`components/layout/resources-mega.tsx`, mobile accordion included). Links live in ONE file, `lib/resources-nav.ts` (3 groups, same order feeds the footer Resources column), so add a resource there only. Not browser-checked.
