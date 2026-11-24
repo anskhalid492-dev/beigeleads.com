@@ -1,5 +1,6 @@
 // Loads the PUBLISHED imported products (section 91) into the code catalog for the current isolate. One KV value (60 s), never a D1 read per visit.
 // Download links are NEVER part of this payload. Any failure leaves the code catalog exactly as it was.
+import { countryIn, stateIn } from "@/lib/import/geo";
 import { categoryForSubject, subjectOf } from "@/lib/import/seo-text";
 import { PROTECTED_CATS } from "@/lib/import/reorganize";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -34,6 +35,13 @@ export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Re
   list = list.map((p) => {
     const c = categoryForSubject(subjectOf({ name: p.name, categoryName: p.categoryName, channel: p.channel, countryName: p.countryName, region: p.region, recordCount: p.recordCount, placeholder: false }));
     return c && !p.manualCat && !PROTECTED_CATS.has(p.categorySlug) ? { ...p, categorySlug: c.slug, categoryName: c.name } : p; // products moved into Local Businesses keep that category
+  });
+  // A country written in the admin Coverage field decides the flag and the "for <country>" line (the stored country is only the import's guess, often Worldwide).
+  list = list.map((p) => {
+    const hit = p.coverage ? countryIn(p.coverage, true) : null;
+    if (!hit || hit.slug === p.countrySlug) return p;
+    const st = hit.code === "US" ? stateIn(p.coverage ?? "") : null;
+    return { ...p, countrySlug: hit.slug, countryCode: hit.code, countryName: hit.name, ...(st && !p.region ? { region: st } : {}) };
   });
   const products = list.map((p): Product => {
     if (!cats.has(p.categorySlug)) cats.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, description: `${p.categoryName} contact lists.`, buyers: [], singular: p.categoryName, reachLabel: p.categoryName.toLowerCase(), useCases: [], imported: true });

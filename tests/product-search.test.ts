@@ -16,3 +16,13 @@ describe("admin product search words", () => {
     expect(searchTokens(undefined)).toEqual([]);
   });
 });
+
+import { toCatalog } from "@/lib/catalog-db";
+describe("coverage decides the country", () => {
+  it("follows a country typed in Coverage", () => {
+    const base = { slug: "x", name: "X List", title: "X", description: "", categorySlug: "c", categoryName: "C", channel: "email", countrySlug: "worldwide", countryCode: "WW", countryName: "Worldwide", region: "", recordCount: 1, packages: [], coverage: "United States" } as never;
+    const out = toCatalog([base]);
+    expect(out.products[0].countrySlug).toBe("united-states");
+    expect(out.countries[0].code).toBe("US");
+  });
+});

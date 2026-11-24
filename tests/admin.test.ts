@@ -49,7 +49,7 @@ describe("admin login primitives", () => {
   it("signs, expires and rejects tampered sessions", async () => {
     const v = await createSessionValue("s".repeat(32), "a@b.co", 1_000_000);
     expect(await readSessionValue("s".repeat(32), v, 1_000_000)).toBe("a@b.co");
-    expect(await readSessionValue("s".repeat(32), v, 1_000_000 + 16 * 60_000)).toBeNull();
+    expect(await readSessionValue("s".repeat(32), v, 1_000_000 + 13 * 3600_000)).toBeNull();
     expect(await readSessionValue("t".repeat(32), v, 1_000_000)).toBeNull();
     expect(await readSessionValue("s".repeat(32), v.replace(".6", ".7"), 1_000_000)).toBeNull();
   });

@@ -1,4 +1,5 @@
 // Imported catalog: plan / apply / roll back an import batch, review and publish. Uses D1 only. Never throws before migration 0035 (callers check `ready`).
+import { countryIn } from "@/lib/import/geo";
 import { and, count, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getCategories, getCategory, getCountries, getCountry, getStaticProducts } from "@/lib/catalog";
@@ -294,6 +295,7 @@ export async function updateProduct(db: Db, id: number, e: ProductEdit): Promise
   const placeholder = e.forSale && (e.recordCount ?? 0) > 0 && priced ? false : figuresNew && e.placeholder && !!row.placeholder ? false : e.placeholder;
   await db.update(schema.catalogProducts).set({
     ...(cat ?? {}),
+    ...(() => { const h = e.coverage ? countryIn(e.coverage, true) : null; return h && h.slug !== row.countrySlug ? { countrySlug: h.slug, countryCode: h.code, countryName: h.name } : {}; })(),
     name: e.name, title: e.title || e.name, description: e.description, seoTitle: e.seoTitle || null, metaDescription: e.metaDescription || null,
     recordCount: e.recordCount, dataFieldsJson: j([...new Set(e.dataFields)]), fileFormats: e.fileFormats || null, coverage: e.coverage || null, lastUpdated: e.lastUpdated || null,
     placeholder: placeholder ? 1 : 0, forSale: e.forSale ? 1 : 0,
