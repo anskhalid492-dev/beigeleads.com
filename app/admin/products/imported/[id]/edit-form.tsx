@@ -73,6 +73,7 @@ export function EditForm({ autoFaqs, defaults, categories, samples, id, origin, 
   async function save() {
     setBusy(true); setMsg("Saving...");
     try {
+      if (!f.categoryName.trim()) { setMsg("Pick at least one category."); setBusy(false); return; }
       const chosen = f.dataFields.split("\n").map((x) => x.trim()).filter(Boolean);
       const packages = f.packages.map((k, i) => ({ ...k, priceUsdCents: Math.round(Number(price[i] || "0") * 100) }));
       if (packages.some((k) => !Number.isFinite(k.priceUsdCents) || k.priceUsdCents < 0)) { setMsg("A price is not a valid number."); setBusy(false); return; }
@@ -90,11 +91,15 @@ export function EditForm({ autoFaqs, defaults, categories, samples, id, origin, 
     setBusy(true); const r = await renameProductSlugAction(id, slugIn); setBusy(false); setSlugMsg(r.message);
     if (r.ok && r.slug) { setSlugNow(r.slug); setSlugIn(r.slug); router.refresh(); }
   }
-  const [extraDraft, setExtraDraft] = useState(""); const [mainIsNew, setMainIsNew] = useState(false);
-  const all = [...new Set([...categories, ...f.extraCategories])].filter((c) => c.toLowerCase() !== f.categoryName.trim().toLowerCase()).sort((x, y) => x.localeCompare(y));
-  const mainList = [...new Set([...categories, f.categoryName].filter(Boolean))].sort((x, y) => x.localeCompare(y));
+  const [extraDraft, setExtraDraft] = useState("");
+  // One list of categories: the first decides the category page and breadcrumbs, the rest are extra listings.
+  const picked = [f.categoryName, ...f.extraCategories].map((x) => x.trim()).filter(Boolean);
+  const has = (c: string) => picked.some((x) => x.toLowerCase() === c.toLowerCase());
+  const setPicked = (list: string[]) => setF((x) => ({ ...x, categoryName: list[0] ?? "", extraCategories: list.slice(1) }));
+  const all = [...new Set([...categories, ...picked])].sort((x, y) => x.localeCompare(y));
   const shown = all.filter((c) => c.toLowerCase().includes(extraDraft.trim().toLowerCase()));
-  const addExtra = () => { const v = extraDraft.trim(); if (v && v.toLowerCase() !== f.categoryName.trim().toLowerCase() && !f.extraCategories.some((x) => x.toLowerCase() === v.toLowerCase())) set("extraCategories", [...f.extraCategories, v]); setExtraDraft(""); };
+  const toggleCat = (c: string) => setPicked(has(c) ? picked.filter((y) => y.toLowerCase() !== c.toLowerCase()) : [...picked, c]);
+  const addExtra = () => { const v = extraDraft.trim(); if (v && !has(v)) setPicked([...picked, v]); setExtraDraft(""); };
   async function saveSample(remove = false) {
     setBusy(true); setMsg("Saving sample...");
     try { const r = await saveSampleAction(id, remove ? "" : csv); setMsg(r.message); if (r.ok) { setSaved(remove ? [] : preview); setCsv(""); } } catch (e) { setMsg(`Stopped: ${e instanceof Error ? e.message : "unknown error"}`); }
@@ -114,24 +119,15 @@ export function EditForm({ autoFaqs, defaults, categories, samples, id, origin, 
   return (
     <div className="max-w-3xl space-y-5 text-sm">
       {(restricted.length > 0 || flags.length > 0) && <div className="rounded-xl bg-sand-100 p-3 text-xs">{restricted.length > 0 && <p>Restricted: {restricted.join(", ")}</p>}{flags.length > 0 && <p>Flags: {flags.join("; ")}</p>}</div>}
-      <div className="block"><span className="mb-1 block font-semibold">Main category</span>
-        <select className={box} value={mainIsNew ? "__new" : f.categoryName} onChange={(e) => { if (e.target.value === "__new") { setMainIsNew(true); set("categoryName", ""); } else { setMainIsNew(false); set("categoryName", e.target.value); } }}>
-          {mainList.map((c) => <option key={c} value={c}>{c}</option>)}
-          <option value="__new">+ New category...</option>
-        </select>
-        {mainIsNew && <input className={`${box} mt-2`} autoFocus placeholder="New category name" value={f.categoryName} maxLength={120} onChange={(e) => set("categoryName", e.target.value)} />}
-        <span className="mt-1 block text-xs">Decides the product&apos;s category page and breadcrumbs. The product URL does not change. Your choice stays even when the automatic grouping would pick another.</span>
-      </div>
-      <div className="block"><span className="mb-1 block font-semibold">Also list under (pick as many as you like)</span>
-        <div className="mb-2 flex flex-wrap gap-2">{f.extraCategories.map((x) => <button key={x} type="button" onClick={() => set("extraCategories", f.extraCategories.filter((y) => y !== x))} className="rounded-full bg-forest-100 px-3 py-1 text-xs font-semibold text-forest-900">{x} ✕</button>)}{f.extraCategories.length === 0 && <span className="text-xs">No extra categories.</span>}</div>
+      <div className="block"><span className="mb-1 block font-semibold">Categories (pick as many as you like)</span>
+        <div className="mb-2 flex flex-wrap gap-2">{picked.map((x, i) => <span key={x} className="inline-flex items-center overflow-hidden rounded-full bg-forest-100 text-xs font-semibold text-forest-900"><button type="button" disabled={i === 0} title={i === 0 ? "Decides the category page and breadcrumbs" : "Make this the first category"} onClick={() => setPicked([x, ...picked.filter((y) => y !== x)])} className="px-3 py-1 enabled:hover:bg-forest-500/20">{x}{i === 0 ? " (first)" : ""}</button><button type="button" aria-label={`Remove ${x}`} onClick={() => setPicked(picked.filter((y) => y !== x))} className="px-2 py-1 hover:bg-forest-500/20">✕</button></span>)}{picked.length === 0 && <span className="text-xs">Pick at least one category.</span>}</div>
         <input className={box} value={extraDraft} maxLength={120} placeholder="Search categories, or type a new name" onChange={(e) => setExtraDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExtra(); } }} />
         <div className="mt-2 max-h-56 overflow-y-auto rounded-xl border border-sand-200 bg-white">
           {shown.length === 0 && <p className="p-3 text-xs">No match. Press Enter to add &ldquo;{extraDraft.trim()}&rdquo; as a new category.</p>}
-          {shown.map((c) => { const on = f.extraCategories.some((x) => x.toLowerCase() === c.toLowerCase()); return (
-            <label key={c} className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-sand-100"><input type="checkbox" checked={on} onChange={() => set("extraCategories", on ? f.extraCategories.filter((y) => y.toLowerCase() !== c.toLowerCase()) : [...f.extraCategories, c])} />{c}</label>); })}
+          {shown.map((c) => <label key={c} className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-sand-100"><input type="checkbox" checked={has(c)} onChange={() => toggleCat(c)} />{c}</label>)}
         </div>
         {extraDraft.trim() && !all.some((c) => c.toLowerCase() === extraDraft.trim().toLowerCase()) && <button type="button" onClick={addExtra} className="mt-2 rounded-xl border border-sand-300 px-4 py-1.5 text-xs font-semibold">Add &ldquo;{extraDraft.trim()}&rdquo; as new category</button>}
-        <span className="mt-1 block text-xs">The product also appears on each of these category pages. Its URL and main category do not change. Press Save below to keep your choices.</span>
+        <span className="mt-1 block text-xs">The product&apos;s current category is already ticked. It appears on every category page you tick. The first one decides the category page and breadcrumbs (click another to make it first). The product URL does not change. Press Save below to keep your choices.</span>
       </div>
       <label className="block"><span className="mb-1 block font-semibold">Name (shown as the page heading)</span><input className={box} value={f.name} maxLength={200} onChange={(e) => set("name", e.target.value)} /></label>
       <label className="block"><span className="mb-1 block font-semibold">Title (short description line)</span><input className={box} value={f.title} maxLength={200} onChange={(e) => set("title", e.target.value)} /></label>

@@ -160,9 +160,14 @@ export const rowFlags = (r: Pick<Row, "flagsJson">) => parse<string[]>(r.flagsJs
 
 export type Filters = { q?: string; status?: string; channel?: string; country?: string; restricted?: "yes" | "no"; flag?: string; category?: string; importId?: number };
 const PAGE = 50;
+/** Search words -> LIKE patterns. Every word must match the name, slug, category or country (any order). D1 refuses LIKE patterns over 50 bytes, so each word is cut short; % _ and \ are never wildcards. */
+export function searchTokens(q?: string): string[] {
+  const enc = new TextEncoder();
+  return (q ?? "").toLowerCase().split(/[\s\-_/%\\]+/).map((w) => { let t = w.slice(0, 40); while (enc.encode(t).length > 44) t = t.slice(0, -1); return t; }).filter(Boolean).slice(0, 6).map((t) => `%${t}%`);
+}
 function whereOf(f: Filters) {
   return and(
-    f.q ? or(like(schema.catalogProducts.name, `%${f.q}%`), like(schema.catalogProducts.slug, `%${f.q}%`)) : undefined,
+    ...searchTokens(f.q).map((t) => or(like(schema.catalogProducts.name, t), like(schema.catalogProducts.slug, t), like(schema.catalogProducts.categoryName, t), like(schema.catalogProducts.countryName, t))),
     f.status ? eq(schema.catalogProducts.status, f.status as "draft") : undefined,
     f.channel ? eq(schema.catalogProducts.channel, f.channel) : undefined,
     f.country ? eq(schema.catalogProducts.countrySlug, f.country) : undefined,
