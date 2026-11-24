@@ -63,7 +63,7 @@ export function ProductStats({ product, country, cityCount: _cityCount }: { prod
           )}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-7 lg:col-span-2">
             <MapPinned className="size-6 text-forest-300" aria-hidden />
-            <p className="display mt-5 text-4xl text-sand-50">{country.name}</p>
+            {(() => { const cov = product.coverage?.trim() || country.name; return <p className={`display mt-5 text-sand-50 ${cov.length > 28 ? "text-2xl" : "text-4xl"}`}>{cov}</p>; })()}
           </div>
         </div>
       </div>
