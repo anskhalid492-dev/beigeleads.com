@@ -1574,3 +1574,5 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - /list-fit-check redesign (25 Nov 2026, amends §170): two-column hero (H1, one-sentence box with example chips and the submit button inside the field, Enter submits), an illustrative "how a sentence is read" card (labelled illustration only; no counts, no real list), 3 steps, 6 FAQs (`SolutionFaq`, FAQPage JSON-LD), sample CTA band. Behaviour unchanged (`openPilo`, fallback `/lists?q=`). Rendered on dev (1 H1); not checked by eye at 375 px, no Lighthouse.
 
 - 25 Nov 2026: /list-fit-check example card lost its "Example sentence" label and the "Illustration only" line. Product editor: the "Add from the standard field lists" picker now has a "Your added fields" group (fields added by hand, kept even when unticked, so they can be toggled again; session-only, no migration).
+
+- 25 Nov 2026: /order-lookup redesigned like /list-fit-check (two-column hero with the lookup form in a white card, 3 steps, 6 FAQs via `SolutionFaq`, Help Center CTA). Lookup behaviour and privacy rules unchanged (§170).
