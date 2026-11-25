@@ -16,11 +16,15 @@ import { FIELD_CATALOG, LOCAL_FIELD_CATALOG } from "@/lib/product-fields";
 function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (v: string) => void; defaults: string[] }) {
   const list = value.split("\n").map((x) => x.trim()).filter(Boolean);
   const [draft, setDraft] = useState("");
+  const [mine, setMine] = useState<string[]>([]);
   const emit = (names: string[]) => onChange([...new Set(names.map((n) => n.trim()).filter(Boolean))].join("\n"));
   const has = (n: string) => list.some((x) => x.toLowerCase() === n.toLowerCase());
-  const add = () => { const v = draft.trim(); if (v && !has(v)) emit([...list, v]); setDraft(""); };
+  const add = () => { const v = draft.trim(); if (v && !has(v)) { emit([...list, v]); if (!known.has(v.toLowerCase())) setMine((m) => (m.some((x) => x.toLowerCase() === v.toLowerCase()) ? m : [...m, v])); } setDraft(""); };
   const catalog = [...LOCAL_FIELD_CATALOG, ...FIELD_CATALOG];
   const groups = [...new Set(catalog.map((c) => c.group))];
+  const known = new Set(catalog.map((c) => c.name.toLowerCase()));
+  // Fields added by hand stay in the picker (even when unticked), so they can be turned on and off again.
+  const own = [...new Set([...mine, ...list.filter((n) => !known.has(n.toLowerCase()))])];
   return (
     <div className="mt-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -45,6 +49,13 @@ function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (
       <details className="mt-2 rounded-lg border border-sand-200 p-2">
         <summary className="cursor-pointer text-xs font-semibold">Add from the standard field lists</summary>
         <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {own.length > 0 && (
+            <div className="rounded-lg bg-sand-50 p-2"><b className="text-xs">Your added fields</b>
+              {own.map((n) => (
+                <label key={n} className="flex items-start gap-2 py-0.5 text-xs"><input type="checkbox" className="mt-0.5" checked={has(n)} onChange={() => emit(has(n) ? list.filter((x) => x.toLowerCase() !== n.toLowerCase()) : [...list, n])} /><span>{n}</span></label>
+              ))}
+            </div>
+          )}
           {groups.map((g) => (
             <div key={g} className="rounded-lg bg-sand-50 p-2"><b className="text-xs">{g}</b>
               {catalog.filter((c) => c.group === g).map((c) => (

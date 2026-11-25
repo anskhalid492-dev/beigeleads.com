@@ -35,7 +35,6 @@ function Reading() {
   ];
   return (
     <div className="relative rounded-[2rem] border border-sand-300 bg-white p-6 sm:p-8" aria-label="Example of how a sentence is read">
-      <p className="text-xs font-semibold text-forest-700">Example sentence</p>
       <p className="mt-3 text-2xl font-semibold leading-[1.9] text-forest-900 sm:text-[1.7rem]">
         {parts.map((p, i) => p.tag ? (
           <span key={i} className={`relative mx-0.5 rounded-lg px-2 py-0.5 ${p.cls}`}>
@@ -54,7 +53,6 @@ function Reading() {
           <div><p className="font-semibold text-forest-900">Nothing matches</p><p className="text-sm text-forest-700">Pilo says so, then opens a custom list request with your sentence filled in.</p></div>
         </div>
       </div>
-      <p className="mt-5 text-xs text-forest-700/80">Illustration only. Your result comes from the live catalog.</p>
     </div>
   );
 }
