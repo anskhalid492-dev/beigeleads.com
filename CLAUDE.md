@@ -1549,3 +1549,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Not changed: creator inquiry flow already saves first, then emails, keeps the 12 h deadline and shows the real email status (§152); a Resend outage never loses an inquiry. Delivery logs are written only for template emails (retention 180 days, webhook events 30).
 - Owner to do: set `EMAIL_KEY_SECRET` in Cloudflare, run 0050, optionally paste a sending-only key, add the webhook in Resend and save its `whsec_` secret.
 - Tests: `tests/resend-integration.test.ts` (classification, encryption, rotation, fallback, sender rules, real send with saved key, outage, retry rules, activity filters, registry). NOT tested: the admin screens behind Access in a browser, a live Resend account, the webhook route end to end with a real signature from Resend.
+
+## 169. Resources menu matches Lists/Solutions (25 Nov 2026) — amends sections 162-163
+
+- `components/layout/resources-mega.tsx` desktop panel now uses the same intro block as Lists: headline, "Start with [rolling word: pricing / a guide / a sample / an answer]" with four icons lit in step (existing `intro-roll`/`intro-lit` CSS, off under reduced motion), the standard "Masked sample on every list page." line, purple "Visit the Help Center" and outlined "Or request a sample" buttons. Link columns show name + one-line description (`text` in `lib/resources-nav.ts` is used again), hover arrow, vertically centred like Lists. Mobile accordion unchanged. Not browser-screenshotted.
