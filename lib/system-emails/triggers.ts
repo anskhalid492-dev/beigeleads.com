@@ -1,3 +1,4 @@
+import { emailConfigured } from "@/lib/email/credentials";
 import type { getDbFromEnv } from "@/lib/db";
 import { sendEmail } from "@/lib/forms/email";
 import { isTemplateOff } from "./enabled";
@@ -20,7 +21,7 @@ export async function sendHistory(env: CloudflareEnv, key: string, reference: st
  * template simply means no email). Once per (template, reference): checked against the delivery log, max 3 tries.
  */
 export async function sendOnce(env: CloudflareEnv, db: Db, key: string, to: string, vars: Vars, reference: string): Promise<"sent" | "already-sent" | "skipped" | "failed"> {
-  if (!env.RESEND_API_KEY) return "skipped";
+  if (!(await emailConfigured(env))) return "skipped";
   if (await isTemplateOff(db, key)) return "skipped"; // an admin switched this email off
   const h = await sendHistory(env, key, reference);
   if (h.sent) return "already-sent";

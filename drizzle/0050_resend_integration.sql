@@ -1,0 +1,4 @@
+-- Resend integration manager. Run ONE statement at a time in D1 Studio.
+CREATE TABLE IF NOT EXISTS email_integration (id TEXT PRIMARY KEY, api_key_enc TEXT NOT NULL DEFAULT '', api_key_hint TEXT NOT NULL DEFAULT '', api_key_updated_at INTEGER, api_key_updated_by TEXT NOT NULL DEFAULT '', webhook_secret_enc TEXT NOT NULL DEFAULT '', webhook_hint TEXT NOT NULL DEFAULT '', webhook_updated_at INTEGER, webhook_updated_by TEXT NOT NULL DEFAULT '', last_check_json TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS email_retry_log (id INTEGER PRIMARY KEY AUTOINCREMENT, log_id INTEGER NOT NULL, template_key TEXT NOT NULL, reference TEXT NOT NULL DEFAULT '', reason TEXT NOT NULL DEFAULT '', actor TEXT NOT NULL DEFAULT '', result TEXT NOT NULL DEFAULT '', detail TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+CREATE INDEX IF NOT EXISTS idx_email_retry_log ON email_retry_log (log_id);

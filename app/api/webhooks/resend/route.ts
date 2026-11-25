@@ -1,4 +1,5 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { resolveWebhookSecret } from "@/lib/email/credentials";
 import { processResendEvent, verifySvix } from "@/lib/system-emails/webhook";
 
 export const dynamic = "force-dynamic";
@@ -6,7 +7,7 @@ export const dynamic = "force-dynamic";
 /** Resend (Svix) webhook. Only a correctly signed request is processed; anything else gets 401 and no detail. */
 export async function POST(req: Request) {
   const { env } = getCloudflareContext();
-  const secret = env.RESEND_WEBHOOK_SECRET;
+  const secret = (await resolveWebhookSecret(env)).secret;
   if (!secret) return new Response("not configured", { status: 503 });
   const body = await req.text();
   if (body.length > 100_000) return new Response("too large", { status: 413 });

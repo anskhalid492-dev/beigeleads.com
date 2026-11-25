@@ -1,3 +1,4 @@
+import { emailConfigured } from "@/lib/email/credentials";
 // Creator inquiries: save first, then email. A failed email never discards a saved inquiry; the real result of each
 // email is stored. Price is recomputed here from the quantity (the browser's estimate is never trusted).
 import { eq } from "drizzle-orm";
@@ -53,9 +54,9 @@ export function confirmationMail(r: Row): Mail {
   };
 }
 
-export async function sendCreatorConfirmation(db: Db, env: Pick<CloudflareEnv, "RESEND_API_KEY">, send: Mailer, r: Row): Promise<EmailStatus> {
+export async function sendCreatorConfirmation(db: Db, env: Pick<CloudflareEnv, "RESEND_API_KEY"> & Partial<Pick<CloudflareEnv, "DB" | "EMAIL_KEY_SECRET">>, send: Mailer, r: Row): Promise<EmailStatus> {
   let status: EmailStatus; let error: string | null = null;
-  if (!env.RESEND_API_KEY) { status = "not_configured"; error = "Email service is not configured."; }
+  if (!(await emailConfigured(env))) { status = "not_configured"; error = "Email service is not configured."; }
   else {
     let ok = false;
     try {

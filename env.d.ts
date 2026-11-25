@@ -29,4 +29,5 @@ interface CloudflareEnv {
   EMAIL_FROM?: string; // var: e.g. BeigeLeads <noreply@mail.beigeleads.com>
   BEIGEPILOT_KEY_SECRET?: string; // secret: 32+ random chars, encrypts the AI provider API keys stored in D1 (AES-GCM). Losing it means re-entering the keys.
   RESEND_WEBHOOK_SECRET?: string; // secret: Svix signing secret (whsec_...) of the Resend webhook
+  EMAIL_KEY_SECRET?: string; // secret: 32+ chars, encrypts the Resend key / webhook secret saved in the admin (separate from BEIGEPILOT_KEY_SECRET)
 }

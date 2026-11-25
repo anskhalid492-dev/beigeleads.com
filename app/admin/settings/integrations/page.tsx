@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Badge, PageHeader, Panel } from "@/components/admin/ui";
 import { CheckButton } from "@/components/admin/check-button";
+import { emailConfigured } from "@/lib/email/credentials";
 import { guardAdmin } from "@/lib/admin/guard";
 import { cronHeartbeats, lastChecks } from "@/lib/settings/health";
 
@@ -20,7 +21,7 @@ export default async function Integrations() {
     { id: "r2", name: "Cloudflare R2", purpose: "Blog article bodies and uploaded images.", configured: !!env.LISTS, doc: "https://developers.cloudflare.com/r2/", testable: true },
     { id: "turnstile", name: "Cloudflare Turnstile", purpose: "Bot protection on public forms.", configured: !!env.TURNSTILE_SECRET_KEY, note: siteKey ? "Public site key is built into the site." : "No public site key at build time: forms use Cloudflare's test key.", doc: "https://developers.cloudflare.com/turnstile/", testable: true },
     { id: "access", name: "Cloudflare Access", purpose: "First sign-in layer for every admin page.", configured: !!env.ACCESS_TEAM_DOMAIN && !!env.ACCESS_AUD, doc: "https://developers.cloudflare.com/cloudflare-one/policies/access/", testable: true },
-    { id: "resend", name: "Resend", purpose: "Transactional email (delivery, confirmations, alerts).", configured: !!env.RESEND_API_KEY, doc: "https://resend.com/docs", testable: true },
+    { id: "resend", name: "Resend", purpose: "Transactional email (delivery, confirmations, alerts).", configured: !!env.RESEND_API_KEY || (await emailConfigured(env)), doc: "https://resend.com/docs", testable: true },
     { id: "payments", name: "Payment monitoring", purpose: "Checks the blockchain for payments every minute (mempool.space, TronGrid, Blockscout).", configured: true, note: `Scheduled job last heartbeat: ${ago(beat.minute)}. Heartbeats are written every 5 minutes.`, doc: "https://developers.cloudflare.com/workers/configuration/cron-triggers/", testable: false },
     { id: "gsc", name: "Google Search Console", purpose: "Search performance data from Google.", configured: false, note: "Not connected. Setup steps are in the SEO section.", doc: "https://search.google.com/search-console/about", testable: false },
   ];
@@ -35,6 +36,7 @@ export default async function Integrations() {
               {r.note && <p className="text-xs">{r.note}</p>}
               {r.testable && r.configured && <CheckButton id={r.id} initial={last[r.id as keyof typeof last] ?? null} />}
               {r.testable && !r.configured && <p className="text-xs">Set it up in Cloudflare (Settings, Variables and Secrets), then test.</p>}
+              {r.id === "resend" && <Link href="/admin/settings/integrations/resend" className="mr-3 text-xs font-bold underline">Manage Resend</Link>}
               <a href={r.doc} target="_blank" rel="noopener noreferrer" className="text-xs underline">Documentation</a>
             </div>
           </Panel>

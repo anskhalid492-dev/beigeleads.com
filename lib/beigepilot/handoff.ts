@@ -1,3 +1,4 @@
+import { emailConfigured } from "@/lib/email/credentials";
 import { z } from "zod";
 import { sendEmailDetailed, ownerRecipients } from "@/lib/forms/email";
 import { redact } from "./history";
@@ -52,7 +53,7 @@ export async function sendLeadEmails(env: CloudflareEnv, l: Lead, only?: "owner"
   }
   if (only !== "owner") {
     const m = ackMail(l, s.sales.ackNote);
-    customer = env.RESEND_API_KEY ? ((await sendEmailDetailed(env, { to: l.email, subject: m.subject, text: m.text, templateKey: "beigepilot_support_ack", reference: l.reference }).catch(() => ({ ok: false }))).ok ? "sent" : "failed") : "skipped";
+    customer = (await emailConfigured(env)) ? ((await sendEmailDetailed(env, { to: l.email, subject: m.subject, text: m.text, templateKey: "beigepilot_support_ack", reference: l.reference }).catch(() => ({ ok: false }))).ok ? "sent" : "failed") : "skipped";
     await setLeadCustomerEmail(env, l.reference, customer as "sent" | "failed" | "skipped");
   }
   return { owner, customer };

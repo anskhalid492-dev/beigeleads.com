@@ -1,3 +1,4 @@
+import { emailConfigured } from "@/lib/email/credentials";
 // Second Purchase Offer (CLAUDE.md section 113). After a customer's FIRST paid order a personal, single-use code is created and emailed.
 // The code is an ordinary row in `promotions` (origin "reward", bound to the buyer's email, usage limit 1), so the existing engine,
 // reservation (reserved -> redeemed on payment -> released when the order expires) and refund-safe amounts apply unchanged.
@@ -126,7 +127,7 @@ export async function sendRewardReminders(env: CloudflareEnv): Promise<{ sent: n
   let sent = 0;
   try {
     const { reward } = await loadSalesSettings(env);
-    if (!reward.reminders || !env.RESEND_API_KEY) return { sent };
+    if (!reward.reminders || !(await emailConfigured(env))) return { sent };
     const db = getDbFromEnv(env);
     const now = Math.floor(Date.now() / 1000);
     const rows = await db.select().from(schema.rewardCodes)

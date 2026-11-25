@@ -1,3 +1,4 @@
+import { emailConfigured } from "@/lib/email/credentials";
 // Contact inquiries: save first, then email. A failed email never discards a saved inquiry;
 // the real result of each email is stored so the admin can see it.
 import { eq } from "drizzle-orm";
@@ -40,13 +41,13 @@ export function confirmationMail(d: { name: string; email: string; inquiryType: 
 /** Sends the confirmation and records the real result. Never throws. */
 export async function sendContactConfirmation(
   db: Db,
-  env: Pick<CloudflareEnv, "RESEND_API_KEY">,
+  env: Pick<CloudflareEnv, "RESEND_API_KEY"> & Partial<Pick<CloudflareEnv, "DB" | "EMAIL_KEY_SECRET">>,
   send: Mailer,
   row: { id: number; name: string; email: string; inquiryType: string; subject: string; reference: string; attempts: number },
 ): Promise<EmailStatus> {
   let status: EmailStatus;
   let error: string | null = null;
-  if (!env.RESEND_API_KEY) {
+  if (!(await emailConfigured(env))) {
     status = "not_configured";
     error = "Email service is not configured.";
   } else {

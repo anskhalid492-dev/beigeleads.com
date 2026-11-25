@@ -1,4 +1,6 @@
 import { getEmailSettings, type EmailEvent } from "@/lib/settings/email";
+import { resolveResend } from "@/lib/email/credentials";
+import { senderFor } from "@/lib/email/senders";
 
 /** `html` + `templateKey` come from System Emails; plain callers keep sending text only. */
 export type Mail = { to: string; subject: string; text: string; html?: string; templateKey?: string; reference?: string; source?: "live" | "test" };
@@ -18,14 +20,6 @@ async function logSend(env: CloudflareEnv, mail: Mail, r: SendDetail): Promise<v
   } catch { /* the log table may not exist yet; sending must never depend on it */ }
 }
 
-const DEFAULT_FROM = "BeigeLeads <noreply@mail.beigeleads.com>";
-/** The address comes from the EMAIL_FROM variable (a verified domain); only the display name is editable in settings. */
-function fromAddress(env: CloudflareEnv, name: string): string {
-  const base = env.EMAIL_FROM ?? DEFAULT_FROM;
-  const addr = /<([^>]+)>/.exec(base)?.[1] ?? base;
-  return `${name} <${addr}>`;
-}
-
 /** Like sendEmail but says what Resend answered. Never includes the API key. Used by the admin test email. */
 export async function sendEmailDetailed(env: CloudflareEnv, mail: Mail): Promise<SendDetail> {
   const r = await sendRaw(env, mail);
@@ -34,13 +28,15 @@ export async function sendEmailDetailed(env: CloudflareEnv, mail: Mail): Promise
 }
 
 async function sendRaw(env: CloudflareEnv, mail: Mail): Promise<SendDetail> {
-  if (!env.RESEND_API_KEY) return { ok: false, status: 0, error: "RESEND_API_KEY is not set in Cloudflare." };
-  const s = await getEmailSettings(env);
+  // Key: encrypted admin key first, then the RESEND_API_KEY variable. Never logged or returned.
+  const cred = await resolveResend(env);
+  if (!cred.key) return { ok: false, status: 0, error: "Email is not configured: add a Resend API key in Admin > Settings > Integrations > Resend." };
+  const snd = await senderFor(env, mail.templateKey);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: fromAddress(env, s.senderName), to: mail.to.split(",").map((x) => x.trim()).filter(Boolean), subject: mail.subject, text: mail.text, ...(mail.html ? { html: mail.html } : {}), ...(s.replyTo ? { reply_to: s.replyTo } : {}) }),
+      headers: { Authorization: `Bearer ${cred.key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: snd.from, to: mail.to.split(",").map((x) => x.trim()).filter(Boolean), subject: mail.subject, text: mail.text, ...(mail.html ? { html: mail.html } : {}), ...(snd.replyTo ? { reply_to: snd.replyTo } : {}) }),
     });
     if (res.ok) {
       let id: string | undefined;

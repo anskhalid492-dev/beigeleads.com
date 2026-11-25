@@ -1,3 +1,4 @@
+import { emailConfigured } from "@/lib/email/credentials";
 // Free-sample requests: save, dedupe, confirmation email with a REAL handoff result.
 // "sent" is only recorded when Resend accepted the message. Samples themselves are fulfilled by the owner.
 import { eq } from "drizzle-orm";
@@ -33,7 +34,7 @@ export function confirmationMail(email: string, label: string) {
 /** Sends the confirmation and records the real result on the row. Never throws. */
 export async function sendConfirmation(
   db: Db,
-  env: Pick<CloudflareEnv, "RESEND_API_KEY">,
+  env: Pick<CloudflareEnv, "RESEND_API_KEY"> & Partial<Pick<CloudflareEnv, "DB" | "EMAIL_KEY_SECRET">>,
   send: Mailer,
   id: number,
   email: string,
@@ -41,7 +42,7 @@ export async function sendConfirmation(
 ): Promise<EmailStatus> {
   let status: EmailStatus;
   let error: string | null = null;
-  if (!env.RESEND_API_KEY) {
+  if (!(await emailConfigured(env))) {
     status = "not_configured";
     error = "Email service is not configured.";
   } else {

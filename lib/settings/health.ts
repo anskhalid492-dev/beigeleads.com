@@ -1,3 +1,5 @@
+import { resolveResend } from "@/lib/email/credentials";
+import { checkKey } from "@/lib/email/resend-api";
 /**
  * Real connectivity checks for the admin status pages. Each check actually talks to the service; nothing is assumed.
  * Results are remembered in KV (`health:last:<id>`) so the page can show "last verified" honestly.
@@ -34,12 +36,10 @@ export async function runCheck(env: Env, id: CheckId): Promise<CheckResult> {
         return done(true, `Bucket reachable (${res.objects.length ? "contains files" : "empty"}).`, ms);
       }
       case "resend": {
-        if (!env.RESEND_API_KEY) return done(false, "RESEND_API_KEY is not set.");
-        const [res, ms] = await timed(() => fetch("https://api.resend.com/domains", { headers: { Authorization: `Bearer ${env.RESEND_API_KEY}` } }));
-        if (res.ok) return done(true, "Resend accepted the key.", ms);
-        let msg = ""; try { msg = String(((await res.json()) as { message?: string }).message ?? ""); } catch { /* none */ }
-        if (res.status === 401 && /restricted/i.test(msg)) return done(true, "The key works for sending only (it cannot list domains). Use the test email on the Email page to prove sending.", ms);
-        return done(false, `Resend answered HTTP ${res.status}${msg ? `: ${msg.slice(0, 120)}` : ""}.`, ms);
+        const c = await resolveResend(env);
+        if (!c.key) return done(false, "No Resend key: add one in Integrations > Resend, or set RESEND_API_KEY.");
+        const k = await checkKey(c.key);
+        return done(k.state === "valid_full" || k.state === "valid_sending_only", k.detail, k.ms);
       }
       case "turnstile": {
         if (!env.TURNSTILE_SECRET_KEY) return done(false, "TURNSTILE_SECRET_KEY is not set.");
