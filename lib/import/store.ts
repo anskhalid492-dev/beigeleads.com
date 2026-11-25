@@ -473,3 +473,24 @@ export async function applySeo(db: Db, ids: number[], o: SeoOptions, dry = false
   }
   return { changed, slugChanged, sample };
 }
+
+
+const CUSTOM_FIELDS_KEY = "catalog.customFields";
+/** Field names the admin added by hand, kept for every product (max 200). */
+export async function loadCustomFields(db: Db): Promise<string[]> {
+  try {
+    const r = await db.select({ v: schema.systemSettings.value }).from(schema.systemSettings).where(eq(schema.systemSettings.key, CUSTOM_FIELDS_KEY)).limit(1);
+    const v = JSON.parse(r[0]?.v || "[]") as unknown;
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, 200) : [];
+  } catch { return []; }
+}
+/** Adds (or, with remove, deletes) names in the shared list. Case-insensitive de-dupe; returns the new list. */
+export async function saveCustomFields(db: Db, names: string[], by: string, remove = false): Promise<string[]> {
+  const cur = await loadCustomFields(db);
+  const clean = names.map((n) => n.trim().slice(0, 80)).filter(Boolean);
+  const lower = new Set(clean.map((n) => n.toLowerCase()));
+  const next = remove ? cur.filter((n) => !lower.has(n.toLowerCase())) : [...cur, ...clean.filter((n) => !cur.some((c) => c.toLowerCase() === n.toLowerCase()))].slice(0, 200);
+  const v = JSON.stringify(next.filter((n, i) => next.findIndex((x) => x.toLowerCase() === n.toLowerCase()) === i));
+  await db.insert(schema.systemSettings).values({ key: CUSTOM_FIELDS_KEY, value: v, updatedBy: by }).onConflictDoUpdate({ target: schema.systemSettings.key, set: { value: v, updatedBy: by, updatedAt: new Date() } });
+  return JSON.parse(v) as string[];
+}

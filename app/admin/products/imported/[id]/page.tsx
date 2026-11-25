@@ -9,7 +9,7 @@ import { getCategories, autoProductFaqs, type Product } from "@/lib/catalog";
 import { cleanFaqs } from "@/lib/catalog-db";
 import { PRODUCT_VERIFIED } from "@/lib/product-fields";
 import { schema } from "@/lib/db";
-import { getProductRow, rowFields, rowSamples, rowFlags, rowPackages, rowRestricted } from "@/lib/import/store";
+import { getProductRow, rowFields, rowSamples, rowFlags, rowPackages, rowRestricted, loadCustomFields } from "@/lib/import/store";
 import { EditForm } from "./edit-form";
 
 function fieldsCustomOf(sj: string | null): boolean { try { return !!(JSON.parse(sj || "{}") as { fieldsCustom?: unknown }).fieldsCustom; } catch { return false; } }
@@ -33,11 +33,12 @@ export default async function EditImported({ params }: { params: Promise<{ id: s
   const custom = fieldsCustomOf(r.sourceJson) && rowFields(r).length > 0;
   const pseudo = { name: r.name, fields: custom ? rowFields(r) : defaults, recordCount: r.recordCount, lastVerified: r.lastUpdated && r.lastUpdated > PRODUCT_VERIFIED ? r.lastUpdated : PRODUCT_VERIFIED } as unknown as Product;
   const autoFaqs = autoProductFaqs(pseudo, { singular: r.categoryName } as never, { name: r.countryName } as never).map(([q, a]) => ({ q, a }));
+  const savedFields = await loadCustomFields(db);
   const savedFaqs = storedFaqs(r.sourceJson);
   return (
     <>
       <PageHeader title={r.name} text={`${r.status} · ${r.categoryName} · ${r.countryName}${r.region ? ` · ${r.region}` : ""} · /lists/${r.slug}`} actions={<Link href="/admin/products" className="text-sm underline">Back to imported products</Link>} />
-      <EditForm autoFaqs={autoFaqs} defaults={defaults} categories={categories} samples={rowSamples(r)} origin={r.origin} id={r.id} status={r.status} slug={r.slug} restricted={rowRestricted(r)} flags={rowFlags(r)}
+      <EditForm savedFields={savedFields} autoFaqs={autoFaqs} defaults={defaults} categories={categories} samples={rowSamples(r)} origin={r.origin} id={r.id} status={r.status} slug={r.slug} restricted={rowRestricted(r)} flags={rowFlags(r)}
         initial={{ faqs: savedFaqs.length ? savedFaqs : autoFaqs, categoryName: r.categoryName, extraCategories: extraNames(r.sourceJson), recordCount: r.recordCount, dataFields: fieldsCustomOf(r.sourceJson) && rowFields(r).length ? rowFields(r).join("\n") : defaults.join("\n"), fieldsCustom: fieldsCustomOf(r.sourceJson), fileFormats: r.fileFormats ?? "", coverage: r.coverage ?? "", lastUpdated: r.lastUpdated ?? "", placeholder: !!r.placeholder, forSale: !!r.forSale, name: r.name, title: r.title, description: r.description, seoTitle: r.seoTitle ?? "", metaDescription: r.metaDescription ?? "", packages: rowPackages(r).map((k) => ({ name: k.name as "Starter" | "Professional" | "Complete", records: k.records, priceUsdCents: k.priceUsdCents, highlighted: !!k.highlighted })) }} />
     </>
   );

@@ -8,7 +8,7 @@ import { getDbFromEnv, schema } from "@/lib/db";
 import { reservedSlugs } from "@/lib/import/reserved";
 import { maskRows } from "@/lib/product-samples";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
-import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
+import { saveSamples, saveSamplesBySlug, saveCustomFields } from "@/lib/import/store";
 import { deleteProducts, saveDefaultSample, applySeo, applyBatch, createProduct, duplicateProduct, finishImport, importBuiltin, listIds, newProductSchema, productEditSchema, setLastUpdated, updateProduct, importProductSchema, planBatch, rollbackImport, setStatus, startImport, importReady, setProductSlug, type DupPolicy, type PlanItem } from "@/lib/import/store";
 
 const env = () => getCloudflareContext().env;
@@ -249,4 +249,14 @@ export async function renameProductSlugAction(id: unknown, slug: unknown): Promi
   const r = await setProductSlug(db(), i.data, s.data);
   if (r.ok && r.slug) { await audit(a.email, `Changed URL of product #${i.data} to ${r.slug}`); await refresh(); }
   return r;
+}
+
+/** Remember field names added by hand so they can be picked on any product. */
+export async function saveCustomFieldsAction(namesIn: unknown, remove: unknown = false): Promise<{ ok: boolean; names: string[] }> {
+  const a = await admin(); if (!a) return { ok: false, names: [] };
+  const n = z.array(z.string().max(80)).max(50).safeParse(namesIn);
+  if (!n.success) return { ok: false, names: [] };
+  const names = await saveCustomFields(db(), n.data, a.email, remove === true);
+  await audit(a.email, `${remove === true ? "Removed" : "Saved"} custom field name(s): ${n.data.join(", ").slice(0, 300)}`);
+  return { ok: true, names };
 }

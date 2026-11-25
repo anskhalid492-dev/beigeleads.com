@@ -13,7 +13,7 @@ import { getDbFromEnv, schema } from "@/lib/db";
 import { applyLinks } from "@/lib/delivery/bulk";
 import { saveDefaultSample, applySeo, renameProduct, createProduct, duplicateProduct, getProductRow, setProductSlug, importBuiltin, deleteProducts, setLastUpdated, updateProduct } from "@/lib/import/store";
 import { maskRows } from "@/lib/product-samples";
-import { saveSamples, saveSamplesBySlug } from "@/lib/import/store";
+import { loadCustomFields, saveCustomFields, saveSamples, saveSamplesBySlug } from "@/lib/import/store";
 import { getStaticProducts } from "@/lib/catalog";
 import { applyBatch, finishImport, listProducts, planBatch, rollbackImport, setStatus, startImport, type ImportRow } from "@/lib/import/store";
 import { reservedSlugs } from "@/lib/import/reserved";
@@ -33,6 +33,14 @@ beforeAll(async () => {
 afterAll(async () => { await proxy?.dispose(); });
 
 describe("catalog import", () => {
+  it("keeps hand-added field names for every product (dedupe, remove)", async () => {
+    const db = getDbFromEnv(env);
+    expect(await loadCustomFields(db)).toEqual([]);
+    await saveCustomFields(db, ["Opening Year", " opening year ", "Parking"], "t@x");
+    expect(await loadCustomFields(db)).toEqual(["Opening Year", "Parking"]);
+    await saveCustomFields(db, ["parking"], "t@x", true);
+    expect(await loadCustomFields(db)).toEqual(["Opening Year"]);
+  });
   it("imports as drafts, is idempotent, and handles duplicates by policy", async () => {
     const db = getDbFromEnv(env);
     const id = await startImport(db, "t.csv", 4);

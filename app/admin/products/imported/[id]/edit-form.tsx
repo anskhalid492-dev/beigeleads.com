@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseCsv, tableFromGrid } from "@/lib/glossary/tabular";
 import { maskRows, type SampleRowData } from "@/lib/product-samples";
-import { deleteProductsAction, duplicateProductAction, renameProductSlugAction, saveProductAction, saveSampleAction } from "../../import/actions";
+import { deleteProductsAction, duplicateProductAction, renameProductSlugAction, saveCustomFieldsAction, saveProductAction, saveSampleAction } from "../../import/actions";
 
 type Pk = { name: string; records: number; priceUsdCents: number; highlighted: boolean };
 type Faq = { q: string; a: string };
@@ -13,13 +13,13 @@ const box = "w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm
 import { FIELD_CATALOG, LOCAL_FIELD_CATALOG } from "@/lib/product-fields";
 
 /** The fields cards of the product page: tick what this list really contains. Names outside the catalog go in the box below. */
-function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (v: string) => void; defaults: string[] }) {
+function FieldPicker({ value, onChange, defaults, saved }: { value: string; onChange: (v: string) => void; defaults: string[]; saved: string[] }) {
   const list = value.split("\n").map((x) => x.trim()).filter(Boolean);
   const [draft, setDraft] = useState("");
-  const [mine, setMine] = useState<string[]>([]);
+  const [mine, setMine] = useState<string[]>(saved);
   const emit = (names: string[]) => onChange([...new Set(names.map((n) => n.trim()).filter(Boolean))].join("\n"));
   const has = (n: string) => list.some((x) => x.toLowerCase() === n.toLowerCase());
-  const add = () => { const v = draft.trim(); if (v && !has(v)) { emit([...list, v]); if (!known.has(v.toLowerCase())) setMine((m) => (m.some((x) => x.toLowerCase() === v.toLowerCase()) ? m : [...m, v])); } setDraft(""); };
+  const add = () => { const v = draft.trim(); if (v && !has(v)) { emit([...list, v]); if (!known.has(v.toLowerCase())) { setMine((m) => (m.some((x) => x.toLowerCase() === v.toLowerCase()) ? m : [...m, v])); void saveCustomFieldsAction([v]); } } setDraft(""); };
   const catalog = [...LOCAL_FIELD_CATALOG, ...FIELD_CATALOG];
   const groups = [...new Set(catalog.map((c) => c.group))];
   const known = new Set(catalog.map((c) => c.name.toLowerCase()));
@@ -52,7 +52,7 @@ function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (
           {own.length > 0 && (
             <div className="rounded-lg bg-sand-50 p-2"><b className="text-xs">Your added fields</b>
               {own.map((n) => (
-                <label key={n} className="flex items-start gap-2 py-0.5 text-xs"><input type="checkbox" className="mt-0.5" checked={has(n)} onChange={() => emit(has(n) ? list.filter((x) => x.toLowerCase() !== n.toLowerCase()) : [...list, n])} /><span>{n}</span></label>
+                <label key={n} className="flex items-start gap-2 py-0.5 text-xs"><input type="checkbox" className="mt-0.5" checked={has(n)} onChange={() => emit(has(n) ? list.filter((x) => x.toLowerCase() !== n.toLowerCase()) : [...list, n])} /><span className="flex-1">{n}</span>{mine.some((x) => x.toLowerCase() === n.toLowerCase()) && <button type="button" aria-label={`Forget ${n}`} title="Remove from your saved fields" className="px-1 font-bold" onClick={() => { setMine((m) => m.filter((x) => x.toLowerCase() !== n.toLowerCase())); void saveCustomFieldsAction([n], true); }}>×</button>}</label>
               ))}
             </div>
           )}
@@ -70,7 +70,7 @@ function FieldPicker({ value, onChange, defaults }: { value: string; onChange: (
   );
 }
 
-export function EditForm({ autoFaqs, defaults, categories, samples, id, origin, status, slug, restricted, flags, initial }: { autoFaqs: Faq[]; defaults: string[]; categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
+export function EditForm({ savedFields, autoFaqs, defaults, categories, samples, id, origin, status, slug, restricted, flags, initial }: { savedFields: string[]; autoFaqs: Faq[]; defaults: string[]; categories: string[]; samples: SampleRowData[]; origin: string; id: number; status: string; slug: string; restricted: string[]; flags: string[]; initial: Init }) {
   const [f, setF] = useState(initial); const [price, setPrice] = useState(initial.packages.map((k) => (k.priceUsdCents / 100).toString()));
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const router = useRouter(); const [csv, setCsv] = useState(""); const [saved, setSaved] = useState(samples);
   const preview = csv.trim() ? maskRows(tableFromGrid(parseCsv(csv)).rows) : [];
@@ -151,7 +151,7 @@ export function EditForm({ autoFaqs, defaults, categories, samples, id, origin, 
           <label><span className="mb-1 block text-xs font-semibold">File formats</span><input className={box} placeholder="CSV, Excel or TXT" value={f.fileFormats} maxLength={80} onChange={(e) => set("fileFormats", e.target.value)} /></label>
           <label><span className="mb-1 block text-xs font-semibold">Coverage</span><input className={box} placeholder="Automatic from country and state" value={f.coverage} maxLength={160} onChange={(e) => set("coverage", e.target.value)} /></label>
         </div>
-        <FieldPicker value={f.dataFields} defaults={defaults} onChange={(v) => set("dataFields", v)} />
+        <FieldPicker saved={savedFields} value={f.dataFields} defaults={defaults} onChange={(v) => set("dataFields", v)} />
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.forSale} onChange={(e) => set("forSale", e.target.checked)} /> For sale (off = preview only, cannot be bought)</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.placeholder} onChange={(e) => set("placeholder", e.target.checked)} /> These figures are placeholders (the page says so)</label>
