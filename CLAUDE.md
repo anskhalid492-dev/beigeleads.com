@@ -1529,3 +1529,7 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 ## 166. Coverage decides the country (24 Nov 2026) — amends sections 96 and 165
 
 - Bug: after typing a country in a product's Coverage, the hero flag, the "for Worldwide" line and the card badge still followed the stored country (the import's fallback). Now a country named in Coverage (`countryIn(text, true)`, `lib/import/geo.ts`) overrides the stored country when the catalog loads (`toCatalog`, so already-edited products fix themselves within the ~60 s cache) and is also saved by `updateProduct`. A US state in Coverage fills the state when none is set. Coverage text that names no known country leaves the country as it was. The URL does not change. Test: `tests/product-search.test.ts`.
+
+## 167. Pilo: every tool call gets an answer (24 Nov 2026) — amends section 105
+
+- Production failure "An assistant message with 'tool_calls' must be followed by tool messages responding to each 'tool_call_id'": `chat()` ran only the first 4 tool calls of a step but sent all of them back in the assistant message, so the provider rejected the next request. Calls beyond the 4th now get a "skipped" tool result (`lib/beigepilot/chat.ts`). Live within the next deploy; the Overview failure box clears after the next good answer.

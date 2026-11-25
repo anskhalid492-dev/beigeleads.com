@@ -124,7 +124,11 @@ async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: Ch
       if (!r.calls.length) { text = r.text; break; }
       msgs.push({ role: "assistant", text: r.text, calls: r.calls, raw: r.raw });
       const results = [];
-      for (const c of r.calls.slice(0, 4)) { input.onTool?.(c.name); results.push({ id: c.id, name: c.name, content: await runTool(ctx, c.name, c.args) }); }
+      // Every tool call the model made needs an answer (the provider rejects the next request otherwise), so calls beyond the first 4 get a "skipped" result instead of being dropped.
+      for (const [i, c] of r.calls.entries()) {
+        if (i >= 4) { results.push({ id: c.id, name: c.name, content: JSON.stringify({ skipped: "Too many tool calls at once. Ask again if this is still needed." }) }); continue; }
+        input.onTool?.(c.name); results.push({ id: c.id, name: c.name, content: await runTool(ctx, c.name, c.args) });
+      }
       msgs.push({ role: "tool", results });
     }
     await logUsage(env, id, row.model, tin, tout, false);
