@@ -5,7 +5,7 @@ import { complete, isProviderId, PROVIDER_LABEL, ProviderError, type Msg, type P
 import { logUnanswered } from "./leads";
 import { publishedEntries } from "./knowledge";
 import { DEFAULT_SALES, getProviderKey, getSettings, limitReached, listProviders, logUsage, type Settings } from "./store";
-import { newCtx, runTool, toolsFor, type Bundle, type Card, type DfyCardData, type OfferCard, type Source } from "./tools";
+import { newCtx, runTool, toolsFor, type Bundle, type Card, type DfyCardData, type Extra, type OfferCard, type Source } from "./tools";
 import { detectLang, isLang, langName, type Lang } from "./v2/lang";
 import { describe as describeMemory, isEmpty as memoryEmpty, parseMemory, remember, type Memory } from "./v2/memory";
 import { nextSlot, questionFor, quickReplies, type Quick } from "./v2/followup";
@@ -15,7 +15,7 @@ import { SALES_TALK, turnHint } from "./v2/sales-talk";
 
 export type ChatIn = { history: { role: "user" | "assistant"; text: string }[]; path: string; cart?: { slug: string; pkg: string }[]; provider?: ProviderId; /** chosen language ("auto"/undefined = detect), session id and connection hash (negotiation limits), memory the browser holds */ lang?: string; sid?: string; ipHash?: string; memory?: unknown; /** Called with the tool name right before it runs (drives the live "searching" state). */ onTool?: (name: string) => void };
 export type ChatOut = {
-  ok: boolean; text: string; cards: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources: Source[]; handoff: string | null;
+  ok: boolean; text: string; extras?: Extra[]; cards: Card[]; dfy?: DfyCardData[]; bundle?: Bundle | null; sources: Source[]; handoff: string | null;
   trace: { name: string; args: unknown; ok: boolean }[]; provider?: ProviderId; model?: string; tokensIn?: number; tokensOut?: number; usedFallback?: boolean; error?: string; miss?: boolean; tools?: string[];
   /** BeigePilot 2.0 */ lang?: Lang; memory?: Memory; quick?: Quick[]; offer?: OfferCard | null; keptVolume?: boolean;
 };
@@ -92,6 +92,9 @@ export function buildSystem(s: Settings, page: string, restricted: string[] = []
     sa.budget ? "BUDGET: when the visitor gives a budget call findWithinBudget (budgetUsd, optional query, count for several databases, maximizeContacts for 'maximum contacts'). Quote prices and totals only from its result. Never add up prices yourself and never present something over budget as within budget. Volume discounts are included only when the tool says so." : "",
     sa.cart ? "ADD TO CART: when the visitor asks to add a list, call prepareAddToCart. If the package is unclear, ask which one (list the real packages and prices) and never pick for them. You cannot add to the cart and cannot place orders or take payment: the visitor presses Add to Cart, then View Cart. Never say an item was added." : "",
     sa.handoff ? "HUMAN SUPPORT: if the visitor asks for a person, reports a payment or download problem, wants custom pricing or has a complicated requirement, call suggestContact right away with a one-line reason and do not keep questioning them." : "",
+    "ORDER STATUS: when the visitor asks where their order, payment or delivery is, call showOrderLookup. They type the order number and email into the form, never in the chat; never ask for them, never guess a status. Do not claim to see any order.",
+    "NO MATCH / CUSTOM LIST: when searchProducts finds nothing that fits (or the visitor describes an ideal customer and no ready-made list matches), say plainly there is no ready-made match, then call prepareCustomList with their need in plain words. You cannot submit it: they check the prefilled form and send it. Never promise a price, quantity or delivery time for a custom list.",
+    "FIT CHECK: when the visitor describes their ideal customer in a sentence, search for it, show only real matches (showProductCards), say how well each fits using only catalog facts, and say 'no ready-made match' honestly when that is the case. No invented counts or numbers.",
     v2,
     `CURRENT PAGE: ${page}`,
     restricted.length ? `NEVER state or imply any of the following, even if asked (the team forbids these claims). If asked, say you cannot confirm it and point to /contact:\n${restricted.map((r) => `- ${r.slice(0, 300)}`).join("\n")}` : "",
@@ -143,7 +146,7 @@ async function runOne(env: CloudflareEnv, id: ProviderId, s: Settings, input: Ch
   // Smart follow-up: reply buttons only when the assistant really ended with a question and a slot is still open.
   const slot = nextSlot(v2.memory, { hasCards: ctx.cards.length > 0 });
   const quick = /[?؟]\s*$/.test(cleaned) && !ctx.v2.offer ? quickReplies(slot, v2.lang) : [];
-  return { ok: true, lang: v2.lang, memory: v2.memory, quick, offer: ctx.v2.offer, keptVolume: ctx.v2.keptVolume, text: cleaned, cards: ctx.cards, dfy: ctx.dfy, bundle: ctx.bundle, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
+  return { ok: true, lang: v2.lang, memory: v2.memory, quick, offer: ctx.v2.offer, keptVolume: ctx.v2.keptVolume, text: cleaned, extras: ctx.extras, cards: ctx.cards, dfy: ctx.dfy, bundle: ctx.bundle, sources: uniq, handoff: ctx.handoff, trace: ctx.trace, provider: id, model: row.model, tokensIn: tin, tokensOut: tout, miss: ctx.miss, tools: [...new Set(ctx.trace.map((t) => t.name))] };
 }
 
 /** Visitor chat. `input.provider` (admin playground only) overrides the active provider and skips the fallback. */

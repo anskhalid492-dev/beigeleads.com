@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PublicReviews } from "@/components/reviews/public-reviews";
 import { SolutionFaq } from "@/components/solutions/sections";
 import { JsonLd } from "@/components/shared/json-ld";
 import { ProductOverview } from "@/components/product/overview";
@@ -55,6 +56,7 @@ export function ProductPageView({ slug }: { slug: string }) {
       <ProductAudience product={p} category={c} />
       <ProductHowItWorks name={p.name} />
       <ProductQuality product={p} />
+      <PublicReviews slug={p.slug} />
       <SolutionFaq name={`the ${p.name}`} items={getProductFaqs(p, c, k)} />
       <RelatedProducts items={getRelatedProducts(p, 12)} />
       <JsonLd data={productJsonLd(p, c, k, forSale)} />

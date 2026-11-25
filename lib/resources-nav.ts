@@ -1,4 +1,4 @@
-import { BookOpen, BookText, CircleDollarSign, FileCheck2, Gauge, GraduationCap, HelpCircle, Image as ImageIcon, Newspaper, Route, Sparkles, Users, Bot, type LucideIcon } from "lucide-react";
+import { BookOpen, BookText, CircleDollarSign, FileCheck2, Gauge, GraduationCap, HelpCircle, Image as ImageIcon, Newspaper, PackageSearch, Route, Sparkles, Users, Bot, Target, type LucideIcon } from "lucide-react";
 
 export type ResourceLink = { name: string; href: string; text: string; icon: LucideIcon };
 
@@ -28,6 +28,8 @@ export const RESOURCE_GROUPS: { heading: string; links: ResourceLink[] }[] = [
     heading: "Help and tools",
     links: [
       { name: "Help Center", href: "/help-center", text: "Answers and how-tos", icon: HelpCircle },
+      { name: "Find My Order", href: "/order-lookup", text: "Check status, no account", icon: PackageSearch },
+      { name: "List Fit Check", href: "/list-fit-check", text: "Does a list match your customer?", icon: Target },
       { name: "AI Assistant", href: "/ai-assistant", text: "Meet Pilo", icon: Bot },
       { name: "Media Kit", href: "/media-kit", text: "Logos, colours, fonts", icon: ImageIcon },
     ],

@@ -41,7 +41,8 @@ describe("output safety", () => {
 
 describe("tools are read-only and grounded", () => {
   it("has no tool that writes, orders or returns download links", () => {
-    const names = TOOLS.map((t) => t.name).join(" ");
+    // showOrderLookup only SHOWS a lookup form (it cannot read or change an order); it is the one allowed name.
+    const names = TOOLS.map((t) => t.name).filter((n) => n !== "showOrderLookup").join(" ");
     expect(names).not.toMatch(/order|checkout|delete|update|download|email/i);
   });
   it("unknown slugs are an error, not an invention", async () => {

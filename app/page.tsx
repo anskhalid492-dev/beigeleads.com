@@ -10,6 +10,7 @@ import { ledgerSheets } from "@/lib/home-ledger";
 import { SampleLedger } from "@/components/home/sample-ledger";
 import { DbBadge } from "@/components/shared/db-icon";
 import { fmtNum } from "@/components/product/meta";
+import { PublicReviews } from "@/components/reviews/public-reviews";
 import { SolutionFaq } from "@/components/solutions/sections";
 import { Button } from "@/components/ui/button";
 import { formatUsd, getCategories, getCities, getCountries, getCountry, getProducts, startingPriceCents } from "@/lib/catalog";
@@ -315,6 +316,7 @@ export default async function Home() {
       {/* 11. Comparison with named providers */}
       <CompareMatrix />
 
+      <PublicReviews />
       {/* 12. FAQ */}
       <SolutionFaq name="BeigeLeads" items={faq} />
     </>

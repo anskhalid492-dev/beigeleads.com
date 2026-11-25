@@ -10,6 +10,46 @@ const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and 
  */
 export const TEMPLATES: TemplateDef[] = [
   ...DFY_TEMPLATES,
+  // ---- Customer follow-ups (section 170): sent only when switched on in /admin/reviews ------------------------------
+  {
+    key: "review_request", name: "How was your list? (review request)", audience: "customer", category: "Customer Follow-up", canDisable: true, connection: "connected",
+    event: "A few days after a list was delivered (admin sets the delay; off until switched on in Reviews). One request per order.",
+    vars: ["first_name", "order_number", "product_name", "review_url", "unsubscribe_url"], required: ["review_url", "unsubscribe_url"],
+    content: {
+      subject: "How was your {{product_name}} list?",
+      preheader: "One short question about your order.",
+      heading: "How was your list?",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "You received **{{product_name}}** (order {{order_number}}) a few days ago. We would like to hear how it went. It takes under a minute, and you can write as much or as little as you like." },
+        { t: "note", text: "Your answer is only shown on our website if you allow it, with the name you choose. We do not edit your words." },
+        { t: "p", text: "This is a one-time request about your order. If you do not want requests like this, you can opt out and we will not send another." },
+        { t: "button", label: "Opt out of review requests", url: "{{unsubscribe_url}}", variant: "outline" },
+      ],
+      cta: { label: "Rate My List", url: "{{review_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
+  {
+    key: "sample_followup", name: "Sample follow-up", audience: "customer", category: "Customer Follow-up", canDisable: true, connection: "connected",
+    event: "A few days after a free sample you asked for was marked fulfilled, only if you have not ordered that list (admin sets the delay; off until switched on). One email per sample request.",
+    vars: ["first_name", "product_name", "list_url", "unsubscribe_url"], required: ["list_url", "unsubscribe_url"],
+    content: {
+      subject: "About the {{product_name}} sample you asked for",
+      preheader: "A note about your sample request.",
+      heading: "About your sample request",
+      blocks: [
+        { t: "p", text: "Hi {{first_name}}," },
+        { t: "p", text: "You asked for a free sample of **{{product_name}}** and our team sent it. This is a single follow-up about that request." },
+        { t: "p", text: "If the sample matched what you need, the full list page shows the packages and one-time prices. If it did not, tell us what was missing and we will tell you plainly whether we can help or whether a custom list is the better route." },
+        { t: "p", text: "There is no subscription and no account. You pay once and receive the list by email." },
+        { t: "note", text: "We send this one email because you requested the sample. If you would rather not get follow-ups like this, you can opt out below." },
+        { t: "button", label: "Opt out of follow-ups", url: "{{unsubscribe_url}}", variant: "outline" },
+      ],
+      cta: { label: "View This List", url: "{{list_url}}" },
+      signoff: "The BeigeLeads team",
+    },
+  },
   // ---- Sales Features: Second Purchase Offer (section 113) ------------------------------------------------
   {
     key: "reward_first", name: "Second purchase reward: your code", audience: "customer", category: "Sales Features", canDisable: true, connection: "connected",

@@ -85,7 +85,7 @@ export function categoryOf(templateKey?: string): SenderCategory {
   if (!t) return "alerts";
   if (t.audience === "admin") return "alerts";
   if (t.category === "Data Reseller Partners") return "partners";
-  if (t.category === "Sales Features" || t.category === "Email List Verification" || t.category === "DFY Outbound") return "services";
+  if (t.category === "Sales Features" || t.category === "Customer Follow-up" || t.category === "Email List Verification" || t.category === "DFY Outbound") return "services";
   if (["sample_request_received", "custom_request_received", "contact_received", "category_request_received", "creator_inquiry_received", "sample_delivery", "custom_quote"].includes(t.key)) return "inquiries";
   return "orders";
 }

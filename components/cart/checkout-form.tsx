@@ -8,6 +8,7 @@ import { cartActions, useCart, useCartBundles, useCartDfy, useCartVerification, 
 import type { CartPricing, VerificationUpsell } from "@/lib/cart/model";
 import { VerificationUpsellCard } from "@/components/cart/verification-card";
 import { readPartner, writePartner } from "@/lib/cart/partner";
+import { CryptoGuide } from "@/components/checkout/crypto-guide";
 import { TeamRequest } from "@/components/cart/team-request";
 import { formatUsd } from "@/lib/catalog";
 
@@ -113,6 +114,7 @@ export function CartCheckout({ options }: { options: Option[] }) {
                     ))}
                   </div>
                 </fieldset>
+                <CryptoGuide className="mt-5" />
                 <div className="mt-5">{turnstile}</div>
                 <div className="mt-4">{formError}</div>
                 <div className="mt-5">{submit("Continue to Payment")}</div>

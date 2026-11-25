@@ -1,4 +1,5 @@
 import { hydrateCatalog } from "@/lib/catalog-db";
+import { CryptoGuide } from "@/components/checkout/crypto-guide";
 import { ApiForm } from "@/components/forms/api-form";
 import { optionForWallet } from "@/lib/payments/options";
 import type { Metadata } from "next";
@@ -72,6 +73,8 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[orderId]
       )}
 
       <div className="mt-6"><CheckoutLive orderId={order.id} expiresAt={a.expiresAt.getTime()} initial={order.status} slugs={items.map((i) => i.productSlug)} verification={items.some((i) => i.productSlug === EV_SLUG)} lists={items.some((i) => i.productSlug !== EV_SLUG)} bundles={bundleRows.map((b) => b.bundleSlug)} /></div>
+
+      {order.status === "pending" && <CryptoGuide className="mt-6" />}
 
       <section aria-label="Payment details" className="mt-6 grid gap-6 rounded-3xl border border-sand-200 bg-white p-6 sm:grid-cols-[auto_1fr] sm:p-8">
         <div className="mx-auto" role="img" aria-label="QR code for the payment address and amount" dangerouslySetInnerHTML={{ __html: qr }} />

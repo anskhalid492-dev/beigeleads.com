@@ -1,0 +1,5 @@
+-- Customer follow-ups: list reviews, courtesy-email opt-outs, sample follow-up log. Run ONE statement at a time in D1 Studio.
+CREATE TABLE IF NOT EXISTS list_reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id TEXT NOT NULL UNIQUE, token_hash TEXT NOT NULL, product_slug TEXT NOT NULL DEFAULT '', product_name TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'requested', rating INTEGER, comment TEXT NOT NULL DEFAULT '', display_name TEXT NOT NULL DEFAULT '', requested_at INTEGER NOT NULL DEFAULT (unixepoch()), submitted_at INTEGER, moderated_at INTEGER, moderated_by TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS idx_list_reviews_token ON list_reviews (token_hash);
+CREATE TABLE IF NOT EXISTS courtesy_optouts (email_hash TEXT PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch()));
+CREATE TABLE IF NOT EXISTS sample_followups (sample_request_id INTEGER PRIMARY KEY, status TEXT NOT NULL DEFAULT 'sent', reason TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL DEFAULT (unixepoch()));
