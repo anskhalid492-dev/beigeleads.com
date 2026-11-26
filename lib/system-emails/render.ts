@@ -1,12 +1,13 @@
 import { BRAND, SITE } from "./brand";
 import { DEFAULT_BRANDING, type Branding } from "./branding";
-import type { Block, Content, Style } from "./types";
+import type { Block, Content, FounderMeta, Style } from "./types";
+import { renderFounder, type Card } from "@/lib/founder/render";
 import { VAR_KEYS, getVar } from "./variables";
 
 export type Vars = Record<string, string | undefined>;
 export type Issues = { missing: string[]; unknown: string[]; badUrl: boolean };
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const TOKEN = /\{\{\s*([a-z_]+)\s*(?:\|([^}]*))?\}\}/g;
 
 /** Names are optional. A missing name removes ", {{first_name}}" (or a leading "{{first_name}}, ") instead of printing "there". */
@@ -34,23 +35,25 @@ export function fill(text: string, vars: Vars, issues: Issues, fmt: (v: string) 
   });
 }
 
-const oneLine = (s: string) => s.replace(/\s+/g, " ").trim();
+export const oneLine = (s: string) => s.replace(/\s+/g, " ").trim();
 /** Variable values can never form **bold** or break out of HTML. */
 const htmlValue = (v: string) => esc(v).replace(/\*/g, "&#42;").replace(/\n/g, "<br>");
-const htmlText = (t: string, vars: Vars, issues: Issues) => {
+export const htmlText = (t: string, vars: Vars, issues: Issues) => {
   // Escape the template text first, then fill (values escaped separately), then apply **bold** to the result.
   const filled = fill(esc(t).replace(/&#39;/g, "'").replace(/&quot;/g, '"'), vars, issues, htmlValue);
   // Only links to our own site become clickable; a customer-typed address can never become a link.
   const linked = filled.replace(/https:\/\/beigeleads\.com[^\s<]*[^\s<.,;:)!?]/g, (u) => `<a href="${u}" style="color:${BRAND.forest700};text-decoration:underline">${u}</a>`);
   return linked.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
 };
-const plainText = (t: string, vars: Vars, issues: Issues) => fill(t, vars, issues).replace(/\*\*(.+?)\*\*/g, "$1");
+export const plainText = (t: string, vars: Vars, issues: Issues) => fill(t, vars, issues).replace(/\*\*(.+?)\*\*/g, "$1");
 
 /** Only https links, or a site path. Everything else (javascript:, data:, http:) is rejected. */
 export function safeUrl(raw: string): string | null {
   const u = raw.trim();
   if (/^\/(?!\/)[^\s"<>]*$/.test(u)) return SITE + u;
   if (/^https:\/\/[^\s"<>]+$/i.test(u)) { try { new URL(u); return u; } catch { return null; } }
+  // Reply-based buttons: ONLY the BeigeLeads contact inbox, with an already-encoded subject/body.
+  if (/^mailto:hello@beigeleads\.com(\?[A-Za-z0-9%._~!$&'()*+,;=:@\/?-]*)?$/.test(u)) return u;
   return null;
 }
 
@@ -59,7 +62,7 @@ export type Rendered = { subject: string; preheader: string; html: string; text:
 const TEXT_PX = { sm: 14, md: 16, lg: 18, xl: 22 } as const;
 const HEAD_PX = { sm: 18, md: 22, lg: 26, xl: 32 } as const;
 const PAD = { none: 0, sm: 8, md: 16, lg: 24 } as const;
-const MUTED_URL_ISSUES = (): Issues => ({ missing: [], unknown: [], badUrl: false });
+export const MUTED_URL_ISSUES = (): Issues => ({ missing: [], unknown: [], badUrl: false });
 
 /** Wraps already-safe inner HTML in the block's tone/alignment/padding. Colours come only from the palette. */
 function box(inner: string, st: Style | undefined, d: { tone?: Style["tone"]; pad?: Style["pad"]; bottom?: number } = {}): string {
@@ -72,7 +75,7 @@ function box(inner: string, st: Style | undefined, d: { tone?: Style["tone"]; pa
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${d.bottom ?? 16}px"><tr><td class="${cls}" align="${align}" style="${toneCss}${tone !== "none" ? `border-radius:${radius}px;` : ""}padding:${pad}px;text-align:${align}">${inner}</td></tr></table>`;
 }
 
-function blockHtml(b: Block, vars: Vars, issues: Issues, br: Branding): string {
+export function blockHtml(b: Block, vars: Vars, issues: Issues, br: Branding): string {
   const st = b.style;
   const fs = TEXT_PX[st?.size ?? "md"];
   const base = `margin:0;font-size:${fs}px;line-height:1.6;${st?.bold ? "font-weight:700;" : ""}`;
@@ -133,7 +136,7 @@ function blockHtml(b: Block, vars: Vars, issues: Issues, br: Branding): string {
   }
 }
 
-function buttonHtml(label: string, url: string, variant: "primary" | "dark" | "outline", br: Branding, radius?: number): string {
+export function buttonHtml(label: string, url: string, variant: "primary" | "dark" | "outline", br: Branding, radius?: number): string {
   const v = variant === "primary" && br.buttonColor === "dark" ? "dark" : variant;
   const r = radius ?? br.buttonRadius;
   const bg = v === "primary" ? BRAND.purple600 : v === "dark" ? BRAND.forest900 : "transparent";
@@ -142,7 +145,7 @@ function buttonHtml(label: string, url: string, variant: "primary" | "dark" | "o
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table"><tr><td align="center" ${v === "outline" ? 'class="t"' : `bgcolor="${bg}"`} style="${v === "outline" ? "" : `background:${bg};`}border-radius:${r}px;border:${border}"><a href="${esc(url)}" style="display:inline-block;padding:14px 28px;font-family:${BRAND.font};font-size:16px;font-weight:700;color:${fg};text-decoration:none;border-radius:${r}px">${esc(label)}</a></td></tr></table>`;
 }
 
-function blockText(b: Block, vars: Vars, issues: Issues): string {
+export function blockText(b: Block, vars: Vars, issues: Issues): string {
   switch (b.t) {
     case "p": case "note": case "heading": case "footnote": return plainText(b.text, vars, issues);
     case "list": return b.items.map((i) => plainText(i, vars, issues)).filter(Boolean).map((i) => `- ${i}`).join("\n");
@@ -158,7 +161,8 @@ function blockText(b: Block, vars: Vars, issues: Issues): string {
 }
 
 /** Renders one template. Pure: no network, no D1. `forceDark` is only for the admin dark-mode preview. */
-export function renderEmail(c: Content, vars: Vars, opts: { forceDark?: boolean; branding?: Branding } = {}): Rendered {
+export function renderEmail(c: Content, vars: Vars, opts: { forceDark?: boolean; branding?: Branding; founder?: FounderMeta; cards?: Card[] } = {}): Rendered {
+  if (opts.founder) return renderFounder(c, vars, { founder: opts.founder, branding: opts.branding, forceDark: opts.forceDark, cards: opts.cards });
   const br = opts.branding ?? DEFAULT_BRANDING;
   const issues: Issues = { missing: [], unknown: [], badUrl: false };
   const subject = oneLine(plainText(c.subject, vars, issues));

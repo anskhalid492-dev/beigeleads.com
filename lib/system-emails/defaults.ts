@@ -1,5 +1,6 @@
 import type { TemplateDef } from "./types";
 import { DFY_TEMPLATES } from "./dfy-templates";
+import { FOUNDER_TEMPLATES, INTERNAL_TEMPLATES } from "@/lib/founder/templates";
 
 const SIGN = "The BeigeLeads team";
 const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and no recurring charges.";
@@ -10,6 +11,8 @@ const KEEP = "BeigeLeads is a one-time purchase. There are no subscriptions and 
  */
 export const TEMPLATES: TemplateDef[] = [
   ...DFY_TEMPLATES,
+  ...FOUNDER_TEMPLATES,
+  ...INTERNAL_TEMPLATES,
   // ---- Customer follow-ups (section 170): sent only when switched on in /admin/reviews ------------------------------
   {
     key: "review_request", name: "How was your list? (review request)", audience: "customer", category: "Customer Follow-up", canDisable: true, connection: "connected",

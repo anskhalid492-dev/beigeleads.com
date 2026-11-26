@@ -13,7 +13,7 @@ describe("templates", () => {
   it("has every required template with complete copy", () => {
     const keys = TEMPLATES.map((t) => t.key);
     for (const k of ["order_confirmation", "payment_received", "product_delivery", "payment_pending", "payment_failed", "sample_request_received", "sample_delivery", "custom_request_received", "custom_quote", "contact_received", "category_request_received", "delivery_issue", "refund_update"]) expect(keys).toContain(k);
-    expect(TEMPLATES.filter((t) => t.audience === "admin")).toHaveLength(9); // 8 owner alerts + the verification new-order alert
+    expect(TEMPLATES.filter((t) => t.audience === "admin")).toHaveLength(15); // 8 owner alerts + the verification new-order alert + 6 customer-success alerts
     expect(new Set(keys).size).toBe(keys.length);
     for (const t of TEMPLATES) {
       expect(t.content.subject.length).toBeGreaterThan(5);

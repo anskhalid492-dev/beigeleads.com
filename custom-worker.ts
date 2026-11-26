@@ -104,6 +104,8 @@ export default {
       ctx.waitUntil(import("./lib/creators/reminders").then((m) => m.sendCreatorReminders(env)).catch(() => undefined));
       ctx.waitUntil(import("./lib/followups/reviews").then((m) => m.sendReviewRequests(env)).catch(() => undefined));
       ctx.waitUntil(import("./lib/followups/samples").then((m) => m.sendSampleFollowups(env)).catch(() => undefined));
+      ctx.waitUntil(import("./lib/founder/engine").then((m) => m.runJourneys(env)).catch(() => undefined));
+      ctx.waitUntil(import("./lib/founder/events").then((m) => m.sendWeeklySummary(env)).catch(() => undefined));
       ctx.waitUntil(purgeUnanswered(env).catch(() => undefined));
       ctx.waitUntil(getBpSettings(env).then(({ s }) => purgeHistory(env, s.retentionDays)).catch(() => undefined));
       ctx.waitUntil(purgeOldPopupEvents(env).catch(() => undefined));

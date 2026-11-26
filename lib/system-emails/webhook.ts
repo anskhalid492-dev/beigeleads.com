@@ -68,6 +68,7 @@ export async function processResendEvent(env: CloudflareEnv, svixId: string, bod
   if ((STATUS_RANK[status] ?? 0) <= (STATUS_RANK[row.delivery_status] ?? 0)) return { ok: true, status: 200, note: "older event" };
   const detail = String(evt.data?.bounce?.message ?? evt.data?.failed?.reason ?? evt.data?.reason ?? (evt.data?.bounce?.type ? `${evt.data.bounce.type}${evt.data.bounce.subType ? ` / ${evt.data.bounce.subType}` : ""}` : "")).slice(0, 300);
   const up = await env.DB.prepare("UPDATE email_delivery_logs SET delivery_status = ?, delivery_detail = ?, status_at = unixepoch() WHERE id = ? AND delivery_status = ?").bind(status, detail, row.id, row.delivery_status).run();
+  if (up.meta.changes && PROBLEM_STATUSES.includes(status) && /^cs\d\d_/.test(row.template_key)) await import("@/lib/founder/events").then((m) => m.onFounderProblem(env, providerId, status)).catch(() => undefined);
   if (up.meta.changes && PROBLEM_STATUSES.includes(status)) {
     await notifyOwner(env, `Email ${status}: ${row.template_key}`, `A system email was not delivered.\n\nTemplate: ${row.template_key}\nReference: ${row.reference || "-"}\nResult: ${status}${detail ? `\nDetail: ${detail}` : ""}\n\nOpen Admin > System Emails > Email activity to see it. The customer's address is not shown in logs; use the order or request reference to find them.`).catch(() => undefined);
   }

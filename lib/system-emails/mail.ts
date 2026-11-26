@@ -21,7 +21,7 @@ export async function systemMail(db: Db, key: string, to: string, vars: Vars, fa
     const br = await getBranding(db);
     const all: Vars = { ...systemVars(), ...(br.supportEmail ? { support_email: br.supportEmail } : {}), ...vars };
     if (t.def.required.some((k) => !all[k]?.trim())) return fallback;
-    const r = renderEmail(t.published, all, { branding: br });
+    const r = renderEmail(t.published, all, { branding: br, founder: t.def.founder });
     if (r.issues.badUrl || r.issues.unknown.length || !r.subject) return fallback;
     return { to, subject: r.subject, text: r.text, html: r.html, templateKey: key, reference: extra.reference };
   } catch { return fallback; }

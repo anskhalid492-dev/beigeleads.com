@@ -3,7 +3,7 @@ import { resolveResend } from "@/lib/email/credentials";
 import { senderFor } from "@/lib/email/senders";
 
 /** `html` + `templateKey` come from System Emails; plain callers keep sending text only. */
-export type Mail = { to: string; subject: string; text: string; html?: string; templateKey?: string; reference?: string; source?: "live" | "test" };
+export type Mail = { to: string; subject: string; text: string; html?: string; templateKey?: string; reference?: string; source?: "live" | "test"; /** Founder emails only: exact From, Reply-To and extra headers (List-Unsubscribe). */ from?: string; replyTo?: string; headers?: Record<string, string> };
 export type SendDetail = { ok: boolean; status: number; error?: string; id?: string };
 
 /** "alex@example.com" -> "a***@example.com". Logs never keep a full address. */
@@ -36,7 +36,7 @@ async function sendRaw(env: CloudflareEnv, mail: Mail): Promise<SendDetail> {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${cred.key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: snd.from, to: mail.to.split(",").map((x) => x.trim()).filter(Boolean), subject: mail.subject, text: mail.text, ...(mail.html ? { html: mail.html } : {}), ...(snd.replyTo ? { reply_to: snd.replyTo } : {}) }),
+      body: JSON.stringify({ from: mail.from ?? snd.from, to: mail.to.split(",").map((x) => x.trim()).filter(Boolean), subject: mail.subject, text: mail.text, ...(mail.html ? { html: mail.html } : {}), ...((mail.replyTo ?? snd.replyTo) ? { reply_to: mail.replyTo ?? snd.replyTo } : {}), ...(mail.headers ? { headers: mail.headers } : {}) }),
     });
     if (res.ok) {
       let id: string | undefined;

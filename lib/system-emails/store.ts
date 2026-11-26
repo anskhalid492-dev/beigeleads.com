@@ -79,7 +79,7 @@ export function checkContent(def: TemplateDef, raw: unknown): { content?: Conten
     else if (!allowed.has(k)) errors.push(`{{${k}}} is not available for this email. Its event cannot supply it.`);
   }
   for (const k of def.required) if (!used.has(k)) errors.push(`This email must use {{${k}}}. Without it the email would be incomplete.`);
-  const probe = renderEmail(content, exampleVars(def));
+  const probe = renderEmail(content, exampleVars(def), { founder: def.founder });
   if (probe.issues.badUrl) errors.push("A button, image or link is empty or unsafe. Use an https:// address or a site path like /contact.");
   for (const b of content.blocks) {
     if (b.t === "social") for (const l of b.links) if (l.url && !/^https:\/\//i.test(l.url)) errors.push(`The social link "${l.label}" must start with https://`);

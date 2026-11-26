@@ -74,6 +74,42 @@ export const contentSchema = z.object({
 });
 
 export type Audience = "customer" | "admin";
+
+/** Founder-led Customer Success metadata (section 173). Present only on the Founder-Led Customer Success templates. */
+export type FounderGroup = "Customer Onboarding" | "Relationship Building" | "Founder Insights" | "Product Discovery" | "Customer Experience" | "Long-Term Retention";
+export type FounderLayout = "A" | "B" | "C" | "D" | "E";
+export type SenderId = "A" | "B" | "C";
+/** service = about the order they placed; support = answers a request they made; lifecycle/promotional = optional, unsubscribable. */
+export type CommClass = "service" | "support" | "lifecycle" | "promotional";
+export type PrefKey = "recs" | "products" | "founder" | "education" | "offers";
+export type Anchor = "first_paid" | "first_fulfilled" | "event" | "manual";
+export type FounderMeta = {
+  /** CS-01 .. CS-36. */
+  id: string;
+  group: FounderGroup;
+  layout: FounderLayout;
+  sender: SenderId;
+  klass: CommClass;
+  /** Which preference switch controls this email (null = not optional). */
+  pref: PrefKey | null;
+  anchor: Anchor;
+  /** Default sending delay after the anchor, in hours. Editable in the journey builder. */
+  delayHours: number;
+  /** After this many hours past the due time the email is no longer relevant and is skipped. */
+  expireHours: number;
+  /** Lower number = more important when several are due. */
+  priority: number;
+  trigger: string;
+  eligibility: string;
+  /** Subject and prefilled text of the reply-based CTA. */
+  reply?: { subject: string; body?: string };
+  /** CTA falls back to "Reply to Anus" when no published resource exists. */
+  resourceCta?: boolean;
+  /** Counts as a reactivation attempt. */
+  reactivation?: boolean;
+  /** Skips the spacing caps (a thank-you for a purchase just made). */
+  exemptFromCaps?: boolean;
+};
 /** connected = a real backend event sends this email today. */
 export type Connection = "connected" | "not_connected";
 
@@ -95,4 +131,6 @@ export type TemplateDef = {
   /** The email must not be sent when one of these is empty. */
   required: string[];
   content: Content;
+  /** Set on Founder-Led Customer Success templates: layout, sender, timing, eligibility. */
+  founder?: FounderMeta;
 };

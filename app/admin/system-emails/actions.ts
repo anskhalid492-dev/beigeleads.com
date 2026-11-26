@@ -56,7 +56,7 @@ export async function previewAction(key: string, content: unknown, dark: boolean
   const { content: c, errors, warnings } = checkContent(def, content);
   if (!c) return { ok: true, preview: { subject: "", preheader: "", html: "", text: "", errors, warnings, used: [], ideas: [] } };
   const br = await getBranding(db0);
-  const r = renderEmail(c, { ...systemVars(), ...exampleVars(def), ...(br.supportEmail ? { support_email: br.supportEmail } : {}) }, { forceDark: dark, branding: br });
+  const r = renderEmail(c, { ...systemVars(), ...exampleVars(def), ...(br.supportEmail ? { support_email: br.supportEmail } : {}) }, { forceDark: dark, branding: br, founder: def.founder });
   const used = [...new Set([...JSON.stringify(c).matchAll(/\{\{\s*([a-z_]+)/g)].map((m) => m[1]))].map((k) => ({ key: k, label: getVar(k)?.label ?? k, required: def.required.includes(k), fallback: getVar(k)?.personal ? "removed from the sentence when missing" : getVar(k)?.fallback ? `shows "${getVar(k)!.fallback}"` : "hidden or empty when missing" }));
   return { ok: true, preview: { ...r, errors, warnings, used, ideas: suggestSubjects(def, c) } };
 }
@@ -75,7 +75,7 @@ export async function sendTestAction(key: string, content: unknown): Promise<Res
   if (n >= 10) return { ok: false, error: "Test email limit reached (10 per hour). Try again later." };
   await env.CACHE.put(rk, String(n + 1), { expirationTtl: 3700 });
   const br = await getBranding(getDbFromEnv(env));
-  const r = renderEmail(c, { ...systemVars(), ...exampleVars(def), ...(br.supportEmail ? { support_email: br.supportEmail } : {}) }, { branding: br });
+  const r = renderEmail(c, { ...systemVars(), ...exampleVars(def), ...(br.supportEmail ? { support_email: br.supportEmail } : {}) }, { branding: br, founder: def.founder });
   const banner = '<div style="background:#D8EADF;color:#0F2A1D;padding:8px 12px;font:13px sans-serif;text-align:center">Test email with example data. It was not sent to a customer.</div>';
   const res = await sendEmailDetailed(env, { to: admin.email, subject: `[TEST] ${r.subject}`, text: `TEST EMAIL with example data.\n\n${r.text}`, html: r.html.replace(/(<body[^>]*>)/, `$1${banner}`), templateKey: key, source: "test" });
   return res.ok ? { ok: true, to: admin.email } : { ok: false, error: res.error ?? "The email was not accepted." };
