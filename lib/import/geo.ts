@@ -111,6 +111,96 @@ Kazakhstan|KZ
 Azerbaijan|AZ
 Georgia (country)|GE
 Armenia|AM
+Andorra|AD
+Afghanistan|AF
+Antigua and Barbuda|AG|Antigua
+Albania|AL
+Bosnia and Herzegovina|BA|Bosnia
+Barbados|BB
+Burundi|BI
+Benin|BJ
+Brunei|BN|Brunei Darussalam
+Bahamas|BS|The Bahamas
+Bhutan|BT
+Belarus|BY
+Belize|BZ
+Congo (Kinshasa)|CD|DR Congo;Democratic Republic of the Congo
+Central African Republic|CF
+Congo (Brazzaville)|CG|Republic of the Congo;Congo-Brazzaville
+Ivory Coast|CI|Cote d'Ivoire;Côte d'Ivoire;Côte d’Ivoire
+Cuba|CU
+Cape Verde|CV|Cabo Verde
+Djibouti|DJ
+Dominica|DM
+Eritrea|ER
+Fiji|FJ
+Micronesia|FM
+Gabon|GA
+Grenada|GD
+Gambia|GM|The Gambia
+Guinea|GN
+Equatorial Guinea|GQ
+Guinea-Bissau|GW
+Guyana|GY
+Honduras|HN
+Haiti|HT
+Kyrgyzstan|KG|Kyrgyz Republic
+Kiribati|KI
+Comoros|KM
+Saint Kitts and Nevis|KN|St Kitts;St. Kitts
+North Korea|KP
+Laos|LA|Lao PDR;Lao People's Democratic Republic
+Saint Lucia|LC|St Lucia;St. Lucia
+Liechtenstein|LI
+Liberia|LR
+Lesotho|LS
+Libya|LY
+Monaco|MC
+Moldova|MD|Republic of Moldova
+Montenegro|ME
+Madagascar|MG
+Marshall Islands|MH
+North Macedonia|MK|Macedonia;North Macedonia
+Mali|ML
+Myanmar|MM|Burma
+Mongolia|MN
+Macau|MO|Macao
+Mauritania|MR
+Mauritius|MU
+Maldives|MV
+Malawi|MW
+Niger|NE
+Nicaragua|NI
+Nauru|NR
+Papua New Guinea|PG
+Palestine|PS|Palestinian Territories;State of Palestine
+Palau|PW
+Rwanda|RW
+Solomon Islands|SB
+Seychelles|SC
+Sudan|SD
+Sierra Leone|SL
+San Marino|SM
+Somalia|SO
+Suriname|SR
+South Sudan|SS
+Sao Tome and Principe|ST|São Tomé and Príncipe;Sao Tome
+El Salvador|SV
+Syria|SY|Syrian Arab Republic
+Eswatini|SZ|Swaziland;Eswatini
+Chad|TD
+Tajikistan|TJ
+Timor-Leste|TL|East Timor;Timor Leste
+Turkmenistan|TM
+Tonga|TO
+Trinidad and Tobago|TT|Trinidad
+Tuvalu|TV
+Uzbekistan|UZ|Uzbek
+Vatican City|VA|Vatican;Holy See
+Saint Vincent and the Grenadines|VC|St Vincent;St. Vincent
+Vanuatu|VU
+Samoa|WS
+Yemen|YE
 Gulf Cooperation Council|GCC|GCC;Gulf
 Europe|EUR|European
 Asia Pacific|APAC|APAC;Asia-Pacific

@@ -43,6 +43,13 @@ export function toCatalog(list: PubProduct[], hidden: string[] = [], aliases: Re
     const st = hit.code === "US" ? stateIn(p.coverage ?? "") : null;
     return { ...p, countrySlug: hit.slug, countryCode: hit.code, countryName: hit.name, ...(st && !p.region ? { region: st } : {}) };
   });
+  // Lists stored as Worldwide whose name starts with a real country ("Uzbekistan Business Email Database") get that country, so the flag and "for <country>" line are right.
+  list = list.map((p) => {
+    if (p.countryCode !== "WW" && p.countrySlug !== "worldwide") return p;
+    const hit = countryIn(p.name) ?? countryIn(p.title ?? "");
+    if (!hit || hit.code === "WW") return p;
+    return { ...p, countrySlug: hit.slug, countryCode: hit.code, countryName: hit.name };
+  });
   const products = list.map((p): Product => {
     if (!cats.has(p.categorySlug)) cats.set(p.categorySlug, { slug: p.categorySlug, name: p.categoryName, blurb: p.categoryName, description: `${p.categoryName} contact lists.`, buyers: [], singular: p.categoryName, reachLabel: p.categoryName.toLowerCase(), useCases: [], imported: true });
     for (const x of p.extraCats ?? []) if (!cats.has(x.slug)) cats.set(x.slug, { slug: x.slug, name: x.name, blurb: x.name, description: `${x.name} contact lists.`, buyers: [], singular: x.name, reachLabel: x.name.toLowerCase(), useCases: [], imported: true });

@@ -1586,3 +1586,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Fields: the ten named fields (Year founded, Employee count range, Revenue range, Ownership type, Registration number, Contact job title, Owner name, Fax, Website technology, Email verification status) are removed from each product's effective list. They are NOT in the 64-field local default, so for default products this changes nothing; the custom flag is set only when the list really differs.
 - Owner decisions open: the brief gave two SEO title prefixes ("1M+" and "15k+"); the tool has a selector, default 1M+. Both are owner-declared count claims. `fitMeta` clips public meta descriptions to 149 characters (§135), so the last 6 of the 155 do not show in the page head; raise `DESC_MAX` if wanted.
 - Not run on production D1 (no access from here). Tests: `tests/local-standard.test.ts`, case in `tests/us-local-pages-e2e.test.ts`.
+
+## 172. Missing countries and "for Worldwide" fix (26 Nov 2026) — amends sections 166 and 101
+
+- Owner report: lists like "Uzbekistan Business Email Database" showed "for Worldwide" and a globe. Cause: 90 countries that have a flag file (Niger, Laos, Tajikistan, Uzbekistan, Mali, Guinea, ...) were missing from `RAW` in `lib/import/geo.ts`, so imports stored them as Worldwide. They are now in the table (with aliases such as Lao PDR, Ivory Coast, Macau).
+- `toCatalog` (`lib/catalog-db.ts`): a product stored as Worldwide/WW whose name (or title) starts with a known country gets that country at load time, so existing rows fix themselves within the ~60 s catalog cache (no migration; the stored row is unchanged until the next save). Real regions (GCC, Europe, ...) are untouched. Test: `tests/country-detect.test.ts`.
