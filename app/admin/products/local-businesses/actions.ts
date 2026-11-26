@@ -4,6 +4,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { clearImportedCache } from "@/lib/catalog-db";
 import { getDbFromEnv, schema } from "@/lib/db";
+import { applyStandard, localStandardIds, previewStandard, type StdPreview } from "@/lib/import/local-standard-apply";
+import type { MetaPrefix } from "@/lib/import/local-standard";
 import { applyLocal, createUsLocalPages, listBatches, movesReady, rollbackLocal, scanLocal, type ScanItem } from "@/lib/import/local-move";
 
 const env = () => getCloudflareContext().env;
@@ -51,4 +53,25 @@ export async function createUsPagesAction(offset = 0): Promise<{ ok: boolean; me
     if (r.next === null) await refresh();
     return { ok: true, message: "", next: r.next, total: r.total, created: r.created, existing: r.existing, failed: r.failed };
   } catch (e) { return { ok: false, message: `Creating the pages failed: ${e instanceof Error ? e.message.slice(0, 160) : "database error"}. Run migrations 0035 and 0036 first.` }; }
+}
+
+const pre = (p: unknown): MetaPrefix => (p === "15k+" ? "15k+" : "1M+");
+export async function standardIdsAction(): Promise<{ ok: boolean; message?: string; ids: number[]; total: number; skipped: number }> {
+  if (!(await admin())) return { ok: false, message: "Your session ended. Sign in again.", ids: [], total: 0, skipped: 0 };
+  const r = await localStandardIds(db());
+  return { ok: true, ids: r.todo, total: r.total, skipped: r.skipped };
+}
+export async function standardPreviewAction(ids: number[], prefix: string): Promise<{ ok: boolean; message?: string; rows: StdPreview[] }> {
+  if (!(await admin())) return { ok: false, message: "Your session ended. Sign in again.", rows: [] };
+  return { ok: true, rows: await previewStandard(db(), (Array.isArray(ids) ? ids : []).map(Number).filter(Number.isInteger).slice(0, 20), pre(prefix)) };
+}
+export async function standardApplyAction(ids: number[], prefix: string): Promise<{ ok: boolean; message?: string; changed: number; skipped: number; slugKept: number; failed: string[] }> {
+  const a = await admin(); if (!a) return { ok: false, message: "Your session ended. Sign in again.", changed: 0, skipped: 0, slugKept: 0, failed: [] };
+  const r = await applyStandard(db(), (Array.isArray(ids) ? ids : []).map(Number).filter(Number.isInteger).slice(0, 10), pre(prefix));
+  return { ok: true, ...r };
+}
+export async function standardFinishAction(summary: string): Promise<void> {
+  const a = await admin(); if (!a) return;
+  await audit(a.email, `standard applied: ${String(summary).slice(0, 300)}`);
+  await refresh();
 }

@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { getPlatformProxy, type PlatformProxy } from "wrangler";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getDbFromEnv, schema } from "@/lib/db";
-import { applySeo, importBuiltin } from "@/lib/import/store";
+import { applySeo, createProduct, importBuiltin } from "@/lib/import/store";
 import { applyLocal, createUsLocalPages, listBatches, rollbackLocal, scanLocal } from "@/lib/import/local-move";
 import { LOCAL_SLUG } from "@/lib/import/local-business";
 
@@ -33,4 +33,26 @@ describe("US local landing pages", () => {
     expect(new Set(rows.map((r) => r.slug)).size).toBe(rows.length);
     expect(JSON.parse(rows[0].packagesJson as string).length).toBe(3);
   }, 240_000);
+});
+
+import { applyStandard, localStandardIds } from "@/lib/import/local-standard-apply";
+describe("Local standard bulk apply", () => {
+  it("standardizes untouched products, skips edited ones, packages, slugs", async () => {
+    const db = getDbFromEnv(env);
+    const mk = async (n: string) => (await createProduct(db, { name: `${n} Email List in the United States`, title: "", description: "", seoTitle: "", metaDescription: "", recordCount: null, dataFields: [], fileFormats: "", coverage: "", lastUpdated: "", placeholder: true, forSale: false, packages: [{ name: "Starter", records: 100000, priceUsdCents: 9900 }], categoryName: "Local Businesses Database", countryName: "United States", countryCode: "US", region: "", channel: "business-email" })).id!;
+    const edited = await mk("Zebra Keepers");
+    for (const n of ["Plumbers", "Dentists", "Bakeries", "Florists", "Roofers", "Tailors"]) await mk(n);
+    await db.update(schema.catalogProducts).set({ categorySlug: LOCAL_SLUG, categoryName: "Local Businesses Database" }).where(eq(schema.catalogProducts.categoryName, "Local Businesses Database"));
+    await db.update(schema.catalogProducts).set({ seoTitle: "keep", metaDescription: "keep me" }).where(eq(schema.catalogProducts.id, edited));
+    const ids = (await localStandardIds(db)).todo.filter((x) => x !== edited).slice(-6);
+    const r = await applyStandard(db, [edited, ...ids], "1M+");
+    expect(r.failed).toEqual([]); expect(r.changed).toBe(6); expect(r.skipped).toBe(1);
+    const row = (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.id, ids[0])))[0];
+    expect(row.slug).toMatch(/-business-email-database/); expect(row.coverage).toBe("United States");
+    expect(row.name).toMatch(/ Email Database$/); expect(row.metaDescription!.length).toBeLessThanOrEqual(155); expect(row.description.length).toBeLessThanOrEqual(300);
+    expect(JSON.parse(row.packagesJson).map((p: { records: number; priceUsdCents: number }) => [p.records, p.priceUsdCents])).toEqual([[5000, 3900], [10000, 5900], [15000, 9900]]);
+    const kept = (await db.select().from(schema.catalogProducts).where(eq(schema.catalogProducts.id, edited)))[0];
+    expect(kept.seoTitle).toBe("keep"); expect(kept.name).not.toMatch(/ Email Database$/);
+    const again = await applyStandard(db, ids, "1M+"); expect(again.changed).toBe(0);
+  }, 120_000);
 });
