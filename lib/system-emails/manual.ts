@@ -6,7 +6,7 @@ import type { Branding } from "./branding";
 /** Manual send: the owner fulfils an order by hand and sends ONE branded email to ONE person, with his own links/buttons. */
 export const manualSchema = z.object({
   templateKey: z.string().min(1).max(60),
-  to: z.string().trim().toLowerCase().email().max(200),
+  to: z.string().trim().toLowerCase().email("That email address has a typo (check for a comma instead of a dot, spaces, or a missing @).").max(200),
   firstName: z.string().trim().max(60).default(""),
   orderId: z.string().trim().max(60).default(""),
   productName: z.string().trim().max(120).default(""),
