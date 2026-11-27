@@ -33,8 +33,8 @@ describe("library", () => {
     for (const n of ["01", "02", "03", "07", "08", "09", "11", "12", "13", "14", "15", "16", "17", "18"]) expect(sender(n)).toBe("A");
     for (const n of ["04", "05", "06", "10", "25", "26", "27", "28"]) expect(sender(n)).toBe("B");
     for (const n of ["19", "20", "21", "22", "23", "24"]) expect(sender(n)).toBe("C");
-    expect(fromHeader("A")).toBe(`${SENDER_DISPLAY} <anus@beigeleads.com>`);
-    expect(SENDERS.B.email).toBe("mranus@beigeleads.com"); expect(SENDERS.C.email).toBe("anas@beigeleads.com");
+    expect(fromHeader("A")).toBe(`${SENDER_DISPLAY} <anus@mail.beigeleads.com>`);
+    expect(SENDERS.B.email).toBe("mranus@mail.beigeleads.com"); expect(SENDERS.C.email).toBe("anas@mail.beigeleads.com");
   });
   it("every template validates and renders with no unresolved variable", () => {
     for (const t of [...FOUNDER_TEMPLATES, ...INTERNAL_TEMPLATES]) {

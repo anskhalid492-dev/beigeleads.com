@@ -12,9 +12,9 @@ export const SITE = "https://beigeleads.com";
 
 /** The three authorised sender addresses. They are ONE identity (the founder), never presented as different people. */
 export const SENDERS: Record<SenderId, { email: string; use: string }> = {
-  A: { email: "anus@beigeleads.com", use: "Welcome, relationship building, education, long-term check-ins" },
-  B: { email: "mranus@beigeleads.com", use: "Feedback, customer experience and support follow-ups" },
-  C: { email: "anas@beigeleads.com", use: "Product recommendations, valid offers, catalog discoveries" },
+  A: { email: "anus@mail.beigeleads.com", use: "Welcome, relationship building, education, long-term check-ins" },
+  B: { email: "mranus@mail.beigeleads.com", use: "Feedback, customer experience and support follow-ups" },
+  C: { email: "anas@mail.beigeleads.com", use: "Product recommendations, valid offers, catalog discoveries" },
 };
 export const SENDER_IDS = Object.keys(SENDERS) as SenderId[];
 export const fromHeader = (id: SenderId) => `${SENDER_DISPLAY} <${SENDERS[id].email}>`;

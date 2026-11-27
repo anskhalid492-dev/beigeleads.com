@@ -86,7 +86,7 @@ describe("dry run and live gating", () => {
     const r = await runJourneys(env);
     expect(r.sent).toBe(1); expect(sent).toHaveLength(1);
     const m = sent[0]!;
-    expect(m.from).toBe("Anus — Founder, BeigeLeads <anus@beigeleads.com>"); expect(m.reply_to).toBe("hello@beigeleads.com");
+    expect(m.from).toBe("Anus — Founder, BeigeLeads <anus@mail.beigeleads.com>"); expect(m.reply_to).toBe("hello@beigeleads.com");
     expect(m.to).toEqual(["a@buyer.test"]); expect(m.subject).toBe("Ann, a personal thank you from me");
     expect(m.headers?.["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click"); expect(m.headers?.["List-Unsubscribe"]).toContain("/api/unsubscribe?e=a%40buyer.test");
     expect(m.html).toContain("mailto:hello@beigeleads.com?subject="); expect(m.html).not.toMatch(/\{\{[^}]*\}\}/);
