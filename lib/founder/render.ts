@@ -15,9 +15,18 @@ export function replyUrl(subject: string, body?: string): string {
   return `mailto:${REPLY_TO}?${q}`;
 }
 
+/** Highlighted words, like the site's hero: ==word== becomes a rounded chip (green, purple, sand in turn). No marker = the last word. */
+const CHIPS = [[BRAND.forest100, BRAND.forest900], [BRAND.purple100, BRAND.purple600], [BRAND.sand200, BRAND.forest900]] as const;
+export function highlight(htmlText: string): string {
+  let i = 0;
+  const chip = (t: string) => { const [bg, fg] = CHIPS[i++ % 3]!; return `<span style="background:${bg};color:${fg};border-radius:10px;padding:1px 9px;white-space:nowrap">${t}</span>`; };
+  if (/==[^=]+==/.test(htmlText)) return htmlText.replace(/==([^=]+)==/g, (_m, t: string) => chip(t));
+  return htmlText.replace(/(\S+?)([.!?:]?)$/, (_m, w: string, end: string) => `${chip(w)}${end}`);
+}
+
 function signature(): string {
   const initial = FOUNDER_NAME.slice(0, 1);
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 0"><tr>
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
 <td width="60" valign="middle" style="padding-right:14px"><img src="${FOUNDER_PHOTO}" width="52" height="52" alt="${esc(initial)}" style="display:block;width:52px;height:52px;border-radius:26px;background:${BRAND.forest700};color:${BRAND.sand50};font-family:${BRAND.font};font-size:22px;font-weight:800;text-align:center;line-height:52px"></td>
 <td valign="middle" class="t" style="font-family:${BRAND.font};color:${BRAND.forest900}"><div style="font-size:17px;font-weight:800;line-height:1.2">${esc(FOUNDER_NAME)}</div><div class="muted" style="font-size:13px;line-height:1.4;color:${BRAND.forest500}">${esc(FOUNDER_TITLE)}</div></td></tr></table>`;
 }
@@ -84,14 +93,15 @@ ${o.forceDark ? dark.split("}").filter(Boolean).map((r) => `.fd ${r.replace(/,/g
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="wrap" style="width:600px;max-width:100%">
 <tr><td style="padding:0 4px 18px"><a href="${SITE}" style="text-decoration:none"><img class="logo-l" src="${BRAND.logoLight}" alt="BeigeLeads" height="${br.logoHeight}" style="display:block;height:${br.logoHeight}px;width:auto"><img class="logo-d" src="${BRAND.logoDark}" alt="" height="${br.logoHeight}" style="display:none;max-height:0;height:${br.logoHeight}px;width:auto"></a></td></tr>
 <tr><td class="card-wrap pad" style="${panel};border:1px solid ${BRAND.sand200};${f.layout === "B" ? `border-left:4px solid ${BRAND.purple600};` : ""}border-radius:${br.cardRadius}px;padding:${pad}">
-<h1 class="t" style="margin:0 0 20px;font-family:${BRAND.font};font-size:${f.layout === "A" ? 28 : 30}px;line-height:1.15;font-weight:800;color:${BRAND.forest900}">${esc(heading)}</h1>
-${body}${cards.length ? `<div style="margin:18px 0 6px">${cardsHtml(cards)}</div>` : ""}${ctaHtml}${signature()}
+${signature()}
+<h1 class="t" style="margin:0 0 18px;font-family:${BRAND.font};font-size:26px;line-height:1.35;font-weight:800;color:${BRAND.forest900}">${highlight(esc(heading))}</h1>
+${body}${cards.length ? `<div style="margin:18px 0 6px">${cardsHtml(cards)}</div>` : ""}${ctaHtml}
 </td></tr>
 <tr><td class="muted" style="padding:20px 8px 0;font-size:12px;line-height:1.6;color:${BRAND.forest500}">
 ${foot}${why}<br>Replies go to ${esc(REPLY_TO)}, a monitored inbox.<br>${esc(BRAND.company)}
 </td></tr></table></td></tr></table></body></html>`;
 
-  const text = [heading, "", ...textBody.flatMap((b) => [b, ""]), ...(cards.length ? [cardsText(cards), ""] : []), ...(url ? [`${label}: ${url}`, ""] : []), FOUNDER_NAME, FOUNDER_TITLE, "", "--", why,
+  const text = [FOUNDER_NAME + ", " + FOUNDER_TITLE, "", heading.replace(/==/g, ""), "", ...textBody.flatMap((b) => [b, ""]), ...(cards.length ? [cardsText(cards), ""] : []), ...(url ? [`${label}: ${url}`, ""] : []), "--", why,
     ...(optional && prefs && unsub ? [`Email preferences: ${prefs}`, `Unsubscribe: ${unsub}`] : []), `Replies go to ${REPLY_TO}.`, BRAND.company].join("\n");
   return { subject, preheader, html, text, issues };
 }

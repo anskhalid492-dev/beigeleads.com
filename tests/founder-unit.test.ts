@@ -87,7 +87,7 @@ describe("library", () => {
   it("a missing first name never leaves a gap: the subject and heading drop it, the greeting reads 'Hey there,'", () => {
     const t = byId("01"); const v = { ...exampleVars(t) }; delete v.first_name;
     const r = renderFounder(t.content, v, { founder: t.founder! });
-    expect(r.subject).toBe("A personal thank you from me"); expect(r.html).toContain("Hey there,"); expect(r.html).toContain("Glad you&#39;re here."); expect(r.html).not.toMatch(/, \./);
+    expect(r.subject).toBe("A personal thank you from me"); expect(r.html).toContain("Hey there,"); expect(r.html.replace(/<[^>]+>/g, "")).toContain("Glad you&#39;re here."); expect(r.html).not.toMatch(/, \./);
   });
 });
 
