@@ -44,6 +44,7 @@ export function Editor({ tkey, initial, publishedVersion, hasDraft, vars, versio
   const [dark, setDark] = useState(false);
   const [q, setQ] = useState("");
   const [confirmPub, setConfirmPub] = useState(false);
+  const [testTo, setTestTo] = useState("");
   const [active, setActive] = useState<{ path: Path; el: HTMLInputElement | HTMLTextAreaElement } | null>(null);
   const dirty = JSON.stringify(c) !== saved;
 
@@ -191,7 +192,7 @@ export function Editor({ tkey, initial, publishedVersion, hasDraft, vars, versio
             {admin && !locked && (confirmPub
               ? <><Button size="sm" disabled={pending || blocked} onClick={() => { setConfirmPub(false); run(() => publishAction(tkey, c), "Published. New emails use this version.", () => setSaved(JSON.stringify(c))); }}>Yes, publish now</Button><Button size="sm" variant="secondary" onClick={() => setConfirmPub(false)}>Cancel</Button></>
               : <Button size="sm" disabled={pending || blocked} onClick={() => setConfirmPub(true)}>Publish</Button>)}
-            <Button size="sm" variant="secondary" disabled={pending || blocked} onClick={() => run(() => sendTestAction(tkey, c), "Test email sent to your own address.")}>Send test to me</Button>
+            <input type="email" aria-label="Send test to" placeholder="Send test to (blank = me)" className="min-w-[12rem] rounded-xl border border-sand-300 bg-white px-3 py-1.5 text-sm" value={testTo} onChange={(e) => setTestTo(e.target.value)} /><Button size="sm" variant="secondary" disabled={pending || blocked} onClick={() => run(() => sendTestAction(tkey, c, testTo), "Test email sent.")}>Send test</Button>
             {hasDraft && !locked && <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => discardDraftAction(tkey), "Draft discarded.", () => { setC(initial); })}>Discard draft</Button>}
             <span className="ml-auto text-xs">{dirty ? "Unsaved changes" : hasDraft ? "Draft saved" : publishedVersion ? `Live: version ${publishedVersion}` : "Live: built-in version"}</span>
           </div>

@@ -4,12 +4,17 @@ import { revalidatePath } from "next/cache";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { getDbFromEnv, schema } from "@/lib/db";
+import { REPLY_TO, fromHeader } from "@/lib/founder/config";
+import { senderOf } from "@/lib/founder/engine";
+import { loadCs } from "@/lib/founder/settings";
+import { FOUNDER_TEMPLATES } from "@/lib/founder/templates";
 import { sendEmailDetailed } from "@/lib/forms/email";
 import { getBranding } from "@/lib/system-emails/branding";
 import { manualSchema, renderManual } from "@/lib/system-emails/manual";
 import { systemVars } from "@/lib/system-emails/mail";
 import { getEditable } from "@/lib/system-emails/store";
 
+const founderKey = (k: string) => FOUNDER_TEMPLATES.some((t) => t.key === k);
 type Res<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 const NO = "Your session ended. Sign in again.";
 
@@ -46,7 +51,7 @@ export async function sendManualAction(raw: unknown, opts: { markDelivered: bool
   await env.CACHE.put(rk, String(n + 1), { expirationTtl: 3700 });
 
   const ref = input.orderId || `manual-${crypto.randomUUID().slice(0, 8)}`;
-  const res = await sendEmailDetailed(env, { to: input.to, subject: r.subject, text: r.text, html: r.html, templateKey: input.templateKey, reference: ref, source: "live" });
+  const res = await sendEmailDetailed(env, { to: input.to, subject: r.subject, text: r.text, html: r.html, templateKey: input.templateKey, reference: ref, source: "live", ...(founderKey(input.templateKey) ? { from: fromHeader(senderOf(input.templateKey, await loadCs(env))), replyTo: REPLY_TO } : {}) });
   if (!res.ok) return { ok: false, error: res.error ?? "The email was not accepted by the email service." };
 
   let marked = false;

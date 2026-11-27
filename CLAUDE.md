@@ -1601,3 +1601,8 @@ Done when: site runs locally with `wrangler`-compatible dev, deploys a preview t
 - Design: 5 layouts A-E with the founder photo (`public/founder/anus-192.jpg`) and reply-by-mailto CTAs, palette tokens only.
 - NOT done / owner to do: run 0052; verify the domain and the three sender addresses in Resend; confirm hello@ is monitored; review and approve templates, then dry_run, then live. Privacy-policy text for these emails and the feedback page; lawyer review for non-US recipients; no open/click tracking; journeys are a form list, not a visual builder; real inbox rendering (Gmail/Outlook) and admin screens behind Access untested.
 - Tests: `tests/founder-unit.test.ts` (24), `tests/founder-e2e.test.ts` (15, local D1, Resend mocked). Full suite 859 tests passing.
+
+## 174. System Emails: test to any address, founder sender on tests (27 Nov 2026) — amends sections 64, 70, 173
+
+- `sendTestAction(key, content, to?)` now takes an optional single recipient (editor, designer and dashboard test tab have a "Send test to" box; blank = the signed-in admin). Still [TEST] subject + banner, 10/hour per admin, logged as source test.
+- Cause of "still from BeigeLeads <noreply@...>": the admin test send and the "Send by hand" path never passed the founder From. Founder templates now use `fromHeader(sender A/B/C)` (per-template override respected) with Reply-To hello@beigeleads.com in both paths. Real journey sends already did (§173). The sender domain `mail.beigeleads.com` and the three addresses must be verified in Resend or it will refuse the From.

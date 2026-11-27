@@ -53,6 +53,7 @@ export function Designer({ tkey, name, initial, vars, allowed, hasDraft, publish
   const [mview, setMview] = useState<"desktop" | "mobile" | "text">("desktop");
   const [dark, setDark] = useState(false);
   const [confirmPub, setConfirmPub] = useState(false);
+  const [testTo, setTestTo] = useState("");
   const [q, setQ] = useState("");
   const last = useRef<{ key: string; at: number }>({ key: "", at: 0 });
   const dirty = JSON.stringify(c) !== saved;
@@ -197,7 +198,7 @@ export function Designer({ tkey, name, initial, vars, allowed, hasDraft, publish
         <input aria-label="Preheader" placeholder="Preheader" className={`${input} min-w-[12rem] flex-1`} value={c.preheader} onFocus={(e) => { focusEl.current = e.currentTarget; }} onChange={(e) => commit({ ...c, preheader: e.target.value }, "pre")} />
         {!locked && <Button size="sm" variant="secondary" disabled={pending || !dirty} onClick={() => run(() => saveDraftAction(tkey, c), "Draft saved. Nothing changed for customers.", () => setSaved(JSON.stringify(c)))}>Save draft</Button>}
         <Button size="sm" variant="secondary" disabled={!pv?.html} onClick={() => setModal(true)}>Preview</Button>
-        <Button size="sm" variant="secondary" disabled={pending || blocked} onClick={() => run(() => sendTestAction(tkey, c), "Test email sent to your own address.")}>Send test</Button>
+        <input type="email" aria-label="Send test to" placeholder="Send test to (blank = me)" className="min-w-[10rem] rounded-xl border border-sand-300 bg-white px-3 py-1.5 text-sm" value={testTo} onChange={(e) => setTestTo(e.target.value)} /><Button size="sm" variant="secondary" disabled={pending || blocked} onClick={() => run(() => sendTestAction(tkey, c, testTo), "Test email sent.")}>Send test</Button>
         {canPublish && !locked && (confirmPub ? <><Button size="sm" disabled={pending || blocked} onClick={() => { setConfirmPub(false); run(() => publishAction(tkey, c), "Published. New emails use this version.", () => setSaved(JSON.stringify(c))); }}>Yes, publish</Button><Button size="sm" variant="secondary" onClick={() => setConfirmPub(false)}>Cancel</Button></> : <Button size="sm" disabled={pending || blocked} onClick={() => setConfirmPub(true)}>Publish</Button>)}
         <span className="text-xs">{dirty ? "Unsaved changes" : hasDraft ? "Draft saved" : publishedVersion ? `Live: v${publishedVersion}` : "Live: built-in"}</span>
         {pv && pv.errors.length > 0 && <ul className="w-full rounded-lg bg-red-100 px-3 py-2 text-xs text-red-800">{pv.errors.map((e) => <li key={e}>{e}</li>)}</ul>}
